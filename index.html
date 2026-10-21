@@ -368,7 +368,7 @@ ${mode=='up'?'<label for="pw2">Confirm password</label><input id="pw2" type="pas
  $('#dm').onclick=()=>{ensureDemo();login('guest')}
  sbInit().then(()=>{const g=document.getElementById('gg');if(g&&!sbGoogle)g.style.display='none'})}
 function login(u){user=u;D=Object.assign(blank(),J(key(u),{}));try{sessionStorage.setItem('bloom_s',u)}catch(e){mem.s=u}applyTheme();view='cycle';shell()}
-function logout(){user=null;D=null;try{sessionStorage.removeItem('bloom_s')}catch(e){}delete mem.s;authView('in')}
+function logout(){user=null;D=null;try{sessionStorage.removeItem('bloom_s')}catch(e){}delete mem.s;if(sb)sb.auth.signOut().catch(()=>{});authView('in')}
 function applyTheme(){document.documentElement.removeAttribute('data-theme')}
 // ---------- helpers
 const L=d=>D.logs[d]||{};
@@ -990,5 +990,6 @@ function ensureDemo(){const g='guest';const all=users();if(!all[g]){all[g]={salt
 (()=>{ensureDemo();let s=null;try{s=sessionStorage.getItem('bloom_s')}catch(e){}s=s||mem.s;
  if(s&&String(s).indexOf('p:')===0){const owner=String(s).slice(2);
   RO=true;ROowner=owner;D=Object.assign(blank(),J(key(owner),{}));view='cycle';shell()}
- else if(s&&users()[s])login(s);else authView('in')})();
+ else if(s&&users()[s])login(s);else authView('in');
+ sbInit().then(async()=>{if(sbUser&&!RO){try{await sbAfterLogin(sbUser)}catch(e){}}})})();
 </script></body></html>
