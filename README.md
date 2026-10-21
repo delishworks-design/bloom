@@ -70,6 +70,11 @@ dashboard. The **Continue with Google** button appears automatically once the pr
 Notes stay in your browser and, if you sign in, in your own Supabase account. Nothing is sent to
 any third party. This is not a medical service and does not diagnose anything.
 
+## Deployed
+
+- GitHub: `delishworks-design/bloom` (private)
+- Supabase project: `vggaswbjsmyvfheofnnj`
+
 ## Licence
 
 MIT
