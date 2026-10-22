@@ -1171,7 +1171,7 @@ ${D.partner&&D.partner.on?`<p class="meta">Share this code. Your partner opens a
  else{
   const existing=users();
   const keys=Object.keys(existing);
-  if(keys.length===0){D=blank();view='cycle';shell()}else{user=keys[0];D=Object.assign(blank(),J(key(user),{}));applyTheme();view='cycle';shell()}
+  if(keys.length===0){D=blank();view='cycle';shell()}else{user=keys[0];D=Object.assign(blank(),J(key(user),{}));if(!D.p)D.p={};D.p.done=true;applyTheme();view='cycle';shell()}
  }
  sbInit().then(async()=>{if(sbUser&&!RO){try{await sbAfterLogin(sbUser)}catch(e){}}})})();
 </script></body></html>
