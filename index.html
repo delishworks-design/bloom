@@ -448,7 +448,10 @@ function sheetPick(title,items,onPick,ph){sheet(`<h2>${E(title)}</h2>${ph?`<inpu
   wire(f)}}
 // ---------- in-app updater
 const UPDATE_MANIFEST='https://raw.githubusercontent.com/delishworks-design/bloom/main/release/update.json';
-const updater=()=>((window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.BloomUpdater)||null);
+const updater=()=>{const C=window.Capacitor;if(!C)return null;
+ const P=C.Plugins&&C.Plugins.BloomUpdater;if(P)return P;
+ if(C.nativePromise)return{getVersion:()=>C.nativePromise('BloomUpdater','getVersion',{}),installUpdate:o=>C.nativePromise('BloomUpdater','installUpdate',o)};
+ return null};
 async function checkUpdate(manual){
  const up=updater();if(!up){if(manual)toast('Updates are only available in the app');return}
  try{
@@ -464,8 +467,14 @@ function showUpdateSheet(m,v){
  sheet(`<h2>Update available</h2><p class="meta" style="margin:0 0 4px">Version ${E(m.versionName||'')} \u00b7 you have ${E(v.versionName||'')}</p>${m.notes?`<p class="meta" style="margin:0 0 4px">${E(m.notes)}</p>`:''}
  <div class="row" style="gap:10px;margin-top:18px"><button class="btn ghost" id="upLater" style="flex:1">Later</button><button class="btn" id="upNow" style="flex:1">Install</button></div>`);
  $('#upLater').onclick=()=>sheet();
- $('#upNow').onclick=async()=>{sheet();toast('Downloading\u2026');
-  try{await updater().installUpdate({url:m.url})}catch(e){toast('Install failed')}};
+ $('#upNow').onclick=async()=>{sheet();
+  const up=updater();let bytes=0;
+  const listen=()=>{try{const l=up.addListener&&up.addListener('downloadProgress',e=>{bytes=(e&&e.bytes)||0});return l}catch(e){return null}};
+  const l=listen();
+  toast('Downloading\u2026');
+  try{await up.installUpdate({url:m.url})}
+  catch(e){toast('Install failed')}
+  finally{try{l&&l.remove&&l.remove()}catch(e){}}};
 }
 function dateSheet(title,cb){let m=today().slice(0,7);
  const draw=()=>{const [y,mo]=m.split('-').map(Number),first=new Date(y,mo-1,1),dim=new Date(y,mo,0).getDate(),off=first.getDay();
