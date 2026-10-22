@@ -256,11 +256,10 @@ const LEARN=[['What is PCOS?','PCOS (often called PMOS in some regions) is a com
 ['Common myths','PCOS is not caused by something you did. It is not the same for everyone, and being a certain weight is not required to have it.']];
 // ---------- Supabase (accounts, sync, partner sharing)
 const SB={url:'https://vggaswbjsmyvfheofnnj.supabase.co',key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZnZ2Fzd2Jqc215dmZoZW9mbm5qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE2MzU5MDgsImV4cCI6MjEwNzIxMTkwOH0.5iV_nWSia3LaKSjTqoQtb8e3ZcAvJd8K3Vhg8b9Dwx4'};
-let sb=null,sbUser=null,sbGoogle=false,sbPushT=null,cloudTimer=null;
+let sb=null,sbUser=null,sbPushT=null,cloudTimer=null;
 async function sbInit(){if(sb)return sb;
  try{const m=await import('https://esm.sh/@supabase/supabase-js@2.49.1');
-  sb=m.createClient(SB.url,SB.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-  try{const r=await fetch(SB.url+'/auth/v1/settings',{headers:{apikey:SB.key}});const j=await r.json();sbGoogle=!!(j.external&&j.external.google&&j.external.google.enabled)}catch(e){}
+   sb=m.createClient(SB.url,SB.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
   const {data}=await sb.auth.getSession();
   if(data&&data.session&&data.session.user)sbUser=data.session.user;
  }catch(e){sb=null}
@@ -285,9 +284,6 @@ async function sbSignUp(email,pw){await sbInit();if(!sb)return 'offline';
  const {error}=await sb.auth.signUp({email:email.trim(),password:pw});
  if(error)return error.message;const {data}=await sb.auth.getSession();
  if(data.session)await sbAfterLogin(data.session.user);else toast('Check your email to confirm');return null}
-async function sbGoogleSignIn(){await sbInit();if(!sb)return 'offline';
- const {error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.href.split('#')[0]}});
- return error?error.message:null}
 async function sbSignOut(){if(sb)await sb.auth.signOut();sbUser=null;if(cloudTimer)clearInterval(cloudTimer);cloudTimer=null;RO=false;ROcloud=false;D=null;try{sessionStorage.removeItem('bloom_s')}catch(e){}authView('in')}
 
 // ---------- storage
@@ -317,7 +313,6 @@ function authView(mode){mode=mode||'in';const pt=mode=='partner';
 ${mode=='up'?'<label for="pw2">Confirm password</label><input id="pw2" type="password" autocomplete="new-password"><label class="row" style="color:var(--ink)"><input id="cons" type="checkbox" style="width:22px;margin:0"> I agree to store my health notes on this account.</label>':''}
 <div class="err" id="err" role="alert"></div>
 <button class="btn" style="width:100%" id="go">${mode=='in'?'Log in':'Create account'}</button>
-<button class="btn ghost" style="width:100%;margin-top:10px" id="gg">Continue with Google</button>
 <button class="btn ghost" style="width:100%;margin-top:10px" id="dm">Continue with demo data</button>
 <p class="meta" style="text-align:center;margin-top:14px"><button class="btn ghost sm" id="sw">${mode=='in'?'New here? Create account':'Have an account? Log in'}</button></p>`;
  const part=`<h2>Partner view</h2><p class="meta" style="margin:0 0 4px">Enter the sync code from the account you want to follow.</p><label for="pc">Sync code</label><input id="pc" maxlength="6" autocapitalize="characters" autocomplete="off" placeholder="ABC123"><div class="err" id="err" role="alert"></div><button class="btn" style="width:100%" id="go">Open partner view</button><button class="btn ghost" style="width:100%;margin-top:10px" id="mock">View with sample data</button>`;
@@ -364,9 +359,8 @@ ${mode=='up'?'<label for="pw2">Confirm password</label><input id="pw2" type="pas
   else{const a=all[u];if(!a||a.h!==await hash(pw,a.salt))return er.textContent='Incorrect email or password.'}
    login(u)};
  $('#go').onclick=sub;$('#pw').onkeydown=e=>{if(e.key=='Enter'&&mode=='in')sub()}
- $('#gg').onclick=async()=>{const er=$('#err');er.textContent='';const e=await sbGoogleSignIn();if(e)er.textContent=e==='offline'?'Sign-in needs a connection.':e};
  $('#dm').onclick=()=>{ensureDemo();login('guest')}
- sbInit().then(()=>{const g=document.getElementById('gg');if(g&&!sbGoogle)g.style.display='none'})}
+}
 function login(u){user=u;D=Object.assign(blank(),J(key(u),{}));try{sessionStorage.setItem('bloom_s',u)}catch(e){mem.s=u}applyTheme();view='cycle';shell()}
 function logout(){user=null;D=null;try{sessionStorage.removeItem('bloom_s')}catch(e){}delete mem.s;if(sb)sb.auth.signOut().catch(()=>{});authView('in')}
 function applyTheme(){document.documentElement.removeAttribute('data-theme')}
