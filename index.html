@@ -51,13 +51,6 @@ p{margin:0;line-height:1.5}
 .card{background:#FFFBF5 !important;border:1.5px solid #EADFD2;border-radius:22px;padding:18px 16px;box-shadow:0 2px 10px rgba(120,70,80,.08);display:flex;flex-direction:column;gap:14px}
 .card-h{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:2px;border-bottom:0}
 .card-h h3{font-size:17px;line-height:1.2;margin:0}
-.collapsible{margin-top:6px}
-.collapsible-btn{width:100%;text-align:left;padding:14px 16px;background:#F9F2ED;border:1.5px solid #EADFD2;border-radius:14px;color:#3A2E33;font:inherit;font-size:1rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;transition:background .15s,border-color .15s}
-.collapsible-btn:hover{background:#F1E6D7;border-color:#E8A0B4}
-.collapsible-btn:focus-visible{outline:2px solid #B8456B;outline-offset:2px}
-.collapsible-btn[aria-expanded="true"] .chevron{transform:rotate(180deg)}
-.collapsible-content{margin-top:10px;animation:slideDown .2s ease}
-@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
 .btn{position:relative;padding:14px 24px;border-radius:16px;border:none;font:inherit;font-weight:700;font-size:1rem;color:#FBF4EA;background:linear-gradient(180deg,#C4567A 0%,#B8456B 100%);cursor:pointer;transition:transform .08s,box-shadow .15s,filter .15s;box-shadow:0 4px 14px rgba(184,69,107,.35),0 2px 6px rgba(120,70,80,.15),inset 0 1px 0 rgba(255,255,255,.25);overflow:hidden}
 .btn::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.25) 0%,transparent 50%,rgba(0,0,0,.15) 100%);pointer-events:none}
 .btn:active{transform:translateY(2px) scale(.99);box-shadow:0 2px 6px rgba(184,69,107,.3),0 1px 3px rgba(120,70,80,.12),inset 0 1px 3px rgba(0,0,0,.2);filter:brightness(.98)}
@@ -70,28 +63,12 @@ p{margin:0;line-height:1.5}
 .chip:hover{border-color:#E8A0B4;background:#FFF8F5;box-shadow:0 4px 12px rgba(184,69,107,.15);transform:translateY(-1px)}
 .chip:active{transform:translateY(1px);box-shadow:0 1px 3px rgba(120,70,80,.1)}
 .chip[aria-pressed="true"]{background:linear-gradient(180deg,#FFF0F5 0%,#F9DDE5 100%);border-color:#E8A0B4;color:#B8456B;box-shadow:0 4px 14px rgba(184,69,107,.25),inset 0 1px 0 rgba(255,255,255,.3)}
-.artcard{padding:16px;background:#FFFBF5;border:1.5px solid #EADFD2;border-radius:16px;transition:all .15s}
-.artcard:hover{border-color:#E8A0B4;box-shadow:0 8px 24px rgba(184,69,107,.12);transform:translateY(-2px)}
-.artt{font-size:1.05rem;font-weight:700;line-height:1.3}
-.artpreview{color:#7C6B71;font-size:.92rem;line-height:1.5;margin:0}
 .article-full{max-width:720px;margin:0 auto;padding:0 4px}
-.artstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px}
 .statcard{background:#FFFBF5;border:1.5px solid #EADFD2;border-radius:14px;padding:16px 12px;text-align:center}
 .statnum{display:block;font-size:1.8rem;font-weight:800;color:#B8456B;line-height:1.2;font-family:'Playfair Display',serif}
 .statlbl{display:block;font-size:.75rem;color:#7C6B71;margin-top:4px;text-transform:uppercase;letter-spacing:.05em}
-.artgraph{background:#F9F2ED;border-radius:16px;padding:12px}
 .artbody p{margin:0 0 1.2em}
 .artbody strong{color:#B8456B}
-.arthead{margin-bottom:8px}
-.arttools{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
-.toc{background:#F9F2ED;border-radius:12px;padding:12px;margin:16px 0}
-.toc ol{margin:8px 0 0;padding-left:20px}
-.toc li{margin:4px 0}
-.toc a{color:#B8456B;text-decoration:none}
-.toc a:visited{color:#B8456B}
-.related .artcard{background:#FFFBF5;border:1.5px solid #EADFD2;border-radius:16px;padding:16px;cursor:pointer;transition:all .15s}
-.related .artcard:hover{border-color:#E8A0B4;box-shadow:0 8px 24px rgba(184,69,107,.12);transform:translateY(-2px)}
-.related h4{font-size:1rem;margin:0 0 4px}
 .partner-empty{text-align:center;padding:48px 24px}
 .partner-header{display:flex;align-items:center;gap:16px;padding:16px 4px;margin-bottom:8px}
 .partner-avatar{flex:0 0 auto}
@@ -116,7 +93,6 @@ button{font-family:Sansita,system-ui,sans-serif;-webkit-tap-highlight-color:tran
 .btn.sm{min-height:36px !important;padding:0 16px !important;font-size:.88rem !important}
 .profbtn{display:inline-flex !important;align-items:center !important;gap:10px !important;height:42px !important;padding:4px 16px 4px 5px !important;border-radius:999px !important;background:#FFFBF5 !important;border:1.5px solid #EADFD2 !important;box-shadow:0 2px 8px rgba(120,70,80,.06) !important;color:#3A2E33 !important;font-weight:700 !important;line-height:1 !important;white-space:nowrap !important;max-width:62% !important}
 .profbtn span{line-height:1 !important;overflow:hidden;text-overflow:ellipsis}
-.user-name{font-weight:700;color:#3A2E33;font-size:.95rem;line-height:1;padding:4px 12px;border-radius:999px;background:#FFFBF5;border:1.5px solid #EADFD2;box-shadow:0 2px 8px rgba(120,70,80,.06)}
 .logpill{width:100% !important;max-width:340px !important;margin:12px auto 0 !important;height:56px !important;border-radius:999px !important;background:#B8456B !important;color:#fff !important;display:flex !important;align-items:center !important;justify-content:center !important;gap:10px !important;font-weight:700 !important;box-shadow:0 8px 20px rgba(184,69,107,.3) !important;border:0 !important}
 .logpill .plus{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.24);display:grid;place-items:center;flex-shrink:0}
 
@@ -130,14 +106,6 @@ button{font-family:Sansita,system-ui,sans-serif;-webkit-tap-highlight-color:tran
 .qa button{background:#D6ECEA !important;border:1.5px solid #C8E2E0 !important;border-radius:16px !important;padding:12px 6px !important;min-height:68px !important;display:flex !important;flex-direction:column !important;align-items:center !important;justify-content:center !important;text-align:center !important;gap:5px !important;font-size:.82rem !important;line-height:1.25 !important;color:#3A2E33 !important}
 
 /* Tiles */
-.tile{border-radius:20px;padding:18px 16px;display:flex;flex-direction:column;gap:8px;min-height:176px;box-shadow:0 2px 10px rgba(120,70,80,.08);border:1px solid rgba(234,223,210,.8)}
-.tile.teal{background:#D6ECEA !important}.tile.blush{background:#F9DDE5 !important}.tile.rose{background:#B8456B !important;color:#fff !important}.tile.pine{background:#2A8A87 !important;color:#fff !important}
-.tile .top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
-.tile .ic{width:44px;height:44px;border-radius:50%;background:#fff !important;display:grid;place-items:center;flex:0 0 auto;box-shadow:0 2px 8px rgba(0,0,0,.06)}
-.tile h3{margin:10px 0 4px;font-size:16px;line-height:1.2}
-.tile p{margin:0;font-size:.88rem;line-height:1.4;opacity:.9}
-.tile .badge{background:#fff !important;border-radius:999px;padding:6px 12px;font-size:.78rem;font-weight:700;color:#3A2E33 !important;display:inline-flex;align-items:center;justify-content:center;line-height:1;white-space:nowrap}
-.tile .pill{width:100%;margin-top:auto;background:#fff !important;color:#3A2E33 !important;border:0 !important;border-radius:999px !important;padding:0 12px !important;min-height:44px !important;display:flex !important;align-items:center !important;justify-content:center !important;font-weight:700 !important;text-align:center !important;line-height:1.1 !important}
 
 /* Avatar */
 .avatar{border-radius:50%;object-fit:cover;display:block;flex:0 0 auto;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.08)}
@@ -172,7 +140,6 @@ button{font-family:Sansita,system-ui,sans-serif;-webkit-tap-highlight-color:tran
 input,select,textarea{font:inherit;color:#3A2E33 !important;width:100%;padding:13px 16px !important;border-radius:14px !important;border:1.5px solid #EADFD2 !important;background:#FFFBF5 !important;margin:6px 0 14px !important;line-height:1.3 !important;box-shadow:0 1px 2px rgba(120,70,80,.04) !important}
 input:focus,select:focus,textarea:focus{border-color:#B8456B !important;background:#fff !important;outline:none !important}
 label{display:block;font-size:.86rem;color:#7C6B71 !important;margin-top:16px !important;margin-bottom:6px !important;line-height:1.2 !important;font-weight:700 !important;letter-spacing:.01em}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
 .ck{display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px dashed #EADFD2;line-height:1.3;flex:1 1 auto;min-width:0}
 .ck input{width:22px;height:22px;margin:0;accent-color:#B8456B;flex:0 0 auto}
 .ckt{flex:1 1 auto;min-width:0;overflow-wrap:anywhere;word-break:break-word;color:#3A2E33;font-size:1rem}
@@ -193,13 +160,12 @@ label{display:block;font-size:.86rem;color:#7C6B71 !important;margin-top:16px !i
 /* Sheet - light */
 .sheet{position:fixed;inset:0;background:rgba(58,46,51,.35) !important;backdrop-filter:blur(8px);z-index:9;display:flex;align-items:flex-end;justify-content:center}
 .sheet>div{background:#FFFBF5 !important;width:100%;max-width:430px;max-height:92%;overflow:auto;border-radius:28px 28px 0 0 !important;padding:24px 20px 28px !important;box-shadow:0 -16px 40px rgba(120,70,80,.18) !important;display:flex;flex-direction:column;gap:14px;border:1.5px solid #EADFD2 !important;border-bottom:0 !important}
-.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:92px;background:#3A2E33 !important;color:#FBF4EA !important;padding:12px 20px !important;border-radius:999px !important;z-index:12;font-size:.85rem;line-height:1;box-shadow:0 8px 20px rgba(0,0,0,.18) !important}
+.toast,#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:92px;background:#3A2E33 !important;color:#FBF4EA !important;padding:12px 20px !important;border-radius:999px !important;z-index:12;font-size:.85rem;line-height:1;box-shadow:0 8px 20px rgba(0,0,0,.18) !important}
 
 /* Auth */
 .auth{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:24px 20px;background:#FBF4EA !important}
 .auth .card{max-width:420px;width:100%;min-height:520px;padding:30px 24px;gap:0;background:#FFFBF5 !important;display:flex;flex-direction:column;border:1.5px solid #EADFD2;border-radius:28px;box-shadow:0 12px 40px rgba(120,70,80,.12)}
 .auth .card>*{flex:0 0 auto}
-.auth .card>p.note{margin-top:auto}
 .auth .card .brand{margin-bottom:10px}
 .auth .card h2{font-size:20px;margin:0 0 2px}
 .auth .card label{margin:18px 0 6px !important}
@@ -207,10 +173,8 @@ label{display:block;font-size:.86rem;color:#7C6B71 !important;margin-top:16px !i
 .auth .card .err{margin-top:10px}
 .auth .card #go{margin-top:18px !important}
 .auth .card p{margin:0}
-.auth .card .note{margin-top:18px !important}
 input[type=checkbox]{width:22px !important;height:22px !important;min-width:22px;padding:0 !important;margin:0 !important;accent-color:#B8456B;flex:0 0 auto}
 .brand{font-family:'Playfair Display',serif;color:#B8456B;font-size:2rem;line-height:1}
-.note{background:#F9DDE5 !important;border-radius:14px;padding:12px 14px;font-size:.88rem;line-height:1.45;border:1px solid rgba(232,160,180,.3) !important;color:#3A2E33 !important}
 .err{color:#B8456B;font-size:.88rem;min-height:1.2em;line-height:1.3}
 
 /* Details */
@@ -228,13 +192,9 @@ details{border-bottom:1px solid #EADFD2;padding:14px 0}summary{cursor:pointer;fo
 .synccode{flex:1;font-family:'Playfair Display',serif;font-size:26px;font-weight:700;letter-spacing:.18em;color:#B8456B}
 .fun{background:linear-gradient(180deg,#FDF3F0 0%,#F9DDE5 100%) !important;border-color:rgba(232,160,180,.35) !important;padding:12px 14px !important}
 .funtext{font-family:'Playfair Display',serif;font-size:13.5px;line-height:1.4;color:#3A2E33;margin:0}
-.artrow{padding:14px 0;border-bottom:1px dashed #EADFD2}
-.artrow:last-child{border-bottom:0}
-.artt{font-family:'Playfair Display',serif;font-size:16.5px;font-weight:700;color:#3A2E33;line-height:1.28}
 .artbody{font-size:.88rem;line-height:1.55;color:#5C4A50}
 .kv b{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:#3A2E33}
 .divider{height:1px;background:#EADFD2;margin:16px 0}
-.phasename{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;margin:6px 0 14px;line-height:1.15}
 .faces{display:flex;gap:8px;justify-content:space-between;margin:8px 0}
 .facebtn{flex:1;background:#FFFBF5 !important;border:1.5px solid #EADFD2 !important;padding:8px 4px !important;border-radius:16px !important;opacity:.55;min-height:58px !important;display:grid !important;place-items:center !important}
 .facebtn.on{opacity:1 !important;transform:translateY(-2px);border-color:#B8456B !important;background:#F9DDE5 !important;box-shadow:0 2px 8px rgba(120,70,80,.08) !important}
@@ -247,13 +207,36 @@ details{border-bottom:1px solid #EADFD2;padding:14px 0}summary{cursor:pointer;fo
 .goalopts{display:flex;gap:3px;padding:3px;border-radius:13px;background:#FFFBF5 !important;border:1.5px solid #EADFD2 !important}
 .goalopt{min-width:36px !important;height:30px !important;padding:0 9px !important;border:0 !important;border-radius:10px !important;background:transparent !important;color:#7C6B71 !important;font:inherit !important;font-size:.84rem !important;font-weight:700 !important;line-height:1 !important;cursor:pointer !important;transition:background .2s ease,color .2s ease}
 .goalopt.on{background:#B8456B !important;color:#fff !important;box-shadow:0 2px 6px rgba(184,69,107,.28) !important}
-.minis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0 0}
-.mini{background:#FFFBF5 !important;border:1.5px solid #EADFD2 !important;border-radius:18px !important;padding:14px !important;display:flex !important;flex-direction:column !important;gap:4px !important;box-shadow:0 2px 8px rgba(120,70,80,.06) !important}
-.tiles{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0 0}
 nav{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(12px + env(safe-area-inset-bottom,0px));width:calc(100% - 24px);max-width:392px;height:68px;border-radius:28px;background:#FFFBF5 !important;border:1.5px solid #EADFD2 !important;box-shadow:0 12px 34px rgba(120,70,80,.16) !important;display:flex;align-items:center;justify-content:space-between;padding:6px;z-index:5;gap:4px}
 nav button{flex:1;height:52px;border:0 !important;background:none !important;border-radius:20px !important;color:#7C6B71 !important;font-size:.72rem !important;font-weight:700 !important;display:flex !important;flex-direction:column !important;align-items:center !important;justify-content:center !important;gap:4px !important;line-height:1 !important;text-align:center !important}
 nav button[aria-current=page]{background:#B8456B !important;color:#fff !important;box-shadow:0 6px 16px rgba(184,69,107,.28) !important}
-.user-name{font-weight:700;color:#3A2E33;font-size:.95rem;line-height:1;padding:4px 12px;border-radius:999px;background:#FFFBF5;border:1.5px solid #EADFD2;box-shadow:0 2px 8px rgba(120,70,80,.06)}
+/* Learn - daily reads */
+.dr-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 14px}
+.dr-date{font-family:'Playfair Display',serif;font-size:1.06rem;font-weight:700;color:var(--ink);line-height:1.2}
+.dr-streak{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:999px;background:#F9DDE5;border:1px solid rgba(232,160,180,.45);color:#B8456B;font-size:.74rem;font-weight:700;white-space:nowrap;flex:0 0 auto}
+.dr-card{background:#FFFBF5;border:1.5px solid #EADFD2;border-radius:18px;padding:16px 18px;margin-bottom:16px;box-shadow:0 2px 10px rgba(120,70,80,.05)}
+.dr-count{font-family:'Playfair Display',serif;font-size:2rem;font-weight:800;color:#B8456B;line-height:1}
+.dr-count-of{font-size:.92rem;font-weight:600;color:#7C6B71}
+.dr-next{font-size:.82rem;color:#7C6B71;line-height:1.45;margin-top:10px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.dr-done{text-align:center;font-size:.85rem;font-weight:700;color:#2A8A87;padding:6px 0 2px}
+.dr-sec{font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#7C6B71;margin:0 0 10px}
+.dr-search{margin:0 0 14px}
+.dr-search input{margin:0 !important;padding:11px 14px !important;font-size:.88rem !important;line-height:1.3 !important}
+.dr-warn{font-size:.74rem;line-height:1.5;color:#7C6B71;border-left:2.5px solid #E8A0B4;padding:1px 0 1px 10px;margin:24px 0 0}
+.dr-h1{font-family:'Playfair Display',serif;font-size:1.42rem;font-weight:700;line-height:1.3;color:var(--ink);margin:0 0 14px}
+.readrow{display:flex;align-items:flex-start;gap:12px;padding:12px 13px;margin-bottom:8px;background:#FFFBF5;border:1.5px solid #EADFD2;border-radius:14px;transition:all .15s}
+.readrow:hover{border-color:#E8A0B4;box-shadow:0 4px 14px rgba(184,69,107,.1)}
+.readrow-ic{flex:0 0 auto;width:24px;height:24px;min-height:24px;border-radius:50%;border:1.5px solid #EADFD2;background:#fff;display:grid;place-items:center;padding:0;margin:0;cursor:pointer;color:transparent;transition:all .15s}
+.readrow-ic:hover{border-color:#2A8A87}
+.readrow.done .readrow-ic{background:#2A8A87;border-color:#2A8A87;color:#fff}
+.readrow-txt{flex:1 1 auto;min-width:0;text-align:left;background:none;border:0;padding:0;margin:0;font:inherit;cursor:pointer;color:inherit;display:block}
+.readrow-title{display:block;font-size:.92rem;font-weight:600;color:#3A2E33;line-height:1.38}
+.readrow.done .readrow-title{color:#8A7A80;font-weight:500}
+.readrow-meta{display:block;font-size:.73rem;color:#7C6B71;margin-top:3px;line-height:1.3}
+.readrow-cat{flex:0 0 auto;font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#7C6B71;background:#F9F2ED;border-radius:999px;padding:4px 8px;margin-top:2px;white-space:nowrap}
+.readrow.done .readrow-cat{opacity:.55}
+.arttools{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
+
 </style></head><body>
 <div id="app"></div><div id="sheet"></div><div id="toast" role="status" aria-live="polite"></div>
 <script>
@@ -264,7 +247,7 @@ const J=(k,d)=>{try{return JSON.parse(ST.get(k))??d}catch(e){return d}};
 const iso=d=>{d=new Date(d);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const today=()=>iso(new Date());const addD=(s,n)=>{const d=new Date(s+'T12:00');d.setDate(d.getDate()+n);return iso(d)};
 const fmt=(s,o)=>new Date(s+'T12:00').toLocaleDateString(undefined,o||{month:'short',day:'numeric'});
-let user=null,D=null,view='cycle',tab='',calM=today().slice(0,7),range=14,onbStep=0,learnTab='all',foodCat='All',tipCat='All',articleIdx=null,searchQ='';
+let user=null,D=null,view='cycle',tab='',calM=today().slice(0,7),range=14,onbStep=0,learnTab='today',foodCat='All',tipCat='All',articleIdx=null,searchQ='';
 const GOALS=['Understand my cycle','Steadier energy','Better sleep','Move more','Eat regularly','Manage stress','Prepare for doctor visits'];
 const TAGS=['Acne','Hair changes','Bloating','Cramps','Fatigue','Cravings','Headache','Low mood','Anxious','Breast tenderness'];
 const MEALS=[
@@ -1054,91 +1037,87 @@ const TIPS=[
 ['Myths','It is not a teenage condition; it often appears in adolescence but is missed.']
 ];
 // ---------- learn
-function learn(){learnTab=learnTab||'all';articleIdx=articleIdx===undefined?null:articleIdx;searchQ=searchQ||'';
- const cats=[...new Set(ARTICLES.map(a=>a[0]))].sort(),all=['all',...cats];
- const readSet=J('bloom_read',{});
- const progress=computeProgress(readSet);
+// ---------- learn: daily reads
+const readStore=()=>J('bloom_read',{});
+function setRead(idx,on){const s=readStore();if(!!s[idx]===!!on)return;s[idx]=on?1:0;ST.set('bloom_read',JSON.stringify(s));
+ const dd=J('bloom_daily',{}),t=today();
+ if(dailyPlan(t).indexOf(idx)>=0)dd[t]=Math.max(0,(dd[t]||0)+(on?1:-1));
+ ST.set('bloom_daily',JSON.stringify(dd))}
+function readMins(t){const w=t.split(/\s+/).filter(x=>x.length>0).length;return Math.max(1,Math.round(w/200))}
+const IL=(()=>{const by={};ARTICLES.forEach((a,i)=>{(by[a[0]]=by[a[0]]||[]).push(i)});
+ const cats=Object.keys(by).sort(),out=[];let last=-1;
+ while(out.length<ARTICLES.length){let best=-1,bestN=-1;
+  for(let k=0;k<cats.length;k++){const n=by[cats[k]].length;if(!n)continue;
+   if(k===last&&cats.some((cc,j)=>j!==k&&by[cc].length))continue;
+   if(n>bestN){bestN=n;best=k}}
+  if(best<0)break;out.push(by[cats[best]].shift());last=best}
+ return out})();
+function dailyPlan(d){const dn=Math.floor(new Date(d+'T12:00').getTime()/864e5);
+ const n=5+(dn%6),start=((dn*n)%IL.length+IL.length)%IL.length,out=[];
+ for(let k=0;k<n;k++)out.push(IL[(start+k)%IL.length]);return out}
+function dailyStats(){const t=today(),plan=dailyPlan(t),s=readStore();
+ const done=plan.filter(i=>s[i]).length;let next=null;
+ for(const i of plan){if(!s[i]){next=i;break}}
+ return{plan,done,total:plan.length,pct:plan.length?Math.round(done/plan.length*100):0,next}}
+function calcStreak(){const dd=J('bloom_daily',{});let d=today();
+ if((dd[d]||0)<dailyPlan(d).length)d=addD(d,-1);
+ let st=0;for(let k=0;k<400;k++){const p=dailyPlan(d).length;if(p>0&&(dd[d]||0)>=p){st++;d=addD(d,-1)}else break}
+ return st}
+function learn(){learnTab=learnTab||'today';articleIdx=articleIdx===undefined?null:articleIdx;searchQ=searchQ||'';
+ const cats=[...new Set(ARTICLES.map(a=>a[0]))].sort(),tabs=['today','all',...cats];
+ const st=dailyStats(),streak=calcStreak(),browse=learnTab!=='today';
  $('#main').innerHTML=`<h1>Learn</h1>
- <p class="note" style="margin-bottom:12px"><b>Seek urgent care</b> for severe pelvic pain, soaking through a pad or tampon every hour, fainting, or sudden severe symptoms. Not personal medical advice.</p>
- <div class="learn-progress" style="margin-bottom:16px">
-  <div class="row sp" style="margin-bottom:8px"><span style="font-weight:700;color:var(--ink)">Your progress</span><span class="meta">${progress.done}/${progress.total} articles (${progress.pct}%)</span></div>
-  <div class="bar" style="height:8px"><i style="width:${progress.pct}%"></i></div>
-  ${progress.next?`<button class="btn sm" id="continueBtn" style="margin-top:10px;width:100%">Continue: ${E(progress.next.title.slice(0,40))}…</button>`:'<div class="meta" style="margin-top:10px;text-align:center">All articles read — great job!</div>'}
+ <div class="dr-head"><div class="dr-date">${fmt(today(),{weekday:'long',month:'long',day:'numeric'})}</div>${streak?`<span class="dr-streak">${IC.pulse(13)} ${streak} day streak</span>`:''}</div>
+ <div class="dr-card">
+  <div class="row sp" style="align-items:flex-end;gap:12px">
+   <div><div class="lbl" style="margin:0 0 2px">Today's reads</div><div class="dr-count">${st.done}<span class="dr-count-of">/${st.total}</span></div></div>
+   <div class="meta" style="text-align:right;max-width:54%">${st.done>=st.total?'All done for today':(st.total-st.done)+' left to finish'}</div>
+  </div>
+  <div class="bar" style="margin:12px 0 14px"><i style="width:${st.pct}%"></i></div>
+  ${st.next!=null?`<button class="btn" id="continueBtn" style="width:100%">Continue reading</button><div class="dr-next">${E(ARTICLES[st.next][3])}</div>`:`<div class="dr-done">You finished today's reads</div>`}
  </div>
- <label for="ls" class="lbl" style="margin-top:0">Search</label>
- <input id="ls" type="search" placeholder="Search articles…" value="${E(searchQ)}" style="margin-bottom:12px">
- <div class="tabsrow" role="tablist" style="margin-bottom:12px;flex-wrap:wrap;gap:8px">${all.map(c=>{const catProg=c==='all'?{done:progress.done,total:progress.total}:(progress.byCat[c]||{done:0,total:0});return `<button class="chip" role="tab" data-lt="${c}" aria-pressed="${learnTab==c}">${c==='all'?'All topics':c} <span class="meta" style="opacity:.7">${catProg.done}/${catProg.total}</span></button>`}).join('')}</div>
- <div id="lb" style="margin-top:12px"></div>`;
- $('#ls').oninput=e=>{searchQ=e.target.value.trim().toLowerCase();articleIdx=null;learn()};
- document.querySelectorAll('[data-lt]').forEach(b=>b.onclick=()=>{learnTab=b.dataset.lt;articleIdx=null;searchQ='';$('#ls').value='';learn()});
- if(document.getElementById('continueBtn'))$('#continueBtn').onclick=()=>{articleIdx=progress.next.idx;learn()};
+ <div class="tabsrow" style="margin-bottom:14px">${tabs.map(t=>`<button class="chip" data-lt="${t}" aria-pressed="${learnTab==t}">${t==='today'?'Today':t==='all'?'All':t}</button>`).join('')}</div>
+ ${browse?`<div class="dr-search"><input id="ls" type="search" placeholder="Search ${learnTab==='all'?'articles':E(learnTab)}…" value="${E(searchQ)}"></div>`:''}
+ <div id="lb"></div>
+ <p class="dr-warn">Severe pelvic pain, soaking through a pad every hour, fainting, or sudden severe symptoms need urgent care. Not personal medical advice.</p>`;
+ const ls=document.getElementById('ls');
+ if(ls)ls.oninput=e=>{searchQ=e.target.value.trim().toLowerCase();articleIdx=null;learn()};
+ document.querySelectorAll('[data-lt]').forEach(b=>b.onclick=()=>{learnTab=b.dataset.lt;articleIdx=null;searchQ='';learn()});
+ if(document.getElementById('continueBtn'))document.getElementById('continueBtn').onclick=()=>{articleIdx=st.next;learn()};
  if(articleIdx!==null&&articleIdx<ARTICLES.length)renderArticle(articleIdx);else renderArticleList()}
-function computeProgress(readSet){
- const total=ARTICLES.length;
- let done=0;const byCat={};
- ARTICLES.forEach((a,i)=>{const cat=a[0];if(!byCat[cat])byCat[cat]={done:0,total:0};byCat[cat].total++;if(readSet[i]){done++;byCat[cat].done++}});
- let next=null;
- for(let i=0;i<ARTICLES.length;i++){if(!readSet[i]){next={idx:i,title:ARTICLES[i][3]};break}}
- return{total,done,pct:total?Math.round(done/total*100):0,byCat,next}
-}
-function renderArticleList(){const el=document.getElementById('lb');
- const base=learnTab==='all'?ARTICLES:ARTICLES.filter(a=>a[0]===learnTab);
- const list=searchQ?base.filter(a=>a[3].toLowerCase().includes(searchQ)||a[4].toLowerCase().includes(searchQ)):base;
- const readSet=J('bloom_read',{});
- el.innerHTML=`<div class="card-h" style="margin-bottom:12px"><h3 style="margin:0">${learnTab==='all'?'All articles':learnTab}${searchQ?` · "${E(searchQ)}"`:''}</h3><span class="meta">${list.length} article${list.length===1?'':'s'}</span></div>
- <div class="artlist">${list.map((a,i)=>`<article class="artcard" data-idx="${ARTICLES.indexOf(a)}"><div class="row sp" style="gap:8px;margin-bottom:6px"><span class="chip" style="cursor:default;padding:3px 9px;font-size:.68rem">${E(a[0])}</span><span class="meta">${E(a[2])}</span></div><h3 class="artt" style="margin:4px 0 4px">${E(a[3])}</h3><p class="meta" style="opacity:.8;margin:0 0 8px">${E(a[1])}</p><p class="artpreview">${E(a[4].slice(0,180))}…</p><div class="row" style="margin-top:8px;gap:8px"><button class="btn ghost sm" data-act="read" ${readSet[ARTICLES.indexOf(a)]?'aria-pressed="true"':''}>${readSet[ARTICLES.indexOf(a)]?'✓ Read':'Mark read'}</button><button class="btn ghost sm" data-act="bookmark">${readSet[ARTICLES.indexOf(a)+'_b']?'★ Saved':'☆ Save'}</button></div></article>`).join('')}</div>${list.length===0?`<p class="meta" style="text-align:center;padding:24px">No articles found.</p>`:''}`;
- document.querySelectorAll('.artcard').forEach(c=>{c.onclick=e=>{if(e.target.closest('button'))return;articleIdx=+c.dataset.idx;learn()};c.style.cursor='pointer'});
- document.querySelectorAll('.artcard button[data-act="read"]').forEach(b=>b.onclick=e=>{e.stopPropagation();const idx=+b.closest('.artcard').dataset.idx;toggleRead(idx);learn()});
- document.querySelectorAll('.artcard button[data-act="bookmark"]').forEach(b=>b.onclick=e=>{e.stopPropagation();const idx=+b.closest('.artcard').dataset.idx;toggleBookmark(idx);learn()})}
-function toggleRead(i){const s=J('bloom_read',{});s[i]=!s[i];ST.set('bloom_read',JSON.stringify(s))}
-function toggleBookmark(i){const s=J('bloom_read',{});s[i+'_b']=!s[i+'_b'];ST.set('bloom_read',JSON.stringify(s))}
-function renderArticle(i){const a=ARTICLES[i],txt=a[4];const stats=analyzeArticle(txt);const readSet=J('bloom_read',{});const el=document.getElementById('lb');
- const toc=extractTOC(txt);
- el.innerHTML=`<article class="article-full"><div class="arthead"><button class="btn ghost sm" id="backArt" style="margin-bottom:16px">← Back to ${learnTab==='all'?'all topics':learnTab}</button>
- <div class="row" style="gap:8px;flex-wrap:wrap;margin-bottom:12px"><span class="chip" style="font-size:.7rem">${E(a[0])}</span><span class="meta">${E(a[1])} · ${E(a[2])}</span></div>
- <h1 style="font-size:1.6rem;line-height:1.3;margin:0 0 6px">${E(a[3])}</h1></div>
- <div class="arttools" style="display:flex;gap:8px;margin:16px 0;flex-wrap:wrap">
-  <button class="btn ghost sm" id="fsDec" aria-label="Decrease font">A−</button>
-  <button class="btn ghost sm" id="fsInc" aria-label="Increase font">A+</button>
-  <button class="btn ghost sm" id="mkRead" aria-pressed="${readSet[i]}">${readSet[i]?'✓ Read':'Mark as read'}</button>
-  <button class="btn ghost sm" id="mkBook" aria-pressed="${readSet[i+'_b']}">${readSet[i+'_b']?'★ Saved':'☆ Save'}</button>
-  <button class="btn ghost sm" id="shArt">Share</button>
- </div>
- ${toc.length>1?`<nav class="toc" style="margin:16px 0;padding:12px;background:#F9F2ED;border-radius:12px"><strong>In this article</strong><ol style="margin:8px 0 0;padding-left:20px">${toc.map(t=>`<li><a href="#${t.id}" style="color:#B8456B">${E(t.text)}</a></li>`).join('')}</ol></nav>`:''}
- <div class="artstats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px">
-  <div class="statcard"><span class="statnum">${stats.words}</span><span class="statlbl">Words</span></div>
-  <div class="statcard"><span class="statnum">${stats.minRead}</span><span class="statlbl">Min read</span></div>
-  <div class="statcard"><span class="statnum">${stats.sentences}</span><span class="statlbl">Sentences</span></div>
-  <div class="statcard"><span class="statnum">${stats.avgWords}</span><span class="statlbl">Avg words/sent</span></div>
- </div>
- <div class="artgraph" style="height:180px;margin-bottom:24px;background:#F9F2ED;border-radius:16px;position:relative">${stats.svg}</div>
- <div class="artbody" id="artBody" style="line-height:1.75;font-size:1.02rem">${E(txt).replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>')}</div>
- <hr style="margin:24px 0;border:none;border-top:1.5px solid #EADFD2">
- <div class="related" style="margin-top:24px"><h3 style="margin:0 0 12px">Related</h3>
-  <div class="artlist">${ARTICLES.filter((_,j)=>j!==i&&a[0]===ARTICLES[j][0]).slice(0,3).map((r,j)=>`<article class="artcard" data-idx="${ARTICLES.indexOf(r)}"><h4 class="artt" style="margin:0 0 4px">${E(r[3])}</h4><p class="meta" style="margin:0">${E(r[1])} · ${E(r[2])}</p></article>`).join('')}</div></div>
+function readRow(idx){const a=ARTICLES[idx],s=readStore(),done=!!s[idx];
+ return `<div class="readrow${done?' done':''}">
+  <button class="readrow-ic" data-tg="${idx}" aria-label="${done?'Mark unread':'Mark read'}">${done?IC.check(13):''}</button>
+  <button class="readrow-txt" data-idx="${idx}"><span class="readrow-title">${E(a[3])}</span><span class="readrow-meta">${E(a[1])} · ${readMins(a[4])} min read</span></button>
+  <span class="readrow-cat">${E(a[0])}</span></div>`}
+function renderArticleList(){const el=document.getElementById('lb');let list;
+ if(learnTab==='today')list=dailyPlan(today());
+ else{const all=ARTICLES.map((_,i)=>i);
+  list=learnTab==='all'?all:all.filter(i=>ARTICLES[i][0]===learnTab);
+  if(searchQ)list=list.filter(i=>ARTICLES[i][3].toLowerCase().includes(searchQ)||ARTICLES[i][4].toLowerCase().includes(searchQ))}
+ el.innerHTML=(learnTab==='today'?'<div class="dr-sec">Today\'s articles</div>':'')+list.map(readRow).join('')+(list.length?'':'<p class="meta" style="text-align:center;padding:22px">Nothing here</p>');
+ el.querySelectorAll('.readrow-txt').forEach(b=>b.onclick=()=>{articleIdx=+b.dataset.idx;learn()});
+ el.querySelectorAll('.readrow-ic').forEach(b=>b.onclick=()=>{const i=+b.dataset.tg;setRead(i,!readStore()[i]);learn()})}
+function renderArticle(i){const a=ARTICLES[i],txt=a[4],s=readStore(),done=!!s[i];
+ const st=dailyStats(),nxt=st.plan.find(x=>x!==i&&!s[x]);
+ const el=document.getElementById('lb');
+ el.innerHTML=`<article class="article-full">
+  <button class="btn ghost sm" id="backArt" style="margin-bottom:14px">← Back</button>
+  <div class="row" style="gap:8px;flex-wrap:wrap;margin-bottom:8px"><span class="chip" style="font-size:.66rem;padding:3px 9px">${E(a[0])}</span><span class="meta">${E(a[1])} · ${E(a[2])} · ${readMins(txt)} min read</span></div>
+  <h1 class="dr-h1">${E(a[3])}</h1>
+  <div class="arttools"><button class="btn sm${done?' ghost':''}" id="mkRead">${done?'✓ Read':'Mark as read'}</button><button class="btn ghost sm" id="fsDec" aria-label="Smaller text">A−</button><button class="btn ghost sm" id="fsInc" aria-label="Larger text">A+</button><button class="btn ghost sm" id="shArt">Share</button></div>
+  <div class="artbody" id="artBody"><p>${E(txt).replace(/\n\n/g,'</p><p>')}</p></div>
+  ${nxt!=null?`<button class="btn" id="nextArt" style="width:100%;margin-top:22px">Next read</button>`:''}
  </article>`;
  document.getElementById('backArt').onclick=()=>{articleIdx=null;learn()};
+ document.getElementById('mkRead').onclick=()=>{setRead(i,!done);learn()};
  document.getElementById('fsInc').onclick=()=>adjustFont(1);
  document.getElementById('fsDec').onclick=()=>adjustFont(-1);
- document.getElementById('mkRead').onclick=()=>{toggleRead(i);learn()};
- document.getElementById('mkBook').onclick=()=>{toggleBookmark(i);learn()};
  document.getElementById('shArt').onclick=()=>shareArticle(a[3],a[4]);
- document.querySelectorAll('.toc a').forEach(a=>a.onclick=e=>{e.preventDefault();document.getElementById(a.getAttribute('href').slice(1)).scrollIntoView({behavior:'smooth'})});
- document.querySelectorAll('.related .artcard').forEach(c=>c.onclick=()=>{articleIdx=+c.dataset.idx;learn()});c.style.cursor='pointer'}
-let fontScale=1;function adjustFont(d){fontScale=Math.max(.8,Math.min(1.4,fontScale+d*.1));document.getElementById('artBody').style.fontSize=fontScale+'rem'}
-function shareArticle(title,text){if(navigator.share){navigator.share({title,text:text.slice(0,500)})}else{navigator.clipboard.writeText(title+'\n\n'+text.slice(0,500));toast('Copied to clipboard')}}
-function extractTOC(t){const heads=[];t.split('\n').forEach((l,i)=>{const m=l.match(/^\s*(#{1,3})\s+(.+)/);if(m){const id='toc-'+i;heads.push({level:m[1].length,text:m[2].trim(),id})}});return heads}
-function analyzeArticle(t){const sentences=t.split(/[.!?]+/).filter(s=>s.trim().length>0);const words=t.split(/\s+/).filter(w=>w.length>0);
- const wpm=200,minRead=Math.max(1,Math.round(words.length/wpm)),avgWords=Math.round(words.length/Math.max(1,sentences.length));
- const paraList=t.split(/\n\n+/).filter(p=>p.trim().length>0);
- const paras=paraList.length;
- const bars=Math.min(paras,12),maxW=Math.max(...paraList.map(p=>p.split(/\s+/).filter(w=>w.length>0).length),1);
- let svg=`<svg viewBox="0 0 ${bars*20} 160" preserveAspectRatio="none" style="width:100%;height:100%;display:block" role="img" aria-label="Paragraph length distribution">`;
- for(let i=0;i<paras;i++){const p=paraList[i]||'';const w=p.split(/\s+/).filter(w=>w.length>0).length;const h=(w/maxW)*120;
-  svg+=`<rect x="${i*20+4}" y="${140-h}" width="12" height="${h.toFixed(1)}" rx="3" fill="var(--rose)" opacity="${0.3+(i/paras)*0.7}"/>`}
- svg+=`</svg>`;
- return{words:words.length,minRead,sentences:sentences.length,avgWords,svg}
-}
+ if(document.getElementById('nextArt'))document.getElementById('nextArt').onclick=()=>{articleIdx=nxt;learn()}}
+let fontScale=1;function adjustFont(d){fontScale=Math.max(.85,Math.min(1.35,fontScale+d*.1));const b=document.getElementById('artBody');if(b)b.style.fontSize=fontScale+'rem'}
+function shareArticle(title,text){const body=text.slice(0,400);if(navigator.share){navigator.share({title,text:body}).catch(()=>{});return}try{if(navigator.clipboard){navigator.clipboard.writeText(title+'\n\n'+body).then(()=>toast('Copied'),()=>toast('Copy failed'));return}}catch(e){}toast(title)}
+
 function lFood(){const el=document.getElementById('lb');
  const cats=[...new Set(FOOD.map(f=>f[0]))],f=foodCat||'All';
  const list=f==='All'?FOOD:FOOD.filter(x=>x[0]===f);
