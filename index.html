@@ -448,6 +448,12 @@ function sheetPick(title,items,onPick,ph){sheet(`<h2>${E(title)}</h2>${ph?`<inpu
   wire(f)}}
 // ---------- in-app updater
 const UPDATE_MANIFEST='https://raw.githubusercontent.com/delishworks-design/bloom/main/release/update.json';
+const UPDATE_MANIFEST_API='https://api.github.com/repos/delishworks-design/bloom/contents/release/update.json';
+async function fetchManifest(){const bust='?t='+Date.now();
+ try{const r=await fetch(UPDATE_MANIFEST_API+bust,{cache:'no-store',headers:{Accept:'application/vnd.github+json'}});
+  if(r.ok){const j=await r.json();if(j&&j.content)return JSON.parse(atob(j.content.replace(/\n/g,'')))}}catch(e){}
+ const r=await fetch(UPDATE_MANIFEST+bust,{cache:'no-store'});if(!r.ok)throw new Error('manifest '+r.status);
+ return await r.json()}
 const updater=()=>{const C=window.Capacitor;if(!C)return null;
  const P=C.Plugins&&C.Plugins.BloomUpdater;if(P)return P;
  if(C.nativePromise)return{getVersion:()=>C.nativePromise('BloomUpdater','getVersion',{}),installUpdate:o=>C.nativePromise('BloomUpdater','installUpdate',o)};
@@ -456,9 +462,7 @@ async function checkUpdate(manual){
  const up=updater();if(!up){if(manual)toast('Updates are only available in the app');return}
  try{
   const v=await up.getVersion();
-  const res=await fetch(UPDATE_MANIFEST+'?t='+Date.now(),{cache:'no-store'});
-  if(!res.ok)throw new Error('manifest '+res.status);
-  const m=await res.json();
+  const m=await fetchManifest();
   if(!m||!m.versionCode||m.versionCode<=v.versionCode){if(manual)toast('You are on the latest version');return}
   showUpdateSheet(m,v);
  }catch(e){if(manual)toast('Could not check for updates')}

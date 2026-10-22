@@ -1,7 +1,7 @@
 {
-  "versionCode": 4,
-  "versionName": "1.1.2",
-  "notes": "Onboarding Skip now actually skips to the end",
-  "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/release/bloom-1.1.2.apk",
+  "versionCode": 5,
+  "versionName": "1.1.3",
+  "notes": "Updater reads manifest via GitHub API (fresh) with CDN fallback",
+  "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/release/bloom-1.1.3.apk",
   "publishedAt": "2026-10-22"
 }
