@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Bloom · PMOS Planner</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Sansita:wght@400;700&display=swap" rel="stylesheet">
-<script src="supabase-bundle.js"></script>
+<script src="supabase-bundle.js" defer></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Sansita:wght@400;700&display=swap');
 :root{
@@ -280,7 +280,8 @@ body.splashPlay #splashFlower{animation:splashBurst 3.4s cubic-bezier(.4,0,.2,1)
 body.splashPlay #splashWash{animation:splashWash 3.4s linear forwards}
 @keyframes splashBurst{
  0%{opacity:0;transform:scale(.1) rotate(0deg)}
- 18%{opacity:1;transform:scale(1) rotate(180deg);animation-timing-function:ease-out}
+ 8%{opacity:1}
+ 16%{transform:scale(1) rotate(180deg);animation-timing-function:ease-out}
  52%{opacity:1;transform:scale(1.05) rotate(540deg);animation-timing-function:ease-in}
  62%{transform:scale(.88) rotate(640deg);animation-timing-function:cubic-bezier(.7,0,1,.6)}
  90%{opacity:1;transform:scale(9) rotate(1080deg)}
@@ -347,7 +348,19 @@ const LEARN=[['What is PCOS?','PCOS (often called PMOS in some regions) is a com
 // ---------- Supabase (accounts, sync, partner sharing)
 const SB={url:'https://vggaswbjsmyvfheofnnj.supabase.co',key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZnZ2Fzd2Jqc215dmZoZW9mbm5qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE2MzU5MDgsImV4cCI6MjEwNzIxMTkwOH0.5iV_nWSia3LaKSjTqoQtb8e3ZcAvJd8K3Vhg8b9Dwx4'};
 let sb=null,sbUser=null,sbPushT=null,cloudTimer=null;
+let sbReady=null;
+function whenSupabase(){
+ if(window.supabase)return Promise.resolve();
+ if(!sbReady)sbReady=new Promise(res=>{
+  let done=false;const go=()=>{if(done)return;done=true;res()};
+  if(document.readyState==='complete'){go();return}
+  window.addEventListener('DOMContentLoaded',go,{once:true});
+  const iv=setInterval(()=>{if(window.supabase||done){clearInterval(iv);go()}},30);
+  setTimeout(()=>{clearInterval(iv);go()},8000);
+ });
+ return sbReady}
 async function sbInit(){if(sb)return sb;
+ await whenSupabase();
  try{const m=window.supabase;
    sb=m.createClient(SB.url,SB.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
   const {data}=await sb.auth.getSession();
@@ -1388,15 +1401,17 @@ function splashPlay(replay){
 // called by the native layer when the app comes back to the foreground
 window.__bloomResume=()=>splashPlay(true);
 // ---------- start
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>splashPlay());else splashPlay();
+splashPlay();  // start now - the script sits after the splash markup, so it already exists
 (async()=>{const s=getSession();
  if(s&&String(s).indexOf('p:')===0){const owner=String(s).slice(2);
   RO=true;ROowner=owner;D=Object.assign(blank(),J(key(owner),{}));view='cycle';shell();return}
  if(s&&users()[s]){login(s);
-  await sbInit();
-  if(sbUser&&!RO&&(sbUser.email||'').toLowerCase()===s){try{await sbAfterLogin(sbUser)}catch(e){}}
+  bootCloud(s);
   setTimeout(()=>checkUpdate(false),1500);return}
  await sbInit();
  if(sbUser&&!RO){try{await sbAfterLogin(sbUser);setTimeout(()=>checkUpdate(false),1500);return}catch(e){}}
  authView('in')})();
+function bootCloud(localEmail){sbInit().then(async()=>{if(!sbUser||RO)return;
+ if(localEmail&&(sbUser.email||'').toLowerCase()!==localEmail)return;
+ try{await sbAfterLogin(sbUser)}catch(e){}})}
 </script></body></html>

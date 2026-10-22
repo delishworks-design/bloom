@@ -1,7 +1,7 @@
 {
-  "versionCode": 10,
-  "versionName": "1.1.7",
-  "notes": "Splash now replays on every app open, spinning halo, tap-to-replay",
-  "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/release/bloom-1.1.7.apk",
+  "versionCode": 11,
+  "versionName": "1.1.8",
+  "notes": "Splash shows instantly - no blocking bundle, no native splash delay",
+  "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/release/bloom-1.1.8.apk",
   "publishedAt": "2026-10-22"
 }
