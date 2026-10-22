@@ -51,6 +51,37 @@ p{margin:0;line-height:1.5}
 .card{background:#FFFBF5 !important;border:1.5px solid #EADFD2;border-radius:22px;padding:18px 16px;box-shadow:0 2px 10px rgba(120,70,80,.08);display:flex;flex-direction:column;gap:14px}
 .card-h{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:2px;border-bottom:0}
 .card-h h3{font-size:17px;line-height:1.2;margin:0}
+.collapsible{margin-top:6px}
+.collapsible-btn{width:100%;text-align:left;padding:14px 16px;background:#F9F2ED;border:1.5px solid #EADFD2;border-radius:14px;color:#3A2E33;font:inherit;font-size:1rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;transition:background .15s,border-color .15s}
+.collapsible-btn:hover{background:#F1E6D7;border-color:#E8A0B4}
+.collapsible-btn:focus-visible{outline:2px solid #B8456B;outline-offset:2px}
+.collapsible-btn[aria-expanded="true"] .chevron{transform:rotate(180deg)}
+.collapsible-content{margin-top:10px;animation:slideDown .2s ease}
+@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.btn{position:relative;padding:14px 24px;border-radius:16px;border:none;font:inherit;font-weight:700;font-size:1rem;color:#FBF4EA;background:linear-gradient(180deg,#C4567A 0%,#B8456B 100%);cursor:pointer;transition:transform .08s,box-shadow .15s,filter .15s;box-shadow:0 4px 14px rgba(184,69,107,.35),0 2px 6px rgba(120,70,80,.15),inset 0 1px 0 rgba(255,255,255,.25);overflow:hidden}
+.btn::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.25) 0%,transparent 50%,rgba(0,0,0,.15) 100%);pointer-events:none}
+.btn:active{transform:translateY(2px) scale(.99);box-shadow:0 2px 6px rgba(184,69,107,.3),0 1px 3px rgba(120,70,80,.12),inset 0 1px 3px rgba(0,0,0,.2);filter:brightness(.98)}
+.btn:focus-visible{outline:2px solid #B8456B;outline-offset:3px}
+.btn.ghost{background:transparent;color:#B8456B;box-shadow:none;border:1.5px solid rgba(232,160,180,.6)}
+.btn.ghost::before{display:none}
+.btn.ghost:active{background:#F9DDE5;transform:translateY(1px) scale(.99)}
+.btn.sm{padding:10px 16px;font-size:.875rem}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:10px 16px;border-radius:999px;border:1.5px solid #EADFD2;background:#FFFBF5;color:#3A2E33;font:inherit;font-size:.875rem;font-weight:600;cursor:pointer;transition:all .15s;box-shadow:0 2px 6px rgba(120,70,80,.08)}
+.chip:hover{border-color:#E8A0B4;background:#FFF8F5;box-shadow:0 4px 12px rgba(184,69,107,.15);transform:translateY(-1px)}
+.chip:active{transform:translateY(1px);box-shadow:0 1px 3px rgba(120,70,80,.1)}
+.chip[aria-pressed="true"]{background:linear-gradient(180deg,#FFF0F5 0%,#F9DDE5 100%);border-color:#E8A0B4;color:#B8456B;box-shadow:0 4px 14px rgba(184,69,107,.25),inset 0 1px 0 rgba(255,255,255,.3)}
+.artcard{padding:16px;background:#FFFBF5;border:1.5px solid #EADFD2;border-radius:16px;transition:all .15s}
+.artcard:hover{border-color:#E8A0B4;box-shadow:0 8px 24px rgba(184,69,107,.12);transform:translateY(-2px)}
+.artt{font-size:1.05rem;font-weight:700;line-height:1.3}
+.artpreview{color:#7C6B71;font-size:.92rem;line-height:1.5;margin:0}
+.article-full{max-width:720px;margin:0 auto;padding:0 4px}
+.artstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px}
+.statcard{background:#FFFBF5;border:1.5px solid #EADFD2;border-radius:14px;padding:16px 12px;text-align:center}
+.statnum{display:block;font-size:1.8rem;font-weight:800;color:#B8456B;line-height:1.2;font-family:'Playfair Display',serif}
+.statlbl{display:block;font-size:.75rem;color:#7C6B71;margin-top:4px;text-transform:uppercase;letter-spacing:.05em}
+.artgraph{background:#F9F2ED;border-radius:16px;padding:12px}
+.artbody p{margin:0 0 1.2em}
+.artbody strong{color:#B8456B}
 .meta{color:#7C6B71;font-size:.84rem;line-height:1.4}
 .lbl{font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#7C6B71;line-height:1.2;display:block;margin-bottom:6px}
 
@@ -208,7 +239,7 @@ const J=(k,d)=>{try{return JSON.parse(ST.get(k))??d}catch(e){return d}};
 const iso=d=>{d=new Date(d);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const today=()=>iso(new Date());const addD=(s,n)=>{const d=new Date(s+'T12:00');d.setDate(d.getDate()+n);return iso(d)};
 const fmt=(s,o)=>new Date(s+'T12:00').toLocaleDateString(undefined,o||{month:'short',day:'numeric'});
-let user=null,D=null,view='cycle',tab='',calM=today().slice(0,7),range=14,onbStep=0,learnTab='basics',foodCat='All',tipCat='All';
+let user=null,D=null,view='cycle',tab='',calM=today().slice(0,7),range=14,onbStep=0,learnTab='basics',foodCat='All',tipCat='All',articleIdx=null;
 const GOALS=['Understand my cycle','Steadier energy','Better sleep','Move more','Eat regularly','Manage stress','Prepare for doctor visits'];
 const TAGS=['Acne','Hair changes','Bloating','Cramps','Fatigue','Cravings','Headache','Low mood','Anxious','Breast tenderness'];
 const MEALS=[
@@ -314,8 +345,8 @@ ${mode=='up'?'<label for="pw2">Confirm password</label><input id="pw2" type="pas
 <div class="err" id="err" role="alert"></div>
 <button class="btn" style="width:100%" id="go">${mode=='in'?'Log in':'Create account'}</button>
 <p class="meta" style="text-align:center;margin-top:14px"><button class="btn ghost sm" id="sw">${mode=='in'?'New here? Create account':'Have an account? Log in'}</button></p>`;
- const part=`<h2>Partner view</h2><p class="meta" style="margin:0 0 4px">Enter the sync code from the account you want to follow.</p><label for="pc">Sync code</label><input id="pc" maxlength="6" autocapitalize="characters" autocomplete="off" placeholder="ABC123"><div class="err" id="err" role="alert"></div><button class="btn" style="width:100%" id="go">Open partner view</button>`;
- $('#app').innerHTML=`<div class="auth"><div class="card"><div class="brand">Bloom</div>${tabs}${pt?part:acct}<p class="note">Not a medical service.</p></div></div>`;
+const part=`<h2>Partner view</h2><p class="meta" style="margin:0 0 4px">Enter the sync code from the account you want to follow.</p><label for="pc">Sync code</label><input id="pc" maxlength="6" autocapitalize="characters" autocomplete="off" placeholder="ABC123"><div class="err" id="err" role="alert"></div><button class="btn" style="width:100%" id="go">Open partner view</button>`;
+$('#app').innerHTML=`<div class="auth"><div class="card"><div class="brand">Bloom</div>${tabs}${pt?part:acct}</div></div>`;
  document.querySelectorAll('[data-am]').forEach(b=>b.onclick=()=>authView(b.dataset.am));
  if(pt){$('#go').onclick=async()=>{const code=$('#pc').value.trim().toUpperCase(),er=$('#err');er.textContent='';
   if(!code)return er.textContent='Enter a sync code.';
@@ -388,11 +419,13 @@ function shell(){if(funTimer){clearInterval(funTimer);funTimer=null}if(foodTimer
  if(view=='me')document.querySelector('nav [aria-current]')?.removeAttribute('aria-current');
  ({cycle:cyclePage,month:monthView,planner,insights,learn,me})[view]()}
 function onboarding(){const p=D.p;const steps=[
-`<h2>What should we call you?</h2><label for="nm">Nickname</label><input id="nm" value="${E(p.name)}" maxlength="30"><label for="dx">PCOS/PMOS diagnosis</label><select id="dx"><option value="">Prefer not to say</option><option ${p.dx=='diagnosed'?'selected':''} value="diagnosed">Diagnosed</option><option ${p.dx=='suspected'?'selected':''} value="suspected">Suspected</option><option ${p.dx=='none'?'selected':''} value="none">Not diagnosed / learning</option></select>`,
+`<h2>What should we call you?</h2><label for="nm">Nickname</label><input id="nm" value="${E(p.name)}" maxlength="30"><label for="dx">PCOS/PMOS diagnosis</label><div class="collapsible"><button type="button" class="collapsible-btn" id="dxToggle" aria-expanded="false">Prefer not to say ▼</button><div class="collapsible-content" id="dxContent" hidden><select id="dx"><option value="">Prefer not to say</option><option ${p.dx=='diagnosed'?'selected':''} value="diagnosed">Diagnosed</option><option ${p.dx=='suspected'?'selected':''} value="suspected">Suspected</option><option ${p.dx=='none'?'selected':''} value="none">Not diagnosed / learning</option></select></div></div>`,
 `<h2>Your goals</h2><div class="row" id="goals" style="flex-wrap:wrap;gap:8px">${GOALS.map(g=>`<button class="chip" aria-pressed="${(p.goals||[]).includes(g)}">${g}</button>`).join('')}</div>`,
 `<h2>Your cycle</h2><label for="cy">Typical cycle</label><select id="cy"><option value="">Not sure</option><option ${p.cy=='reg'?'selected':''} value="reg">Fairly regular</option><option ${p.cy=='irr'?'selected':''} value="irr">Irregular</option><option ${p.cy=='none'?'selected':''} value="none">Rarely/no periods</option></select><label for="food">Food preferences</label><input id="food" value="${E(p.food||'')}" placeholder="No pork, vegetarian"><label for="act">Preferred activity</label><select id="act"><option ${p.act=='walk'?'selected':''} value="walk">Walking</option><option ${p.act=='strength'?'selected':''} value="strength">Strength</option><option ${p.act=='stretch'?'selected':''} value="stretch">Stretching / yoga</option></select>`];
  $('#app').innerHTML=`<div class="auth"><div class="card" style="display:flex;flex-direction:column;gap:24px;padding:28px 24px 32px"><div class="lbl">Step ${onbStep+1} of 3</div><div style="display:flex;flex-direction:column;gap:18px">${steps[onbStep]}</div><p class="note">Not a diagnosis. Severe pain, very heavy bleeding or sudden symptoms need prompt medical care.</p><div class="row sp" style="margin-top:8px"><button class="btn ghost" id="sk">Skip</button><button class="btn" id="nx">${onbStep==2?'Finish':'Next'}</button></div></div></div>`;
  document.querySelectorAll('#goals .chip').forEach(c=>c.onclick=()=>c.setAttribute('aria-pressed',c.getAttribute('aria-pressed')!='true'));
+ const dxToggle=document.getElementById('dxToggle');
+ if(dxToggle){dxToggle.onclick=()=>{const open=dxToggle.getAttribute('aria-expanded')==='true';dxToggle.setAttribute('aria-expanded',!open);document.getElementById('dxContent').hidden=open}}
  const grab=()=>{if(onbStep==0){p.name=$('#nm').value.trim();p.dx=$('#dx').value}if(onbStep==1)p.goals=[...document.querySelectorAll('#goals .chip[aria-pressed=true]')].map(c=>c.textContent);if(onbStep==2){p.cy=$('#cy').value;p.food=$('#food').value.trim();p.act=$('#act').value}};
  const nx=()=>{if(onbStep==2){p.done=true;if(!D.tasks.length)genPlan(true);save();view='cycle';return shell()}onbStep++;save();onboarding()};
  $('#nx').onclick=()=>{grab();nx()};$('#sk').onclick=nx}
@@ -916,19 +949,47 @@ const TIPS=[
 ['Myths','It is not a teenage condition; it often appears in adolescence but is missed.']
 ];
 // ---------- learn
-function learn(){learnTab=learnTab||'basics';
- const T=[['basics','Basics'],['articles','Articles']];
- $('#main').innerHTML=`<h1>Learn</h1><p class="note"><b>Seek urgent care</b> for severe pelvic pain, soaking through a pad or tampon every hour, fainting, or sudden severe symptoms. Not personal medical advice.</p>
- <div class="tabsrow" role="tablist" style="margin-top:14px">${T.map(([k,l])=>`<button class="chip" role="tab" data-lt="${k}" aria-pressed="${learnTab==k}">${l}</button>`).join('')}</div>
+function learn(){learnTab=learnTab||'all';articleIdx=articleIdx===undefined?null:articleIdx;
+ const cats=[...new Set(ARTICLES.map(a=>a[0]))].sort(),all=['all',...cats];
+ $('#main').innerHTML=`<h1>Learn</h1><p class="note" style="margin-bottom:12px"><b>Seek urgent care</b> for severe pelvic pain, soaking through a pad or tampon every hour, fainting, or sudden severe symptoms. Not personal medical advice.</p>
+ <div class="tabsrow" role="tablist" style="margin-bottom:12px;flex-wrap:wrap;gap:8px">${all.map(c=>`<button class="chip" role="tab" data-lt="${c}" aria-pressed="${learnTab==c}">${c==='all'?'All topics':c}</button>`).join('')}</div>
  <div id="lb" style="margin-top:12px"></div>
  <p class="meta" style="margin-top:16px">Sources: WHO · NHS · NICE · Endocrine Society · ASRM · ACOG · Monash MCHRI · The Lancet</p>`;
- document.querySelectorAll('[data-lt]').forEach(b=>b.onclick=()=>{learnTab=b.dataset.lt;learn()});
- ({basics:lBasics,articles:lArticles})[learnTab]()}
-function lBasics(){const el=document.getElementById('lb');
- el.innerHTML=`<div class="card">${LEARN.map(([t,b])=>`<details><summary>${t}</summary><p class="meta">${b}</p></details>`).join('')}</div><p class="meta">WHO PCOS fact sheet · NHS "Polycystic ovary syndrome" · International PCOS Guideline (2023). Plain-language summary, not medically reviewed — verify with a clinician.</p>`}
-function lArticles(){const el=document.getElementById('lb');
- el.innerHTML=`<div class="card-h"><h3 style="margin:0">Latest reading</h3><span class="meta">${ARTICLES.length} articles</span></div>
- ${ARTICLES.map(a=>`<div class="artrow"><div class="row sp" style="gap:8px"><span class="chip" style="cursor:default;padding:3px 9px;font-size:.68rem">${E(a[0])}</span><span class="meta">${E(a[2])}</span></div><h3 class="artt" style="margin:8px 0 2px">${E(a[3])}</h3><p class="meta" style="opacity:.75;margin-bottom:6px">${E(a[1])}</p><p class="artbody">${E(a[4])}</p></div>`).join('')}`}
+ document.querySelectorAll('[data-lt]').forEach(b=>b.onclick=()=>{learnTab=b.dataset.lt;articleIdx=null;learn()});
+ if(articleIdx!==null&&articleIdx<ARTICLES.length)renderArticle(articleIdx);else renderArticleList()}
+function renderArticleList(){const el=document.getElementById('lb');
+ const list=learnTab==='all'?ARTICLES:ARTICLES.filter(a=>a[0]===learnTab);
+ el.innerHTML=`<div class="card-h" style="margin-bottom:12px"><h3 style="margin:0">${learnTab==='all'?'All articles':learnTab}</h3><span class="meta">${list.length} articles</span></div>
+ <div class="artlist">${list.map((a,i)=>`<article class="artcard" data-idx="${i}"><div class="row sp" style="gap:8px;margin-bottom:6px"><span class="chip" style="cursor:default;padding:3px 9px;font-size:.68rem">${E(a[0])}</span><span class="meta">${E(a[2])}</span></div><h3 class="artt" style="margin:4px 0 4px">${E(a[3])}</h3><p class="meta" style="opacity:.8;margin:0 0 8px">${E(a[1])}</p><p class="artpreview">${E(a[4].slice(0,180))}…</p></article>`).join('')}</div>`;
+ document.querySelectorAll('.artcard').forEach(c=>{c.onclick=()=>{articleIdx=+c.dataset.idx;learn()};c.style.cursor='pointer'})
+}
+function renderArticle(i){const a=ARTICLES[i],txt=a[4];const stats=analyzeArticle(txt);const el=document.getElementById('lb');
+ el.innerHTML=`<article class="article-full"><button class="btn ghost sm" id="backArt" style="margin-bottom:16px">← Back to ${learnTab==='all'?'all topics':learnTab}</button>
+ <span class="chip" style="margin-bottom:12px;font-size:.7rem">${E(a[0])}</span>
+ <h1 style="font-size:1.6rem;line-height:1.3;margin:0 0 6px">${E(a[3])}</h1>
+ <p class="meta" style="margin-bottom:20px">${E(a[1])} · ${E(a[2])}</p>
+ <div class="artstats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px">
+  <div class="statcard"><span class="statnum">${stats.words}</span><span class="statlbl">Words</span></div>
+  <div class="statcard"><span class="statnum">${stats.minRead}</span><span class="statlbl">Min read</span></div>
+  <div class="statcard"><span class="statnum">${stats.sentences}</span><span class="statlbl">Sentences</span></div>
+  <div class="statcard"><span class="statnum">${stats.avgWords}</span><span class="statlbl">Avg words/sent</span></div>
+ </div>
+ <div class="artgraph" style="height:180px;margin-bottom:24px;background:#F9F2ED;border-radius:16px;position:relative">${stats.svg}</div>
+ <div class="artbody" style="line-height:1.75;font-size:1.02rem">${E(txt).replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>')}</div>
+ <hr style="margin:24px 0;border:none;border-top:1.5px solid #EADFD2">
+ <p class="meta" style="text-align:center">Sources: WHO · NHS · NICE · Endocrine Society · ASRM · ACOG · Monash MCHRI · The Lancet</p></article>`;
+ document.getElementById('backArt').onclick=()=>{articleIdx=null;learn()}
+}
+function analyzeArticle(t){const sentences=t.split(/[.!?]+/).filter(s=>s.trim().length>0);const words=t.split(/\s+/).filter(w=>w.length>0);
+ const wpm=200,minRead=Math.max(1,Math.round(words.length/wpm)),avgWords=Math.round(words.length/Math.max(1,sentences.length));
+ const paras=t.split(/\n\n+/).filter(p=>p.trim().length>0).length;
+ const bars=Math.min(paras,12),maxW=Math.max(...paras.map(p=>p.split(/\s+/).filter(w=>w.length>0).length),1);
+ let svg=`<svg viewBox="0 0 ${bars*20} 160" preserveAspectRatio="none" style="width:100%;height:100%;display:block" role="img" aria-label="Paragraph length distribution">`;
+ for(let i=0;i<paras;i++){const p=paras[i]||'';const w=p.split(/\s+/).filter(w=>w.length>0).length;const h=(w/maxW)*120;
+  svg+=`<rect x="${i*20+4}" y="${140-h}" width="12" height="${h.toFixed(1)}" rx="3" fill="var(--rose)" opacity="${0.3+(i/paras)*0.7}"/>`}
+ svg+=`</svg>`;
+ return{words:words.length,minRead,sentences:sentences.length,avgWords,svg}
+}
 function lFood(){const el=document.getElementById('lb');
  const cats=[...new Set(FOOD.map(f=>f[0]))],f=foodCat||'All';
  const list=f==='All'?FOOD:FOOD.filter(x=>x[0]===f);
@@ -943,7 +1004,7 @@ function lTips(){const el=document.getElementById('lb');
  el.querySelectorAll('[data-tc]').forEach(b=>b.onclick=()=>{tipCat=b.dataset.tc;lTips()})}
 function me(){const p=D.p;$('#main').innerHTML=`<h1>Profile</h1><div class="card"><div class="row" style="gap:16px;align-items:center;margin-bottom:18px;flex-wrap:nowrap"><div style="flex:0 0 auto">${avatarHTML(72)}</div><label class="btn ghost sm" for="av" style="display:inline-flex !important;align-items:center !important;justify-content:center !important;gap:6px !important;cursor:pointer !important;white-space:nowrap !important;flex:0 0 auto !important">${IC.camera(18)} Change photo</label><input type="file" id="av" accept="image/*" hidden></div><label for="nm">Nickname</label><input id="nm" value="${E(p.name)}" maxlength="30"><label>Goals</label><div class="row" id="goals">${GOALS.map(g=>`<button class="chip" aria-pressed="${(p.goals||[]).includes(g)}">${g}</button>`).join('')}</div><button class="btn" id="sv" style="width:100%;margin-top:12px">Save</button></div>
 <div class="card"><div class="card-h"><h3>Partner sync</h3>${D.partner&&D.partner.on?'<span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem;background:var(--pinkS);border-color:rgba(232,160,180,.6);color:var(--rose)">Active</span>':''}</div>
-${D.partner&&D.partner.on?`<p class="meta">Share this code. Your partner opens a read-only view of your logs on this device — they cannot log or add notes.</p><div class="syncbox"><span class="synccode">${E(D.partner.code)}</span><button class="btn ghost sm" id="cp">Copy</button></div><div class="row" style="gap:10px;margin-top:10px"><button class="btn ghost sm" id="pg" style="flex:1">New code</button><button class="btn ghost sm" id="pv" style="flex:1">Revoke</button></div>`:`<p class="meta">Let a partner follow your cycle in read-only mode.</p><button class="btn" id="gc" style="width:100%">Create sync code</button>`}</div>
+${D.partner&&D.partner.on?`<p class="meta">Share this code. Your partner opens a read-only view of your logs on this device — they cannot log or add notes.</p><div class="syncbox"><span class="synccode">${E(D.partner.code)}</span><button class="btn ghost sm" id="cp">Copy</button></div><div class="row" style="gap:10px;margin-top:10px"><button class="btn ghost sm" id="pg" style="flex:1">New code</button><button class="btn ghost sm" id="pv" style="flex:1">Revoke</button></div>`:`<div style="text-align:center;padding:24px 12px"><svg viewBox="0 0 80 80" style="width:64px;height:64px;margin:0 auto 16px;opacity:.5" role="img" aria-hidden="true"><circle cx="40" cy="40" r="36" fill="none" stroke="var(--pink)" stroke-width="3" stroke-dasharray="8 6"/><path d="M24 40c0-8.8 7.2-16 16-16s16 7.2 16 16" fill="none" stroke="var(--pink)" stroke-width="3" stroke-linecap="round"/><circle cx="40" cy="32" r="6" fill="var(--pink)"/></svg><h3 style="margin:0 0 6px">Invite a partner</h3><p class="meta" style="margin:0 0 16px">Share a 6-character code so they can see your cycle, mood, energy and insights — read-only, no editing.</p><button class="btn" id="gc" style="width:100%;max-width:280px">Create sync code</button></div>`}</div>
 <div class="card"><div class="card-h"><h3>Reminder</h3></div><label class="row" style="color:var(--ink)"><input type="checkbox" id="rm" style="width:22px;margin:0" ${D.rem.on?'checked':''}> Daily logging reminder</label><label for="rt">Time</label><input id="rt" type="time" value="${D.rem.time}"><p class="meta" style="margin-top:8px">Web version: no push notifications.</p></div>
 <div class="card"><div class="card-h"><h3>Data</h3></div><button class="btn ghost" id="xj" style="width:100%">Export all data</button><button class="btn pink" id="del" style="width:100%;margin-top:10px">Delete all my data</button></div><button class="btn ghost" id="lo" style="width:100%">Log out</button>`;
  document.querySelectorAll('#goals .chip').forEach(c=>c.onclick=()=>c.setAttribute('aria-pressed',c.getAttribute('aria-pressed')!='true'));
