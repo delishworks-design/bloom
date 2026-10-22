@@ -248,6 +248,18 @@ details{border-bottom:1px solid #EADFD2;padding:14px 0}summary{cursor:pointer;fo
 nav{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(12px + env(safe-area-inset-bottom,0px));width:calc(100% - 24px);max-width:392px;height:68px;border-radius:28px;background:#FFFBF5 !important;border:1.5px solid #EADFD2 !important;box-shadow:0 12px 34px rgba(120,70,80,.16) !important;display:flex;align-items:center;justify-content:space-between;padding:6px;z-index:5;gap:4px}
 nav button{flex:1;height:52px;border:0 !important;background:none !important;border-radius:20px !important;color:#7C6B71 !important;font-size:.72rem !important;font-weight:700 !important;display:flex !important;flex-direction:column !important;align-items:center !important;justify-content:center !important;gap:4px !important;line-height:1 !important;text-align:center !important}
 nav button[aria-current=page]{background:#B8456B !important;color:#fff !important;box-shadow:0 6px 16px rgba(184,69,107,.28) !important}
+.field-btn{width:100%;text-align:left;padding:14px 16px;background:#F9F2ED;border:1.5px solid #EADFD2;border-radius:14px;color:#3A2E33;font:inherit;font-size:1rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;transition:background .15s,border-color .15s}
+.field-btn:hover{background:#F1E6D7;border-color:#E8A0B4}
+.field-btn:focus-visible{outline:2px solid #B8456B;outline-offset:2px}
+.field-btn .chevron{width:18px;height:18px;flex-shrink:0;color:#7C6B71;transition:transform .2s}
+.modal-backdrop{position:fixed;inset:0;background:rgba(58,46,51,.45);display:flex;align-items:flex-end;justify-content:center;padding:24px 16px 48px;z-index:100;animation:fadeIn .2s ease}
+.modal-sheet{width:100%;max-width:392px;background:#FFFBF5;border:1.5px solid #EADFD2;border-radius:24px 24px 0 0;padding:20px 24px 32px;box-shadow:0 -12px 40px rgba(120,70,80,.2);animation:slideUp .3s ease}
+.modal-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.modal-h h3{font-size:1.1rem;font-weight:700;color:#3A2E33;margin:0}
+.modal-close{width:36px;height:36px;border-radius:50%;border:1.5px solid #EADFD2;background:#FFF;color:#7C6B71;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s}
+.modal-close:hover{background:#F9F2ED;border-color:#E8A0B4;color:#B8456B}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
 </style></head><body>
 <div id="app"></div><div id="sheet"></div><div id="toast" role="status" aria-live="polite"></div>
 <script>
@@ -351,6 +363,19 @@ async function revokePartnerCode(){const map=CODES();if(D.partner&&D.partner.cod
 function partnerOwner(code){return CODES()[String(code||'').trim().toUpperCase()]||null}
 function exitPartner(){RO=false;ROowner=null;D=null;try{sessionStorage.removeItem('bloom_s')}catch(e){}delete mem.s;authView('in')}
 function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.display='none',2200)}
+function openDxModal(){const p=D.p;const opts=['','diagnosed','suspected','none'];
+ const html=`<div class="modal-backdrop" id="dxModal" role="dialog" aria-modal="true" aria-labelledby="dxTitle">
+  <div class="modal-sheet">
+   <div class="modal-h"><h3 id="dxTitle">PCOS/PMOS diagnosis</h3><button class="modal-close" id="dxClose" aria-label="Close">${IC.close(20)}</button></div>
+   <div class="dx-cards" role="group" aria-label="Diagnosis">${opts.map(v=>`<button type="button" class="dx-card ${p.dx==v?'on':''}" data-dx="${v}">${v?'':'Prefer not to say'}${v=='diagnosed'?'Diagnosed':''}${v=='suspected'?'Suspected':''}${v=='none'?'Not diagnosed / learning':''}</button>`).join('')}</div>
+   <p class="meta" style="margin-top:12px;text-align:center">Not a diagnosis. Used for personalized insights.</p>
+  </div>
+ </div>`;
+ document.body.insertAdjacentHTML('beforeend',html);
+ document.getElementById('dxClose').onclick=closeDxModal;
+ document.getElementById('dxModal').onclick=e=>{if(e.target.id==='dxModal')closeDxModal()};
+ document.querySelectorAll('.dx-card').forEach(c=>c.onclick=()=>{const v=c.dataset.dx;$('#dx').value=v;const labels={diagnosed:'Diagnosed',suspected:'Suspected',none:'Not diagnosed / learning'};$('#dxBtn').innerHTML=(v?labels[v]:'Prefer not to say')+'<span class="chevron"></span>';closeDxModal()})}
+function closeDxModal(){const m=document.getElementById('dxModal');if(m)m.remove()}
 // ---------- auth (device-local)
 const hex=b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
 async function hash(pw,salt){try{const k=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveBits']);return hex(await crypto.subtle.deriveBits({name:'PBKDF2',salt:new TextEncoder().encode(salt),iterations:150000,hash:'SHA-256'},k,256))}catch(e){return 'x'+pw.length+btoa(pw+salt)}}
@@ -438,14 +463,13 @@ function shell(){if(funTimer){clearInterval(funTimer);funTimer=null}if(foodTimer
  if(view=='me')document.querySelector('nav [aria-current]')?.removeAttribute('aria-current');
  ({cycle:cyclePage,month:monthView,planner,insights,learn,me})[view]()}
 function onboarding(){const p=D.p;const steps=[
-`<h2>What should we call you?</h2><label for="nm">Nickname</label><input id="nm" value="${E(p.name)}" maxlength="30"><label for="dx">PCOS/PMOS diagnosis</label><div class="collapsible"><button type="button" class="collapsible-btn" id="dxToggle" aria-expanded="false">${p.dx?({diagnosed:'Diagnosed',suspected:'Suspected',none:'Not diagnosed / learning'}[p.dx]||'Prefer not to say'):'Prefer not to say'} ▼</button><div class="collapsible-content" id="dxContent" hidden><div class="dx-cards" role="group" aria-label="Diagnosis">${['','diagnosed','suspected','none'].map(v=>`<button type="button" class="dx-card ${p.dx==v?'on':''}" data-dx="${v}">${v?'':'Prefer not to say'}${v=='diagnosed'?'Diagnosed':''}${v=='suspected'?'Suspected':''}${v=='none'?'Not diagnosed / learning':''}</button>`).join('')}</div><select id="dx" aria-hidden="true" tabindex="-1"><option value="">Prefer not to say</option><option ${p.dx=='diagnosed'?'selected':''} value="diagnosed">Diagnosed</option><option ${p.dx=='suspected'?'selected':''} value="suspected">Suspected</option><option ${p.dx=='none'?'selected':''} value="none">Not diagnosed / learning</option></select></div></div>`,
+`<h2>What should we call you?</h2><label for="nm">Nickname</label><input id="nm" value="${E(p.name)}" maxlength="30"><label for="dx">PCOS/PMOS diagnosis</label><button type="button" class="field-btn" id="dxBtn">${p.dx?({diagnosed:'Diagnosed',suspected:'Suspected',none:'Not diagnosed / learning'}[p.dx]||'Prefer not to say'):'Prefer not to say'}<span class="chevron"></span></button><input id="dx" type="hidden" value="${p.dx||''}">`,
 `<h2>Your goals</h2><div class="row" id="goals" style="flex-wrap:wrap;gap:8px">${GOALS.map(g=>`<button class="chip" aria-pressed="${(p.goals||[]).includes(g)}">${g}</button>`).join('')}</div>`,
 `<h2>Your cycle</h2><label for="cy">Typical cycle</label><select id="cy"><option value="">Not sure</option><option ${p.cy=='reg'?'selected':''} value="reg">Fairly regular</option><option ${p.cy=='irr'?'selected':''} value="irr">Irregular</option><option ${p.cy=='none'?'selected':''} value="none">Rarely/no periods</option></select><label for="food">Food preferences</label><input id="food" value="${E(p.food||'')}" placeholder="No pork, vegetarian"><label for="act">Preferred activity</label><select id="act"><option ${p.act=='walk'?'selected':''} value="walk">Walking</option><option ${p.act=='strength'?'selected':''} value="strength">Strength</option><option ${p.act=='stretch'?'selected':''} value="stretch">Stretching / yoga</option></select>`];
  $('#app').innerHTML=`<div class="auth"><div class="card" style="display:flex;flex-direction:column;gap:24px;padding:28px 24px 32px"><div class="lbl">Step ${onbStep+1} of 3</div><div style="display:flex;flex-direction:column;gap:18px">${steps[onbStep]}</div><p class="note">Not a diagnosis. Severe pain, very heavy bleeding or sudden symptoms need prompt medical care.</p><div class="row sp" style="margin-top:8px"><button class="btn ghost" id="sk">Skip</button><button class="btn" id="nx">${onbStep==2?'Finish':'Next'}</button></div></div></div>`;
  document.querySelectorAll('#goals .chip').forEach(c=>c.onclick=()=>c.setAttribute('aria-pressed',c.getAttribute('aria-pressed')!='true'));
- const dxToggle=document.getElementById('dxToggle');
- if(dxToggle){dxToggle.onclick=()=>{const open=dxToggle.getAttribute('aria-expanded')==='true';dxToggle.setAttribute('aria-expanded',!open);document.getElementById('dxContent').hidden=open}}
- document.querySelectorAll('.dx-card').forEach(c=>c.onclick=()=>{const v=c.dataset.dx;$('#dx').value=v;document.querySelectorAll('.dx-card').forEach(x=>x.classList.toggle('on',x.dataset.dx===v));const labels={diagnosed:'Diagnosed',suspected:'Suspected',none:'Not diagnosed / learning'};dxToggle.textContent=(v?labels[v]:'Prefer not to say')+' ▼';dxToggle.click()})
+ const dxBtn=document.getElementById('dxBtn');
+ if(dxBtn){dxBtn.onclick=()=>openDxModal()}
  const grab=()=>{if(onbStep==0){p.name=$('#nm').value.trim();p.dx=$('#dx').value}if(onbStep==1)p.goals=[...document.querySelectorAll('#goals .chip[aria-pressed=true]')].map(c=>c.textContent);if(onbStep==2){p.cy=$('#cy').value;p.food=$('#food').value.trim();p.act=$('#act').value}};
  const nx=()=>{if(onbStep==2){p.done=true;if(!D.tasks.length)genPlan(true);save();view='cycle';return shell()}onbStep++;save();onboarding()};
  $('#nx').onclick=()=>{grab();nx()};$('#sk').onclick=nx}
