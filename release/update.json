@@ -1,7 +1,7 @@
 {
-  "versionCode": 17,
-  "versionName": "1.2.3",
-  "notes": "Account is fully optional - no sign-out trap, clearer labels",
-  "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/release/bloom-1.2.3.apk",
+  "versionCode": 18,
+  "versionName": "1.2.4",
+  "notes": "Fix: device accounts can sign in again, no forced account creation, no sign-in wall",
+  "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/release/bloom-1.2.4.apk",
   "publishedAt": "2026-10-22"
 }

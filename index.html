@@ -484,18 +484,26 @@ $('#app').innerHTML=`<div class="auth"><div class="card"><div class="brand">Bloo
  const sub=async()=>{const u=$('#u').value.trim().toLowerCase(),pw=$('#pw').value,er=$('#err');er.textContent='';
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(u))return er.textContent='Enter a valid email address.';
   if(pw.length<6)return er.textContent='Password needs at least 6 characters.';
+  const all=users();
+  const local=all[u];
+  // 1) an account created on THIS device wins - it owns the data
+  if(local&&local.h){
+   if(mode=='up')return er.textContent='That email is already registered on this device. Try logging in.';
+   if(local.h!==await hash(pw,local.salt))return er.textContent='Incorrect email or password.';
+   login(u);return}
+  // 2) no device account -> the cloud (this is where a new account is made)
+  if(mode=='up'&&local&&local.cloud)return er.textContent='That email already has a cloud account. Try logging in.';
   const client=await sbInit();
   if(client){
-   if(mode=='up'){if($('#pw2').value!==pw)return er.textContent='Passwords don’t match.';if(!$('#cons').checked)return er.textContent='Please give consent to continue.';
+   if(mode=='up'){if($('#pw2').value!==pw)return er.textContent='Passwords don\u2019t match.';if(!$('#cons').checked)return er.textContent='Please give consent to continue.';
     const e=await sbSignUp(u,pw);if(e)er.textContent=e;return}
    const e=await sbSignIn(u,pw);if(e)er.textContent=e;return}
-  if(!/^[a-z0-9_.@-]{3,60}$/.test(u))return er.textContent='Email: 3–60 characters.';
-  const all=users();
-  if(mode=='up'){if(all[u])return er.textContent='That email is already registered.';if(pw!==$('#pw2').value)return er.textContent='Passwords don’t match.';if(!$('#cons').checked)return er.textContent='Please give consent to continue.';
+  if(!/^[a-z0-9_.@-]{3,60}$/.test(u))return er.textContent='Email: 3\u201360 characters.';
+  if(mode=='up'){if(pw!==$('#pw2').value)return er.textContent='Passwords don\u2019t match.';if(!$('#cons').checked)return er.textContent='Please give consent to continue.';
    const salt=hex(crypto.getRandomValues(new Uint8Array(12)));all[u]={salt,h:await hash(pw,salt)};ST.set('bloom_users',JSON.stringify(all));ST.set(key(u),JSON.stringify(blank()));}
-  else{const a=all[u];if(!a||a.h!==await hash(pw,a.salt))return er.textContent='Incorrect email or password.'}
-   login(u)};
- $('#go').onclick=sub;$('#pw').onkeydown=e=>{if(e.key=='Enter'&&mode=='in')sub()}
+  login(u)};
+ $('#go').onclick=sub;$('#pw').onkeydown=e=>{if(e.key=='Enter'&&mode=='in')sub()};
+ if(mode=='in'&&!$('#u').value){const known=Object.keys(users());if(known.length===1)$('#u').value=known[0]}
 }
 function login(u){user=u;D=Object.assign(blank(),J(key(u),{}));setSession(u);applyTheme();view='cycle';shell()}
 function logout(){user=null;D=null;clearSession();if(sb){sb.auth.signOut().catch(()=>{});sbUser=null}if(cloudTimer){clearInterval(cloudTimer);cloudTimer=null}authView('in')}
@@ -1480,6 +1488,10 @@ if(splashShouldShow())splashPlay();else splashSkip();  // only after 3 minutes a
   setTimeout(()=>checkUpdate(false),1500);return}
  await sbInit();
  if(sbUser&&!RO){try{await sbAfterLogin(sbUser);setTimeout(()=>checkUpdate(false),1500);return}catch(e){}}
+ // no session: if this device already has an account with data, do not wall the user out
+ const localAccts=Object.keys(users()).filter(k=>{const d=J(key(k),{});return d&&d.p&&d.p.done});
+ if(localAccts.length===1){const k=localAccts[0];user=k;setSession(k);D=Object.assign(blank(),J(key(k),{}));
+  bootCloud(k);setTimeout(()=>checkUpdate(false),1500);shell();return}
  authView('in')})();
 function bootCloud(localEmail){sbInit().then(async()=>{if(!sbUser||RO)return;
  const mail=(sbUser.email||'').toLowerCase();
