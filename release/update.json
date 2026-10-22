@@ -1,7 +1,7 @@
 {
-  "versionCode": 14,
-  "versionName": "1.2.0",
-  "notes": "Partner sync: automatic cloud identity, works from any device, partner view from Profile",
-  "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/release/bloom-1.2.0.apk",
+  "versionCode": 15,
+  "versionName": "1.2.1",
+  "notes": "Partner sync always online: no race, code verified, real errors, sync status card",
+  "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/release/bloom-1.2.1.apk",
   "publishedAt": "2026-10-22"
 }

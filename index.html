@@ -370,9 +370,12 @@ async function sbInit(){if(sb)return sb;
  }catch(e){sb=null}
  return sb}
 async function sbFetchDoc(uid){if(!sb)return null;const {data,error}=await sb.from('bloom_data').select('doc,updated_at').eq('user_id',uid).maybeSingle();if(error)return null;return data?data.doc:null}
+let syncState={at:0,ok:null,err:''};
 async function sbPush(){if(!sb||!sbUser||RO)return;const p=D.p||{};
  try{await sb.from('bloom_profiles').upsert({id:sbUser.id,name:p.name||'',avatar:p.avatar||null,goals:p.goals||[]});
-  await sb.from('bloom_data').upsert({user_id:sbUser.id,doc:D});}catch(e){}}
+  await sb.from('bloom_data').upsert({user_id:sbUser.id,doc:D});
+  syncState={at:Date.now(),ok:true,err:''};
+ }catch(e){syncState={at:Date.now(),ok:false,err:(e&&e.message)||'sync failed'}}}
 function sbPushSoon(){if(!sbUser)return;clearTimeout(sbPushT);sbPushT=setTimeout(sbPush,1200)}
 function startCloudSync(){if(cloudTimer)clearInterval(cloudTimer);cloudTimer=setInterval(()=>{if(sbUser)sbPush()},15000)}
 async function sbAfterLogin(u){sbUser=u;
@@ -412,12 +415,22 @@ const getSession=()=>{let v=null;try{v=sessionStorage.getItem('bloom_s')}catch(e
 let RO=false,ROowner=null,ROcloud=false;
 const CODES=()=>J('bloom_codes',{});
 function makeCode(){const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<6;i++)s+=A[Math.floor(Math.random()*A.length)];return s}
-async function genPartnerCode(){const map=CODES();let c=makeCode();while(map[c])c=makeCode();map[c]=user;ST.set('bloom_codes',JSON.stringify(map));D.partner={code:c,on:true};save();
- if(!sbUser){toast('Code created \u00b7 this device only');return c}
- try{const client=await sbInit();if(!client){toast('Code created \u00b7 this device only');return c}
+async function genPartnerCode(){
+ const client=await sbInit();
+ if(!client||!sbUser){toast('Partner sync needs an internet connection');return null}
+ const map=CODES();let c=makeCode();while(map[c])c=makeCode();
+ try{
   const {error}=await client.rpc('bloom_create_partner_code',{p_code:c});
-  toast(error?'Code created \u00b7 this device only':'Code created \u00b7 works on any device');
- }catch(e){toast('Code created \u00b7 this device only')}
+  if(error){toast('Could not create code: '+(error.message||'try again'));return null}
+ }catch(e){toast('Could not create code: '+(e.message||'try again'));return null}
+ // verify it really landed in the cloud
+ try{
+  const {data:rows}=await client.from('bloom_partners').select('code').eq('code',c).limit(1);
+  if(!rows||!rows.length){toast('Code was not saved - try again');return null}
+ }catch(e){}
+ map[c]=user;ST.set('bloom_codes',JSON.stringify(map));
+ D.partner={code:c,on:true};save();
+ toast('Code ready \u00b7 works on any device');
  return c}
 async function revokePartnerCode(){const map=CODES();if(D.partner&&D.partner.code)delete map[D.partner.code];ST.set('bloom_codes',JSON.stringify(map));D.partner={code:'',on:false};save();
  if(sbUser){try{const client=await sbInit();if(client)await client.rpc('bloom_revoke_partner_codes')}catch(e){}}}
@@ -433,20 +446,17 @@ async function redeemCode(code,onErr){
  const c=String(code||'').trim().toUpperCase();
  if(!c){onErr('Enter a sync code.');return false}
  const client=await sbInit();
- if(client&&sbUser){
-  const {data,error}=await client.rpc('bloom_redeem_partner_code',{p_code:c});
-  if(!error&&data){RO=true;ROcloud=true;ROowner=data;
-   const doc=await sbFetchDoc(data);
-   D=Object.assign(blank(),doc||{});
-   roHash=roHashOf(JSON.stringify(doc||{}));
-   setSession('p:'+data);
-   view='cycle';shell();return true}
-  const own=partnerOwner(c);
-  if(own){RO=true;ROowner=own;D=Object.assign(blank(),J(key(own),{}));setSession('p:'+own);view='cycle';shell();return true}
-  onErr('That code is not valid.');return false}
- const own=partnerOwner(c);
- if(own){RO=true;ROowner=own;D=Object.assign(blank(),J(key(own),{}));setSession('p:'+own);view='cycle';shell();return true}
- onErr(client?'Sign in first, then enter the code.':'That code is not valid.');return false
+ if(!client||!sbUser){onErr('Partner sync needs an internet connection.');return false}
+ const {data,error}=await client.rpc('bloom_redeem_partner_code',{p_code:c});
+ if(error||!data){onErr('That code is not valid.');return false}
+ RO=true;ROcloud=true;ROowner=data;
+ const doc=await sbFetchDoc(data);
+ D=Object.assign(blank(),doc||{});
+ roHash=roHashOf(JSON.stringify(doc||{}));
+ setSession('p:'+data);
+ view='cycle';shell();
+ if(!Object.keys(D.logs||{}).length)toast('No logs shared yet');
+ return true
 }
 function authView(mode){mode=mode||'in';const pt=mode=='partner';
  const tabs=`<div class="row" style="gap:8px;margin:12px 0 16px"><button class="chip" data-am="in" aria-pressed="${!pt}">Account</button><button class="chip" data-am="partner" aria-pressed="${pt}">Partner</button></div>`;
@@ -1349,6 +1359,10 @@ function me(){const p=D.p;$('#main').innerHTML=`<h1>Profile</h1><div class="card
 <div class="card"><div class="card-h"><h3>Partner sync</h3>${D.partner&&D.partner.on?'<span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem;background:var(--pinkS);border-color:rgba(232,160,180,.6);color:var(--rose)">Active</span>':''}</div>
 ${D.partner&&D.partner.on?`<p class="meta">Share this code. Your partner opens a read-only view of your logs — they cannot log or add notes.</p>${sbUser?'':'<div class="note" style="margin:0 0 12px;font-size:.8rem">This code works <b>on this device only</b>. Sign in to share it from any phone.</div>'}<div class="syncbox"><span class="synccode">${E(D.partner.code)}</span><button class="btn ghost sm" id="cp">Copy</button></div><div class="row" style="gap:10px;margin-top:10px"><button class="btn ghost sm" id="pg" style="flex:1">New code</button><button class="btn ghost sm" id="pv" style="flex:1">Revoke</button></div>${sbUser?'':'<button class="btn" id="signInSync" style="width:100%;margin-top:10px">Sign in to share anywhere</button>'}<button class="btn ghost" id="openPartner" style="width:100%;margin-top:10px">Open a partner view</button>`:`<div style="text-align:center;padding:24px 12px"><svg viewBox="0 0 80 80" style="width:64px;height:64px;margin:0 auto 16px;opacity:.5" role="img" aria-hidden="true"><circle cx="40" cy="40" r="36" fill="none" stroke="var(--pink)" stroke-width="3" stroke-dasharray="8 6"/><path d="M24 40c0-8.8 7.2-16 16-16s16 7.2 16 16" fill="none" stroke="var(--pink)" stroke-width="3" stroke-linecap="round"/><circle cx="40" cy="32" r="6" fill="var(--pink)"/></svg><h3 style="margin:0 0 6px">Invite a partner</h3><p class="meta" style="margin:0 0 16px">Share a 6-character code so they can see your cycle, mood, energy and insights — read-only, no editing.</p><button class="btn" id="gc" style="width:100%;max-width:280px">Create sync code</button></div>`}</div>
 <div class="card"><div class="card-h"><h3>Reminder</h3></div><label class="row" style="color:var(--ink)"><input type="checkbox" id="rm" style="width:22px;margin:0" ${D.rem.on?'checked':''}> Daily logging reminder</label><label for="rt">Time</label><input id="rt" type="time" value="${D.rem.time}"><button class="btn ghost" id="rs" style="width:100%;margin-top:4px">Save reminder</button><p class="meta" style="margin-top:10px">Web version: no push notifications.</p></div>
+<div class="card"><div class="card-h"><h3>Cloud sync</h3><span class="meta">${syncState.ok===true?'Up to date':syncState.ok===false?'Failed':'Not synced yet'}</span></div>
+ <p class="meta" style="margin:0 0 10px">${sbUser?(sbUser.email||'Anonymous device account'):'No cloud account'}${syncState.at?' \u00b7 last sync '+new Date(syncState.at).toLocaleTimeString():''}</p>
+ ${syncState.err?`<p class="meta" style="margin:0 0 10px;color:#B8456B">${E(syncState.err)}</p>`:''}
+ <button class="btn ghost" id="syncNow" style="width:100%">Sync now</button></div>
 <div class="card"><div class="card-h"><h3>App</h3><span class="meta" id="appVer">\u2014</span></div><button class="btn ghost" id="chkUp" style="width:100%">Check for updates</button></div>
 <div class="card"><div class="card-h"><h3>Data</h3></div><button class="btn ghost" id="xj" style="width:100%">Export all data</button><button class="btn pink" id="del" style="width:100%;margin-top:10px">Delete all my data</button></div><button class="btn ghost" id="lo" style="width:100%">Log out</button>`;
  document.querySelectorAll('#goals .chip').forEach(c=>c.onclick=()=>c.setAttribute('aria-pressed',c.getAttribute('aria-pressed')!='true'));
@@ -1361,6 +1375,7 @@ ${D.partner&&D.partner.on?`<p class="meta">Share this code. Your partner opens a
  (async()=>{const up=updater();if(!up)return;try{const v=await up.getVersion();const el=document.getElementById('appVer');if(el)el.textContent='v'+v.versionName+' ('+v.versionCode+')'}catch(e){}})();
  if(document.getElementById('gc'))$('#gc').onclick=async()=>{await genPartnerCode();me()};
  if(document.getElementById('signInSync'))$('#signInSync').onclick=()=>{authReturn='me';authView('in')};
+ if(document.getElementById('syncNow'))$('#syncNow').onclick=async()=>{toast('Syncing\u2026');await sbInit();await sbPush();me();toast(syncState.ok?'Synced to the cloud':'Sync failed: '+syncState.err)};
  if(document.getElementById('openPartner'))$('#openPartner').onclick=()=>{
   sheet(`<h2>Open partner view</h2><p class="meta" style="margin:0 0 12px">Enter the 6-character code your partner shared with you.</p>
  <input id="pvCode" maxlength="6" autocapitalize="characters" autocomplete="off" placeholder="ABC123" style="margin:0 0 10px">
@@ -1430,6 +1445,7 @@ function splashPlay(replay){
 }
 // called by the native layer when the app comes back to the foreground
 window.__bloomResume=(awayMs)=>{if(!splashShouldShow(awayMs))return;splashPlay(true)};
+window.addEventListener('online',()=>{sbInit().then(()=>{if(sbUser&&!RO)sbPush()});setTimeout(()=>checkUpdate(false),800)});
 // called by the native layer when the app goes to the background
 window.__bloomBg=()=>splashBgMark();
 document.addEventListener('visibilitychange',()=>{if(document.hidden)splashBgMark()});
