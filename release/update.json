@@ -1,7 +1,7 @@
 {
-  "versionCode": 16,
-  "versionName": "1.2.2",
-  "notes": "Account card, anonymous account explained and upgradeable",
-  "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/release/bloom-1.2.2.apk",
+  "versionCode": 17,
+  "versionName": "1.2.3",
+  "notes": "Account is fully optional - no sign-out trap, clearer labels",
+  "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/release/bloom-1.2.3.apk",
   "publishedAt": "2026-10-22"
 }
