@@ -1,7 +1,7 @@
 {
-  "versionCode": 6,
-  "versionName": "1.1.4",
-  "notes": "Flower splash animation, 2x bigger profile photos",
-  "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/release/bloom-1.1.4.apk",
+  "versionCode": 7,
+  "versionName": "1.1.5",
+  "notes": "Adjustable profile photo, status-bar padding, auto-growing journal, tappable meal amount",
+  "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/release/bloom-1.1.5.apk",
   "publishedAt": "2026-10-22"
 }
