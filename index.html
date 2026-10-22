@@ -345,6 +345,17 @@ let sbReady=null;
 function whenSupabase(){
  if(window.supabase)return Promise.resolve();
  if(!sbReady)sbReady=new Promise(res=>{
+  let done=false;
+  const go=()=>{if(done)return;done=true;res()};
+  const check=()=>{if(window.supabase){clearInterval(iv);clearTimeout(to);go()}};
+  const iv=setInterval(check,30);
+  const to=setTimeout(()=>{clearInterval(iv);go()},15000);
+  window.addEventListener('DOMContentLoaded',()=>{check();setTimeout(check,60)},{once:true});
+ });
+ return sbReady}
+function whenSupabase(){
+ if(window.supabase)return Promise.resolve();
+ if(!sbReady)sbReady=new Promise(res=>{
   let done=false;const go=()=>{if(done)return;done=true;res()};
   if(document.readyState==='complete'){go();return}
   window.addEventListener('DOMContentLoaded',go,{once:true});
@@ -352,6 +363,18 @@ function whenSupabase(){
   setTimeout(()=>{clearInterval(iv);go()},8000);
  });
  return sbReady}
+async function sbInit(){if(sb)return sb;
+ await whenSupabase();
+ try{const m=window.supabase;
+  if(!m)return null;
+  sb=m.createClient(SB.url,SB.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+ }catch(e){return null}
+ // a broken/expired stored session must never kill the client
+ try{const {data}=await sb.auth.getSession();
+  if(data&&data.session&&data.session.user)sbUser=data.session.user;
+ }catch(e){sbUser=null;
+  try{Object.keys(localStorage).filter(k=>k.indexOf('sb-')===0).forEach(k=>localStorage.removeItem(k))}catch(e2){}}
+ return sb}
 async function sbInit(){if(sb)return sb;
  await whenSupabase();
  try{const m=window.supabase;
@@ -426,6 +449,19 @@ function exitPartner(){RO=false;ROowner=null;D=null;clearSession();
  const own=ST.get('bloom_own');
  if(own&&sbUser){setSession(own);sbAfterLogin(sbUser);return}
  authView('in')}
+function cloudStatus(){
+ const el=document.getElementById('cloudStat');if(!el)return;
+ el.textContent='Checking connection\u2026';
+ const t=setTimeout(()=>{el.textContent='Still checking\u2026 (no reply from the server)'},4000);
+ fetch(SB.url+'/auth/v1/health',{headers:{apikey:SB.key}}).then(r=>{clearTimeout(t);el.textContent=r.ok?'Connected to the cloud':'Server replied with an error ('+r.status+')'})
+  .catch(e=>{clearTimeout(t);el.textContent='Cannot reach the server \u2014 check your connection'});
+}
+function errText(e){const m=String(e||'');
+ if(/fetch|network|ENOTFOUND|ETIMEDOUT|timeout|Failed to fetch/i.test(m))return 'Could not reach the server. Check your connection.';
+ if(/Invalid login credentials/i.test(m))return 'Incorrect email or password.';
+ if(/already (been )?registered|already exists/i.test(m))return 'That email already has an account. Try logging in.';
+ if(/Email not confirmed/i.test(m))return 'Confirm your email address first.';
+ return m||'Something went wrong. Try again.'}
 function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.display='none',2200)}
 // ---------- auth (online accounts only)
 async function redeemCode(code,onErr){
@@ -452,16 +488,17 @@ ${mode=='up'?'<label for="pw2">Confirm password</label><input id="pw2" type="pas
 <div class="err" id="err" role="alert"></div>
 <button class="btn" style="width:100%" id="go">${mode=='in'?'Log in':'Create account'}</button>
 <p class="meta" style="text-align:center;margin-top:14px"><button class="btn ghost sm" id="sw">${mode=='in'?'New here? Create account':'Have an account? Log in'}</button></p>`;
-$('#app').innerHTML=`<div class="auth"><div class="card"><div class="brand">Bloom</div>${acct}</div></div>`;
+$('#app').innerHTML=`<div class="auth"><div class="card"><div class="brand">Bloom</div>${acct}<p class="meta" id="cloudStat" style="margin:16px 0 0;text-align:center"></p></div></div>`;
+ cloudStatus();
  $('#sw').onclick=()=>authView(mode=='in'?'up':'in');
  const sub=async()=>{const u=$('#u').value.trim().toLowerCase(),pw=$('#pw').value,er=$('#err');er.textContent='';
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(u))return er.textContent='Enter a valid email address.';
   if(pw.length<6)return er.textContent='Password needs at least 6 characters.';
   const client=await sbInit();
-  if(!client)return er.textContent='You need an internet connection to sign in.';
+  if(!client){er.textContent=!window.supabase?'Still starting up - tap Log in again in a moment.':'Could not start the cloud service. Restart the app.';return}
   if(mode=='up'){if($('#pw2').value!==pw)return er.textContent='Passwords don\u2019t match.';if(!$('#cons').checked)return er.textContent='Please give consent to continue.';
-   const e=await sbSignUp(u,pw);if(e)er.textContent=e;return}
-  const e=await sbSignIn(u,pw);if(e)er.textContent=e;return};
+   const e=await sbSignUp(u,pw);if(e)er.textContent=errText(e);return}
+  const e=await sbSignIn(u,pw);if(e)er.textContent=errText(e);return};
  $('#go').onclick=sub;$('#pw').onkeydown=e=>{if(e.key=='Enter'&&mode=='in')sub()}
 }
 function login(u){user=u;D=Object.assign(blank(),J(key(u),{}));setSession(u);applyTheme();view='cycle';shell()}
