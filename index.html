@@ -1027,8 +1027,7 @@ function learn(){learnTab=learnTab||'all';articleIdx=articleIdx===undefined?null
  const cats=[...new Set(ARTICLES.map(a=>a[0]))].sort(),all=['all',...cats];
  $('#main').innerHTML=`<h1>Learn</h1><p class="note" style="margin-bottom:12px"><b>Seek urgent care</b> for severe pelvic pain, soaking through a pad or tampon every hour, fainting, or sudden severe symptoms. Not personal medical advice.</p>
  <div class="tabsrow" role="tablist" style="margin-bottom:12px;flex-wrap:wrap;gap:8px">${all.map(c=>`<button class="chip" role="tab" data-lt="${c}" aria-pressed="${learnTab==c}">${c==='all'?'All topics':c}</button>`).join('')}</div>
- <div id="lb" style="margin-top:12px"></div>
- <p class="meta" style="margin-top:16px">Sources: WHO · NHS · NICE · Endocrine Society · ASRM · ACOG · Monash MCHRI · The Lancet</p>`;
+ <div id="lb" style="margin-top:12px"></div>`;
  document.querySelectorAll('[data-lt]').forEach(b=>b.onclick=()=>{learnTab=b.dataset.lt;articleIdx=null;learn()});
  if(articleIdx!==null&&articleIdx<ARTICLES.length)renderArticle(articleIdx);else renderArticleList()}
 function renderArticleList(){const el=document.getElementById('lb');
@@ -1050,8 +1049,7 @@ function renderArticle(i){const a=ARTICLES[i],txt=a[4];const stats=analyzeArticl
  </div>
  <div class="artgraph" style="height:180px;margin-bottom:24px;background:#F9F2ED;border-radius:16px;position:relative">${stats.svg}</div>
  <div class="artbody" style="line-height:1.75;font-size:1.02rem">${E(txt).replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>')}</div>
- <hr style="margin:24px 0;border:none;border-top:1.5px solid #EADFD2">
- <p class="meta" style="text-align:center">Sources: WHO · NHS · NICE · Endocrine Society · ASRM · ACOG · Monash MCHRI · The Lancet</p></article>`;
+ </article>`;
  document.getElementById('backArt').onclick=()=>{articleIdx=null;learn()}
 }
 function analyzeArticle(t){const sentences=t.split(/[.!?]+/).filter(s=>s.trim().length>0);const words=t.split(/\s+/).filter(w=>w.length>0);
