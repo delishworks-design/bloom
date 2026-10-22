@@ -78,22 +78,15 @@ p{margin:0;line-height:1.5}
 .pickrow:hover{border-color:#E8A0B4;background:#FFF8F5;box-shadow:0 4px 12px rgba(184,69,107,.1)}
 .pickrow .sub{font-size:.75rem;color:#7C6B71;font-weight:400;margin-left:auto;white-space:nowrap}
 .cal button:disabled{opacity:.3}
+.rolepick{display:flex;flex-direction:column;gap:10px}
+.rolebtn{display:flex;flex-direction:column;gap:4px;text-align:left;padding:15px 16px;background:#FFFBF5;border:1.5px solid #EADFD2;border-radius:16px;font:inherit;cursor:pointer;transition:all .15s}
+.rolebtn:hover{border-color:#E8A0B4;background:#FFF8F5;box-shadow:0 4px 14px rgba(184,69,107,.12);transform:translateY(-1px)}
+.rolebtn:active{transform:translateY(1px)}
+.rolebtn b{font-size:1rem;font-weight:700;color:#3A2E33;line-height:1.3}
+.rolebtn span{font-size:.82rem;color:#7C6B71;line-height:1.4}
 .spark{height:48px;margin-top:8px}
 .spark svg{width:100%;height:100%;display:block}
 .spark.empty{height:auto;font-size:.78rem;color:#7C6B71;opacity:.8;line-height:1.4}
-.partner-empty{text-align:center;padding:48px 24px}
-.partner-header{display:flex;align-items:center;gap:16px;padding:16px 4px;margin-bottom:8px}
-.partner-avatar{flex:0 0 auto}
-.partner-info{flex:1;min-width:0}
-.partner-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
-@media (max-width:480px){.partner-grid{grid-template-columns:repeat(2,1fr)}}
-.partner-charts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
-@media (max-width:480px){.partner-charts{grid-template-columns:1fr}}
-.chartcard{background:#FFFBF5;border:1.5px solid #EADFD2;border-radius:16px;padding:16px}
-.chart-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.chart-h h3{font-size:1rem;margin:0}
-.partner-details{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-@media (max-width:480px){.partner-details{grid-template-columns:1fr}}
 .meta{color:#7C6B71;font-size:.84rem;line-height:1.4}
 .lbl{font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#7C6B71;line-height:1.2;display:block;margin-bottom:6px}
 
@@ -365,50 +358,39 @@ async function sbInit(){if(sb)return sb;
    sb=m.createClient(SB.url,SB.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
   const {data}=await sb.auth.getSession();
   if(data&&data.session&&data.session.user)sbUser=data.session.user;
-  else{try{const ad=await sb.auth.signInAnonymously();
-   if(ad&&ad.data&&ad.data.session)sbUser=ad.data.session.user}catch(e){}}
  }catch(e){sb=null}
  return sb}
 async function sbFetchDoc(uid){if(!sb)return null;const {data,error}=await sb.from('bloom_data').select('doc,updated_at').eq('user_id',uid).maybeSingle();if(error)return null;return data?data.doc:null}
-let syncState={at:0,ok:null,err:''};
 async function sbPush(){if(!sb||!sbUser||RO)return;const p=D.p||{};
  try{await sb.from('bloom_profiles').upsert({id:sbUser.id,name:p.name||'',avatar:p.avatar||null,goals:p.goals||[]});
-  await sb.from('bloom_data').upsert({user_id:sbUser.id,doc:D});
-  syncState={at:Date.now(),ok:true,err:''};
- }catch(e){syncState={at:Date.now(),ok:false,err:(e&&e.message)||'sync failed'}}}
+  await sb.from('bloom_data').upsert({user_id:sbUser.id,doc:D});}catch(e){}}
 function sbPushSoon(){if(!sbUser)return;clearTimeout(sbPushT);sbPushT=setTimeout(sbPush,1200)}
 function startCloudSync(){if(cloudTimer)clearInterval(cloudTimer);cloudTimer=setInterval(()=>{if(sbUser)sbPush()},15000)}
 async function sbAfterLogin(u){sbUser=u;
  const mail=(u.email||'').toLowerCase();
- if(mail){const all=users();if(!all[mail]){all[mail]={cloud:1};ST.set('bloom_users',JSON.stringify(all))}
-  if(!user){user=mail;setSession(mail)}}
  const keep=JSON.parse(JSON.stringify(D));
  const doc=await sbFetchDoc(u.id);
  if(doc){const cloudHas=Object.keys(doc.logs||{}).length||Object.keys(doc.tasks||[]).length||Object.keys(doc.journal||[]).length;
   D=Object.assign(blank(),doc);
-  if(!cloudHas){D.logs=keep.logs||{};D.tasks=keep.tasks||[];D.done=keep.done||{};D.meals=keep.meals||{};D.journal=keep.journal||[];D.plan=keep.plan||{}}
-  if(keep.p&&keep.p.done)D.p.done=true}
+  if(!cloudHas){D.logs=keep.logs||{};D.tasks=keep.tasks||[];D.done=keep.done||{};D.meals=keep.meals||{};D.journal=keep.journal||[];D.plan=keep.plan||{}}}
+ else D=Object.assign(blank(),keep);
  try{const {data:prof}=await sb.from('bloom_profiles').select('*').eq('id',u.id).maybeSingle();
   if(prof){D.p=D.p||{};D.p.name=prof.name||D.p.name;D.p.avatar=prof.avatar||D.p.avatar;D.p.goals=prof.goals&&prof.goals.length?prof.goals:(D.p.goals||[])}}catch(e){}
- D.p=D.p||{};D.p.done=true;if(!D.p.name)D.p.name=(u.email||'Bloom').split('@')[0];
- save();view=authReturn||'cycle';authReturn='';shell();startCloudSync();sbPushSoon();
+ D.p=D.p||{};
+ // onboarding counts as done if the local cache says so OR the cloud does (offline friendly)
+ D.p.done=!!((keep.p&&keep.p.done)||(doc&&doc.p&&doc.p.done));
+ if(!D.p.name)D.p.name=(u.email||'Bloom').split('@')[0];
+ user=mail||user;setSession(user);try{ST.set('bloom_own',user)}catch(e){}
+ save();view='cycle';shell();
  if(D.partner&&D.partner.on&&D.partner.code){try{const cl=await sbInit();if(cl)await cl.rpc('bloom_create_partner_code',{p_code:D.partner.code})}catch(e){}}
- toast('Signed in · syncing')}
+ toast('Signed in \u00b7 syncing')}
 async function sbSignIn(email,pw){await sbInit();if(!sb)return 'offline';
  const {error}=await sb.auth.signInWithPassword({email:email.trim(),password:pw});
  if(error)return error.message;const {data}=await sb.auth.getSession();if(data.session)await sbAfterLogin(data.session.user);return null}
 async function sbSignUp(email,pw){await sbInit();if(!sb)return 'offline';
- const {data:cur}=await sb.auth.getSession();
- const anon=cur&&cur.session&&cur.session.user&&cur.session.user.is_anonymous;
- if(anon){try{const {data,error}=await sb.auth.updateUser({email:email.trim(),password:pw});
-  if(error)return error.message;
-  if(data&&data.user){await sbAfterLogin(data.user);return null}
- }catch(e){}}
  const {error}=await sb.auth.signUp({email:email.trim(),password:pw});
  if(error)return error.message;const {data}=await sb.auth.getSession();
  if(data.session)await sbAfterLogin(data.session.user);else toast('Check your email to confirm');return null}
-async function sbSignOut(){if(sb)await sb.auth.signOut();sbUser=null;if(cloudTimer)clearInterval(cloudTimer);cloudTimer=null;RO=false;ROcloud=false;D=null;clearSession();authView('in')}
-
 // ---------- storage
 const key=u=>'bloom_d_'+u;
 const blank=()=>({p:{},logs:{},tasks:[],done:{},meals:{},journal:[],plan:{},cons:true,rem:{on:false,time:'20:00'}});
@@ -419,35 +401,33 @@ const clearSession=()=>{try{ST.del('bloom_s');sessionStorage.removeItem('bloom_s
 const getSession=()=>{let v=null;try{v=sessionStorage.getItem('bloom_s')}catch(e){}return v||ST.get('bloom_s')||mem.s||null};
 // ---------- partner sync (read-only sharing)
 let RO=false,ROowner=null,ROcloud=false;
-const CODES=()=>J('bloom_codes',{});
 function makeCode(){const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<6;i++)s+=A[Math.floor(Math.random()*A.length)];return s}
 async function genPartnerCode(){
  const client=await sbInit();
  if(!client||!sbUser){toast('Partner sync needs an internet connection');return null}
- const map=CODES();let c=makeCode();while(map[c])c=makeCode();
+ let c=makeCode();
  try{
   const {error}=await client.rpc('bloom_create_partner_code',{p_code:c});
   if(error){toast('Could not create code: '+(error.message||'try again'));return null}
  }catch(e){toast('Could not create code: '+(e.message||'try again'));return null}
- // verify it really landed in the cloud
  try{
   const {data:rows}=await client.from('bloom_partners').select('code').eq('code',c).limit(1);
   if(!rows||!rows.length){toast('Code was not saved - try again');return null}
  }catch(e){}
- map[c]=user;ST.set('bloom_codes',JSON.stringify(map));
  D.partner={code:c,on:true};save();
  toast('Code ready \u00b7 works on any device');
  return c}
-async function revokePartnerCode(){const map=CODES();if(D.partner&&D.partner.code)delete map[D.partner.code];ST.set('bloom_codes',JSON.stringify(map));D.partner={code:'',on:false};save();
- if(sbUser){try{const client=await sbInit();if(client)await client.rpc('bloom_revoke_partner_codes')}catch(e){}}}
-function partnerOwner(code){return CODES()[String(code||'').trim().toUpperCase()]||null}
-function exitPartner(){RO=false;ROowner=null;D=null;clearSession();authView('in')}
+async function revokePartnerCode(){
+ const client=await sbInit();
+ if(client&&sbUser){try{await client.rpc('bloom_revoke_partner_codes')}catch(e){}}
+ D.partner={code:'',on:false};save();
+ toast('Code revoked')}
+function exitPartner(){RO=false;ROowner=null;D=null;clearSession();
+ const own=ST.get('bloom_own');
+ if(own&&sbUser){setSession(own);sbAfterLogin(sbUser);return}
+ authView('in')}
 function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.display='none',2200)}
-// ---------- auth (device-local)
-const hex=b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
-async function hash(pw,salt){try{const k=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveBits']);return hex(await crypto.subtle.deriveBits({name:'PBKDF2',salt:new TextEncoder().encode(salt),iterations:150000,hash:'SHA-256'},k,256))}catch(e){return 'x'+pw.length+btoa(pw+salt)}}
-const users=()=>J('bloom_users',{});
-let authReturn='';
+// ---------- auth (online accounts only)
 async function redeemCode(code,onErr){
  const c=String(code||'').trim().toUpperCase();
  if(!c){onErr('Enter a sync code.');return false}
@@ -464,8 +444,7 @@ async function redeemCode(code,onErr){
  if(!Object.keys(D.logs||{}).length)toast('No logs shared yet');
  return true
 }
-function authView(mode){mode=mode||'in';const pt=mode=='partner';
- const tabs=`<div class="row" style="gap:8px;margin:12px 0 16px"><button class="chip" data-am="in" aria-pressed="${!pt}">Account</button><button class="chip" data-am="partner" aria-pressed="${pt}">Partner</button></div>`;
+function authView(mode){mode=mode||'in';
  const acct=`<h2>${mode=='in'?'Welcome back':'Create your account'}</h2>
 <label for="u">Email</label><input id="u" type="email" inputmode="email" autocomplete="email" maxlength="80" placeholder="you@example.com">
 <label for="pw">Password (6+ characters)</label><input id="pw" type="password" autocomplete="${mode=='in'?'current-password':'new-password'}">
@@ -473,40 +452,20 @@ ${mode=='up'?'<label for="pw2">Confirm password</label><input id="pw2" type="pas
 <div class="err" id="err" role="alert"></div>
 <button class="btn" style="width:100%" id="go">${mode=='in'?'Log in':'Create account'}</button>
 <p class="meta" style="text-align:center;margin-top:14px"><button class="btn ghost sm" id="sw">${mode=='in'?'New here? Create account':'Have an account? Log in'}</button></p>`;
-const part=`<h2>Partner view</h2><p class="meta" style="margin:0 0 4px">Enter the sync code from the account you want to follow.</p><label for="pc">Sync code</label><input id="pc" maxlength="6" autocapitalize="characters" autocomplete="off" placeholder="ABC123"><div class="err" id="err" role="alert"></div><button class="btn" style="width:100%" id="go">Open partner view</button>`;
-$('#app').innerHTML=`<div class="auth"><div class="card"><div class="brand">Bloom</div>${authReturn?'<p class="meta" style="margin:0 0 4px">Optional \u00b7 your app works without an account.</p>':''}${tabs}${pt?part:acct}${authReturn?'<button class="btn ghost" id="authBack" style="width:100%;margin-top:14px">Not now</button>':''}</div></div>`;
- if(authReturn)document.getElementById('authBack').onclick=()=>{authReturn='';view='me';shell()};
- document.querySelectorAll('[data-am]').forEach(b=>b.onclick=()=>authView(b.dataset.am));
- if(pt){$('#go').onclick=()=>redeemCode($('#pc').value,e=>$('#err').textContent=e);
-  $('#pc').onkeydown=e=>{if(e.key=='Enter')$('#go').click()};
-  return}
+$('#app').innerHTML=`<div class="auth"><div class="card"><div class="brand">Bloom</div>${acct}</div></div>`;
  $('#sw').onclick=()=>authView(mode=='in'?'up':'in');
  const sub=async()=>{const u=$('#u').value.trim().toLowerCase(),pw=$('#pw').value,er=$('#err');er.textContent='';
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(u))return er.textContent='Enter a valid email address.';
   if(pw.length<6)return er.textContent='Password needs at least 6 characters.';
-  const all=users();
-  const local=all[u];
-  // 1) an account created on THIS device wins - it owns the data
-  if(local&&local.h){
-   if(mode=='up')return er.textContent='That email is already registered on this device. Try logging in.';
-   if(local.h!==await hash(pw,local.salt))return er.textContent='Incorrect email or password.';
-   login(u);return}
-  // 2) no device account -> the cloud (this is where a new account is made)
-  if(mode=='up'&&local&&local.cloud)return er.textContent='That email already has a cloud account. Try logging in.';
   const client=await sbInit();
-  if(client){
-   if(mode=='up'){if($('#pw2').value!==pw)return er.textContent='Passwords don\u2019t match.';if(!$('#cons').checked)return er.textContent='Please give consent to continue.';
-    const e=await sbSignUp(u,pw);if(e)er.textContent=e;return}
-   const e=await sbSignIn(u,pw);if(e)er.textContent=e;return}
-  if(!/^[a-z0-9_.@-]{3,60}$/.test(u))return er.textContent='Email: 3\u201360 characters.';
-  if(mode=='up'){if(pw!==$('#pw2').value)return er.textContent='Passwords don\u2019t match.';if(!$('#cons').checked)return er.textContent='Please give consent to continue.';
-   const salt=hex(crypto.getRandomValues(new Uint8Array(12)));all[u]={salt,h:await hash(pw,salt)};ST.set('bloom_users',JSON.stringify(all));ST.set(key(u),JSON.stringify(blank()));}
-  login(u)};
- $('#go').onclick=sub;$('#pw').onkeydown=e=>{if(e.key=='Enter'&&mode=='in')sub()};
- if(mode=='in'&&!$('#u').value){const known=Object.keys(users());if(known.length===1)$('#u').value=known[0]}
+  if(!client)return er.textContent='You need an internet connection to sign in.';
+  if(mode=='up'){if($('#pw2').value!==pw)return er.textContent='Passwords don\u2019t match.';if(!$('#cons').checked)return er.textContent='Please give consent to continue.';
+   const e=await sbSignUp(u,pw);if(e)er.textContent=e;return}
+  const e=await sbSignIn(u,pw);if(e)er.textContent=e;return};
+ $('#go').onclick=sub;$('#pw').onkeydown=e=>{if(e.key=='Enter'&&mode=='in')sub()}
 }
 function login(u){user=u;D=Object.assign(blank(),J(key(u),{}));setSession(u);applyTheme();view='cycle';shell()}
-function logout(){user=null;D=null;clearSession();if(sb){sb.auth.signOut().catch(()=>{});sbUser=null}if(cloudTimer){clearInterval(cloudTimer);cloudTimer=null}authView('in')}
+function logout(){user=null;D=null;clearSession();try{ST.del('bloom_own')}catch(e){}if(user)ST.del(key(user));if(sb){sb.auth.signOut().catch(()=>{});sbUser=null}if(cloudTimer){clearInterval(cloudTimer);cloudTimer=null}authView('in')}
 function applyTheme(){document.documentElement.removeAttribute('data-theme')}
 // ---------- helpers
 const L=d=>D.logs[d]||{};
@@ -620,23 +579,48 @@ function shell(){splashAppIsReady();
  if(RO){const raw=ST.get(key(ROowner));if(raw!=null){roHash=roHashOf(raw);D=Object.assign(blank(),J(key(ROowner),{}))}}
  if(!D.p.done&&!RO){return onboarding()}
  const N=[['cycle','Cycle',IC.ring],['planner','Planner',IC.list],['insights','Insights',IC.chart],['learn','Learn',IC.book]];
- $('#app').innerHTML=`<div class="blob blob-a"></div><div class="blob blob-b"></div><div class="blob blob-c"></div><div class="wrap"><header class="topbar"><div class="wordmark">Bloom<i>.</i></div>${RO?`<div class="row" style="gap:8px"><span class="pchip">Partner view</span><button class="btn ghost sm" id="exitp">Exit</button></div>`:`<button class="profbtn" id="me" aria-label="Profile and settings">${avatarHTML(44)}<span>${E(D.p.name||user)}</span></button>`}</header><main id="main"></main></div><nav aria-label="Main">${N.map(([k,l,ic])=>`<button data-v="${k}" ${view==k?'aria-current="page"':''}>${ic(17)}<span>${l}</span></button>`).join('')}</nav>`;
+ $('#app').innerHTML=`<div class="blob blob-a"></div><div class="blob blob-b"></div><div class="blob blob-c"></div><div class="wrap"><header class="topbar"><div class="wordmark">Bloom<i>.</i></div>${RO?`<div class="row" style="gap:8px"><span class="pchip">Following ${E((D.p&&D.p.name)||'partner')}</span><button class="btn ghost sm" id="exitp">Exit</button></div>`:`<button class="profbtn" id="me" aria-label="Profile and settings">${avatarHTML(44)}<span>${E(D.p.name||user)}</span></button>`}</header><main id="main"></main></div><nav aria-label="Main">${N.map(([k,l,ic])=>`<button data-v="${k}" ${view==k?'aria-current="page"':''}>${ic(17)}<span>${l}</span></button>`).join('')}</nav>`;
  if(RO){document.getElementById('exitp').onclick=exitPartner;roTimer=setInterval(roReload,4000)}
  document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{view=b.dataset.v;shell()});$('#me').onclick=()=>{view='me';shell()};
  if(view=='me')document.querySelector('nav [aria-current]')?.removeAttribute('aria-current');
  ({cycle:cyclePage,month:monthView,planner,insights,learn,me})[view]()}
-function onboarding(){splashAppIsReady();const p=D.p;const steps=[
+function onboarding(){splashAppIsReady();const p=D.p;if(p.role==='me'&&onbStep===0)onbStep=1;
+ if(p.role==='partner'){partnerOnboard();return}
+ const steps=[
+`<div class="rolepick">
+ <button class="rolebtn" data-role="me"><b>For me</b><span>Track my own cycle, symptoms and goals</span></button>
+ <button class="rolebtn" data-role="partner"><b>Following someone</b><span>See a partner's cycle read-only with their sync code</span></button>
+</div>`,
 `<h2>What should we call you?</h2><label for="nm">Nickname</label><input id="nm" value="${E(p.name)}" maxlength="30"><label for="dx">PCOS/PMOS diagnosis</label><div class="chiprow" id="dxChips" role="group" aria-label="Diagnosis">${['','diagnosed','suspected','none'].map(v=>`<button type="button" class="chip dx-chip ${(p.dx||'')==v?'on':''}" data-dx="${v}" aria-pressed="${(p.dx||'')==v}">${v?'':'Prefer not to say'}${v=='diagnosed'?'Diagnosed':''}${v=='suspected'?'Suspected':''}${v=='none'?'Not diagnosed / learning':''}</button>`).join('')}</div><input id="dx" type="hidden" value="${p.dx||''}">`,
 `<h2>Your goals</h2><div class="row" id="goals" style="flex-wrap:wrap;gap:8px">${GOALS.map(g=>`<button class="chip" aria-pressed="${(p.goals||[]).includes(g)}">${g}</button>`).join('')}</div>`,
 `<h2>Your cycle</h2>${chipField('cy','Typical cycle',[['','Not sure'],['reg','Fairly regular'],['irr','Irregular'],['none','Rarely/no periods']],p.cy||'')}<label for="food">Food preferences</label><input id="food" value="${E(p.food||'')}" placeholder="No pork, vegetarian">${chipField('act','Preferred activity',[['walk','Walking'],['strength','Strength'],['stretch','Stretching / yoga']],p.act||'walk')}`];
- $('#app').innerHTML=`<div class="auth"><div class="card" style="display:flex;flex-direction:column;gap:24px;padding:28px 24px 32px"><div class="lbl">Step ${onbStep+1} of 3</div><div style="display:flex;flex-direction:column;gap:18px">${steps[onbStep]}</div><div class="row sp" style="margin-top:8px"><button class="btn ghost" id="sk">Skip</button><button class="btn" id="nx">${onbStep==2?'Finish':'Next'}</button></div></div></div>`;
- document.querySelectorAll('#goals .chip').forEach(c=>c.onclick=()=>c.setAttribute('aria-pressed',c.getAttribute('aria-pressed')!='true'));
+ if(onbStep===0){
+  $('#app').innerHTML=`<div class="auth"><div class="card" style="display:flex;flex-direction:column;gap:22px;padding:28px 24px 32px"><h2 style="margin:0">Who is Bloom for?</h2><div style="display:flex;flex-direction:column;gap:18px">${steps[0]}</div><p class="note">You can change this later in your profile.</p></div></div>`;
+  document.querySelectorAll('.rolebtn').forEach(b=>b.onclick=()=>{p.role=b.dataset.role;save();
+   if(p.role==='partner'){partnerOnboard();return}
+   onbStep=1;onboarding()});
+  return}
+ $('#app').innerHTML=`<div class="auth"><div class="card" style="display:flex;flex-direction:column;gap:24px;padding:28px 24px 32px"><div class="lbl">Step ${onbStep} of 3</div><div style="display:flex;flex-direction:column;gap:18px">${steps[onbStep]}</div><p class="note">Not a diagnosis. Severe pain, very heavy bleeding or sudden symptoms need prompt medical care.</p><div class="row sp" style="margin-top:8px"><button class="btn ghost" id="sk">Skip</button><button class="btn" id="nx">${onbStep===3?'Finish':'Next'}</button></div></div></div>`;
+ document.querySelectorAll('#goals .chip').forEach(c=>c.onclick=()=>c.setAttribute('aria-pressed',c.getAttribute('aria-pressed')!=='true'));
  document.querySelectorAll('.dx-chip').forEach(c=>c.onclick=()=>{const v=c.dataset.dx;document.querySelectorAll('.dx-chip').forEach(x=>{x.classList.toggle('on',x.dataset.dx===v);x.setAttribute('aria-pressed',x.dataset.dx===v)});$('#dx').value=v;});
  bindFields();
- const grab=()=>{if(onbStep==0){p.name=$('#nm').value.trim();p.dx=$('#dx').value}if(onbStep==1)p.goals=[...document.querySelectorAll('#goals .chip[aria-pressed=true]')].map(c=>c.textContent);if(onbStep==2){p.cy=$('#cy').value;p.food=$('#food').value.trim();p.act=$('#act').value}};
- const nx=()=>{if(onbStep==2){p.done=true;if(!D.tasks.length)genPlan(true);save();view='cycle';return shell()}onbStep++;save();onboarding()};
- const skipAll=()=>{if(onbStep<2){onbStep=2;save();onboarding();return}nx()};
+ const grab=()=>{if(onbStep===1){p.name=$('#nm').value.trim();p.dx=$('#dx').value}if(onbStep===2)p.goals=[...document.querySelectorAll('#goals .chip[aria-pressed=true]')].map(c=>c.textContent);if(onbStep===3){p.cy=$('#cy').value;p.food=$('#food').value.trim();p.act=$('#act').value}};
+ const nx=()=>{if(onbStep===3){p.done=true;if(!D.tasks.length)genPlan(true);save();view='cycle';return shell()}onbStep++;save();onboarding()};
+ const skipAll=()=>{if(onbStep<3){onbStep=3;save();onboarding();return}nx()};
  $('#nx').onclick=()=>{grab();nx()};$('#sk').onclick=()=>{grab();skipAll()}}
+function partnerOnboard(){
+ const p=D.p;
+ $('#app').innerHTML=`<div class="auth"><div class="card" style="display:flex;flex-direction:column;gap:20px;padding:28px 24px 32px">
+  <h2 style="margin:0">Enter the sync code</h2>
+  <p class="meta" style="margin:0">Ask the person you want to follow for their 6-character code.</p>
+  <input id="pc" maxlength="6" autocapitalize="characters" autocomplete="off" placeholder="ABC123" style="text-transform:uppercase;margin:0">
+  <div class="err" id="err" role="alert"></div>
+  <div class="row" style="gap:10px;margin-top:6px"><button class="btn ghost" id="pBack" style="flex:1">Back</button><button class="btn" id="pGo" style="flex:1">Open</button></div>
+ </div></div>`;
+ $('#pBack').onclick=()=>{p.role='';save();onbStep=0;onboarding()};
+ $('#pGo').onclick=async()=>{const er=$('#err');er.textContent='';await redeemCode($('#pc').value,m=>er.textContent=m)};
+ $('#pc').onkeydown=e=>{if(e.key=='Enter')$('#pGo').click()}}
+
 function genPlan(silent){const a={walk:'Walk 20 minutes',strength:'Strength: 15-minute beginner routine',stretch:'Stretching 10 minutes'}[D.p.act||'walk'];
  const base=[['Drink water through the day'],['Breakfast, lunch and dinner'],[a,[1,3,5]],['Wind down & lights out on time'],['5 slow breaths'],['Take medicine as prescribed (if applicable)']];
  base.forEach(([t,days])=>{if(!D.tasks.some(x=>x.t==t))D.tasks.push({id:uid(),t,days})});save();if(!silent)toast('Plan added')}
@@ -668,67 +652,12 @@ function funNow(){const total=TRIVIA.length+TIPS.length,k=((funPos%total)+total)
 function paintFun(){const t=document.getElementById('funText'),g=document.getElementById('funTag');
  if(!t)return;const f=funNow();t.textContent=f.text;if(g)g.textContent=f.tag}
 function startFun(){if(funTimer)clearInterval(funTimer);funTimer=setInterval(()=>{funPos++;paintFun()},5000)}
-function partnerView(){const d=today(),l=L(d);const c=cycleStats(),len=c.avg||28,day=c.last?Math.round((new Date(today())-new Date(c.last))/864e5)+1:1,dt=((day-1)%len)+1;
- let left=len-(dt-1);if(left<=0)left+=len;
- const ph=c.last?phaseInfo(dt,len):{k:'\u2014',t:'No cycle yet',c:'var(--muted)'},first=(D.p.name||'friend').split(' ')[0],goal=D.p.waterGoal||8;
- const mood7=[...Array(7)].map((_,i)=>L(addD(d,-i)).mood).filter(x=>x!=null);
- const energy7=[...Array(7)].map((_,i)=>L(addD(d,-i)).energy).filter(x=>x!=null);
- const avgMood=mood7.length?Math.round(mood7.reduce((a,b)=>a+b,0)/mood7.length*10)/10:'—';
- const avgEnergy=energy7.length?Math.round(energy7.reduce((a,b)=>a+b,0)/energy7.length*10)/10:'—';
- const startsArr=starts();const cycles=startsArr.length>=2?startsArr.length-1:0;
- if(!Object.keys(D.logs).length){$('#main').innerHTML=`<div class="partner-empty"><svg viewBox="0 0 80 80" style="width:64px;height:64px;margin:0 auto 16px;opacity:.5" role="img" aria-hidden="true"><circle cx="40" cy="40" r="36" fill="none" stroke="var(--pink)" stroke-width="3" stroke-dasharray="8 6"/><path d="M24 40c0-8.8 7.2-16 16-16s16 7.2 16 16" fill="none" stroke="var(--pink)" stroke-width="3" stroke-linecap="round"/><circle cx="40" cy="32" r="6" fill="var(--pink)"/></svg><h2 style="margin:0 0 8px">No logs shared yet</h2><p class="meta">Your partner hasn't logged anything to share.</p></div>`;return}
- $('#main').innerHTML=`
- <div class="partner-header">
-  <div class="partner-avatar">${avatarHTML(56)}</div>
-  <div class="partner-info">
-   <h1 style="margin:0 0 4px">Viewing ${E(first)}'s cycle</h1>
-   <p class="meta" style="margin:0">Read-only • Updates automatically</p>
-  </div>
-  <button class="btn ghost sm" id="exitp" style="margin-left:auto">Exit</button>
- </div>
- <div class="partner-grid">
-  <div class="statcard"><span class="statnum">${c.last?dt:'\u2014'}</span><span class="statlbl">Cycle day</span></div>
-  <div class="statcard"><span class="statnum">${ph.k}</span><span class="statlbl">Phase</span></div>
-  <div class="statcard"><span class="statnum">${avgMood}</span><span class="statlbl">Avg mood (7d)</span></div>
-  <div class="statcard"><span class="statnum">${avgEnergy}</span><span class="statlbl">Avg energy (7d)</span></div>
-  <div class="statcard"><span class="statnum">${l.water||0}/${goal}</span><span class="statlbl">Water today</span></div>
-  <div class="statcard"><span class="statnum">${c.last?left:'\u2014'}</span><span class="statlbl">Days until next</span></div>
-  <div class="statcard"><span class="statnum">${cycles}</span><span class="statlbl">Cycles logged</span></div>
-  <div class="statcard"><span class="statnum">${len}</span><span class="statlbl">Avg cycle (days)</span></div>
- </div>
- <div class="partner-charts">
-  <div class="chartcard">
-   <div class="chart-h"><h3>Mood (7 days)</h3><span class="meta">Current: ${l.mood?l.mood+'/5':'—'}</span></div>
-   ${miniBars('mood',7,'var(--rose)')}
-  </div>
-  <div class="chartcard">
-   <div class="chart-h"><h3>Energy (7 days)</h3><span class="meta">Current: ${l.energy?l.energy+'/5':'—'}</span></div>
-   ${miniBars('energy',7,'var(--teal)')}
-  </div>
- </div>
- <div class="partner-details">
-  <div class="card"><div class="card-h"><h3>Today's log</h3></div>
-   <div class="kv"><span>Mood</span><b>${l.mood?l.mood+'/5':'—'}</b></div>
-   <div class="kv"><span>Energy</span><b>${l.energy?l.energy+'/5':'—'}</b></div>
-   <div class="kv"><span>Water</span><b>${l.water||0}/${goal}</b></div>
-   <div class="kv"><span>Sleep</span><b>${l.sleep?l.sleep+' h':'—'}</b></div>
-   <div class="kv"><span>Meals</span><b>${(D.meals[d]||[]).length}</b></div>
-   <div class="kv"><span>Symptoms</span><b>${l.tags&&l.tags.length?l.tags.join(', '):'—'}</b></div>
-  </div>
-  <div class="card"><div class="card-h"><h3>Cycle history</h3></div>
-   ${c.n>=2?`<p class="meta" style="margin:0 0 12px">Average: ${c.avg} days · Range: ${c.min}–${c.max} · Last start: ${fmt(c.last)}</p>
-    <div class="bar" style="height:8px"><i style="width:${Math.min(100,(dt/len)*100)}%"></i></div>
-    <div class="row" style="margin-top:6px;justify-content:space-between"><span class="meta">Day 1</span><span class="meta">Day ${len}</span></div>`:`<p class="meta">Log 3+ period starts to see cycle patterns.</p>`}
-  </div>
- </div>`;
- document.getElementById('exitp').onclick=exitPartner}
 function cyclePage(){const d=today(),l=L(d),ts=tasksFor(d),n=ts.filter(t=>isDone(t.id,d)).length;const h=new Date().getHours();
  const m=D.meals[d]||[];const wk=[...Array(7)].map((_,i)=>addD(d,-i)),wd=wk.reduce((a,x)=>a+tasksFor(x).filter(t=>isDone(t.id,x)).length,0),wt=wk.reduce((a,x)=>a+tasksFor(x).length,0);
  const c=cycleStats(),len=c.avg||28,day=c.last?Math.round((new Date(today())-new Date(c.last))/864e5)+1:1,dt=((day-1)%len)+1;
  let left=len-(dt-1);if(left<=0)left+=len;
  const ph=c.last?phaseInfo(dt,len):{k:'\u2014',t:'No cycle yet',c:'var(--muted)'},first=(D.p.name||'friend').split(' ')[0],goal=D.p.waterGoal||8;
 
- if(RO){partnerView();return}
  $('#main').innerHTML=`
  <div class="greet"><h1 class="sr">Cycle</h1><div class="hi">${h<12?'Good morning':h<18?'Good afternoon':'Good evening'},</div><div class="hi nm">${E(first)}</div><div class="date">${fmt(d,{weekday:'long',month:'long',day:'numeric'})}</div></div>
  <div class="ringwrap"><div class="ringdisc"></div>${ringSVG()}<div class="ringcenter"><div class="ringlbl">${c.last?'Day':'Cycle'}</div><div class="ringday">${c.last?dt:'\u2014'}</div><div class="ringcap">${c.last?(c.n>=2?`of an average ${len}-day cycle`:'cycle day'):'Log a period to start'}</div><div class="ringpill">${c.last?(c.n>=2?`${left} day${left>1?'s':''} until next`:'Log to see estimates'):'No cycle yet'}</div></div></div>
@@ -1369,47 +1298,35 @@ function lTips(){const el=document.getElementById('lb');
  el.innerHTML=`<div class="row tabsrow" style="margin-bottom:4px">${['All',...cats].map(c=>`<button class="chip" data-tc="${E(c)}" aria-pressed="${f===c}">${E(c)}</button>`).join('')}</div>
  <div class="card" style="margin-top:8px"><div class="card-h"><h3 style="margin:0">${f==='All'?'Tips':E(f)}</h3><span class="meta">${list.length}</span></div>${list.map(x=>`<div class="kv"><span>${E(x[1])}</span></div>`).join('')}</div>`;
  el.querySelectorAll('[data-tc]').forEach(b=>b.onclick=()=>{tipCat=b.dataset.tc;lTips()})}
-function me(){const p=D.p;$('#main').innerHTML=`<h1>Profile</h1><div class="card"><div style="display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:20px">${avatarHTML(192)}<label class="btn ghost" for="av" style="display:inline-flex !important;align-items:center !important;justify-content:center !important;gap:8px !important;cursor:pointer !important;align-self:center">${IC.camera(18)} Change photo</label><input type="file" id="av" accept="image/*" hidden><p class="meta" style="margin:0;text-align:center">Your photo is stored on this device and in your account.</p></div><label for="nm">Nickname</label><input id="nm" value="${E(p.name)}" maxlength="30"><label>Goals</label><div class="row" id="goals">${GOALS.map(g=>`<button class="chip" aria-pressed="${(p.goals||[]).includes(g)}">${g}</button>`).join('')}</div><button class="btn" id="sv" style="width:100%;margin-top:12px">Save</button></div>
-<div class="card"><div class="card-h"><h3>Partner sync</h3>${D.partner&&D.partner.on?'<span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem;background:var(--pinkS);border-color:rgba(232,160,180,.6);color:var(--rose)">Active</span>':''}</div>
-${D.partner&&D.partner.on?`<p class="meta">Share this code. Your partner opens a read-only view of your logs — they cannot log or add notes.</p>${sbUser?'':''}<div class="syncbox"><span class="synccode">${E(D.partner.code)}</span><button class="btn ghost sm" id="cp">Copy</button></div><div class="row" style="gap:10px;margin-top:10px"><button class="btn ghost sm" id="pg" style="flex:1">New code</button><button class="btn ghost sm" id="pv" style="flex:1">Revoke</button></div>${sbUser?'':'<button class="btn ghost" id="signInSync" style="width:100%;margin-top:10px">Add an email (optional)</button>'}<button class="btn ghost" id="openPartner" style="width:100%;margin-top:10px">Open a partner view</button>`:`<div style="text-align:center;padding:24px 12px"><svg viewBox="0 0 80 80" style="width:64px;height:64px;margin:0 auto 16px;opacity:.5" role="img" aria-hidden="true"><circle cx="40" cy="40" r="36" fill="none" stroke="var(--pink)" stroke-width="3" stroke-dasharray="8 6"/><path d="M24 40c0-8.8 7.2-16 16-16s16 7.2 16 16" fill="none" stroke="var(--pink)" stroke-width="3" stroke-linecap="round"/><circle cx="40" cy="32" r="6" fill="var(--pink)"/></svg><h3 style="margin:0 0 6px">Invite a partner</h3><p class="meta" style="margin:0 0 16px">Share a 6-character code so they can see your cycle, mood, energy and insights — read-only, no editing.</p><button class="btn" id="gc" style="width:100%;max-width:280px">Create sync code</button></div>`}</div>
+function me(){const p=D.p;const hasCode=!!(D.partner&&D.partner.on&&D.partner.code);
+$('#main').innerHTML=`<h1>Profile</h1>
+<div class="card">
+ <div style="display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:20px">${avatarHTML(192)}<label class="btn ghost" for="av" style="display:inline-flex !important;align-items:center !important;justify-content:center !important;gap:8px !important;cursor:pointer !important;align-self:center">${IC.camera(18)} Change photo</label><input type="file" id="av" accept="image/*" hidden></div>
+ <label for="nm">Nickname</label><input id="nm" value="${E(p.name)}" maxlength="30">
+ <label>Goals</label><div class="row" id="goals">${GOALS.map(g=>`<button class="chip" aria-pressed="${(p.goals||[]).includes(g)}">${g}</button>`).join('')}</div>
+ <button class="btn" id="sv" style="width:100%;margin-top:12px">Save</button>
+</div>
+<div class="card"><div class="card-h"><h3>Sync code</h3>${hasCode?'<span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem;background:var(--pinkS);border-color:rgba(232,160,180,.6);color:var(--rose)">Active</span>':''}</div>
+ ${hasCode?`<p class="meta">Share this code with a partner. They will see your cycle, mood and energy read-only.</p><div class="syncbox"><span class="synccode">${E(D.partner.code)}</span><button class="btn ghost sm" id="cp">Copy</button></div><div class="row" style="gap:10px;margin-top:10px"><button class="btn ghost sm" id="pg" style="flex:1">New code</button><button class="btn ghost sm" id="pv" style="flex:1">Revoke</button></div>`
+ :`<p class="meta">Create a code so someone you trust can follow your cycle read-only. You can revoke it any time.</p><button class="btn" id="gc" style="width:100%">Generate sync code</button>`}
+</div>
 <div class="card"><div class="card-h"><h3>Reminder</h3></div><label class="row" style="color:var(--ink)"><input type="checkbox" id="rm" style="width:22px;margin:0" ${D.rem.on?'checked':''}> Daily logging reminder</label><label for="rt">Time</label><input id="rt" type="time" value="${D.rem.time}"><button class="btn ghost" id="rs" style="width:100%;margin-top:4px">Save reminder</button><p class="meta" style="margin-top:10px">Web version: no push notifications.</p></div>
-<div class="card"><div class="card-h"><h3>Account</h3></div>
- <div class="kv"><span>Cloud account</span><b style="font-size:.9rem">${sbUser?(sbUser.email||'Anonymous (this device)'):'Not connected'}</b></div>
- <div class="kv"><span>Local profile</span><b style="font-size:.9rem">${E(user||'—')}</b></div>
- ${sbUser&&sbUser.email?'':'<button class="btn ghost" id="acctSignIn" style="width:100%;margin-top:12px">Add an email (optional)</button>'}
- <p class="meta" style="margin:10px 0 0">Optional. Everything already works without it. Add an email only if you want your history and partner link to survive clearing this phone.</p></div>
-<div class="card"><div class="card-h"><h3>Cloud sync</h3><span class="meta">${syncState.ok===true?'Up to date':syncState.ok===false?'Failed':'Not synced yet'}</span></div>
- <p class="meta" style="margin:0 0 10px">${sbUser?(sbUser.email||'Anonymous device account'):'No cloud account'}${syncState.at?' \u00b7 last sync '+new Date(syncState.at).toLocaleTimeString():''}</p>
- ${syncState.err?`<p class="meta" style="margin:0 0 10px;color:#B8456B">${E(syncState.err)}</p>`:''}
- <button class="btn ghost" id="syncNow" style="width:100%">Sync now</button></div>
 <div class="card"><div class="card-h"><h3>App</h3><span class="meta" id="appVer">\u2014</span></div><button class="btn ghost" id="chkUp" style="width:100%">Check for updates</button></div>
-<div class="card"><div class="card-h"><h3>Data</h3></div><button class="btn ghost" id="xj" style="width:100%">Export all data</button><button class="btn pink" id="del" style="width:100%;margin-top:10px">Delete all my data</button></div><button class="btn ghost" id="lo" style="width:100%">Log out</button>`;
- document.querySelectorAll('#goals .chip').forEach(c=>c.onclick=()=>c.setAttribute('aria-pressed',c.getAttribute('aria-pressed')!='true'));
+<div class="card"><div class="card-h"><h3>Data</h3></div><button class="btn ghost" id="xj" style="width:100%">Export all data</button><button class="btn pink" id="del" style="width:100%;margin-top:10px">Delete all my data</button></div>
+<button class="btn ghost" id="lo" style="width:100%">Log out</button>`;
+ document.querySelectorAll('#goals .chip').forEach(c=>c.onclick=()=>c.setAttribute('aria-pressed',c.getAttribute('aria-pressed')!=='true'));
  $('#sv').onclick=()=>{p.name=$('#nm').value.trim();p.goals=[...document.querySelectorAll('#goals .chip[aria-pressed=true]')].map(c=>c.textContent);D.rem={on:$('#rm').checked,time:$('#rt').value||'20:00'};save();applyTheme();toast('Saved');shell()};
  $('#av').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f)pickAvatar(f)};
  const saveRem=()=>{D.rem={on:$('#rm').checked,time:$('#rt').value||'20:00'};save();toast('Reminder saved')};
  $('#rs').onclick=saveRem;$('#rt').onchange=saveRem;$('#rm').onchange=saveRem;
  $('#xj').onclick=()=>saveFile('bloom-data.json',JSON.stringify(D,null,1));$('#lo').onclick=logout;
- $('#chkUp').onclick=()=>checkUpdate(true);
- (async()=>{const up=updater();if(!up)return;try{const v=await up.getVersion();const el=document.getElementById('appVer');if(el)el.textContent='v'+v.versionName+' ('+v.versionCode+')'}catch(e){}})();
- if(document.getElementById('gc'))$('#gc').onclick=async()=>{await genPartnerCode();me()};
- if(document.getElementById('signInSync'))$('#signInSync').onclick=()=>{authReturn='me';authView(sbUser&&sbUser.email?'in':'up')};
- if(document.getElementById('syncNow'))$('#syncNow').onclick=async()=>{toast('Syncing\u2026');await sbInit();await sbPush();me();toast(syncState.ok?'Synced to the cloud':'Sync failed: '+syncState.err)};
- if(document.getElementById('acctSignIn'))$('#acctSignIn').onclick=()=>{authReturn='me';authView(sbUser&&sbUser.email?'in':'up')};
- if(document.getElementById('openPartner'))$('#openPartner').onclick=()=>{
-  sheet(`<h2>Open partner view</h2><p class="meta" style="margin:0 0 12px">Enter the 6-character code your partner shared with you.</p>
- <input id="pvCode" maxlength="6" autocapitalize="characters" autocomplete="off" placeholder="ABC123" style="margin:0 0 10px">
- <div class="err" id="pvErr" role="alert"></div>
- <div class="row" style="gap:10px;margin-top:12px"><button class="btn ghost" id="pvCancel" style="flex:1">Cancel</button><button class="btn" id="pvGo" style="flex:1">Open</button></div>`);
-  $('#pvCancel').onclick=()=>sheet();
-  $('#pvGo').onclick=async()=>{const er=$('#pvErr');er.textContent='';await redeemCode($('#pvCode').value,m=>er.textContent=m)};
-  $('#pvCode').onkeydown=e=>{if(e.key=='Enter')$('#pvGo').click()};
- };
+ if(document.getElementById('gc'))$('#gc').onclick=async()=>{const c=await genPartnerCode();if(c)me()};
  if(document.getElementById('cp'))$('#cp').onclick=async()=>{try{await navigator.clipboard.writeText(D.partner.code);toast('Code copied')}catch(e){toast(D.partner.code)}};
  if(document.getElementById('pg'))$('#pg').onclick=async()=>{await genPartnerCode();me()};
  if(document.getElementById('pv'))$('#pv').onclick=async()=>{if(!confirm('Revoke this sync code? Your partner will lose access.'))return;await revokePartnerCode();me();toast('Code revoked')};
- $('#del').onclick=()=>{if(!confirm('Delete your account and ALL records on this device? This cannot be undone.'))return;const a=users();delete a[user];ST.set('bloom_users',JSON.stringify(a));const b=blank();b.p={done:true,name:'Guest',goals:[]};ST.set(key(user),JSON.stringify(b));logout()}}
-// ---------- flower splash ----------
+ if(document.getElementById('chkUp'))$('#chkUp').onclick=()=>checkUpdate(true);
+ (async()=>{const up=updater();if(!up)return;try{const v=await up.getVersion();const el=document.getElementById('appVer');if(el)el.textContent='v'+v.versionName+' ('+v.versionCode+')'}catch(e){}})()}
+
 const SPLASH_MIN=2600,SPLASH_MAX=3200,RESUME_MIN=1800,RESUME_MAX=2400,SPLASH_AFTER_MS=180000;
 let splashDone=false,splashAppReady=false,splashT0=0,splashMin=SPLASH_MIN;
 function splashBgMark(){try{localStorage.setItem('bloom_last_bg',String(Date.now()))}catch(e){}}
@@ -1477,24 +1394,13 @@ if(splashShouldShow())splashPlay();else splashSkip();  // only after 3 minutes a
  if(s&&String(s).indexOf('p:')===0){const owner=String(s).slice(2);
   RO=true;ROowner=owner;
   const cached=J(key(owner),{});
-  if(cached&&(Object.keys(cached.logs||{}).length||Object.keys(cached.tasks||[]).length)){D=Object.assign(blank(),cached);view='cycle';shell();return}
   D=Object.assign(blank(),cached||{});view='cycle';shell();
   sbInit().then(async()=>{try{const doc=await sbFetchDoc(owner);
    if(doc&&(Object.keys(doc.logs||{}).length||Object.keys(doc.tasks||[]).length)){
     D=Object.assign(blank(),doc);roHash=roHashOf(JSON.stringify(doc));shell()}}catch(e){}});
   return}
- if(s&&users()[s]){login(s);
-  bootCloud(s);
-  setTimeout(()=>checkUpdate(false),1500);return}
  await sbInit();
  if(sbUser&&!RO){try{await sbAfterLogin(sbUser);setTimeout(()=>checkUpdate(false),1500);return}catch(e){}}
- // no session: if this device already has an account with data, do not wall the user out
- const localAccts=Object.keys(users()).filter(k=>{const d=J(key(k),{});return d&&d.p&&d.p.done});
- if(localAccts.length===1){const k=localAccts[0];user=k;setSession(k);D=Object.assign(blank(),J(key(k),{}));
-  bootCloud(k);setTimeout(()=>checkUpdate(false),1500);shell();return}
+ // no usable session -> the account screen (needs internet)
  authView('in')})();
-function bootCloud(localEmail){sbInit().then(async()=>{if(!sbUser||RO)return;
- const mail=(sbUser.email||'').toLowerCase();
- if(mail&&localEmail&&mail!==localEmail)return;
- try{await sbAfterLogin(sbUser)}catch(e){}})}
 </script></body></html>
