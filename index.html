@@ -69,6 +69,14 @@ p{margin:0;line-height:1.5}
 .statlbl{display:block;font-size:.75rem;color:#7C6B71;margin-top:4px;text-transform:uppercase;letter-spacing:.05em}
 .artbody p{margin:0 0 1.2em}
 .artbody strong{color:#B8456B}
+.field-btn{width:100%;text-align:left;padding:14px 16px;background:#F9F2ED;border:1.5px solid #EADFD2;border-radius:14px;color:#3A2E33;font:inherit;font-size:1rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;transition:background .15s,border-color .15s}
+.field-btn:hover{background:#F1E6D7;border-color:#E8A0B4}
+.field-btn:focus-visible{outline:2px solid #B8456B;outline-offset:2px}
+.field-btn .chev{color:#7C6B71;font-size:.8rem}
+.pickrow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 14px;background:#FFFBF5;border:1.5px solid #EADFD2;border-radius:14px;font:inherit;font-size:.92rem;font-weight:600;color:#3A2E33;cursor:pointer;transition:all .15s}
+.pickrow:hover{border-color:#E8A0B4;background:#FFF8F5;box-shadow:0 4px 12px rgba(184,69,107,.1)}
+.pickrow .sub{font-size:.75rem;color:#7C6B71;font-weight:400;margin-left:auto;white-space:nowrap}
+.cal button:disabled{opacity:.3}
 .spark{height:48px;margin-top:8px}
 .spark svg{width:100%;height:100%;display:block}
 .spark.empty{height:auto;font-size:.78rem;color:#7C6B71;opacity:.8;line-height:1.4}
@@ -313,6 +321,10 @@ async function sbPush(){if(!sb||!sbUser)return;const p=D.p||{};
 function sbPushSoon(){if(!sbUser)return;clearTimeout(sbPushT);sbPushT=setTimeout(sbPush,1200)}
 function startCloudSync(){if(cloudTimer)clearInterval(cloudTimer);cloudTimer=setInterval(()=>{if(sbUser)sbPush()},15000)}
 async function sbAfterLogin(u){sbUser=u;
+ const mail=(u.email||('sb:'+u.id)).toLowerCase();
+ user=mail;
+ const all=users();if(!all[mail]){all[mail]={cloud:1};ST.set('bloom_users',JSON.stringify(all))}
+ setSession(mail);
  const doc=await sbFetchDoc(u.id);
  if(doc)D=Object.assign(blank(),doc);
  try{const {data:prof}=await sb.from('bloom_profiles').select('*').eq('id',u.id).maybeSingle();
@@ -326,12 +338,16 @@ async function sbSignUp(email,pw){await sbInit();if(!sb)return 'offline';
  const {error}=await sb.auth.signUp({email:email.trim(),password:pw});
  if(error)return error.message;const {data}=await sb.auth.getSession();
  if(data.session)await sbAfterLogin(data.session.user);else toast('Check your email to confirm');return null}
-async function sbSignOut(){if(sb)await sb.auth.signOut();sbUser=null;if(cloudTimer)clearInterval(cloudTimer);cloudTimer=null;RO=false;ROcloud=false;D=null;try{sessionStorage.removeItem('bloom_s')}catch(e){}authView('in')}
+async function sbSignOut(){if(sb)await sb.auth.signOut();sbUser=null;if(cloudTimer)clearInterval(cloudTimer);cloudTimer=null;RO=false;ROcloud=false;D=null;clearSession();authView('in')}
 
 // ---------- storage
 const key=u=>'bloom_d_'+u;
 const blank=()=>({p:{},logs:{},tasks:[],done:{},meals:{},journal:[],plan:{},cons:true,rem:{on:false,time:'20:00'}});
-function save(){if(RO)return;ST.set(key(user),JSON.stringify(D));sbPushSoon()}
+function save(){if(RO||!user)return;ST.set(key(user),JSON.stringify(D));sbPushSoon()}
+// session must survive an app kill -> localStorage, not sessionStorage
+const setSession=v=>{try{ST.set('bloom_s',v);sessionStorage.setItem('bloom_s',v)}catch(e){}};
+const clearSession=()=>{try{ST.del('bloom_s');sessionStorage.removeItem('bloom_s')}catch(e){}delete mem.s};
+const getSession=()=>{let v=null;try{v=sessionStorage.getItem('bloom_s')}catch(e){}return v||ST.get('bloom_s')||mem.s||null};
 // ---------- partner sync (read-only sharing)
 let RO=false,ROowner=null,ROcloud=false;
 const CODES=()=>J('bloom_codes',{});
@@ -341,7 +357,7 @@ async function genPartnerCode(){const map=CODES();let c=makeCode();while(map[c])
 async function revokePartnerCode(){const map=CODES();if(D.partner&&D.partner.code)delete map[D.partner.code];ST.set('bloom_codes',JSON.stringify(map));D.partner={code:'',on:false};save();
  if(sbUser){try{await sb.rpc('bloom_revoke_partner_codes')}catch(e){}}}
 function partnerOwner(code){return CODES()[String(code||'').trim().toUpperCase()]||null}
-function exitPartner(){RO=false;ROowner=null;D=null;try{sessionStorage.removeItem('bloom_s')}catch(e){}delete mem.s;authView('in')}
+function exitPartner(){RO=false;ROowner=null;D=null;clearSession();authView('in')}
 function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.display='none',2200)}
 // ---------- auth (device-local)
 const hex=b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
@@ -370,12 +386,12 @@ $('#app').innerHTML=`<div class="auth"><div class="card"><div class="brand">Bloo
    const doc=await sbFetchDoc(data);
    D=Object.assign(blank(),doc||{});
    roHash=roHashOf(JSON.stringify(doc||{}));
-   try{sessionStorage.setItem('bloom_s','p:'+data)}catch(e){mem.s='p:'+data}
+   setSession('p:'+data)
    view='cycle';shell();return}
   const owner=partnerOwner(code);
   if(!owner)return er.textContent='That code is not valid.';
   RO=true;ROowner=owner;D=Object.assign(blank(),J(key(owner),{}));
-  try{sessionStorage.setItem('bloom_s','p:'+owner)}catch(e){mem.s='p:'+owner}
+  setSession('p:'+owner)
    view='cycle';shell()};
   $('#pc').onkeydown=e=>{if(e.key=='Enter')$('#go').click()};
   return}
@@ -396,8 +412,8 @@ $('#app').innerHTML=`<div class="auth"><div class="card"><div class="brand">Bloo
    login(u)};
  $('#go').onclick=sub;$('#pw').onkeydown=e=>{if(e.key=='Enter'&&mode=='in')sub()}
 }
-function login(u){user=u;D=Object.assign(blank(),J(key(u),{}));try{sessionStorage.setItem('bloom_s',u)}catch(e){mem.s=u}applyTheme();view='cycle';shell()}
-function logout(){user=null;D=null;try{sessionStorage.removeItem('bloom_s')}catch(e){}delete mem.s;if(sb)sb.auth.signOut().catch(()=>{});authView('in')}
+function login(u){user=u;D=Object.assign(blank(),J(key(u),{}));setSession(u);applyTheme();view='cycle';shell()}
+function logout(){user=null;D=null;clearSession();if(sb){sb.auth.signOut().catch(()=>{});sbUser=null}if(cloudTimer){clearInterval(cloudTimer);cloudTimer=null}authView('in')}
 function applyTheme(){document.documentElement.removeAttribute('data-theme')}
 // ---------- helpers
 const L=d=>D.logs[d]||{};
@@ -413,6 +429,59 @@ function toggle(id,d){D.done[d]=D.done[d]||{};D.done[d][id]=!D.done[d][id];save(
 const uid=()=>Math.random().toString(36).slice(2,9);
 function sheet(h){const s=$('#sheet');if(!h){s.innerHTML='';return}s.innerHTML=`<div class="sheet" id="sh"><div role="dialog" aria-modal="true">${h}</div></div>`;$('#sh').onclick=e=>{if(e.target.id=='sh')sheet()};const f=s.querySelector('input,select,textarea,button');f&&f.focus()}
 document.addEventListener('keydown',e=>{if(e.key=='Escape')sheet()});
+// ---------- pickers: chips + sheets instead of native dropdowns
+function chipField(id,label,opts,current){const cur=current==null?'':String(current);
+ return `<input type="hidden" id="${id}" value="${E(cur)}">
+ <div class="lbl" style="margin-top:16px">${E(label)}</div>
+ <div class="row" role="group" aria-label="${E(label)}" data-fg="${id}" style="flex-wrap:wrap;gap:8px">${opts.map(o=>`<button type="button" class="chip" data-v="${E(o[0])}" aria-pressed="${String(o[0])===cur}">${E(o[1])}</button>`).join('')}</div>`}
+function bindFields(){document.querySelectorAll('[data-fg]').forEach(g=>{const inp=document.getElementById(g.dataset.fg);if(!inp)return;
+ g.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{g.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed',x===c));inp.value=c.dataset.v})})}
+function sheetPick(title,items,onPick,ph){sheet(`<h2>${E(title)}</h2>${ph?`<input id="spq" type="search" placeholder="${E(ph)}" style="margin:0 0 10px">`:''}
+ <div id="spList" style="display:flex;flex-direction:column;gap:8px;max-height:54vh;overflow:auto">${items.map((it,i)=>`<button class="pickrow" data-i="${i}"><span>${E(it.t)}</span>${it.sub?`<span class="sub">${E(it.sub)}</span>`:''}</button>`).join('')}</div>`);
+ const list=document.getElementById('spList');
+ const wire=src=>list.querySelectorAll('.pickrow').forEach(b=>b.onclick=()=>{const it=src[+b.dataset.i];sheet();onPick(it)});
+ wire(items);
+ const q=document.getElementById('spq');
+ if(q)q.oninput=()=>{const v=q.value.trim().toLowerCase();
+  const f=items.filter(it=>it.t.toLowerCase().includes(v)||(it.sub||'').toLowerCase().includes(v));
+  list.innerHTML=f.map((it,i)=>`<button class="pickrow" data-i="${i}"><span>${E(it.t)}</span>${it.sub?`<span class="sub">${E(it.sub)}</span>`:''}</button>`).join('');
+  wire(f)}}
+// ---------- in-app updater
+const UPDATE_MANIFEST='https://raw.githubusercontent.com/delishworks-design/bloom/main/release/update.json';
+const updater=()=>((window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.BloomUpdater)||null);
+async function checkUpdate(manual){
+ const up=updater();if(!up){if(manual)toast('Updates are only available in the app');return}
+ try{
+  const v=await up.getVersion();
+  const res=await fetch(UPDATE_MANIFEST+'?t='+Date.now(),{cache:'no-store'});
+  if(!res.ok)throw new Error('manifest '+res.status);
+  const m=await res.json();
+  if(!m||!m.versionCode||m.versionCode<=v.versionCode){if(manual)toast('You are on the latest version');return}
+  showUpdateSheet(m,v);
+ }catch(e){if(manual)toast('Could not check for updates')}
+}
+function showUpdateSheet(m,v){
+ sheet(`<h2>Update available</h2><p class="meta" style="margin:0 0 4px">Version ${E(m.versionName||'')} \u00b7 you have ${E(v.versionName||'')}</p>${m.notes?`<p class="meta" style="margin:0 0 4px">${E(m.notes)}</p>`:''}
+ <div class="row" style="gap:10px;margin-top:18px"><button class="btn ghost" id="upLater" style="flex:1">Later</button><button class="btn" id="upNow" style="flex:1">Install</button></div>`);
+ $('#upLater').onclick=()=>sheet();
+ $('#upNow').onclick=async()=>{sheet();toast('Downloading\u2026');
+  try{await updater().installUpdate({url:m.url})}catch(e){toast('Install failed')}};
+}
+function dateSheet(title,cb){let m=today().slice(0,7);
+ const draw=()=>{const [y,mo]=m.split('-').map(Number),first=new Date(y,mo-1,1),dim=new Date(y,mo,0).getDate(),off=first.getDay();
+  let cells=['S','M','T','W','T','F','S'].map(x=>`<div class="calh" aria-hidden="true">${x}</div>`).join('');
+  for(let i=1;i<=dim;i++){const d=m+'-'+String(i).padStart(2,'0'),future=d>today();
+   cells+=`<button data-dd="${d}" class="${d==today()?'t':''}" ${future?'disabled':''} aria-label="${fmt(d,{weekday:'long',month:'long',day:'numeric'})}">${i}</button>`}
+  sheet(`<h2>${E(title)}</h2>
+ <div class="row sp" style="margin-bottom:10px"><button class="btn ghost sm" id="dpPrev" aria-label="Previous month">\u2039</button><strong>${first.toLocaleDateString(undefined,{month:'long',year:'numeric'})}</strong><button class="btn ghost sm" id="dpNext" aria-label="Next month">\u203a</button></div>
+ <div class="cal">${cells}</div>
+ <div class="row" style="gap:10px;margin-top:16px"><button class="btn ghost" id="dpToday" style="flex:1">Today</button><button class="btn ghost" id="dpCancel" style="flex:1">Cancel</button></div>`);
+  document.getElementById('dpPrev').onclick=()=>{m=iso(new Date(y,mo-2,1)).slice(0,7);draw()};
+  document.getElementById('dpNext').onclick=()=>{m=iso(new Date(y,mo,1)).slice(0,7);draw()};
+  document.getElementById('dpToday').onclick=()=>{sheet();cb(today())};
+  document.getElementById('dpCancel').onclick=()=>sheet();
+  document.querySelectorAll('.cal [data-dd]').forEach(b=>b.onclick=()=>{if(b.disabled)return;sheet();cb(b.dataset.dd)})};
+ draw()}
 document.addEventListener('storage',e=>{if(RO&&e.key===key(ROowner))roReload()});
 // ---------- shell
 let roTimer=null,roHash='';
@@ -424,7 +493,7 @@ function shell(){if(funTimer){clearInterval(funTimer);funTimer=null}if(foodTimer
  if(RO){const raw=ST.get(key(ROowner));if(raw!=null){roHash=roHashOf(raw);D=Object.assign(blank(),J(key(ROowner),{}))}}
  if(!D.p.done&&!RO){return onboarding()}
  const N=[['cycle','Cycle',IC.ring],['planner','Planner',IC.list],['insights','Insights',IC.chart],['learn','Learn',IC.book]];
- $('#app').innerHTML=`<div class="blob blob-a"></div><div class="blob blob-b"></div><div class="blob blob-c"></div><div class="wrap"><header class="topbar"><div class="wordmark">Bloom<i>.</i></div>${RO?`<div class="row" style="gap:8px"><span class="pchip">Partner view</span><button class="btn ghost sm" id="exitp">Exit</button></div>`:`<button class="profbtn" id="me" aria-label="Profile and settings">${avatarHTML(30)}<span>${E(D.p.name||user)}</span></button>`}</header><main id="main"></main></div><nav aria-label="Main">${N.map(([k,l,ic])=>`<button data-v="${k}" ${view==k?'aria-current="page"':''}>${ic(17)}<span>${l}</span></button>`).join('')}</nav>`;
+ $('#app').innerHTML=`<div class="blob blob-a"></div><div class="blob blob-b"></div><div class="blob blob-c"></div><div class="wrap"><header class="topbar"><div class="wordmark">Bloom<i>.</i></div>${RO?`<div class="row" style="gap:8px"><span class="pchip">Partner view</span><button class="btn ghost sm" id="exitp">Exit</button></div>`:`<button class="profbtn" id="me" aria-label="Profile and settings">${avatarHTML(34)}<span>${E(D.p.name||user)}</span></button>`}</header><main id="main"></main></div><nav aria-label="Main">${N.map(([k,l,ic])=>`<button data-v="${k}" ${view==k?'aria-current="page"':''}>${ic(17)}<span>${l}</span></button>`).join('')}</nav>`;
  if(RO){document.getElementById('exitp').onclick=exitPartner;roTimer=setInterval(roReload,4000)}
  document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{view=b.dataset.v;shell()});$('#me').onclick=()=>{view='me';shell()};
  if(view=='me')document.querySelector('nav [aria-current]')?.removeAttribute('aria-current');
@@ -432,10 +501,11 @@ function shell(){if(funTimer){clearInterval(funTimer);funTimer=null}if(foodTimer
 function onboarding(){const p=D.p;const steps=[
 `<h2>What should we call you?</h2><label for="nm">Nickname</label><input id="nm" value="${E(p.name)}" maxlength="30"><label for="dx">PCOS/PMOS diagnosis</label><div class="chiprow" id="dxChips" role="group" aria-label="Diagnosis">${['','diagnosed','suspected','none'].map(v=>`<button type="button" class="chip dx-chip ${(p.dx||'')==v?'on':''}" data-dx="${v}" aria-pressed="${(p.dx||'')==v}">${v?'':'Prefer not to say'}${v=='diagnosed'?'Diagnosed':''}${v=='suspected'?'Suspected':''}${v=='none'?'Not diagnosed / learning':''}</button>`).join('')}</div><input id="dx" type="hidden" value="${p.dx||''}">`,
 `<h2>Your goals</h2><div class="row" id="goals" style="flex-wrap:wrap;gap:8px">${GOALS.map(g=>`<button class="chip" aria-pressed="${(p.goals||[]).includes(g)}">${g}</button>`).join('')}</div>`,
-`<h2>Your cycle</h2><label for="cy">Typical cycle</label><select id="cy"><option value="">Not sure</option><option ${p.cy=='reg'?'selected':''} value="reg">Fairly regular</option><option ${p.cy=='irr'?'selected':''} value="irr">Irregular</option><option ${p.cy=='none'?'selected':''} value="none">Rarely/no periods</option></select><label for="food">Food preferences</label><input id="food" value="${E(p.food||'')}" placeholder="No pork, vegetarian"><label for="act">Preferred activity</label><select id="act"><option ${p.act=='walk'?'selected':''} value="walk">Walking</option><option ${p.act=='strength'?'selected':''} value="strength">Strength</option><option ${p.act=='stretch'?'selected':''} value="stretch">Stretching / yoga</option></select>`];
+`<h2>Your cycle</h2>${chipField('cy','Typical cycle',[['','Not sure'],['reg','Fairly regular'],['irr','Irregular'],['none','Rarely/no periods']],p.cy||'')}<label for="food">Food preferences</label><input id="food" value="${E(p.food||'')}" placeholder="No pork, vegetarian">${chipField('act','Preferred activity',[['walk','Walking'],['strength','Strength'],['stretch','Stretching / yoga']],p.act||'walk')}`];
  $('#app').innerHTML=`<div class="auth"><div class="card" style="display:flex;flex-direction:column;gap:24px;padding:28px 24px 32px"><div class="lbl">Step ${onbStep+1} of 3</div><div style="display:flex;flex-direction:column;gap:18px">${steps[onbStep]}</div><div class="row sp" style="margin-top:8px"><button class="btn ghost" id="sk">Skip</button><button class="btn" id="nx">${onbStep==2?'Finish':'Next'}</button></div></div></div>`;
  document.querySelectorAll('#goals .chip').forEach(c=>c.onclick=()=>c.setAttribute('aria-pressed',c.getAttribute('aria-pressed')!='true'));
  document.querySelectorAll('.dx-chip').forEach(c=>c.onclick=()=>{const v=c.dataset.dx;document.querySelectorAll('.dx-chip').forEach(x=>{x.classList.toggle('on',x.dataset.dx===v);x.setAttribute('aria-pressed',x.dataset.dx===v)});$('#dx').value=v;});
+ bindFields();
  const grab=()=>{if(onbStep==0){p.name=$('#nm').value.trim();p.dx=$('#dx').value}if(onbStep==1)p.goals=[...document.querySelectorAll('#goals .chip[aria-pressed=true]')].map(c=>c.textContent);if(onbStep==2){p.cy=$('#cy').value;p.food=$('#food').value.trim();p.act=$('#act').value}};
  const nx=()=>{if(onbStep==2){p.done=true;if(!D.tasks.length)genPlan(true);save();view='cycle';return shell()}onbStep++;save();onboarding()};
  $('#nx').onclick=()=>{grab();nx()};$('#sk').onclick=nx}
@@ -451,18 +521,18 @@ function miniBars(k,n,col){const days=[...Array(n)].map((_,i)=>addD(today(),i-n+
  if(!vals.some(v=>v!=null))return `<div class="spark empty">No data in the last ${n} days</div>`;
  return `<div class="spark"><svg viewBox="0 0 ${n*16} 44" preserveAspectRatio="none" role="img" aria-label="${k} over the last ${n} days">${vals.map((v,i)=>v==null?`<rect x="${i*16+2}" y="4" width="12" height="36" rx="3" fill="#F1E6D7"/>`:`<rect x="${i*16+2}" y="${(44-(v/5)*38).toFixed(1)}" width="12" height="${((v/5)*38).toFixed(1)}" rx="3" fill="${col}"/>`).join('')}</svg></div>`}
 function ringSVG(){const c=cycleStats(),len=c.avg||28,has=!!c.last;
- const day=c.last?Math.round((new Date(today())-new Date(c.last))/864e5)+1:1,dt=((day-1)%len)+1;
+ const day=has?Math.round((new Date(today())-new Date(c.last))/864e5)+1:1,dt=((day-1)%len)+1;
  const R=88,C=2*Math.PI*R,frac=dt/len,step=len>20?2:1;let nums='';
- for(let i=0;i<len;i++){const d=i+1;if(d===dt)continue;if((d-1)%step)continue;
+ for(let i=0;i<len;i++){const d=i+1;if(has&&d===dt)continue;if((d-1)%step)continue;
   const a=(-90+360*(i/len))*Math.PI/180,nx=110+R*Math.cos(a),ny=110+R*Math.sin(a);
   nums+=`<text x="${nx.toFixed(1)}" y="${(ny+3.4).toFixed(1)}" text-anchor="middle" letter-spacing="0.5" style="fill:#2B1E1E;font-size:9.4px;font-weight:700;font-family:'Playfair Display',serif">${d}</text>`}
- const a=(-90+360*((dt-1)/len))*Math.PI/180,bx=110+R*Math.cos(a),by=110+R*Math.sin(a);
- return `<svg viewBox="0 0 220 220" style="width:100%;height:100%;display:block" role="img" aria-label="Cycle day ${dt}"><defs><linearGradient id="bloomRingGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#A83A5E"/><stop offset="55%" stop-color="#C4567A"/><stop offset="100%" stop-color="#E8A0B4"/></linearGradient></defs><circle cx="110" cy="110" r="${R}" fill="none" stroke="#F1E6D7" stroke-width="12"/>${has?`<circle cx="110" cy="110" r="${R}" fill="none" stroke="url(#bloomRingGrad)" stroke-width="12" stroke-linecap="round" stroke-dasharray="${(C*frac).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 110 110)" style="transition:stroke-dasharray .7s ease"/>`:''}${nums}<circle cx="${bx.toFixed(1)}" cy="${by.toFixed(1)}" r="15" fill="#FFFFFF" stroke="#B8456B" stroke-width="2.2" style="filter:drop-shadow(0 5px 10px rgba(184,69,107,.3))"/><text x="${bx.toFixed(1)}" y="${(by+4.6).toFixed(1)}" text-anchor="middle" style="fill:#B8456B;font-size:13px;font-weight:700;font-family:'Playfair Display',serif">${dt}</text></svg>`}
-function periodSheet(){sheet(`<h2>Log period</h2><label for="pd">First day of bleeding</label><input id="pd" type="date" value="${today()}"><div class="row sp" style="margin-top:16px;gap:12px"><button class="btn ghost" id="pc" style="flex:1">Cancel</button><button class="btn" id="ps" style="flex:1">Save</button></div>`);
- $('#pc').onclick=()=>sheet();
- $('#ps').onclick=()=>{const v=$('#pd').value;if(!v)return toast('Pick a date');
+ let mark='';
+ if(has){const a=(-90+360*((dt-1)/len))*Math.PI/180,bx=110+R*Math.cos(a),by=110+R*Math.sin(a);
+  mark=`<circle cx="${bx.toFixed(1)}" cy="${by.toFixed(1)}" r="15" fill="#FFFFFF" stroke="#B8456B" stroke-width="2.2" style="filter:drop-shadow(0 5px 10px rgba(184,69,107,.3))"/><text x="${bx.toFixed(1)}" y="${(by+4.6).toFixed(1)}" text-anchor="middle" style="fill:#B8456B;font-size:13px;font-weight:700;font-family:'Playfair Display',serif">${dt}</text>`}
+ return `<svg viewBox="0 0 220 220" style="width:100%;height:100%;display:block" role="img" aria-label="${has?'Cycle day '+dt:'No cycle logged yet'}"><defs><linearGradient id="bloomRingGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#A83A5E"/><stop offset="55%" stop-color="#C4567A"/><stop offset="100%" stop-color="#E8A0B4"/></linearGradient></defs><circle cx="110" cy="110" r="${R}" fill="none" stroke="#F1E6D7" stroke-width="12"/>${has?`<circle cx="110" cy="110" r="${R}" fill="none" stroke="url(#bloomRingGrad)" stroke-width="12" stroke-linecap="round" stroke-dasharray="${(C*frac).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 110 110)" style="transition:stroke-dasharray .7s ease"/>`:''}${nums}${mark}</svg>`}
+function periodSheet(){dateSheet('First day of bleeding',v=>{
   for(let i=0;i<5;i++){const dd=addD(v,i);if(dd>today())break;const x=L(dd);D.logs[dd]=Object.assign(x,{flow:i===0?'medium':'light'})}
-  save();sheet();toast('Period logged');shell()}}
+  save();toast('Period logged');shell()})}
 let funTimer=null,foodTimer=null,funPos=0,foodPos=0;
 function paintFood(){const t=document.getElementById('foodText');if(t)t.textContent=FOOD[(foodPos+FOOD.length)%FOOD.length][1]}
 function funNow(){const total=TRIVIA.length+TIPS.length,k=((funPos%total)+total)%total;
@@ -472,7 +542,7 @@ function paintFun(){const t=document.getElementById('funText'),g=document.getEle
 function startFun(){if(funTimer)clearInterval(funTimer);funTimer=setInterval(()=>{funPos++;paintFun()},5000)}
 function partnerView(){const d=today(),l=L(d);const c=cycleStats(),len=c.avg||28,day=c.last?Math.round((new Date(today())-new Date(c.last))/864e5)+1:1,dt=((day-1)%len)+1;
  let left=len-(dt-1);if(left<=0)left+=len;
- const ph=phaseInfo(dt,len),first=(D.p.name||'friend').split(' ')[0],goal=D.p.waterGoal||8;
+ const ph=c.last?phaseInfo(dt,len):{k:'\u2014',t:'No cycle yet',c:'var(--muted)'},first=(D.p.name||'friend').split(' ')[0],goal=D.p.waterGoal||8;
  const mood7=[...Array(7)].map((_,i)=>L(addD(d,-i)).mood).filter(x=>x!=null);
  const energy7=[...Array(7)].map((_,i)=>L(addD(d,-i)).energy).filter(x=>x!=null);
  const avgMood=mood7.length?Math.round(mood7.reduce((a,b)=>a+b,0)/mood7.length*10)/10:'—';
@@ -489,12 +559,12 @@ function partnerView(){const d=today(),l=L(d);const c=cycleStats(),len=c.avg||28
   <button class="btn ghost sm" id="exitp" style="margin-left:auto">Exit</button>
  </div>
  <div class="partner-grid">
-  <div class="statcard"><span class="statnum">${dt}</span><span class="statlbl">Cycle day</span></div>
+  <div class="statcard"><span class="statnum">${c.last?dt:'\u2014'}</span><span class="statlbl">Cycle day</span></div>
   <div class="statcard"><span class="statnum">${ph.k}</span><span class="statlbl">Phase</span></div>
   <div class="statcard"><span class="statnum">${avgMood}</span><span class="statlbl">Avg mood (7d)</span></div>
   <div class="statcard"><span class="statnum">${avgEnergy}</span><span class="statlbl">Avg energy (7d)</span></div>
   <div class="statcard"><span class="statnum">${l.water||0}/${goal}</span><span class="statlbl">Water today</span></div>
-  <div class="statcard"><span class="statnum">${left}</span><span class="statlbl">Days until next</span></div>
+  <div class="statcard"><span class="statnum">${c.last?left:'\u2014'}</span><span class="statlbl">Days until next</span></div>
   <div class="statcard"><span class="statnum">${cycles}</span><span class="statlbl">Cycles logged</span></div>
   <div class="statcard"><span class="statnum">${len}</span><span class="statlbl">Avg cycle (days)</span></div>
  </div>
@@ -528,12 +598,12 @@ function cyclePage(){const d=today(),l=L(d),ts=tasksFor(d),n=ts.filter(t=>isDone
  const m=D.meals[d]||[];const wk=[...Array(7)].map((_,i)=>addD(d,-i)),wd=wk.reduce((a,x)=>a+tasksFor(x).filter(t=>isDone(t.id,x)).length,0),wt=wk.reduce((a,x)=>a+tasksFor(x).length,0);
  const c=cycleStats(),len=c.avg||28,day=c.last?Math.round((new Date(today())-new Date(c.last))/864e5)+1:1,dt=((day-1)%len)+1;
  let left=len-(dt-1);if(left<=0)left+=len;
- const ph=phaseInfo(dt,len),first=(D.p.name||'friend').split(' ')[0],goal=D.p.waterGoal||8;
+ const ph=c.last?phaseInfo(dt,len):{k:'\u2014',t:'No cycle yet',c:'var(--muted)'},first=(D.p.name||'friend').split(' ')[0],goal=D.p.waterGoal||8;
 
  if(RO){partnerView();return}
  $('#main').innerHTML=`
  <div class="greet"><h1 class="sr">Cycle</h1><div class="hi">${h<12?'Good morning':h<18?'Good afternoon':'Good evening'},</div><div class="hi nm">${E(first)}</div><div class="date">${fmt(d,{weekday:'long',month:'long',day:'numeric'})}</div></div>
- <div class="ringwrap"><div class="ringdisc"></div>${ringSVG()}<div class="ringcenter"><div class="ringlbl">Day</div><div class="ringday">${dt}</div><div class="ringcap">${c.n>=2?`of an average ${len}-day cycle`:'cycle day'}</div><div class="ringpill">${c.n>=2?`${left} day${left>1?'s':''} until next`:'Log to see estimates'}</div></div></div>
+ <div class="ringwrap"><div class="ringdisc"></div>${ringSVG()}<div class="ringcenter"><div class="ringlbl">${c.last?'Day':'Cycle'}</div><div class="ringday">${c.last?dt:'\u2014'}</div><div class="ringcap">${c.last?(c.n>=2?`of an average ${len}-day cycle`:'cycle day'):'Log a period to start'}</div><div class="ringpill">${c.last?(c.n>=2?`${left} day${left>1?'s':''} until next`:'Log to see estimates'):'No cycle yet'}</div></div></div>
  
  <button class="logpill" id="lp" ${RO?'disabled':''}><span class="plus">${IC.plus(16)}</span>Log Period</button>
  <div class="stats3">
@@ -611,8 +681,8 @@ function planner(){const d=today();tab=tab||'day';
  $('#main').innerHTML=`<h1>Planner</h1><div class="tabsrow" role="tablist">${(RO?[['day','Today'],['week','Week'],['meals','Meals']]:[['day','Today'],['week','Week'],['meals','Meals'],['journal','Journal']]).map(([k,l])=>`<button class="chip" role="tab" data-tb="${k}" aria-pressed="${tab==k}">${l}</button>`).join('')}</div><div id="pb" style="margin-top:12px"></div>`;
  document.querySelectorAll('[data-tb]').forEach(b=>b.onclick=()=>{tab=b.dataset.tb;planner()});({day:pDay,week:pWeek,meals:pMeals,journal:pJournal})[tab]()}
 function pDay(){const d=today(),ts=tasksFor(d);$('#pb').innerHTML=`<div class="card"><div class="card-h"><h3>Today</h3>${RO?'':'<button class="btn ghost sm" id="gp">Generate plan</button>'}</div><div style="margin-top:6px">${ts.length?ts.map(t=>`<div class="taskrow">${ck(t,d).replace('<input type="checkbox"',`<input type="checkbox" ${RO?'disabled':''}`)}${RO?'':`<button class="btn ghost sm del" data-del="${t.id}" aria-label="Delete ${E(t.t)}">✕</button>`}</div>`).join(''):'<p class="meta">No tasks</p>'}</div>
-${RO?'':`<form id="af" style="margin-top:14px"><input id="nt" maxlength="80" placeholder="Add a task" aria-label="New task" style="width:100%;margin:0 0 10px"><div class="row" style="gap:10px"><select id="rp" aria-label="Repeat" style="flex:1;margin:0"><option value="all">Every day</option><option value="wk">Weekdays</option><option value="one">Today only</option></select><button class="btn" type="submit" style="flex:0 0 auto">Add</button></div></form><div class="err" id="er"></div></div>`}`;
- bindCk(d,planner);$('#gp').onclick=()=>{genPlan();planner()};
+${RO?'':`<form id="af" style="margin-top:14px"><input id="nt" maxlength="80" placeholder="Add a task" aria-label="New task" style="width:100%;margin:0 0 10px">${chipField('rp','Repeat',[['all','Every day'],['wk','Weekdays'],['one','Today only']],'all')}<button class="btn" type="submit" style="width:100%;margin-top:12px">Add task</button></form><div class="err" id="er"></div></div>`}`;
+ bindCk(d,planner);bindFields();$('#gp').onclick=()=>{genPlan();planner()};
  $('#af').onsubmit=e=>{e.preventDefault();const t=$('#nt').value.trim();if(!t)return $('#er').textContent='Please type a task.';const r=$('#rp').value;D.tasks.push({id:uid(),t,days:r=='wk'?[1,2,3,4,5]:r=='one'?[new Date().getDay()]:undefined,once:r=='one'?d:undefined});save();planner()};
  document.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{D.tasks=D.tasks.filter(t=>t.id!=b.dataset.del);save();planner()})}
 function pWeek(){const days=[...Array(7)].map((_,i)=>addD(today(),i-new Date().getDay()+0));$('#pb').innerHTML=`<div class="weekgrid">`+days.map(d=>{const ts=tasksFor(d),n=ts.filter(t=>isDone(t.id,d)).length;return`<div class="card"><div class="card-h"><h3 style="font-size:1rem">${fmt(d,{weekday:'long',day:'numeric'})}${d==today()?' · today':''}</h3><span class="meta">${n}/${ts.length}</span></div><div style="margin-top:6px">${ts.map(t=>`<div class="meta">${isDone(t.id,d)?'✓':'○'} ${E(t.t)}</div>`).join('')||'<span class="meta">Rest day</span>'}</div></div>`}).join('')+`</div>`}
@@ -621,11 +691,12 @@ function pMeals(){const d=today(),m=D.meals[d]||[],bud=D.p.bud||999;
  const pool=t=>MEALS.filter(x=>x.t==t&&x.c<=bud);
  const wk=D.plan.week||null;
  $('#pb').innerHTML=`<div class="card"><div class="card-h"><h3>Today’s meals</h3><span class="meta">${m.length}</span></div>${m.length?m.map((x,i)=>`<div class="row sp ck"><span>${TN[x.t]}: ${E(x.n)}</span><button class="btn ghost sm" data-rm="${i}" aria-label="Remove">✕</button></div>`).join(''):'<p class="meta">None logged</p>'}
-${RO?'':`<label for="ml" style="margin-top:14px">Add a meal</label><select id="ml"><option value="">Choose…</option>${MEALS.map((x,i)=>`<option value="${i}">${TN[x.t]} · ${E(x.n)}</option>`).join('')}</select><label for="mc">Or type your own</label><input id="mc" maxlength="60" placeholder="Meal name"><button class="btn" id="la" style="width:100%">Add</button>`}</div>
-<div class="card"><div class="card-h"><h3>Weekly plan</h3></div>${RO?'':`<label for="bd">Budget per meal (₱)</label><select id="bd"><option value="">Any</option>${[50,80,100,130].map(v=>`<option value="${v}" ${D.p.bud==v?'selected':''}>up to ₱${v}</option>`).join('')}</select><button class="btn pink" id="gw" style="width:100%">Build my week</button>`}
+${RO?'':`<div class="lbl" style="margin-top:16px">Add a meal</div><button type="button" class="field-btn" id="mlBtn"><span id="mlLabel">Choose a meal</span><span class="chev">\u25be</span></button><input type="hidden" id="ml" value=""><label for="mc" style="margin-top:14px">Or type your own</label><input id="mc" maxlength="60" placeholder="Meal name"><button class="btn" id="la" style="width:100%">Add</button>`}</div>
+<div class="card"><div class="card-h"><h3>Weekly plan</h3></div>${RO?'':`${chipField('bd','Budget per meal (\u20b1)',[['','Any'],['50','up to \u20b150'],['80','up to \u20b180'],['100','up to \u20b1100'],['130','up to \u20b1130']],D.p.bud!=null?String(D.p.bud):'')}<button class="btn pink" id="gw" style="width:100%;margin-top:14px">Build my week</button>`}
 ${wk?`<div class="divider"></div>`+wk.map((r,i)=>`<div class="kv"><span>Day ${i+1}</span><b style="font-size:.85rem;font-family:inherit;font-weight:400;text-align:right">${r.map(x=>E(x.n)).join(' · ')}</b></div>`).join('')+`<h3 style="margin-top:14px">Grocery list</h3><p class="meta">${[...new Set(wk.flat().flatMap(x=>x.ing))].sort().join(', ')}</p>`:''}</div>
  <div class="card fun"><span class="lbl" style="margin:0 0 2px">Food tip</span><p class="funtext" id="foodText">${E(FOOD[fi][1])}</p></div>
  `;
+ if(!RO)$('#mlBtn').onclick=()=>sheetPick('Choose a meal',MEALS.map(x=>({t:TN[x.t]+' \u00b7 '+x.n,sub:'\u20b1'+x.c})),it=>{const i=MEALS.findIndex(x=>x.n===it.t.split(' \u00b7 ')[1]&&TN[x.t]===it.t.split(' \u00b7 ')[0]);if(i<0)return;$('#ml').value=i;const lb=document.getElementById('mlLabel');if(lb)lb.textContent=it.t},'Search meals\u2026');
  if(!RO)$('#la').onclick=()=>{const i=$('#ml').value,c=$('#mc').value.trim();let it=null;if(i!=='')it={n:MEALS[i].n,t:MEALS[i].t};else if(c)it={n:c,t:'s'};if(!it)return toast('Choose or type a meal');D.meals[d]=[...m,it];save();pMeals()};
  document.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{if(RO)return;m.splice(+b.dataset.rm,1);D.meals[d]=m;save();pMeals()});
  if(foodTimer)clearInterval(foodTimer);foodTimer=setInterval(()=>{foodPos=(foodPos+1)%FOOD.length;paintFood()},5000);
@@ -638,7 +709,12 @@ function pJournal(){if(RO)return;const J=D.journal;$('#pb').innerHTML=`<div clas
 // ---------- avatar
 function avatarHTML(size){const s=size||38,ini=(D.p.name||user||'G').trim().charAt(0).toUpperCase();
  return D.p.avatar?`<img class="avatar" src="${D.p.avatar}" alt="" style="width:${s}px;height:${s}px">`:`<span class="avatar-fb" style="width:${s}px;height:${s}px;font-size:${Math.round(s*0.42)}px">${E(ini)}</span>`}
-function pickAvatar(file){const r=new FileReader();r.onload=e=>{const img=new Image();img.onload=()=>{const s=Math.min(256,img.width,img.height),cv=document.createElement('canvas');cv.width=cv.height=s;const cx=cv.getContext('2d');cx.drawImage(img,(img.width-s)/2,(img.height-s)/2,s,s,0,0,s,s);D.p.avatar=cv.toDataURL('image/jpeg',0.85);save();me();toast('Photo saved')};img.src=e.target.result};r.readAsDataURL(file)}
+function pickAvatar(file){const r=new FileReader();r.onload=e=>{const img=new Image();img.onload=()=>{
+ const s=Math.min(320,img.width,img.height);
+ const sx=(img.width-s)/2, sy=Math.max(0,Math.min(img.height-s,img.height*0.35-s/2));
+ const cv=document.createElement('canvas');cv.width=cv.height=s;
+ const cx=cv.getContext('2d');cx.drawImage(img,sx,sy,s,s,0,0,s,s);
+ D.p.avatar=cv.toDataURL('image/jpeg',0.85);save();me();toast('Photo saved')};img.src=e.target.result};r.readAsDataURL(file)}
 function series(k,n){return[...Array(n)].map((_,i)=>{const d=addD(today(),i-n+1);return{d,v:L(d)[k]}})}
 function line(k,n,max,col){const s=series(k,n),W=320,H=110,x=i=>20+i*(W-30)/(n-1||1),y=v=>H-14-(v/max)*(H-24);let pts='',dots='';s.forEach((p,i)=>{if(p.v!=null){pts+=(pts&&s[i-1]?.v!=null?'L':'M')+x(i)+' '+y(p.v);dots+=`<circle cx="${x(i)}" cy="${y(p.v)}" r="3" fill="${col}"/>`}});
  return s.some(p=>p.v!=null)?`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${k} over last ${n} days"><line x1="20" x2="${W-8}" y1="${H-14}" y2="${H-14}" stroke="var(--line)"/><text x="2" y="${y(max)+3}">${max}</text><text x="6" y="${y(1)+3}">1</text><path d="${pts}" fill="none" stroke="${col}" stroke-width="2"/>${dots}<text x="20" y="${H-1}">${fmt(s[0].d)}</text><text x="${W-40}" y="${H-1}">${fmt(s[n-1].d)}</text></svg>`:'<p class="meta">No entries</p>'}
@@ -1043,10 +1119,12 @@ const TIPS=[
 // ---------- learn
 // ---------- learn: daily reads
 const readStore=()=>J('bloom_read',{});
-function setRead(idx,on){const s=readStore();if(!!s[idx]===!!on)return;s[idx]=on?1:0;ST.set('bloom_read',JSON.stringify(s));
- const dd=J('bloom_daily',{}),t=today();
- if(dailyPlan(t).indexOf(idx)>=0)dd[t]=Math.max(0,(dd[t]||0)+(on?1:-1));
- ST.set('bloom_daily',JSON.stringify(dd))}
+const isRead=i=>!!readStore()[i];
+function setRead(idx,on){const s=readStore();
+ if(on){if(typeof s[idx]==='string'&&s[idx]===today())return;s[idx]=today()}
+ else{if(!s[idx])return;delete s[idx]}
+ ST.set('bloom_read',JSON.stringify(s))}
+function readsOn(d){const s=readStore();let n=0;for(const k in s)if(s[k]===d)n++;return n}
 function readMins(t){const w=t.split(/\s+/).filter(x=>x.length>0).length;return Math.max(1,Math.round(w/200))}
 const IL=(()=>{const by={};ARTICLES.forEach((a,i)=>{(by[a[0]]=by[a[0]]||[]).push(i)});
  const cats=Object.keys(by).sort(),out=[];let last=-1;
@@ -1059,13 +1137,14 @@ const IL=(()=>{const by={};ARTICLES.forEach((a,i)=>{(by[a[0]]=by[a[0]]||[]).push
 function dailyPlan(d){const dn=Math.floor(new Date(d+'T12:00').getTime()/864e5);
  const n=5+(dn%6),start=((dn*n)%IL.length+IL.length)%IL.length,out=[];
  for(let k=0;k<n;k++)out.push(IL[(start+k)%IL.length]);return out}
-function dailyStats(){const t=today(),plan=dailyPlan(t),s=readStore();
- const done=plan.filter(i=>s[i]).length;let next=null;
- for(const i of plan){if(!s[i]){next=i;break}}
- return{plan,done,total:plan.length,pct:plan.length?Math.round(done/plan.length*100):0,next}}
-function calcStreak(){const dd=J('bloom_daily',{});let d=today();
- if((dd[d]||0)<dailyPlan(d).length)d=addD(d,-1);
- let st=0;for(let k=0;k<400;k++){const p=dailyPlan(d).length;if(p>0&&(dd[d]||0)>=p){st++;d=addD(d,-1)}else break}
+function dailyStats(){const t=today(),plan=dailyPlan(t);
+ const readToday=readsOn(t),planDone=plan.filter(i=>isRead(i)).length;let next=null;
+ for(const i of plan){if(!isRead(i)){next=i;break}}
+ return{plan,readToday,planDone,left:plan.length-planDone,total:plan.length,
+  pct:plan.length?Math.min(100,Math.round(readToday/plan.length*100)):0,next}}
+function calcStreak(){let d=today();
+ if(readsOn(d)<dailyPlan(d).length)d=addD(d,-1);
+ let st=0;for(let k=0;k<400;k++){const p=dailyPlan(d).length;if(p>0&&readsOn(d)>=p){st++;d=addD(d,-1)}else break}
  return st}
 function learn(){learnTab=learnTab||'today';articleIdx=articleIdx===undefined?null:articleIdx;searchQ=searchQ||'';
  const cats=[...new Set(ARTICLES.map(a=>a[0]))].sort(),tabs=['today','all',...cats];
@@ -1074,11 +1153,11 @@ function learn(){learnTab=learnTab||'today';articleIdx=articleIdx===undefined?nu
  <div class="dr-head"><div class="dr-date">${fmt(today(),{weekday:'long',month:'long',day:'numeric'})}</div>${streak?`<span class="dr-streak">${IC.pulse(13)} ${streak} day streak</span>`:''}</div>
  <div class="dr-card">
   <div class="row sp" style="align-items:flex-end;gap:12px">
-   <div><div class="lbl" style="margin:0 0 2px">Today's reads</div><div class="dr-count">${st.done}<span class="dr-count-of">/${st.total}</span></div></div>
-   <div class="meta" style="text-align:right;max-width:54%">${st.done>=st.total?'All done for today':(st.total-st.done)+' left to finish'}</div>
+   <div><div class="lbl" style="margin:0 0 2px">Reads today</div><div class="dr-count">${st.readToday}<span class="dr-count-of">/ ${st.total}</span></div></div>
+   <div class="meta" style="text-align:right;max-width:54%">${st.left?st.left+' left in today\'s set':'Today\'s set complete'}</div>
   </div>
   <div class="bar" style="margin:12px 0 14px"><i style="width:${st.pct}%"></i></div>
-  ${st.next!=null?`<button class="btn" id="continueBtn" style="width:100%">Continue reading</button><div class="dr-next">${E(ARTICLES[st.next][3])}</div>`:`<div class="dr-done">You finished today's reads</div>`}
+  ${st.next!=null?`<button class="btn" id="continueBtn" style="width:100%">Continue reading</button><div class="dr-next">${E(ARTICLES[st.next][3])}</div>`:`<div class="dr-done">${st.readToday?'You finished today\'s reads':'Nothing left for today'}</div>`}
  </div>
  <div class="tabsrow" style="margin-bottom:14px">${tabs.map(t=>`<button class="chip" data-lt="${t}" aria-pressed="${learnTab==t}">${t==='today'?'Today':t==='all'?'All':t}</button>`).join('')}</div>
  ${browse?`<div class="dr-search"><input id="ls" type="search" placeholder="Search ${learnTab==='all'?'articles':E(learnTab)}…" value="${E(searchQ)}"></div>`:''}
@@ -1089,7 +1168,7 @@ function learn(){learnTab=learnTab||'today';articleIdx=articleIdx===undefined?nu
  document.querySelectorAll('[data-lt]').forEach(b=>b.onclick=()=>{learnTab=b.dataset.lt;articleIdx=null;searchQ='';learn()});
  if(document.getElementById('continueBtn'))document.getElementById('continueBtn').onclick=()=>{articleIdx=st.next;learn()};
  if(articleIdx!==null&&articleIdx<ARTICLES.length)renderArticle(articleIdx);else renderArticleList()}
-function readRow(idx){const a=ARTICLES[idx],s=readStore(),done=!!s[idx];
+function readRow(idx){const a=ARTICLES[idx],done=isRead(idx);
  return `<div class="readrow${done?' done':''}">
   <button class="readrow-ic" data-tg="${idx}" aria-label="${done?'Mark unread':'Mark read'}">${done?IC.check(13):''}</button>
   <button class="readrow-txt" data-idx="${idx}"><span class="readrow-title">${E(a[3])}</span><span class="readrow-meta">${E(a[1])} · ${readMins(a[4])} min read</span></button>
@@ -1101,9 +1180,9 @@ function renderArticleList(){const el=document.getElementById('lb');let list;
   if(searchQ)list=list.filter(i=>ARTICLES[i][3].toLowerCase().includes(searchQ)||ARTICLES[i][4].toLowerCase().includes(searchQ))}
  el.innerHTML=(learnTab==='today'?'<div class="dr-sec">Today\'s articles</div>':'')+list.map(readRow).join('')+(list.length?'':'<p class="meta" style="text-align:center;padding:22px">Nothing here</p>');
  el.querySelectorAll('.readrow-txt').forEach(b=>b.onclick=()=>{articleIdx=+b.dataset.idx;learn()});
- el.querySelectorAll('.readrow-ic').forEach(b=>b.onclick=()=>{const i=+b.dataset.tg;setRead(i,!readStore()[i]);learn()})}
-function renderArticle(i){const a=ARTICLES[i],txt=a[4],s=readStore(),done=!!s[i];
- const st=dailyStats(),nxt=st.plan.find(x=>x!==i&&!s[x]);
+ el.querySelectorAll('.readrow-ic').forEach(b=>b.onclick=()=>{const i=+b.dataset.tg;setRead(i,!isRead(i));learn()})}
+function renderArticle(i){const a=ARTICLES[i],txt=a[4],done=isRead(i);
+ const st=dailyStats(),nxt=st.plan.find(x=>x!==i&&!isRead(x));
  const el=document.getElementById('lb');
  el.innerHTML=`<article class="article-full">
   <button class="btn ghost sm" id="backArt" style="margin-bottom:14px">← Back</button>
@@ -1134,24 +1213,34 @@ function lTips(){const el=document.getElementById('lb');
  el.innerHTML=`<div class="row tabsrow" style="margin-bottom:4px">${['All',...cats].map(c=>`<button class="chip" data-tc="${E(c)}" aria-pressed="${f===c}">${E(c)}</button>`).join('')}</div>
  <div class="card" style="margin-top:8px"><div class="card-h"><h3 style="margin:0">${f==='All'?'Tips':E(f)}</h3><span class="meta">${list.length}</span></div>${list.map(x=>`<div class="kv"><span>${E(x[1])}</span></div>`).join('')}</div>`;
  el.querySelectorAll('[data-tc]').forEach(b=>b.onclick=()=>{tipCat=b.dataset.tc;lTips()})}
-function me(){const p=D.p;$('#main').innerHTML=`<h1>Profile</h1><div class="card"><div class="row" style="gap:16px;align-items:center;margin-bottom:18px;flex-wrap:nowrap"><div style="flex:0 0 auto">${avatarHTML(72)}</div><label class="btn ghost sm" for="av" style="display:inline-flex !important;align-items:center !important;justify-content:center !important;gap:6px !important;cursor:pointer !important;white-space:nowrap !important;flex:0 0 auto !important">${IC.camera(18)} Change photo</label><input type="file" id="av" accept="image/*" hidden></div><label for="nm">Nickname</label><input id="nm" value="${E(p.name)}" maxlength="30"><label>Goals</label><div class="row" id="goals">${GOALS.map(g=>`<button class="chip" aria-pressed="${(p.goals||[]).includes(g)}">${g}</button>`).join('')}</div><button class="btn" id="sv" style="width:100%;margin-top:12px">Save</button></div>
+function me(){const p=D.p;$('#main').innerHTML=`<h1>Profile</h1><div class="card"><div class="row" style="gap:16px;align-items:center;margin-bottom:18px;flex-wrap:nowrap"><div style="flex:0 0 auto">${avatarHTML(96)}</div><label class="btn ghost sm" for="av" style="display:inline-flex !important;align-items:center !important;justify-content:center !important;gap:6px !important;cursor:pointer !important;white-space:nowrap !important;flex:0 0 auto !important">${IC.camera(18)} Change photo</label><input type="file" id="av" accept="image/*" hidden></div><label for="nm">Nickname</label><input id="nm" value="${E(p.name)}" maxlength="30"><label>Goals</label><div class="row" id="goals">${GOALS.map(g=>`<button class="chip" aria-pressed="${(p.goals||[]).includes(g)}">${g}</button>`).join('')}</div><button class="btn" id="sv" style="width:100%;margin-top:12px">Save</button></div>
 <div class="card"><div class="card-h"><h3>Partner sync</h3>${D.partner&&D.partner.on?'<span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem;background:var(--pinkS);border-color:rgba(232,160,180,.6);color:var(--rose)">Active</span>':''}</div>
 ${D.partner&&D.partner.on?`<p class="meta">Share this code. Your partner opens a read-only view of your logs on this device — they cannot log or add notes.</p><div class="syncbox"><span class="synccode">${E(D.partner.code)}</span><button class="btn ghost sm" id="cp">Copy</button></div><div class="row" style="gap:10px;margin-top:10px"><button class="btn ghost sm" id="pg" style="flex:1">New code</button><button class="btn ghost sm" id="pv" style="flex:1">Revoke</button></div>`:`<div style="text-align:center;padding:24px 12px"><svg viewBox="0 0 80 80" style="width:64px;height:64px;margin:0 auto 16px;opacity:.5" role="img" aria-hidden="true"><circle cx="40" cy="40" r="36" fill="none" stroke="var(--pink)" stroke-width="3" stroke-dasharray="8 6"/><path d="M24 40c0-8.8 7.2-16 16-16s16 7.2 16 16" fill="none" stroke="var(--pink)" stroke-width="3" stroke-linecap="round"/><circle cx="40" cy="32" r="6" fill="var(--pink)"/></svg><h3 style="margin:0 0 6px">Invite a partner</h3><p class="meta" style="margin:0 0 16px">Share a 6-character code so they can see your cycle, mood, energy and insights — read-only, no editing.</p><button class="btn" id="gc" style="width:100%;max-width:280px">Create sync code</button></div>`}</div>
-<div class="card"><div class="card-h"><h3>Reminder</h3></div><label class="row" style="color:var(--ink)"><input type="checkbox" id="rm" style="width:22px;margin:0" ${D.rem.on?'checked':''}> Daily logging reminder</label><label for="rt">Time</label><input id="rt" type="time" value="${D.rem.time}"><p class="meta" style="margin-top:8px">Web version: no push notifications.</p></div>
+<div class="card"><div class="card-h"><h3>Reminder</h3></div><label class="row" style="color:var(--ink)"><input type="checkbox" id="rm" style="width:22px;margin:0" ${D.rem.on?'checked':''}> Daily logging reminder</label><label for="rt">Time</label><input id="rt" type="time" value="${D.rem.time}"><button class="btn ghost" id="rs" style="width:100%;margin-top:4px">Save reminder</button><p class="meta" style="margin-top:10px">Web version: no push notifications.</p></div>
+<div class="card"><div class="card-h"><h3>App</h3><span class="meta" id="appVer">\u2014</span></div><button class="btn ghost" id="chkUp" style="width:100%">Check for updates</button></div>
 <div class="card"><div class="card-h"><h3>Data</h3></div><button class="btn ghost" id="xj" style="width:100%">Export all data</button><button class="btn pink" id="del" style="width:100%;margin-top:10px">Delete all my data</button></div><button class="btn ghost" id="lo" style="width:100%">Log out</button>`;
  document.querySelectorAll('#goals .chip').forEach(c=>c.onclick=()=>c.setAttribute('aria-pressed',c.getAttribute('aria-pressed')!='true'));
  $('#sv').onclick=()=>{p.name=$('#nm').value.trim();p.goals=[...document.querySelectorAll('#goals .chip[aria-pressed=true]')].map(c=>c.textContent);D.rem={on:$('#rm').checked,time:$('#rt').value||'20:00'};save();applyTheme();toast('Saved');shell()};
  $('#av').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f)pickAvatar(f)};
+ const saveRem=()=>{D.rem={on:$('#rm').checked,time:$('#rt').value||'20:00'};save();toast('Reminder saved')};
+ $('#rs').onclick=saveRem;$('#rt').onchange=saveRem;$('#rm').onchange=saveRem;
  $('#xj').onclick=()=>saveFile('bloom-data.json',JSON.stringify(D,null,1));$('#lo').onclick=logout;
+ $('#chkUp').onclick=()=>checkUpdate(true);
+ (async()=>{const up=updater();if(!up)return;try{const v=await up.getVersion();const el=document.getElementById('appVer');if(el)el.textContent='v'+v.versionName+' ('+v.versionCode+')'}catch(e){}})();
  if(document.getElementById('gc'))$('#gc').onclick=()=>{genPartnerCode();me();toast('Sync code created')};
  if(document.getElementById('cp'))$('#cp').onclick=async()=>{try{await navigator.clipboard.writeText(D.partner.code);toast('Code copied')}catch(e){toast(D.partner.code)}};
  if(document.getElementById('pg'))$('#pg').onclick=()=>{genPartnerCode();me();toast('New code created')};
  if(document.getElementById('pv'))$('#pv').onclick=()=>{if(!confirm('Revoke this sync code? Your partner will lose access.'))return;revokePartnerCode();me();toast('Code revoked')};
  $('#del').onclick=()=>{if(!confirm('Delete your account and ALL records on this device? This cannot be undone.'))return;const a=users();delete a[user];ST.set('bloom_users',JSON.stringify(a));const b=blank();b.p={done:true,name:'Guest',goals:[]};ST.set(key(user),JSON.stringify(b));logout()}}
 // ---------- start
-(()=>{let s=null;try{s=sessionStorage.getItem('bloom_s')}catch(e){}s=s||mem.s;
+(async()=>{const s=getSession();
  if(s&&String(s).indexOf('p:')===0){const owner=String(s).slice(2);
-  RO=true;ROowner=owner;D=Object.assign(blank(),J(key(owner),{}));view='cycle';shell()}
- else if(s&&users()[s])login(s);else authView('in');
- sbInit().then(async()=>{if(sbUser&&!RO){try{await sbAfterLogin(sbUser)}catch(e){}}})})();
+  RO=true;ROowner=owner;D=Object.assign(blank(),J(key(owner),{}));view='cycle';shell();return}
+ if(s&&users()[s]){login(s);
+  await sbInit();
+  if(sbUser&&!RO&&(sbUser.email||'').toLowerCase()===s){try{await sbAfterLogin(sbUser)}catch(e){}}
+  setTimeout(()=>checkUpdate(false),1500);return}
+ await sbInit();
+ if(sbUser&&!RO){try{await sbAfterLogin(sbUser);setTimeout(()=>checkUpdate(false),1500);return}catch(e){}}
+ authView('in')})();
 </script></body></html>
