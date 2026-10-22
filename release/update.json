@@ -1,7 +1,7 @@
 {
-  "versionCode": 3,
-  "versionName": "1.1.1",
-  "notes": "Updater: plugin fallback + download progress listener",
-  "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/release/bloom-1.1.1.apk",
+  "versionCode": 4,
+  "versionName": "1.1.2",
+  "notes": "Onboarding Skip now actually skips to the end",
+  "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/release/bloom-1.1.2.apk",
   "publishedAt": "2026-10-22"
 }

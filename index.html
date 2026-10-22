@@ -517,7 +517,8 @@ function onboarding(){const p=D.p;const steps=[
  bindFields();
  const grab=()=>{if(onbStep==0){p.name=$('#nm').value.trim();p.dx=$('#dx').value}if(onbStep==1)p.goals=[...document.querySelectorAll('#goals .chip[aria-pressed=true]')].map(c=>c.textContent);if(onbStep==2){p.cy=$('#cy').value;p.food=$('#food').value.trim();p.act=$('#act').value}};
  const nx=()=>{if(onbStep==2){p.done=true;if(!D.tasks.length)genPlan(true);save();view='cycle';return shell()}onbStep++;save();onboarding()};
- $('#nx').onclick=()=>{grab();nx()};$('#sk').onclick=nx}
+ const skipAll=()=>{if(onbStep<2){onbStep=2;save();onboarding();return}nx()};
+ $('#nx').onclick=()=>{grab();nx()};$('#sk').onclick=()=>{grab();skipAll()}}
 function genPlan(silent){const a={walk:'Walk 20 minutes',strength:'Strength: 15-minute beginner routine',stretch:'Stretching 10 minutes'}[D.p.act||'walk'];
  const base=[['Drink water through the day'],['Breakfast, lunch and dinner'],[a,[1,3,5]],['Wind down & lights out on time'],['5 slow breaths'],['Take medicine as prescribed (if applicable)']];
  base.forEach(([t,days])=>{if(!D.tasks.some(x=>x.t==t))D.tasks.push({id:uid(),t,days})});save();if(!silent)toast('Plan added')}
