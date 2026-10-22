@@ -1,7 +1,7 @@
 {
-  "versionCode": 12,
-  "versionName": "1.1.9",
-  "notes": "Fix sync code: local fallback, honest device-only wording, sign-in to share anywhere",
-  "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/release/bloom-1.1.9.apk",
+  "versionCode": 13,
+  "versionName": "1.1.10",
+  "notes": "Splash only after 3 minutes away - no longer on every open",
+  "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/release/bloom-1.1.10.apk",
   "publishedAt": "2026-10-22"
 }

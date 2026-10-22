@@ -1360,8 +1360,12 @@ ${D.partner&&D.partner.on?`<p class="meta">Share this code. Your partner opens a
  if(document.getElementById('pv'))$('#pv').onclick=async()=>{if(!confirm('Revoke this sync code? Your partner will lose access.'))return;await revokePartnerCode();me();toast('Code revoked')};
  $('#del').onclick=()=>{if(!confirm('Delete your account and ALL records on this device? This cannot be undone.'))return;const a=users();delete a[user];ST.set('bloom_users',JSON.stringify(a));const b=blank();b.p={done:true,name:'Guest',goals:[]};ST.set(key(user),JSON.stringify(b));logout()}}
 // ---------- flower splash ----------
-const SPLASH_MIN=2600,SPLASH_MAX=3200,RESUME_MIN=1800,RESUME_MAX=2400;
+const SPLASH_MIN=2600,SPLASH_MAX=3200,RESUME_MIN=1800,RESUME_MAX=2400,SPLASH_AFTER_MS=180000;
 let splashDone=false,splashAppReady=false,splashT0=0,splashMin=SPLASH_MIN;
+function splashBgMark(){try{localStorage.setItem('bloom_last_bg',String(Date.now()))}catch(e){}}
+function splashAwayMs(){try{const v=+localStorage.getItem('bloom_last_bg')||0;return v?Date.now()-v:null}catch(e){return null}}
+function splashShouldShow(away){const a=away!=null&&away>=0?away:splashAwayMs();return a==null?true:a>=SPLASH_AFTER_MS}
+function splashSkip(){const e=document.getElementById('splash');if(!e)return;e.classList.add('gone');e.style.display='none';splashDone=true}
 const SPLASH_HTML=(()=>{const e=document.getElementById('splash');return e?e.outerHTML:''})();
 function splashMount(){let e=document.getElementById('splash');
  if(!e&&SPLASH_HTML){document.body.insertAdjacentHTML('afterbegin',SPLASH_HTML);e=document.getElementById('splash')}
@@ -1410,9 +1414,14 @@ function splashPlay(replay){
  stage.onclick=()=>{if(splashDone)return;splashPlay(false)};
 }
 // called by the native layer when the app comes back to the foreground
-window.__bloomResume=()=>splashPlay(true);
+window.__bloomResume=(awayMs)=>{if(!splashShouldShow(awayMs))return;splashPlay(true)};
+// called by the native layer when the app goes to the background
+window.__bloomBg=()=>splashBgMark();
+document.addEventListener('visibilitychange',()=>{if(document.hidden)splashBgMark()});
+window.addEventListener('pagehide',()=>splashBgMark());
+window.addEventListener('beforeunload',()=>splashBgMark());
 // ---------- start
-splashPlay();  // start now - the script sits after the splash markup, so it already exists
+if(splashShouldShow())splashPlay();else splashSkip();  // only after 3 minutes away
 (async()=>{const s=getSession();
  if(s&&String(s).indexOf('p:')===0){const owner=String(s).slice(2);
   RO=true;ROowner=owner;D=Object.assign(blank(),J(key(owner),{}));view='cycle';shell();return}
