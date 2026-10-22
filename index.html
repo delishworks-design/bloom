@@ -3,6 +3,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Bloom · PMOS Planner</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Sansita:wght@400;700&display=swap" rel="stylesheet">
+<script src="supabase-bundle.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Sansita:wght@400;700&display=swap');
 :root{
@@ -141,7 +142,7 @@ label{display:block;font-size:.86rem;color:#7C6B71 !important;margin-top:16px !i
 
 /* Auth */
 .auth{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:24px 20px;background:#FBF4EA !important}
-.auth .card{max-width:400px;width:100%;min-height:520px;padding:30px 24px;gap:0;background:#FFFBF5 !important;display:flex;flex-direction:column}
+.auth .card{max-width:420px;width:100%;min-height:520px;padding:30px 24px;gap:0;background:#FFFBF5 !important;display:flex;flex-direction:column;border:1.5px solid #EADFD2;border-radius:28px;box-shadow:0 12px 40px rgba(120,70,80,.12)}
 .auth .card>*{flex:0 0 auto}
 .auth .card>p.note{margin-top:auto}
 .auth .card .brand{margin-bottom:10px}
@@ -257,7 +258,7 @@ const LEARN=[['What is PCOS?','PCOS (often called PMOS in some regions) is a com
 const SB={url:'https://vggaswbjsmyvfheofnnj.supabase.co',key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZnZ2Fzd2Jqc215dmZoZW9mbm5qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE2MzU5MDgsImV4cCI6MjEwNzIxMTkwOH0.5iV_nWSia3LaKSjTqoQtb8e3ZcAvJd8K3Vhg8b9Dwx4'};
 let sb=null,sbUser=null,sbPushT=null,cloudTimer=null;
 async function sbInit(){if(sb)return sb;
- try{const m=await import('https://esm.sh/@supabase/supabase-js@2.49.1');
+ try{const m=window.supabase;
    sb=m.createClient(SB.url,SB.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
   const {data}=await sb.auth.getSession();
   if(data&&data.session&&data.session.user)sbUser=data.session.user;
@@ -388,9 +389,9 @@ function shell(){if(funTimer){clearInterval(funTimer);funTimer=null}if(foodTimer
  ({cycle:cyclePage,month:monthView,planner,insights,learn,me})[view]()}
 function onboarding(){const p=D.p;const steps=[
 `<h2>What should we call you?</h2><label for="nm">Nickname</label><input id="nm" value="${E(p.name)}" maxlength="30"><label for="dx">PCOS/PMOS diagnosis</label><select id="dx"><option value="">Prefer not to say</option><option ${p.dx=='diagnosed'?'selected':''} value="diagnosed">Diagnosed</option><option ${p.dx=='suspected'?'selected':''} value="suspected">Suspected</option><option ${p.dx=='none'?'selected':''} value="none">Not diagnosed / learning</option></select>`,
-`<h2>Your goals</h2><div class="row" id="goals">${GOALS.map(g=>`<button class="chip" aria-pressed="${(p.goals||[]).includes(g)}">${g}</button>`).join('')}</div>`,
+`<h2>Your goals</h2><div class="row" id="goals" style="flex-wrap:wrap;gap:8px">${GOALS.map(g=>`<button class="chip" aria-pressed="${(p.goals||[]).includes(g)}">${g}</button>`).join('')}</div>`,
 `<h2>Your cycle</h2><label for="cy">Typical cycle</label><select id="cy"><option value="">Not sure</option><option ${p.cy=='reg'?'selected':''} value="reg">Fairly regular</option><option ${p.cy=='irr'?'selected':''} value="irr">Irregular</option><option ${p.cy=='none'?'selected':''} value="none">Rarely/no periods</option></select><label for="food">Food preferences</label><input id="food" value="${E(p.food||'')}" placeholder="No pork, vegetarian"><label for="act">Preferred activity</label><select id="act"><option ${p.act=='walk'?'selected':''} value="walk">Walking</option><option ${p.act=='strength'?'selected':''} value="strength">Strength</option><option ${p.act=='stretch'?'selected':''} value="stretch">Stretching / yoga</option></select>`];
- $('#app').innerHTML=`<div class="auth"><div class="card"><div class="lbl">Step ${onbStep+1} of 3</div>${steps[onbStep]}<p class="note">Not a diagnosis. Severe pain, very heavy bleeding or sudden symptoms need prompt medical care.</p><div class="row sp"><button class="btn ghost" id="sk">Skip</button><button class="btn" id="nx">${onbStep==2?'Finish':'Next'}</button></div></div></div>`;
+ $('#app').innerHTML=`<div class="auth"><div class="card" style="display:flex;flex-direction:column;gap:24px;padding:28px 24px 32px"><div class="lbl">Step ${onbStep+1} of 3</div><div style="display:flex;flex-direction:column;gap:18px">${steps[onbStep]}</div><p class="note">Not a diagnosis. Severe pain, very heavy bleeding or sudden symptoms need prompt medical care.</p><div class="row sp" style="margin-top:8px"><button class="btn ghost" id="sk">Skip</button><button class="btn" id="nx">${onbStep==2?'Finish':'Next'}</button></div></div></div>`;
  document.querySelectorAll('#goals .chip').forEach(c=>c.onclick=()=>c.setAttribute('aria-pressed',c.getAttribute('aria-pressed')!='true'));
  const grab=()=>{if(onbStep==0){p.name=$('#nm').value.trim();p.dx=$('#dx').value}if(onbStep==1)p.goals=[...document.querySelectorAll('#goals .chip[aria-pressed=true]')].map(c=>c.textContent);if(onbStep==2){p.cy=$('#cy').value;p.food=$('#food').value.trim();p.act=$('#act').value}};
  const nx=()=>{if(onbStep==2){p.done=true;if(!D.tasks.length)genPlan(true);save();view='cycle';return shell()}onbStep++;save();onboarding()};
@@ -547,7 +548,6 @@ function insights(){const n=range,days=[...Array(n)].map((_,i)=>addD(today(),i-n
  const hab=days.map(d=>{const t=tasksFor(d);return t.length?t.filter(x=>isDone(x.id,d)).length/t.length:null}).filter(x=>x!=null);const ha=hab.length?Math.round(hab.reduce((a,b)=>a+b,0)/hab.length*100):null;
  const sl=days.map(d=>L(d).sleep).filter(Boolean);
  $('#main').innerHTML=`<h1>Insights</h1><div class="row">${[7,14,30,90].map(v=>`<button class="chip" data-r="${v}" aria-pressed="${range==v}">${v} days</button>`).join('')}</div>
-<p class="note" style="margin-top:10px">Recorded = logged · Calculated = from your logs · patterns are not proof of a medical cause.</p>
 <div class="card"><div class="card-h"><h3>Mood</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Recorded</span></div>${line('mood',n,5,'var(--rose)')}</div><div class="card"><div class="card-h"><h3>Energy</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Recorded</span></div>${line('energy',n,5,'var(--teal)')}</div>
 <div class="card"><div class="card-h"><h3>Sleep</h3><span class="meta">${sl.length?(sl.reduce((a,b)=>a+b,0)/sl.length).toFixed(1)+' h avg · '+sl.length+' nights':'—'}</span></div>${line('sleep',n,12,'var(--teal)')}</div>
 <div class="card"><div class="card-h"><h3>Symptoms</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Recorded</span></div>${tk.length?tk.map(([t,v])=>`<div class="row sp"><span>${E(t)}</span><span class="meta">${v} d</span></div><div class="bar"><i style="width:${v/mx*100}%"></i></div>`).join(''):'<p class="meta">None logged</p>'}</div>
