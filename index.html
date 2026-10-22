@@ -378,12 +378,16 @@ async function sbAfterLogin(u){sbUser=u;
  user=mail;
  const all=users();if(!all[mail]){all[mail]={cloud:1};ST.set('bloom_users',JSON.stringify(all))}
  setSession(mail);
+ const keep=JSON.parse(JSON.stringify(D));
  const doc=await sbFetchDoc(u.id);
- if(doc)D=Object.assign(blank(),doc);
+ if(doc){const cloudHas=Object.keys(doc.logs||{}).length||Object.keys(doc.tasks||[]).length||Object.keys(doc.journal||[]).length;
+  D=Object.assign(blank(),doc);
+  if(!cloudHas){D.logs=keep.logs||{};D.tasks=keep.tasks||[];D.done=keep.done||{};D.meals=keep.meals||{};D.journal=keep.journal||[];D.plan=keep.plan||{}}
+  if(keep.p&&keep.p.done)D.p.done=true}
  try{const {data:prof}=await sb.from('bloom_profiles').select('*').eq('id',u.id).maybeSingle();
   if(prof){D.p=D.p||{};D.p.name=prof.name||D.p.name;D.p.avatar=prof.avatar||D.p.avatar;D.p.goals=prof.goals&&prof.goals.length?prof.goals:(D.p.goals||[])}}catch(e){}
  D.p=D.p||{};D.p.done=true;if(!D.p.name)D.p.name=(u.email||'Bloom').split('@')[0];
- save();view='cycle';shell();startCloudSync();sbPushSoon();toast('Signed in · syncing')}
+ save();view=authReturn||'cycle';authReturn='';shell();startCloudSync();sbPushSoon();toast('Signed in · syncing')}
 async function sbSignIn(email,pw){await sbInit();if(!sb)return 'offline';
  const {error}=await sb.auth.signInWithPassword({email:email.trim(),password:pw});
  if(error)return error.message;const {data}=await sb.auth.getSession();if(data.session)await sbAfterLogin(data.session.user);return null}
@@ -406,9 +410,14 @@ let RO=false,ROowner=null,ROcloud=false;
 const CODES=()=>J('bloom_codes',{});
 function makeCode(){const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<6;i++)s+=A[Math.floor(Math.random()*A.length)];return s}
 async function genPartnerCode(){const map=CODES();let c=makeCode();while(map[c])c=makeCode();map[c]=user;ST.set('bloom_codes',JSON.stringify(map));D.partner={code:c,on:true};save();
- if(sbUser){try{const {error}=await sb.rpc('bloom_create_partner_code',{p_code:c});if(error)toast('Code is local only')}catch(e){}}return c}
+ if(!sbUser){toast('Code created \u00b7 this device only');return c}
+ try{const client=await sbInit();if(!client){toast('Code created \u00b7 this device only');return c}
+  const {error}=await client.rpc('bloom_create_partner_code',{p_code:c});
+  toast(error?'Code created \u00b7 this device only':'Code created \u00b7 works on any device');
+ }catch(e){toast('Code created \u00b7 this device only')}
+ return c}
 async function revokePartnerCode(){const map=CODES();if(D.partner&&D.partner.code)delete map[D.partner.code];ST.set('bloom_codes',JSON.stringify(map));D.partner={code:'',on:false};save();
- if(sbUser){try{await sb.rpc('bloom_revoke_partner_codes')}catch(e){}}}
+ if(sbUser){try{const client=await sbInit();if(client)await client.rpc('bloom_revoke_partner_codes')}catch(e){}}}
 function partnerOwner(code){return CODES()[String(code||'').trim().toUpperCase()]||null}
 function exitPartner(){RO=false;ROowner=null;D=null;clearSession();authView('in')}
 function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.display='none',2200)}
@@ -416,6 +425,7 @@ function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';cl
 const hex=b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
 async function hash(pw,salt){try{const k=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveBits']);return hex(await crypto.subtle.deriveBits({name:'PBKDF2',salt:new TextEncoder().encode(salt),iterations:150000,hash:'SHA-256'},k,256))}catch(e){return 'x'+pw.length+btoa(pw+salt)}}
 const users=()=>J('bloom_users',{});
+let authReturn='';
 function authView(mode){mode=mode||'in';const pt=mode=='partner';
  const tabs=`<div class="row" style="gap:8px;margin:12px 0 16px"><button class="chip" data-am="in" aria-pressed="${!pt}">Account</button><button class="chip" data-am="partner" aria-pressed="${pt}">Partner</button></div>`;
  const acct=`<h2>${mode=='in'?'Welcome back':'Create your account'}</h2>
@@ -426,26 +436,26 @@ ${mode=='up'?'<label for="pw2">Confirm password</label><input id="pw2" type="pas
 <button class="btn" style="width:100%" id="go">${mode=='in'?'Log in':'Create account'}</button>
 <p class="meta" style="text-align:center;margin-top:14px"><button class="btn ghost sm" id="sw">${mode=='in'?'New here? Create account':'Have an account? Log in'}</button></p>`;
 const part=`<h2>Partner view</h2><p class="meta" style="margin:0 0 4px">Enter the sync code from the account you want to follow.</p><label for="pc">Sync code</label><input id="pc" maxlength="6" autocapitalize="characters" autocomplete="off" placeholder="ABC123"><div class="err" id="err" role="alert"></div><button class="btn" style="width:100%" id="go">Open partner view</button>`;
-$('#app').innerHTML=`<div class="auth"><div class="card"><div class="brand">Bloom</div>${tabs}${pt?part:acct}</div></div>`;
+$('#app').innerHTML=`<div class="auth"><div class="card"><div class="brand">Bloom</div>${tabs}${pt?part:acct}${authReturn?'<button class="btn ghost" id="authBack" style="width:100%;margin-top:14px">Not now</button>':''}</div></div>`;
+ if(authReturn)document.getElementById('authBack').onclick=()=>{authReturn='';view='me';shell()};
  document.querySelectorAll('[data-am]').forEach(b=>b.onclick=()=>authView(b.dataset.am));
  if(pt){$('#go').onclick=async()=>{const code=$('#pc').value.trim().toUpperCase(),er=$('#err');er.textContent='';
   if(!code)return er.textContent='Enter a sync code.';
   const client=await sbInit();
-  if(client){
-   if(!sbUser){er.textContent='Sign in first, then enter the code.';return}
+  if(client&&sbUser){
    const {data,error}=await sb.rpc('bloom_redeem_partner_code',{p_code:code});
-   if(error||!data){er.textContent='That code is not valid.';return}
-   RO=true;ROcloud=true;ROowner=data;
-   const doc=await sbFetchDoc(data);
-   D=Object.assign(blank(),doc||{});
-   roHash=roHashOf(JSON.stringify(doc||{}));
-   setSession('p:'+data)
-   view='cycle';shell();return}
-  const owner=partnerOwner(code);
-  if(!owner)return er.textContent='That code is not valid.';
-  RO=true;ROowner=owner;D=Object.assign(blank(),J(key(owner),{}));
-  setSession('p:'+owner)
-   view='cycle';shell()};
+   if(!error&&data){RO=true;ROcloud=true;ROowner=data;
+    const doc=await sbFetchDoc(data);
+    D=Object.assign(blank(),doc||{});
+    roHash=roHashOf(JSON.stringify(doc||{}));
+    setSession('p:'+data)
+    view='cycle';shell();return}
+   const own=partnerOwner(code);
+   if(own){RO=true;ROowner=own;D=Object.assign(blank(),J(key(own),{}));setSession('p:'+own);view='cycle';shell();return}
+   return er.textContent='That code is not valid.'}
+  const own=partnerOwner(code);
+  if(own){RO=true;ROowner=own;D=Object.assign(blank(),J(key(own),{}));setSession('p:'+own);view='cycle';shell();return}
+  er.textContent=client?'Sign in first, then enter the code.':'That code is not valid.'};
   $('#pc').onkeydown=e=>{if(e.key=='Enter')$('#go').click()};
   return}
  $('#sw').onclick=()=>authView(mode=='in'?'up':'in');
@@ -1331,7 +1341,7 @@ function lTips(){const el=document.getElementById('lb');
  el.querySelectorAll('[data-tc]').forEach(b=>b.onclick=()=>{tipCat=b.dataset.tc;lTips()})}
 function me(){const p=D.p;$('#main').innerHTML=`<h1>Profile</h1><div class="card"><div style="display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:20px">${avatarHTML(192)}<label class="btn ghost" for="av" style="display:inline-flex !important;align-items:center !important;justify-content:center !important;gap:8px !important;cursor:pointer !important;align-self:center">${IC.camera(18)} Change photo</label><input type="file" id="av" accept="image/*" hidden><p class="meta" style="margin:0;text-align:center">Your photo is stored on this device and in your account.</p></div><label for="nm">Nickname</label><input id="nm" value="${E(p.name)}" maxlength="30"><label>Goals</label><div class="row" id="goals">${GOALS.map(g=>`<button class="chip" aria-pressed="${(p.goals||[]).includes(g)}">${g}</button>`).join('')}</div><button class="btn" id="sv" style="width:100%;margin-top:12px">Save</button></div>
 <div class="card"><div class="card-h"><h3>Partner sync</h3>${D.partner&&D.partner.on?'<span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem;background:var(--pinkS);border-color:rgba(232,160,180,.6);color:var(--rose)">Active</span>':''}</div>
-${D.partner&&D.partner.on?`<p class="meta">Share this code. Your partner opens a read-only view of your logs on this device — they cannot log or add notes.</p><div class="syncbox"><span class="synccode">${E(D.partner.code)}</span><button class="btn ghost sm" id="cp">Copy</button></div><div class="row" style="gap:10px;margin-top:10px"><button class="btn ghost sm" id="pg" style="flex:1">New code</button><button class="btn ghost sm" id="pv" style="flex:1">Revoke</button></div>`:`<div style="text-align:center;padding:24px 12px"><svg viewBox="0 0 80 80" style="width:64px;height:64px;margin:0 auto 16px;opacity:.5" role="img" aria-hidden="true"><circle cx="40" cy="40" r="36" fill="none" stroke="var(--pink)" stroke-width="3" stroke-dasharray="8 6"/><path d="M24 40c0-8.8 7.2-16 16-16s16 7.2 16 16" fill="none" stroke="var(--pink)" stroke-width="3" stroke-linecap="round"/><circle cx="40" cy="32" r="6" fill="var(--pink)"/></svg><h3 style="margin:0 0 6px">Invite a partner</h3><p class="meta" style="margin:0 0 16px">Share a 6-character code so they can see your cycle, mood, energy and insights — read-only, no editing.</p><button class="btn" id="gc" style="width:100%;max-width:280px">Create sync code</button></div>`}</div>
+${D.partner&&D.partner.on?`<p class="meta">Share this code. Your partner opens a read-only view of your logs — they cannot log or add notes.</p>${sbUser?'':'<div class="note" style="margin:0 0 12px;font-size:.8rem">This code works <b>on this device only</b>. Sign in to share it from any phone.</div>'}<div class="syncbox"><span class="synccode">${E(D.partner.code)}</span><button class="btn ghost sm" id="cp">Copy</button></div><div class="row" style="gap:10px;margin-top:10px"><button class="btn ghost sm" id="pg" style="flex:1">New code</button><button class="btn ghost sm" id="pv" style="flex:1">Revoke</button></div>${sbUser?'':'<button class="btn" id="signInSync" style="width:100%;margin-top:10px">Sign in to share anywhere</button>'}`:`<div style="text-align:center;padding:24px 12px"><svg viewBox="0 0 80 80" style="width:64px;height:64px;margin:0 auto 16px;opacity:.5" role="img" aria-hidden="true"><circle cx="40" cy="40" r="36" fill="none" stroke="var(--pink)" stroke-width="3" stroke-dasharray="8 6"/><path d="M24 40c0-8.8 7.2-16 16-16s16 7.2 16 16" fill="none" stroke="var(--pink)" stroke-width="3" stroke-linecap="round"/><circle cx="40" cy="32" r="6" fill="var(--pink)"/></svg><h3 style="margin:0 0 6px">Invite a partner</h3><p class="meta" style="margin:0 0 16px">Share a 6-character code so they can see your cycle, mood, energy and insights — read-only, no editing.</p><button class="btn" id="gc" style="width:100%;max-width:280px">Create sync code</button></div>`}</div>
 <div class="card"><div class="card-h"><h3>Reminder</h3></div><label class="row" style="color:var(--ink)"><input type="checkbox" id="rm" style="width:22px;margin:0" ${D.rem.on?'checked':''}> Daily logging reminder</label><label for="rt">Time</label><input id="rt" type="time" value="${D.rem.time}"><button class="btn ghost" id="rs" style="width:100%;margin-top:4px">Save reminder</button><p class="meta" style="margin-top:10px">Web version: no push notifications.</p></div>
 <div class="card"><div class="card-h"><h3>App</h3><span class="meta" id="appVer">\u2014</span></div><button class="btn ghost" id="chkUp" style="width:100%">Check for updates</button></div>
 <div class="card"><div class="card-h"><h3>Data</h3></div><button class="btn ghost" id="xj" style="width:100%">Export all data</button><button class="btn pink" id="del" style="width:100%;margin-top:10px">Delete all my data</button></div><button class="btn ghost" id="lo" style="width:100%">Log out</button>`;
@@ -1343,10 +1353,11 @@ ${D.partner&&D.partner.on?`<p class="meta">Share this code. Your partner opens a
  $('#xj').onclick=()=>saveFile('bloom-data.json',JSON.stringify(D,null,1));$('#lo').onclick=logout;
  $('#chkUp').onclick=()=>checkUpdate(true);
  (async()=>{const up=updater();if(!up)return;try{const v=await up.getVersion();const el=document.getElementById('appVer');if(el)el.textContent='v'+v.versionName+' ('+v.versionCode+')'}catch(e){}})();
- if(document.getElementById('gc'))$('#gc').onclick=()=>{genPartnerCode();me();toast('Sync code created')};
+ if(document.getElementById('gc'))$('#gc').onclick=async()=>{await genPartnerCode();me()};
+ if(document.getElementById('signInSync'))$('#signInSync').onclick=()=>{authReturn='me';authView('in')};
  if(document.getElementById('cp'))$('#cp').onclick=async()=>{try{await navigator.clipboard.writeText(D.partner.code);toast('Code copied')}catch(e){toast(D.partner.code)}};
- if(document.getElementById('pg'))$('#pg').onclick=()=>{genPartnerCode();me();toast('New code created')};
- if(document.getElementById('pv'))$('#pv').onclick=()=>{if(!confirm('Revoke this sync code? Your partner will lose access.'))return;revokePartnerCode();me();toast('Code revoked')};
+ if(document.getElementById('pg'))$('#pg').onclick=async()=>{await genPartnerCode();me()};
+ if(document.getElementById('pv'))$('#pv').onclick=async()=>{if(!confirm('Revoke this sync code? Your partner will lose access.'))return;await revokePartnerCode();me();toast('Code revoked')};
  $('#del').onclick=()=>{if(!confirm('Delete your account and ALL records on this device? This cannot be undone.'))return;const a=users();delete a[user];ST.set('bloom_users',JSON.stringify(a));const b=blank();b.p={done:true,name:'Guest',goals:[]};ST.set(key(user),JSON.stringify(b));logout()}}
 // ---------- flower splash ----------
 const SPLASH_MIN=2600,SPLASH_MAX=3200,RESUME_MIN=1800,RESUME_MAX=2400;
