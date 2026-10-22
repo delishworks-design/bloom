@@ -41,6 +41,7 @@ p{margin:0;line-height:1.5}
 .wrap{position:relative;z-index:1;max-width:430px;margin:0 auto;padding:calc(14px + env(safe-area-inset-top,0px)) 20px 120px;min-height:100dvh;background:#FBF4EA;display:flex;flex-direction:column;gap:20px}
 .wrap>*{flex:0 0 auto}
 #main{display:flex;flex-direction:column;gap:20px}
+#pb{display:flex;flex-direction:column;gap:14px}
 .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:6px 0 8px;min-height:52px;animation:fadeUp .5s ease both}
 .pchip{display:inline-flex !important;align-items:center !important;height:38px !important;padding:0 14px !important;border-radius:999px !important;background:var(--pinkS) !important;border:1.5px solid rgba(232,160,180,.6) !important;color:var(--rose) !important;font-size:.74rem !important;font-weight:700 !important;white-space:nowrap}
 #exitp{height:38px !important;min-height:38px !important;padding:0 16px !important}
@@ -108,6 +109,9 @@ button{font-family:Sansita,system-ui,sans-serif;-webkit-tap-highlight-color:tran
 .logpill .plus{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.24);display:grid;place-items:center;flex-shrink:0}
 
 /* Chips */
+.card>label{margin-top:0 !important}
+.chipfield{display:flex;flex-direction:column;gap:8px}
+.chipfield .lbl{margin:0}
 .chiprow{display:flex;gap:10px;overflow-x:auto;padding:6px 2px 10px;scrollbar-width:none;align-items:center;flex-wrap:wrap}
 .chip{display:inline-flex !important;align-items:center !important;justify-content:center !important;gap:6px;text-align:center !important;line-height:1 !important;white-space:nowrap !important;border:1.5px solid #EADFD2 !important;background:#FFFBF5 !important;border-radius:999px !important;padding:0 18px !important;min-height:40px !important;font-size:.9rem !important;color:#3A2E33 !important;cursor:pointer}
 .chip[aria-pressed=true]{background:#F9DDE5 !important;border-color:#B8456B !important;color:#B8456B !important;font-weight:700 !important}
@@ -190,7 +194,7 @@ label{display:block;font-size:.86rem;color:#7C6B71 !important;margin-top:16px !i
 .auth .card>*{flex:0 0 auto}
 .auth .card .brand{margin-bottom:10px}
 .auth .card h2{font-size:20px;margin:0 0 2px}
-.auth .card label{margin:18px 0 6px !important}
+.auth .card label{margin:0 0 6px !important}
 .auth .card input{margin:0 !important}
 .auth .card .err{margin-top:10px}
 .auth .card #go{margin-top:18px !important}
@@ -483,9 +487,9 @@ function amountSheet(label,onPick){
  document.querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>{const q=+b.dataset.q;sheet();onPick(q)});
  document.getElementById('qCancel').onclick=()=>sheet()}
 function chipField(id,label,opts,current){const cur=current==null?'':String(current);
- return `<input type="hidden" id="${id}" value="${E(cur)}">
- <div class="lbl" style="margin-top:16px">${E(label)}</div>
- <div class="row" role="group" aria-label="${E(label)}" data-fg="${id}" style="flex-wrap:wrap;gap:8px">${opts.map(o=>`<button type="button" class="chip" data-v="${E(o[0])}" aria-pressed="${String(o[0])===cur}">${E(o[1])}</button>`).join('')}</div>`}
+ return `<div class="chipfield"><input type="hidden" id="${id}" value="${E(cur)}">
+ <div class="lbl">${E(label)}</div>
+ <div class="row" role="group" aria-label="${E(label)}" data-fg="${id}" style="flex-wrap:wrap;gap:8px">${opts.map(o=>`<button type="button" class="chip" data-v="${E(o[0])}" aria-pressed="${String(o[0])===cur}">${E(o[1])}</button>`).join('')}</div></div>`}
 function bindFields(){document.querySelectorAll('[data-fg]').forEach(g=>{const inp=document.getElementById(g.dataset.fg);if(!inp)return;
  g.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{g.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed',x===c));inp.value=c.dataset.v})})}
 function sheetPick(title,items,onPick,ph){sheet(`<h2>${E(title)}</h2>${ph?`<input id="spq" type="search" placeholder="${E(ph)}" style="margin:0 0 10px">`:''}
@@ -758,8 +762,8 @@ function pMeals(){const d=today(),m=D.meals[d]||[],bud=D.p.bud||999;
  const pool=t=>MEALS.filter(x=>x.t==t&&x.c<=bud);
  const wk=D.plan.week||null;
  $('#pb').innerHTML=`<div class="card"><div class="card-h"><h3>Today’s meals</h3><span class="meta">${m.length}</span></div>${m.length?m.map((x,i)=>`<div class="row sp ck"><span>${TN[x.t]}: ${E(x.n)}${x.q&&x.q!==1?' \u00d7'+x.q:''}</span><button class="btn ghost sm" data-rm="${i}" aria-label="Remove">✕</button></div>`).join(''):'<p class="meta">None logged</p>'}
-${RO?'':`<div class="lbl" style="margin-top:20px">Add a meal</div><button type="button" class="field-btn" id="mlBtn" style="margin-bottom:2px"><span id="mlLabel">Choose a meal</span><span class="chev">\u25be</span></button><input type="hidden" id="ml" value=""><input type="hidden" id="mlQ" value="1"><label for="mc" style="margin-top:16px">Or type your own</label><input id="mc" maxlength="60" placeholder="Meal name"><button class="btn" id="la" style="width:100%;margin-top:4px">Add</button>`}</div>
-<div class="card"><div class="card-h"><h3>Weekly plan</h3></div>${RO?'':`${chipField('bd','Budget per meal (\u20b1)',[['','Any'],['50','up to \u20b150'],['80','up to \u20b180'],['100','up to \u20b1100'],['130','up to \u20b1130']],D.p.bud!=null?String(D.p.bud):'')}<button class="btn pink" id="gw" style="width:100%;margin-top:14px">Build my week</button>`}
+${RO?'':`<div class="lbl">Add a meal</div><button type="button" class="field-btn" id="mlBtn"><span id="mlLabel">Choose a meal</span><span class="chev">\u25be</span></button><input type="hidden" id="ml" value=""><input type="hidden" id="mlQ" value="1"><label for="mc">Or type your own</label><input id="mc" maxlength="60" placeholder="Meal name"><button class="btn" id="la" style="width:100%">Add</button>`}</div>
+<div class="card"><div class="card-h"><h3>Weekly plan</h3></div>${RO?'':`${chipField('bd','Budget per meal (\u20b1)',[['','Any'],['50','up to \u20b150'],['80','up to \u20b180'],['100','up to \u20b1100'],['130','up to \u20b1130']],D.p.bud!=null?String(D.p.bud):'')}<button class="btn pink" id="gw" style="width:100%">Build my week</button>`}
 ${wk?`<div class="divider"></div>`+wk.map((r,i)=>`<div class="kv"><span>Day ${i+1}</span><b style="font-size:.85rem;font-family:inherit;font-weight:400;text-align:right">${r.map(x=>E(x.n)).join(' · ')}</b></div>`).join('')+`<h3 style="margin-top:14px">Grocery list</h3><p class="meta">${[...new Set(wk.flat().flatMap(x=>x.ing))].sort().join(', ')}</p>`:''}</div>
  <div class="card fun"><span class="lbl" style="margin:0 0 2px">Food tip</span><p class="funtext" id="foodText">${E(FOOD[fi][1])}</p></div>
  `;
@@ -770,10 +774,11 @@ ${wk?`<div class="divider"></div>`+wk.map((r,i)=>`<div class="kv"><span>Day ${i+
  },'Search meals\u2026');
  if(!RO)$('#la').onclick=()=>{const i=$('#ml').value,c=$('#mc').value.trim(),q=+$('#mlQ').value||1;let it=null;if(i!=='')it={n:MEALS[i].n,t:MEALS[i].t,q:q};else if(c)it={n:c,t:'s',q:q};if(!it)return toast('Choose or type a meal');D.meals[d]=[...m,it];save();pMeals()};
  document.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{if(RO)return;m.splice(+b.dataset.rm,1);D.meals[d]=m;save();pMeals()});
+ bindFields();
  if(foodTimer)clearInterval(foodTimer);foodTimer=setInterval(()=>{foodPos=(foodPos+1)%FOOD.length;paintFood()},5000);
  if(!RO)$('#gw').onclick=()=>{D.p.bud=+$('#bd').value||0;const b=D.p.bud||999;const pk=t=>{const p=MEALS.filter(x=>x.t==t&&x.c<=b);return p.length?p:MEALS.filter(x=>x.t==t)};
   D.plan.week=[...Array(7)].map((_,i)=>['b','l','d','s'].map(t=>{const p=pk(t);return p[(i+Math.floor(Math.random()*p.length))%p.length]}));save();pMeals()}}
-function pJournal(){if(RO)return;const J=D.journal;$('#pb').innerHTML=`<div class="card"><div class="card-h"><h3>New entry</h3></div><label for="jt" class="lbl" style="margin-top:14px">Entry</label><textarea id="jt" rows="3" placeholder="Anything on your mind"></textarea><div class="err" id="er"></div><button class="btn" id="js" style="width:100%;margin-top:4px">Save entry</button></div>${J.length?'<div class="lbl" style="margin:22px 0 10px">Past entries</div>'+J.slice().reverse().map(j=>`<div class="card"><div class="meta">${fmt(j.d,{month:'long',day:'numeric'})}</div><p style="white-space:pre-wrap;margin:8px 0 0">${E(j.t)}</p><div class="row" style="gap:8px;margin-top:14px"><button class="btn ghost sm" data-e="${j.id}">Edit</button> <button class="btn ghost sm" data-x="${j.id}">Delete</button></div></div>`).join(''):''}`;
+function pJournal(){if(RO)return;const J=D.journal;$('#pb').innerHTML=`<div class="card"><div class="card-h"><h3>New entry</h3></div><label for="jt" class="lbl">Entry</label><textarea id="jt" rows="3" placeholder="Anything on your mind"></textarea><div class="err" id="er"></div><button class="btn" id="js" style="width:100%">Save entry</button></div>${J.length?'<div class="lbl" style="margin:6px 0 0">Past entries</div>'+J.slice().reverse().map(j=>`<div class="card"><div class="meta">${fmt(j.d,{month:'long',day:'numeric'})}</div><p style="white-space:pre-wrap;margin:8px 0 0">${E(j.t)}</p><div class="row" style="gap:8px;margin-top:14px"><button class="btn ghost sm" data-e="${j.id}">Edit</button> <button class="btn ghost sm" data-x="${j.id}">Delete</button></div></div>`).join(''):''}`;
  growAll($('#pb'));
  $('#js').onclick=()=>{const t=$('#jt').value.trim();if(!t)return $('#er').textContent='Write something first.';J.push({id:uid(),d:today(),t});save();pJournal()};
  document.querySelectorAll('[data-x]').forEach(b=>b.onclick=()=>{if(confirm('Delete this entry?')){D.journal=J.filter(j=>j.id!=b.dataset.x);save();pJournal()}});
@@ -1307,7 +1312,7 @@ function lTips(){const el=document.getElementById('lb');
  el.innerHTML=`<div class="row tabsrow" style="margin-bottom:4px">${['All',...cats].map(c=>`<button class="chip" data-tc="${E(c)}" aria-pressed="${f===c}">${E(c)}</button>`).join('')}</div>
  <div class="card" style="margin-top:8px"><div class="card-h"><h3 style="margin:0">${f==='All'?'Tips':E(f)}</h3><span class="meta">${list.length}</span></div>${list.map(x=>`<div class="kv"><span>${E(x[1])}</span></div>`).join('')}</div>`;
  el.querySelectorAll('[data-tc]').forEach(b=>b.onclick=()=>{tipCat=b.dataset.tc;lTips()})}
-function me(){const p=D.p;$('#main').innerHTML=`<h1>Profile</h1><div class="card"><div style="display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:20px">${avatarHTML(192)}<div class="row" style="gap:8px;justify-content:center;flex-wrap:wrap">${D.p.avatar?`<button class="btn ghost" id="adjOpen" style="flex:0 0 auto">Adjust</button>`:''}<label class="btn ghost" for="av" style="display:inline-flex !important;align-items:center !important;justify-content:center !important;gap:8px !important;cursor:pointer !important">${IC.camera(18)} Change photo</label></div><input type="file" id="av" accept="image/*" hidden><p class="meta" style="margin:0;text-align:center">Your photo is stored on this device and in your account.</p></div><label for="nm">Nickname</label><input id="nm" value="${E(p.name)}" maxlength="30"><label>Goals</label><div class="row" id="goals">${GOALS.map(g=>`<button class="chip" aria-pressed="${(p.goals||[]).includes(g)}">${g}</button>`).join('')}</div><button class="btn" id="sv" style="width:100%;margin-top:12px">Save</button></div>
+function me(){const p=D.p;$('#main').innerHTML=`<h1>Profile</h1><div class="card"><div style="display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:20px">${avatarHTML(192)}<label class="btn ghost" for="av" style="display:inline-flex !important;align-items:center !important;justify-content:center !important;gap:8px !important;cursor:pointer !important;align-self:center">${IC.camera(18)} Change photo</label><input type="file" id="av" accept="image/*" hidden><p class="meta" style="margin:0;text-align:center">Your photo is stored on this device and in your account.</p></div><label for="nm">Nickname</label><input id="nm" value="${E(p.name)}" maxlength="30"><label>Goals</label><div class="row" id="goals">${GOALS.map(g=>`<button class="chip" aria-pressed="${(p.goals||[]).includes(g)}">${g}</button>`).join('')}</div><button class="btn" id="sv" style="width:100%;margin-top:12px">Save</button></div>
 <div class="card"><div class="card-h"><h3>Partner sync</h3>${D.partner&&D.partner.on?'<span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem;background:var(--pinkS);border-color:rgba(232,160,180,.6);color:var(--rose)">Active</span>':''}</div>
 ${D.partner&&D.partner.on?`<p class="meta">Share this code. Your partner opens a read-only view of your logs on this device — they cannot log or add notes.</p><div class="syncbox"><span class="synccode">${E(D.partner.code)}</span><button class="btn ghost sm" id="cp">Copy</button></div><div class="row" style="gap:10px;margin-top:10px"><button class="btn ghost sm" id="pg" style="flex:1">New code</button><button class="btn ghost sm" id="pv" style="flex:1">Revoke</button></div>`:`<div style="text-align:center;padding:24px 12px"><svg viewBox="0 0 80 80" style="width:64px;height:64px;margin:0 auto 16px;opacity:.5" role="img" aria-hidden="true"><circle cx="40" cy="40" r="36" fill="none" stroke="var(--pink)" stroke-width="3" stroke-dasharray="8 6"/><path d="M24 40c0-8.8 7.2-16 16-16s16 7.2 16 16" fill="none" stroke="var(--pink)" stroke-width="3" stroke-linecap="round"/><circle cx="40" cy="32" r="6" fill="var(--pink)"/></svg><h3 style="margin:0 0 6px">Invite a partner</h3><p class="meta" style="margin:0 0 16px">Share a 6-character code so they can see your cycle, mood, energy and insights — read-only, no editing.</p><button class="btn" id="gc" style="width:100%;max-width:280px">Create sync code</button></div>`}</div>
 <div class="card"><div class="card-h"><h3>Reminder</h3></div><label class="row" style="color:var(--ink)"><input type="checkbox" id="rm" style="width:22px;margin:0" ${D.rem.on?'checked':''}> Daily logging reminder</label><label for="rt">Time</label><input id="rt" type="time" value="${D.rem.time}"><button class="btn ghost" id="rs" style="width:100%;margin-top:4px">Save reminder</button><p class="meta" style="margin-top:10px">Web version: no push notifications.</p></div>
@@ -1316,7 +1321,6 @@ ${D.partner&&D.partner.on?`<p class="meta">Share this code. Your partner opens a
  document.querySelectorAll('#goals .chip').forEach(c=>c.onclick=()=>c.setAttribute('aria-pressed',c.getAttribute('aria-pressed')!='true'));
  $('#sv').onclick=()=>{p.name=$('#nm').value.trim();p.goals=[...document.querySelectorAll('#goals .chip[aria-pressed=true]')].map(c=>c.textContent);D.rem={on:$('#rm').checked,time:$('#rt').value||'20:00'};save();applyTheme();toast('Saved');shell()};
  $('#av').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f)pickAvatar(f)};
- if(document.getElementById('adjOpen'))$('#adjOpen').onclick=()=>openAvatarAdjust();
  const saveRem=()=>{D.rem={on:$('#rm').checked,time:$('#rt').value||'20:00'};save();toast('Reminder saved')};
  $('#rs').onclick=saveRem;$('#rt').onchange=saveRem;$('#rm').onchange=saveRem;
  $('#xj').onclick=()=>saveFile('bloom-data.json',JSON.stringify(D,null,1));$('#lo').onclick=logout;
