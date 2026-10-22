@@ -365,8 +365,8 @@ async function sbInit(){if(sb)return sb;
    sb=m.createClient(SB.url,SB.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
   const {data}=await sb.auth.getSession();
   if(data&&data.session&&data.session.user)sbUser=data.session.user;
-  else{try{const ad=await sb.auth.signInAnonymously();
-   if(ad&&ad.data&&ad.data.session)sbUser=ad.data.session.user}catch(e){}}
+  else{try{if(!ST.get('bloom_no_anon')){const ad=await sb.auth.signInAnonymously();
+   if(ad&&ad.data&&ad.data.session)sbUser=ad.data.session.user}}catch(e){}}
  }catch(e){sb=null}
  return sb}
 async function sbFetchDoc(uid){if(!sb)return null;const {data,error}=await sb.from('bloom_data').select('doc,updated_at').eq('user_id',uid).maybeSingle();if(error)return null;return data?data.doc:null}
@@ -398,6 +398,12 @@ async function sbSignIn(email,pw){await sbInit();if(!sb)return 'offline';
  const {error}=await sb.auth.signInWithPassword({email:email.trim(),password:pw});
  if(error)return error.message;const {data}=await sb.auth.getSession();if(data.session)await sbAfterLogin(data.session.user);return null}
 async function sbSignUp(email,pw){await sbInit();if(!sb)return 'offline';
+ const {data:cur}=await sb.auth.getSession();
+ const anon=cur&&cur.session&&cur.session.user&&cur.session.user.is_anonymous;
+ if(anon){try{const {data,error}=await sb.auth.updateUser({email:email.trim(),password:pw});
+  if(error)return error.message;
+  if(data&&data.user){await sbAfterLogin(data.user);return null}
+ }catch(e){}}
  const {error}=await sb.auth.signUp({email:email.trim(),password:pw});
  if(error)return error.message;const {data}=await sb.auth.getSession();
  if(data.session)await sbAfterLogin(data.session.user);else toast('Check your email to confirm');return null}
@@ -1357,8 +1363,13 @@ function lTips(){const el=document.getElementById('lb');
  el.querySelectorAll('[data-tc]').forEach(b=>b.onclick=()=>{tipCat=b.dataset.tc;lTips()})}
 function me(){const p=D.p;$('#main').innerHTML=`<h1>Profile</h1><div class="card"><div style="display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:20px">${avatarHTML(192)}<label class="btn ghost" for="av" style="display:inline-flex !important;align-items:center !important;justify-content:center !important;gap:8px !important;cursor:pointer !important;align-self:center">${IC.camera(18)} Change photo</label><input type="file" id="av" accept="image/*" hidden><p class="meta" style="margin:0;text-align:center">Your photo is stored on this device and in your account.</p></div><label for="nm">Nickname</label><input id="nm" value="${E(p.name)}" maxlength="30"><label>Goals</label><div class="row" id="goals">${GOALS.map(g=>`<button class="chip" aria-pressed="${(p.goals||[]).includes(g)}">${g}</button>`).join('')}</div><button class="btn" id="sv" style="width:100%;margin-top:12px">Save</button></div>
 <div class="card"><div class="card-h"><h3>Partner sync</h3>${D.partner&&D.partner.on?'<span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem;background:var(--pinkS);border-color:rgba(232,160,180,.6);color:var(--rose)">Active</span>':''}</div>
-${D.partner&&D.partner.on?`<p class="meta">Share this code. Your partner opens a read-only view of your logs — they cannot log or add notes.</p>${sbUser?'':'<div class="note" style="margin:0 0 12px;font-size:.8rem">This code works <b>on this device only</b>. Sign in to share it from any phone.</div>'}<div class="syncbox"><span class="synccode">${E(D.partner.code)}</span><button class="btn ghost sm" id="cp">Copy</button></div><div class="row" style="gap:10px;margin-top:10px"><button class="btn ghost sm" id="pg" style="flex:1">New code</button><button class="btn ghost sm" id="pv" style="flex:1">Revoke</button></div>${sbUser?'':'<button class="btn" id="signInSync" style="width:100%;margin-top:10px">Sign in to share anywhere</button>'}<button class="btn ghost" id="openPartner" style="width:100%;margin-top:10px">Open a partner view</button>`:`<div style="text-align:center;padding:24px 12px"><svg viewBox="0 0 80 80" style="width:64px;height:64px;margin:0 auto 16px;opacity:.5" role="img" aria-hidden="true"><circle cx="40" cy="40" r="36" fill="none" stroke="var(--pink)" stroke-width="3" stroke-dasharray="8 6"/><path d="M24 40c0-8.8 7.2-16 16-16s16 7.2 16 16" fill="none" stroke="var(--pink)" stroke-width="3" stroke-linecap="round"/><circle cx="40" cy="32" r="6" fill="var(--pink)"/></svg><h3 style="margin:0 0 6px">Invite a partner</h3><p class="meta" style="margin:0 0 16px">Share a 6-character code so they can see your cycle, mood, energy and insights — read-only, no editing.</p><button class="btn" id="gc" style="width:100%;max-width:280px">Create sync code</button></div>`}</div>
+${D.partner&&D.partner.on?`<p class="meta">Share this code. Your partner opens a read-only view of your logs — they cannot log or add notes.</p>${sbUser?'':'<div class="note" style="margin:0 0 12px;font-size:.8rem">Your data is already backed up to the cloud. Add an account to <b>keep it permanently</b> and never lose your partner link.</div>'}<div class="syncbox"><span class="synccode">${E(D.partner.code)}</span><button class="btn ghost sm" id="cp">Copy</button></div><div class="row" style="gap:10px;margin-top:10px"><button class="btn ghost sm" id="pg" style="flex:1">New code</button><button class="btn ghost sm" id="pv" style="flex:1">Revoke</button></div>${sbUser?'':'<button class="btn" id="signInSync" style="width:100%;margin-top:10px">Secure your account</button>'}<button class="btn ghost" id="openPartner" style="width:100%;margin-top:10px">Open a partner view</button>`:`<div style="text-align:center;padding:24px 12px"><svg viewBox="0 0 80 80" style="width:64px;height:64px;margin:0 auto 16px;opacity:.5" role="img" aria-hidden="true"><circle cx="40" cy="40" r="36" fill="none" stroke="var(--pink)" stroke-width="3" stroke-dasharray="8 6"/><path d="M24 40c0-8.8 7.2-16 16-16s16 7.2 16 16" fill="none" stroke="var(--pink)" stroke-width="3" stroke-linecap="round"/><circle cx="40" cy="32" r="6" fill="var(--pink)"/></svg><h3 style="margin:0 0 6px">Invite a partner</h3><p class="meta" style="margin:0 0 16px">Share a 6-character code so they can see your cycle, mood, energy and insights — read-only, no editing.</p><button class="btn" id="gc" style="width:100%;max-width:280px">Create sync code</button></div>`}</div>
 <div class="card"><div class="card-h"><h3>Reminder</h3></div><label class="row" style="color:var(--ink)"><input type="checkbox" id="rm" style="width:22px;margin:0" ${D.rem.on?'checked':''}> Daily logging reminder</label><label for="rt">Time</label><input id="rt" type="time" value="${D.rem.time}"><button class="btn ghost" id="rs" style="width:100%;margin-top:4px">Save reminder</button><p class="meta" style="margin-top:10px">Web version: no push notifications.</p></div>
+<div class="card"><div class="card-h"><h3>Account</h3></div>
+ <div class="kv"><span>Cloud account</span><b style="font-size:.9rem">${sbUser?(sbUser.email||'Anonymous (this device)'):'Not connected'}</b></div>
+ <div class="kv"><span>Local profile</span><b style="font-size:.9rem">${E(user||'—')}</b></div>
+ ${sbUser&&sbUser.email?'<button class="btn ghost" id="cloudOut" style="width:100%;margin-top:12px">Sign out of cloud</button>':sbUser?'':'<button class="btn" id="acctSignIn" style="width:100%;margin-top:12px">Create an account</button>'}
+ <p class="meta" style="margin:10px 0 0">An account keeps your history and partner link safe if you clear this phone.</p></div>
 <div class="card"><div class="card-h"><h3>Cloud sync</h3><span class="meta">${syncState.ok===true?'Up to date':syncState.ok===false?'Failed':'Not synced yet'}</span></div>
  <p class="meta" style="margin:0 0 10px">${sbUser?(sbUser.email||'Anonymous device account'):'No cloud account'}${syncState.at?' \u00b7 last sync '+new Date(syncState.at).toLocaleTimeString():''}</p>
  ${syncState.err?`<p class="meta" style="margin:0 0 10px;color:#B8456B">${E(syncState.err)}</p>`:''}
@@ -1376,6 +1387,8 @@ ${D.partner&&D.partner.on?`<p class="meta">Share this code. Your partner opens a
  if(document.getElementById('gc'))$('#gc').onclick=async()=>{await genPartnerCode();me()};
  if(document.getElementById('signInSync'))$('#signInSync').onclick=()=>{authReturn='me';authView('in')};
  if(document.getElementById('syncNow'))$('#syncNow').onclick=async()=>{toast('Syncing\u2026');await sbInit();await sbPush();me();toast(syncState.ok?'Synced to the cloud':'Sync failed: '+syncState.err)};
+ if(document.getElementById('acctSignIn'))$('#acctSignIn').onclick=()=>{authReturn='me';authView('in')};
+ if(document.getElementById('cloudOut'))$('#cloudOut').onclick=async()=>{try{if(sb)await sb.auth.signOut()}catch(e){}sbUser=null;ST.set('bloom_no_anon','1');toast('Signed out of the cloud');me()};
  if(document.getElementById('openPartner'))$('#openPartner').onclick=()=>{
   sheet(`<h2>Open partner view</h2><p class="meta" style="margin:0 0 12px">Enter the 6-character code your partner shared with you.</p>
  <input id="pvCode" maxlength="6" autocapitalize="characters" autocomplete="off" placeholder="ABC123" style="margin:0 0 10px">
