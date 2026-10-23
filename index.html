@@ -484,23 +484,26 @@ function exitPartnerNow(){
   return}
  authView('in')}
 // partner's own profile: no sync code, no cycle fields - just identity and exit
-function roProfile(){
- const cur=ST.get('bloom_pname')||'';
+function roPage(){
  const c=cycleStats(),len=c.avg||28;let sum='No cycle logged yet';
  if(c.last){const day=Math.round((new Date(today())-new Date(c.last))/864e5)+1,dt=((day-1)%len)+1;sum='Day '+dt+' \u00b7 '+phaseInfo(dt,len).k}
  const nd=Object.keys(D.logs||{}).length;if(nd)sum+=' \u00b7 '+nd+' day'+(nd>1?'s':'')+' logged';
- sheet(`<h2 style="text-align:center">Your profile</h2>
-  <div style="display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:20px">${roAvatarHTML(112)}<label class="btn ghost" for="rpav" style="display:inline-flex !important;align-items:center !important;justify-content:center !important;gap:8px !important;cursor:pointer !important;align-self:center">${IC.camera(18)} Change photo</label><input type="file" id="rpav" accept="image/*" hidden></div>
-  <label for="rpn">Your name</label><input id="rpn" maxlength="30" value="${E(cur)}" placeholder="What you call yourself">
-  <p class="meta" style="margin:8px 0 16px">Saves automatically. It shows in Tap Race and on the leaderboard.</p>
-  <div class="lbl">Following</div>
-  <div class="row" style="gap:12px;align-items:center;margin:0 0 14px">${avatarHTML(56)}<div style="min-width:0"><b style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${E((D.p&&D.p.name)||'partner')}</b><p class="meta" style="margin:4px 0 0">${E(sum)}</p></div></div>
-  <button class="btn ghost" id="rpnOut" style="width:100%">Sign out</button>
-  <p class="meta" style="margin-top:8px">Signing out also unbinds you from their sync code. You will need their code again to follow them.</p>`);
- $('#rpn').onchange=()=>{const v=$('#rpn').value.trim();if(!v)return;
-  ST.set('bloom_pname',v);toast('Name saved');shell();try{notifyProfile(v,false)}catch(e2){}};
+ $('#main').innerHTML=`<h1>Profile</h1>
+<div class="card">
+ <div style="display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:20px">${roAvatarHTML(192)}<label class="btn ghost" for="rpav" style="display:inline-flex !important;align-items:center !important;justify-content:center !important;gap:8px !important;cursor:pointer !important;align-self:center">${IC.camera(18)} Change photo</label><input type="file" id="rpav" accept="image/*" hidden></div>
+ <label for="rpn">Nickname</label><input id="rpn" maxlength="30" value="${E(ST.get('bloom_pname')||'')}">
+ <p class="meta" style="margin:8px 0 0">Saves automatically. It shows in Tap Race and on the leaderboard.</p>
+</div>
+<div class="card"><div class="card-h"><h3>Following</h3></div><div class="row" style="gap:12px;align-items:center">${avatarHTML(56)}<div style="min-width:0"><b style="display:block">${E((D.p&&D.p.name)||'partner')}</b><p class="meta" style="margin:2px 0 0">${E(sum)}</p></div></div></div>
+<div class="card"><div class="card-h"><h3>App</h3><span class="meta" id="appVer">\u2014</span></div><button class="btn ghost" id="chkUp" style="width:100%">Check for updates</button></div>
+<button class="btn ghost" id="lo" style="width:100%">Sign out</button>
+<p class="meta" style="margin-top:8px;text-align:center">Signing out also unbinds you from their sync code. Their data stays untouched.</p>`;
+ $('#rpn').onchange=async()=>{const v=$('#rpn').value.trim();if(!v)return;ST.set('bloom_pname',v);toast('Name saved');shell();try{let a=null;try{a=(JSON.parse(ST.get('bloom_pavatar')||'null')||{}).a||null}catch(ea){}const cl=await sbInit();if(cl&&sbUser)await cl.from('bloom_profiles').upsert({id:sbUser.id,name:v,avatar:a})}catch(ev){}try{notifyProfile(v,false)}catch(e2){}};
  $('#rpav').onchange=e=>{const f=e.target.files&&e.target.files[0];e.target.value='';if(f)roPickAvatar(f)};
- $('#rpnOut').onclick=()=>logout()}
+ $('#lo').onclick=logout;
+ if(document.getElementById('chkUp'))$('#chkUp').onclick=()=>checkUpdate(true);
+ (async()=>{const up=updater();if(!up)return;try{const v=await up.getVersion();const el=document.getElementById('appVer');if(el)el.textContent='v'+v.versionName+' ('+v.versionCode+')'}catch(e){}})()}
+
 
 function cloudStatus(){
  const el=document.getElementById('cloudStat');if(!el)return;
@@ -528,7 +531,29 @@ function roPickAvatar(file){const r=new FileReader();r.onload=e=>{const img=new 
  const cv=document.createElement('canvas');cv.width=Math.max(1,Math.round(img.width*sc));cv.height=Math.max(1,Math.round(img.height*sc));
  cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
  try{ST.set('bloom_pavatar',JSON.stringify({a:cv.toDataURL('image/jpeg',0.85),c:{z:1,x:0,y:0}}))}catch(ev){}
- shell();toast('Photo saved');try{notifyProfile(((ST.get('bloom_pname')||'')+''),true)}catch(ev2){}};img.src=e.target.result};r.readAsDataURL(file)}
+ roAdjust()};img.src=e.target.result};r.readAsDataURL(file)}
+function roAdjust(){let j=null;try{j=JSON.parse(ST.get('bloom_pavatar')||'null')}catch(e){}const src=j&&j.a;if(!src)return;
+ const c=Object.assign({z:1,x:0,y:0},j.c||{});
+ sheet(`<h2>Adjust photo</h2>
+ <div class="adjbox" id="adjBox"><img id="adjImg" src="${src}" alt=""></div>
+ <label for="adjZ" class="lbl" style="margin-top:16px">Zoom</label>
+ <input id="adjZ" type="range" min="100" max="400" step="1" value="${Math.round((c.z||1)*100)}" style="padding:0 !important;margin:0 0 6px !important">
+ <p class="meta" style="margin:0 0 4px">Drag the photo to reposition it.</p>
+ <div class="row" style="gap:10px;margin-top:14px"><button class="btn ghost" id="adjReset" style="flex:0 0 auto">Reset</button><button class="btn" id="adjSave" style="flex:1">Save</button></div>`);
+ const box=document.getElementById('adjBox'),im=document.getElementById('adjImg'),zs=document.getElementById('adjZ');
+ const apply=()=>{im.style.transform='translate('+(c.x||0)+'%,'+(c.y||0)+'%) scale('+(c.z||1)+')'};
+ apply();
+ zs.oninput=()=>{c.z=+zs.value/100;apply()};
+ let drag=null;
+ box.onpointerdown=e=>{drag={x:e.clientX,y:e.clientY,ox:c.x||0,oy:c.y||0};box.setPointerCapture&&box.setPointerCapture(e.pointerId);e.preventDefault()};
+ box.onpointermove=e=>{if(!drag)return;const w=box.clientWidth||1;
+  c.x=Math.max(-60,Math.min(60,drag.ox+(e.clientX-drag.x)/w*100));
+  c.y=Math.max(-60,Math.min(60,drag.oy+(e.clientY-drag.y)/w*100));apply()};
+ box.onpointerup=()=>{drag=null};box.onpointercancel=()=>{drag=null};
+ document.getElementById('adjReset').onclick=()=>{c.z=1;c.x=0;c.y=0;zs.value=100;apply()};
+ document.getElementById('adjSave').onclick=async()=>{j.c={z:c.z||1,x:c.x||0,y:c.y||0};try{ST.set('bloom_pavatar',JSON.stringify(j))}catch(ev2){}
+  try{const cl=await sbInit();if(cl&&sbUser)await cl.from('bloom_profiles').upsert({id:sbUser.id,avatar:j.a})}catch(evx){}
+  sheet();shell();toast('Photo saved');try{notifyProfile(((ST.get('bloom_pname')||'')+''),true)}catch(ev3){}}}
 // ---------- auth (online accounts only)
 async function redeemCode(code,onErr){
  const c=String(code||'').trim().toUpperCase();
@@ -607,7 +632,9 @@ function authView(mode){mode=mode||'in';
  $('#authForm').addEventListener('submit',e=>{e.preventDefault();sub()});
 }
 function login(u){user=u;D=Object.assign(blank(),J(key(u),{}));setSession(u);applyTheme();view='cycle';shell()}
-function logout(){user=null;D=null;clearSession();try{ST.del('bloom_own')}catch(e){}try{reminderCancel()}catch(e){}if(sb){sb.auth.signOut().catch(()=>{});sbUser=null}if(cloudTimer){clearInterval(cloudTimer);cloudTimer=null}authView('in')}
+function logout(){RO=false;ROowner=null;user=null;D=null;clearSession();
+ try{if(playCh&&sb)sb.removeChannel(playCh)}catch(pcl){}playCh=null;playKey='';opponentUid=null;
+ playState.race=false;playState.raceStarted=false;playState.incoming=false;playState.peerScore=null;playState.myTaps=null;try{ST.del('bloom_own')}catch(e){}try{reminderCancel()}catch(e){}if(sb){sb.auth.signOut().catch(()=>{});sbUser=null}if(cloudTimer){clearInterval(cloudTimer);cloudTimer=null}authView('in')}
 function applyTheme(){document.documentElement.removeAttribute('data-theme')}
 // ---------- helpers
 const L=d=>D.logs[d]||{};
@@ -751,13 +778,13 @@ function shell(){splashAppIsReady();
  const N=[['cycle','Cycle',IC.ring],['planner','Planner',IC.list] ,['insights','Insights',IC.chart],['games','Play',IC.play],['learn','Learn',IC.book]];
  $('#app').innerHTML=`<div class="blob blob-a"></div><div class="blob blob-b"></div><div class="blob blob-c"></div><div class="wrap"><header class="topbar"><div class="wordmark">Bloom<i>.</i></div>${RO?`<div class="row" style="gap:8px"><button class="profbtn" id="rome" aria-label="Your profile">${roAvatarHTML()}<span>${E(ST.get('bloom_pname')||'You')}</span></button></div>`:`<button class="profbtn" id="me" aria-label="Profile and settings">${avatarHTML(44)}<span>${E(D.p.name||user)}</span></button>`}</header><main id="main"></main></div><nav aria-label="Main">${N.map(([k,l,ic])=>`<button data-v="${k}" ${view==k?'aria-current="page"':''}>${ic(17)}<span>${l}</span></button>`).join('')}</nav>`;
  if(RO){
- const rm=document.getElementById('rome');if(rm)rm.onclick=roProfile;
+ const rm=document.getElementById('rome');if(rm)rm.onclick=()=>{view='me';shell()};
  roTimer=setInterval(roReload,4000)}
  document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{view=b.dataset.v;shell()});
  // #me only exists outside partner (read-only) mode  that header shows the Exit button instead
  const meBtn=$('#me');if(meBtn)meBtn.onclick=()=>{view='me';shell()};
  if(view=='me')document.querySelector('nav [aria-current]')?.removeAttribute('aria-current');
- ({cycle:cyclePage,month:monthView,planner,insights,learn,me:(pLocked()?mePartner:me),games:playPage})[view]()}
+ ({cycle:cyclePage,month:monthView,planner,insights,learn,me:(RO?roPage:(pLocked()?mePartner:me)),games:playPage})[view]()}
 function onboarding(){splashAppIsReady();const p=D.p;if(p.role==='me'&&onbStep===0)onbStep=1;
  if(p.role==='partner'){partnerOnboard();return}
  const steps=[
@@ -855,7 +882,7 @@ function cyclePage(){const d=today(),l=L(d),ts=tasksFor(d),n=ts.filter(t=>isDone
  const m=D.meals[d]||[];const wk=[...Array(7)].map((_,i)=>addD(d,-i)),wd=wk.reduce((a,x)=>a+tasksFor(x).filter(t=>isDone(t.id,x)).length,0),wt=wk.reduce((a,x)=>a+tasksFor(x).length,0);
  const c=cycleStats(),len=c.avg||28,day=c.last?Math.round((new Date(today())-new Date(c.last))/864e5)+1:1,dt=((day-1)%len)+1;
  let left=len-(dt-1);if(left<=0)left+=len;
- const ph=c.last?phaseInfo(dt,len):{k:'\u2014',t:'No cycle yet',c:'var(--muted)'},first=(D.p.name||'friend').split(' ')[0],goal=D.p.waterGoal||8;
+ const ph=c.last?phaseInfo(dt,len):{k:'\u2014',t:'No cycle yet',c:'var(--muted)'},first=(RO?((ST.get('bloom_pname')||'friend')+''):(D.p.name||'friend')).split(' ')[0],goal=D.p.waterGoal||8;
 
  $('#main').innerHTML=`
  <div class="greet"><h1 class="sr">Cycle</h1><div class="hi">${h<12?'Good morning':h<18?'Good afternoon':'Good evening'},</div><div class="hi nm">${E(first)}</div><div class="date">${fmt(d,{weekday:'long',month:'long',day:'numeric'})}</div></div>
@@ -1575,6 +1602,14 @@ async function doDeleteAll(){
  if(cloudTimer){clearInterval(cloudTimer);cloudTimer=null}
  toast('All your data was deleted');
  authView('in')}
+// owner's profile card: the connected partner's live photo + name from the cloud row (both ways updated)
+async function loadPartnerPreview(){try{const cl=await sbInit();if(!cl||!sbUser||RO)return;const el=document.getElementById('pLink0');if(!el)return;
+ const {data:pp}=await cl.from('bloom_partners').select('partner_id').eq('owner_id',sbUser.id).not('partner_id','is',null).limit(1);
+ if(!pp||!pp.length){el.innerHTML='<p class="meta" style="margin:0">No partner connected yet.</p>';return}
+ const {data:prof}=await cl.from('bloom_profiles').select('name,avatar').eq('id',pp[0].partner_id).maybeSingle();
+ const nm=(prof&&prof.name)||'Your partner',av=(prof&&prof.avatar)||null;
+ el.innerHTML=`<div class="row" style="gap:12px;align-items:center">${av?`<span class="avatar-wrap" style="width:56px;height:56px"><img class="avatar" src="${av}" alt=""></span>`:`<span class="avatar-fb" style="width:56px;height:56px;font-size:20px">${E((nm||'P').charAt(0).toUpperCase())}</span>`}<div style="min-width:0"><b style="display:block">${E(nm)}</b><p class="meta" style="margin:2px 0 0">following you</p></div></div>`;
+}catch(e){}}
 // ---------- play: mini-games with cloud highscores + partner leaderboard (realtime scores, no DB writes)
 let gAlive=false;      // lets a running game stop itself when the view changes
 // scores are per device: in follow mode they live in local storage, never in the owner's doc
@@ -1675,6 +1710,7 @@ async function playJoin(){
    const nn=o.name||null;
    if(nn&&nn!==playState.peerName){playState.peerName=nn;const g=(D.games=D.games||{});const pr=g.peer=(g.peer||{});pr.n=nn;pr.d=pr.d||today();save();boardPaint()}
    toast((nn||'Your partner')+' updated their profile'+(o.photo?' \u00b7 new photo':''));
+   try{if(!RO&&view==='me')setTimeout(loadPartnerPreview,600)}catch(pfE){}
    return}
   if(o.kind==='rx-start'){raceStart();return}
   if(o.kind==='rx-score'){playState.peerScore=+o.taps||0;playState.peerName=o.name||playState.peerName;raceReveal();return}
@@ -1773,6 +1809,7 @@ $('#main').innerHTML=`<h1>Profile</h1>
  ${hasCode?`<p class="meta">Share this code with a partner. They will see your cycle, mood and energy read-only.</p><div class="syncbox"><span class="synccode">${E(D.partner.code)}</span><button class="btn ghost sm" id="cp">Copy</button></div><div class="row" style="gap:10px;margin-top:10px"><button class="btn ghost sm" id="pg" style="flex:1">New code</button><button class="btn ghost sm" id="pv" style="flex:1">Revoke</button></div>`
  :`<p class="meta">Create a code so someone you trust can follow your cycle read-only. You can revoke it any time.</p><button class="btn" id="gc" style="width:100%">Generate sync code</button>`}
 </div>
+<div class="card"><div class="card-h"><h3>Your partner</h3></div><span id="pLink0"><p class="meta">No partner connected yet.</p></span></div>
 <div class="card"><div class="card-h"><h3>Reminder</h3></div><label class="row" style="color:var(--ink)"><input type="checkbox" id="rm" style="width:22px;margin:0" ${D.rem.on?'checked':''}> Daily logging reminder</label><label for="rt">Time</label><input id="rt" type="time" value="${D.rem.time}"><button class="btn ghost" id="rs" style="width:100%;margin-top:4px">Save reminder</button><p class="meta" style="margin-top:10px" id="remNote">${notifPlugin()?'One notification a day. Android will ask for permission the first time.':'Reminders are only sent by the Android app.'}</p></div>
 <div class="card"><div class="card-h"><h3>App</h3><span class="meta" id="appVer">\u2014</span></div><button class="btn ghost" id="chkUp" style="width:100%">Check for updates</button></div>
 <div class="card"><div class="card-h"><h3>Data</h3></div><button class="btn ghost" id="xj" style="width:100%">Export all data</button><button class="btn ghost" id="xi" style="width:100%;margin-top:10px">Restore from backup</button><input type="file" id="xif" accept="application/json,.json" hidden><p class="meta" style="margin:10px 0 0">A backup is the JSON file made by Export all data.</p><button class="btn pink" id="del" style="width:100%;margin-top:14px">Delete all my data</button></div>
@@ -1802,7 +1839,7 @@ $('#main').innerHTML=`<h1>Profile</h1>
   clean.rem=Object.assign({on:false,time:'20:00'},(j.rem&&typeof j.rem==='object')?j.rem:{});
   D=clean;save();me();toast('Backup restored');reminderSync(true)};
  $('#del').onclick=deleteAllData;
- $('#lo').onclick=logout;
+ $('#lo').onclick=logout;loadPartnerPreview();
  if(document.getElementById('gc'))$('#gc').onclick=async()=>{const c=await genPartnerCode();if(c)me()};
  if(document.getElementById('cp'))$('#cp').onclick=async()=>{try{await navigator.clipboard.writeText(D.partner.code);toast('Code copied')}catch(e){toast(D.partner.code)}};
  if(document.getElementById('pg'))$('#pg').onclick=async()=>{await genPartnerCode();me()};
