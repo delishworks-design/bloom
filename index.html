@@ -464,16 +464,17 @@ async function revokePartnerCode(){
  D.partner={code:'',on:false};save();
  toast('Code revoked')}
 function exitPartner(){
- const wasRO=RO, wasOwner=ROowner;
+ const wasRO=RO;
  RO=false;ROowner=null;D=null;clearSession();
  const own=ST.get('bloom_own');
  if(own&&sbUser){
   if(wasRO)ST.set('bloom_waspartner','1');
+  setSession(own);
   sbAfterLogin(sbUser).then(()=>{
    // a following-partner account never runs the cycle onboarding
    if(D&&D.p&&!D.p.done){D.p=D.p||{};D.p.done=true;
     if(!D.p.name)D.p.name=ST.get('bloom_pname')||(sbUser.email||'').split('@')[0];
-    D=Object.assign(blank(),D);if(D.p.done)D.tasks=D.tasks||[];save();view='me';shell();toast('Welcome to your profile')}
+    save();view='me';shell();toast('Welcome to your profile')}
   });
   return}
  authView('in')}
@@ -485,7 +486,7 @@ function roProfile(){
   <p class="meta" style="margin:8px 0 14px">Your name shows in Tap Race and on the leaderboard.</p>
   <div class="row" style="gap:10px;margin-bottom:10px"><button class="btn ghost" id="rpnX" style="flex:1">Sign out</button><button class="btn" id="rpnS" style="flex:1">Save</button></div>
   <p class="meta" style="margin:0 0 14px">Signed in as ${E((sbUser&&sbUser.email)||'')} \u00b7 Bloom ${APP_VERSION.name}</p>`);
- $('#rpnS').onclick=async()=>{const v=$('#rpn').value.trim();if(!v)return toast('Type a name');
+ $('#rpnS').onclick=()=>{const v=$('#rpn').value.trim();if(!v)return toast('Type a name');
   ST.set('bloom_pname',v);sheet();toast('Name saved');shell()};
  $('#rpnX').onclick=()=>{sheet();logout()}}
 function cloudStatus(){
@@ -725,8 +726,8 @@ function shell(){splashAppIsReady();
  const N=[['cycle','Cycle',IC.ring],['planner','Planner',IC.list] ,['insights','Insights',IC.chart],['games','Play',IC.play],['learn','Learn',IC.book]];
  $('#app').innerHTML=`<div class="blob blob-a"></div><div class="blob blob-b"></div><div class="blob blob-c"></div><div class="wrap"><header class="topbar"><div class="wordmark">Bloom<i>.</i></div>${RO?`<div class="row" style="gap:8px"><button class="profbtn" id="rome" aria-label="Your profile">${(()=>{const n=(ST.get('bloom_pname')||'P').trim();const c=n.charAt(0).toUpperCase()||'P';return `<span class="avatar-fb" style="width:34px;height:34px;font-size:15px">${E(c)}</span>`})()}<span>${E(ST.get('bloom_pname')||'You')}</span></button><span class="pchip">Following ${E((D.p&&D.p.name)||'partner')}</span><button class="btn ghost sm" id="exitp">Exit</button></div>`:`<button class="profbtn" id="me" aria-label="Profile and settings">${avatarHTML(44)}<span>${E(D.p.name||user)}</span></button>`}</header><main id="main"></main></div><nav aria-label="Main">${N.map(([k,l,ic])=>`<button data-v="${k}" ${view==k?'aria-current="page"':''}>${ic(17)}<span>${l}</span></button>`).join('')}</nav>`;
  if(RO){document.getElementById('exitp').onclick=exitPartner;
-  const rm=document.getElementById('rome');if(rm)rm.onclick=roProfile;
-  roTimer=setInterval(roReload,4000)}
+ const rm=document.getElementById('rome');if(rm)rm.onclick=roProfile;
+ roTimer=setInterval(roReload,4000)}
  document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{view=b.dataset.v;shell()});
  // #me only exists outside partner (read-only) mode  that header shows the Exit button instead
  const meBtn=$('#me');if(meBtn)meBtn.onclick=()=>{view='me';shell()};
@@ -1549,21 +1550,23 @@ async function doDeleteAll(){
  authView('in')}
 // ---------- play: mini-games with cloud highscores + partner leaderboard (realtime scores, no DB writes)
 let gAlive=false;      // lets a running game stop itself when the view changes
+// scores are per device: in follow mode they live in local storage, never in the owner's doc
 function ownScores(){
  if(!RO){D=D||blank();return (D.games=D.games||{})}
  let o=null;try{o=JSON.parse(ST.get('bloom_pown')||'{}')}catch(e){o=null}
  if(!o||typeof o!=='object')o={};return o}
-function ownSaveScore(o,s){if(RO){try{ST.set('bloom_pown',JSON.stringify(o))}catch(e){}}else{D.games=o;save()}}
-function gameHigh(k,s){const g=ownScores();if(s<=(+(g[k]||0)))return false;g[k]=s;ownSaveScore(g,s);return true}
+function ownSaveScore(g){if(RO){try{ST.set('bloom_pown',JSON.stringify(g))}catch(e){}}else{D.games=g;save()}}
+function gameHigh(k,s){const g=ownScores();if(s<=(+(g[k]||0)))return false;g[k]=s;ownSaveScore(g);return true}
 function bestOf(k){return ownScores()[k]||0}
 function playPage(){gAlive=false;const g=D.games||{};
  $('#main').innerHTML=`<h1>Play</h1>
- <div class="card"><div class="card-h"><h3>Tap Race</h3><span class="meta">${bestOf('tap')?bestOf('tap')+' taps':'\u2014'}</span></div><p class="meta">Fastest tapper wins: who lands more taps in 20 seconds takes the race. Practice alone to set your best.</p>
+ <div class="card"><div class="card-h"><h3>Tap Race</h3><span class="meta">${g.tap?g.tap+' taps':'\u2014'}</span></div><p class="meta">Fastest tapper wins: who lands more taps in 20 seconds takes the race. Practice alone to set your best.</p>
    <div class="row" style="gap:10px"><button class="btn" id="gTap" style="flex:1">Practice</button><button class="btn pink" id="gRace" style="flex:1">Race partner</button></div>
    <p class="meta" id="raceMsg" style="margin-top:8px">${sbUser?'Invite your partner to a live tap race \u2014 both of you need Play open.':'Sign in to race your partner.'}</p></div>
- <div class="card"><div class="card-h"><h3>Memory Bloom</h3><span class="meta">${bestOf('mem')?'level '+bestOf('mem'):''}</span></div><p class="meta">Repeat the pattern of lights. It grows by one step every round.</p><button class="btn" id="gMem" style="width:100%">Play</button></div>
+ <div class="card"><div class="card-h"><h3>Memory Bloom</h3><span class="meta">${g.mem?'level '+g.mem:''}</span></div><p class="meta">Repeat the pattern of lights. It grows by one step every round.</p><button class="btn" id="gMem" style="width:100%">Play</button></div>
  <div class="card"><div class="card-h"><h3>Leaderboard</h3><span class="meta" id="pOnline">\u2014</span></div>
-  <div id="boardBox" style="display:flex;flex-direction:column;gap:10px"></div></div>`;
+  <div id="boardBox" style="display:flex;flex-direction:column;gap:10px"></div>
+  </div>`;
  $('#gTap').onclick=()=>tapGame();$('#gMem').onclick=()=>memGame();
  if(document.getElementById('gRace'))document.getElementById('gRace').onclick=raceInvite;
  if(sbUser){playJoin().then(()=>{boardPaint();playPaint()});
@@ -1649,8 +1652,8 @@ function boardScores(){try{if(playCh&&sbUser)playCh.send({type:'broadcast',event
 function playPaint(){const el=document.getElementById('pOnline');if(!el)return;
  el.textContent=playState.peer?(playState.peerName||'partner online'):'partner offline'}
 function boardPaint(){const el=document.getElementById('boardBox');if(!el)return;
- const pr=(D.games||{}).peer||{};
- const rows=[['Tap Race',bestOf('tap'),pr.tap||0],['Memory Bloom',bestOf('mem'),pr.mem||0]];
+ const g=D.games||{},pr=g.peer||{};
+ const rows=[['Tap Bloom',g.tap||0,pr.tap||0],['Memory Bloom',g.mem||0,pr.mem||0]];
  el.innerHTML=rows.map(([label,mine,they])=>{
   const tot=(mine>0?mine:0)+(they>0?they:0);
   const lead=tot===0?null:(mine===they?'tie':(mine>they?'you':'they'));
@@ -1681,7 +1684,7 @@ function tapGame(){gAlive=true;const big0='Tap!';
 async function memGame(){gAlive=true;
  const cols=['#E8A0B4','#2A8A87','#B8456B','#C98A5B'];
  $('#main').innerHTML=`<div class="card">
-  <div class="row sp"><button class="btn ghost sm" id="gBk">\u2190 Back</button><b id="mLvl" style="font-variant-numeric:tabular-nums;font-size:1.15rem">Level 1</b><b id="mDone">${bestOf('mem')?'best '+bestOf('mem'):''}</b></div>
+  <div class="row sp"><button class="btn ghost sm" id="gBk">\u2190 Back</button><b id="mLvl" style="font-variant-numeric:tabular-nums;font-size:1.15rem">Level 1</b><b id="mDone">${(D.games||{}).mem?'best '+(D.games.mem||0):''}</b></div>
   <div id="pads" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px">${cols.map((c,i)=>`<button data-pad="${i}" aria-label="Pad ${i+1}" style="height:130px;border:0;border-radius:18px;background:${c};opacity:.45;font-family:inherit"></button>`).join('')}</div>
   <p class="meta" id="mMsg" style="margin-top:10px;text-align:center">Watch the pattern.</p><button class="btn" id="mAgn" style="width:100%;display:none">Play again</button></div>`;
  const wrap=document.getElementById('pads'),msg=document.getElementById('mMsg'),lvl=document.getElementById('mLvl'),
@@ -1818,7 +1821,7 @@ window.addEventListener('beforeunload',()=>splashBgMark());
 function backfillMeals(){try{if(!D||!D.meals)return;let fix=0;
  for(const d of Object.keys(D.meals)){const arr=D.meals[d];if(!Array.isArray(arr))continue;
   arr.forEach(x=>{const m=MEALS.find(k=>k.n===x.n);if(m&&x.t!==m.t){x.t=m.t;fix++}})}
- if(fix){save();console&&console.info&&console.info('re-typed '+fix+' meals')}}catch(e){}}
+ if(fix){save()}}catch(e){}}
 // ---------- start
 if(splashShouldShow())splashPlay();else splashSkip();  // only after 3 minutes away
 (async()=>{const s=getSession();
@@ -1836,4 +1839,5 @@ if(splashShouldShow())splashPlay();else splashSkip();  // only after 3 minutes a
  if(sbUser&&!RO){try{await sbAfterLogin(sbUser);backfillMeals();setTimeout(()=>checkUpdate(false),1500);return}catch(e){}}
  // no usable session -> the account screen (needs internet)
  authView('in')})();
-</script></body></html
+</script></body></html>
+·’·–·≈–—✦❀——−————––––←‹›→✕·✓○’✕··———–——–————–——–———––—²—–ü——––——ü————α——ü–––αα–—–––—––’–––––––––——————γ—–—————––—–—×——––––––—αβββ’–––——————’—————————————————————————’——’—…·←··✓−—“”
