@@ -12050,7 +12050,7 @@ Suggested solution: ${env.workaround}`;
   };
 
   // node_modules/@supabase/supabase-js/src/lib/fetch.ts
-  var import_tracing = __require("@supabase/tracing");
+  var import_tracing = (() => { try { return __require("@supabase/tracing"); } catch (e) { return { getDefaultPropagationTargets: () => [], shouldPropagateToTarget: () => false, parseTraceParent: () => null }; } })();
 
   // node_modules/@supabase/supabase-js/src/lib/tracingRegistry.ts
   var EXTRACTOR_KEY = /* @__PURE__ */ Symbol.for("@supabase/supabase-js.traceContextExtractor");
