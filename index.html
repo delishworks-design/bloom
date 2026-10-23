@@ -487,16 +487,16 @@ function roProfile(){
  const c=cycleStats(),len=c.avg||28;let sum='No cycle logged yet';
  if(c.last){const day=Math.round((new Date(today())-new Date(c.last))/864e5)+1,dt=((day-1)%len)+1;sum='Day '+dt+' \u00b7 '+phaseInfo(dt,len).k}
  const nd=Object.keys(D.logs||{}).length;if(nd)sum+=' \u00b7 '+nd+' day'+(nd>1?'s':'')+' logged';
- sheet(`<h2>Your profile</h2>
+ sheet(`<h2 style="text-align:center">Your profile</h2>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:20px">${roAvatarHTML(112)}<label class="btn ghost" for="rpav" style="display:inline-flex !important;align-items:center !important;justify-content:center !important;gap:8px !important;cursor:pointer !important;align-self:center">${IC.camera(18)} Change photo</label><input type="file" id="rpav" accept="image/*" hidden></div>
   <label for="rpn">Your name</label><input id="rpn" maxlength="30" value="${E(cur)}" placeholder="What you call yourself">
-  <p class="meta" style="margin:8px 0 14px">Saves automatically. It shows in Tap Race and on the leaderboard.</p>
-  <div class="row" style="gap:10px;margin:0 0 16px;align-items:center"><label class="btn ghost sm" for="rpav" style="margin:0;display:inline-flex !important;align-items:center !important;gap:8px !important">${IC.camera(15)} Change photo</label><input type="file" id="rpav" accept="image/*" hidden></div>
+  <p class="meta" style="margin:8px 0 16px">Saves automatically. It shows in Tap Race and on the leaderboard.</p>
   <div class="lbl">Following</div>
   <div class="row" style="gap:12px;align-items:center;margin:0 0 14px">${avatarHTML(56)}<div style="min-width:0"><b style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${E((D.p&&D.p.name)||'partner')}</b><p class="meta" style="margin:4px 0 0">${E(sum)}</p></div></div>
   <button class="btn ghost" id="rpnOut" style="width:100%">Sign out</button>
   <p class="meta" style="margin-top:8px">Signing out also unbinds you from their sync code. You will need their code again to follow them.</p>`);
  $('#rpn').onchange=()=>{const v=$('#rpn').value.trim();if(!v)return;
-  ST.set('bloom_pname',v);toast('Name saved');shell()};
+  ST.set('bloom_pname',v);toast('Name saved');shell();try{notifyProfile(v,false)}catch(e2){}};
  $('#rpav').onchange=e=>{const f=e.target.files&&e.target.files[0];e.target.value='';if(f)roPickAvatar(f)};
  $('#rpnOut').onclick=()=>logout()}
 
@@ -517,16 +517,16 @@ function errText(e){const m=String(e||'');
  return m||'Something went wrong. Try again.'}
 function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.display='none',2200)}
 function pLocked(){try{return ST&&ST.get('bloom_plocked')==='1'}catch(e){return false}}
-function roAvatarHTML(){const n=((ST.get('bloom_pname')||'P')+'').trim();const ini=n.charAt(0).toUpperCase()||'P';
+function roAvatarHTML(sz){const s=sz||34;const n=((ST.get('bloom_pname')||'P')+'').trim();const ini=n.charAt(0).toUpperCase()||'P';
  let av=null,crop=null;try{const j=JSON.parse(ST.get('bloom_pavatar')||'null');if(j){av=j.a;crop=j.c||{z:1,x:0,y:0}}}catch(e){}
- if(av)return `<span class="avatar-wrap" style="width:34px;height:34px"><img class="avatar" src="${av}" alt="" style="transform:translate(${crop.x||0}%,${crop.y||0}%) scale(${crop.z||1})"></span>`;
- return `<span class="avatar-fb" style="width:34px;height:34px;font-size:15px">${E(ini)}</span>`}
+ if(av)return `<span class="avatar-wrap" style="width:${s}px;height:${s}px"><img class="avatar" src="${av}" alt="" style="transform:translate(${crop.x||0}%,${crop.y||0}%) scale(${crop.z||1})"></span>`;
+ return `<span class="avatar-fb" style="width:${s}px;height:${s}px;font-size:${Math.round(s*0.42)}px">${E(ini)}</span>`}
 function roPickAvatar(file){const r=new FileReader();r.onload=e=>{const img=new Image();img.onload=()=>{
  const mx=1024,sc=Math.min(1,mx/Math.max(img.width,img.height));
  const cv=document.createElement('canvas');cv.width=Math.max(1,Math.round(img.width*sc));cv.height=Math.max(1,Math.round(img.height*sc));
  cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
  try{ST.set('bloom_pavatar',JSON.stringify({a:cv.toDataURL('image/jpeg',0.85),c:{z:1,x:0,y:0}}))}catch(ev){}
- shell();toast('Photo saved')};img.src=e.target.result};r.readAsDataURL(file)}
+ shell();toast('Photo saved');try{notifyProfile(((ST.get('bloom_pname')||'')+''),true)}catch(ev2){}};img.src=e.target.result};r.readAsDataURL(file)}
 // ---------- auth (online accounts only)
 async function redeemCode(code,onErr){
  const c=String(code||'').trim().toUpperCase();
@@ -738,7 +738,8 @@ async function roReload(){if(!RO)return;
  const raw=ST.get(key(ROowner));if(raw==null)return;const h=roHashOf(raw);if(h===roHash)return;roHash=h;D=Object.assign(blank(),J(key(ROowner),{}));shell()}
 function shell(){splashAppIsReady();
  gAlive=false;
- if(playCh){try{sb.removeChannel(playCh)}catch(e){}playCh=null;playKey='';opponentUid=null}
+ if(!sbUser&&playCh){try{sb.removeChannel(playCh)}catch(e){}playCh=null;playKey='';opponentUid=null}
+ if(sbUser&&!playCh){try{playJoin()}catch(ej){}}
  playState.peer=false;playState.peerName=null;
  for(const k of ['race','raceStarted','incoming','myTaps'])playState[k]=false;
  playState.peerScore=null;
@@ -1010,7 +1011,7 @@ function openAvatarAdjust(){const src=D.p.avatar;if(!src)return;
   c.y=Math.max(-60,Math.min(60,drag.oy+(e.clientY-drag.y)/w*100));apply()};
  box.onpointerup=()=>{drag=null};box.onpointercancel=()=>{drag=null};
  document.getElementById('adjReset').onclick=()=>{c.z=1;c.x=0;c.y=0;zs.value=100;apply()};
- document.getElementById('adjSave').onclick=()=>{D.p.avatarCrop={z:c.z||1,x:c.x||0,y:c.y||0};save();try{ST.set('bloom_pavatar',JSON.stringify({a:D.p.avatar,c:D.p.avatarCrop}))}catch(evx){}sheet();if(pLocked())mePartner();else me();toast('Photo saved')}}
+ document.getElementById('adjSave').onclick=()=>{D.p.avatarCrop={z:c.z||1,x:c.x||0,y:c.y||0};save();try{ST.set('bloom_pavatar',JSON.stringify({a:D.p.avatar,c:D.p.avatarCrop}))}catch(evx){}sheet();if(pLocked())mePartner();else me();toast('Photo saved');try{notifyProfile(nameOf(),true)}catch(vy){}}}
 function series(k,n){return[...Array(n)].map((_,i)=>{const d=addD(today(),i-n+1);return{d,v:L(d)[k]}})}
 function line(k,n,max,col){const s=series(k,n),W=320,H=110,x=i=>20+i*(W-30)/(n-1||1),y=v=>H-14-(v/max)*(H-24);let pts='',dots='';s.forEach((p,i)=>{if(p.v!=null){pts+=(pts&&s[i-1]?.v!=null?'L':'M')+x(i)+' '+y(p.v);dots+=`<circle cx="${x(i)}" cy="${y(p.v)}" r="3" fill="${col}"/>`}});
  return s.some(p=>p.v!=null)?`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${k} over last ${n} days"><line x1="20" x2="${W-8}" y1="${H-14}" y2="${H-14}" stroke="var(--line)"/><text x="2" y="${y(max)+3}">${max}</text><text x="6" y="${y(1)+3}">1</text><path d="${pts}" fill="none" stroke="${col}" stroke-width="2"/>${dots}<text x="20" y="${H-1}">${fmt(s[0].d)}</text><text x="${W-40}" y="${H-1}">${fmt(s[n-1].d)}</text></svg>`:'<p class="meta">No entries</p>'}
@@ -1601,10 +1602,11 @@ function raceInvite(){
  if(!sbUser){toast('Sign in to race');return}
  if(!opponentUid){toast('No partner yet \u2014 use a sync code on your profile');return}
  if(playState.race)return;
+ if(Date.now()-lastInviteAt<12000){toast('Wait a bit before inviting again');return}
  raceInviteGo()}
 async function raceInviteGo(){
  if(!(await playJoin())||!playState.peer){toast('Your partner must have Play open right now');return}
- playState.race=true;
+ playState.race=true;lastInviteAt=Date.now();
  const when=document.getElementById('raceMsg');
  playSend({kind:'rx-invite',from:nameOf()});
  if(when)when.textContent='Waiting for '+(playState.peerName||'your partner')+' \u2026';
@@ -1635,6 +1637,9 @@ function raceReveal(){
 // ---------- leaderboard: partner bests exchanged over a Supabase realtime broadcast
 let playCh=null,playKey='',opponentUid=null;
 const playState={peer:false,peerName:null,race:false,raceStarted:false,incoming:false,peerScore:null,myTaps:null};
+let rxLastIn=0,lastInviteAt=0,pfLast=null;
+// tell the connected partner that this account's profile changed (name and/or photo)
+function notifyProfile(name,photo){try{if(!sbUser)return;if(pfLast&&pfLast.n===(name||null)&&pfLast.p===!!photo)return;pfLast={n:name||null,p:!!photo};playSend({kind:'pfup',name:name||undefined,photo:!!photo})}catch(e){}}
 function nameOf(){return RO?(ST.get('bloom_pname')||'Partner'):((D&&D.p&&D.p.name)||(sbUser&&sbUser.email&&sbUser.email.split('@')[0])||'Bloom')}
 function pairKeyOf(a,b){return 'bloomduel-'+(a<b?a+'-'+b:b+'-'+a)}
 async function playJoin(){
@@ -1654,14 +1659,21 @@ async function playJoin(){
    if(+o.mem>+(pr.mem||0)||!pr.d)pr.mem=Math.max(+(pr.mem||0),+o.mem||0);
    pr.d=pr.d||today();pr.n=o.name;save();boardPaint();return}
   if(o.kind==='rx-invite'){
-   if(playState.race)return;
+   if(playState.race||playState.incoming)return;
+   const nowIn=Date.now();if(nowIn-rxLastIn<8000)return;rxLastIn=nowIn;
    playState.incoming=true;playState.peerName=o.from||playState.peerName;
    sheet(`<h2>Tap race</h2><p class="meta" style="margin:0 0 14px">${E(o.from||'Your partner')} wants to race: most taps in 20 seconds wins.</p>
     <div class="row" style="gap:10px"><button class="btn ghost" id="dNo" style="flex:1">Pass</button><button class="btn" id="dYes" style="flex:1">Race</button></div>`);
    document.getElementById('dNo').onclick=()=>{sheet();playState.incoming=false;playSend({kind:'rx-decline',name:nameOf()})};
    document.getElementById('dYes').onclick=()=>{sheet();playState.incoming=false;playSend({kind:'rx-start',name:nameOf()});raceStart()};
+   setTimeout(function(){if(!playState.incoming)return;playState.incoming=false;try{if(document.getElementById('dNo'))sheet()}catch(e7){}playSend({kind:'rx-decline',name:nameOf()})},10000);
    return}
-  if(o.kind==='rx-decline'){playState.race=false;const m=document.getElementById('gMsg');toast('They passed \u2014 try again later');return}
+  if(o.kind==='rx-decline'){playState.race=false;playState.incoming=false;lastInviteAt=Date.now();toast('They passed \u2014 try again later');return}
+  if(o.kind==='pfup'){
+   const nn=o.name||null;
+   if(nn&&nn!==playState.peerName){playState.peerName=nn;const g=(D.games=D.games||{});const pr=g.peer=(g.peer||{});pr.n=nn;pr.d=pr.d||today();save();boardPaint()}
+   toast((nn||'Your partner')+' updated their profile'+(o.photo?' \u00b7 new photo':''));
+   return}
   if(o.kind==='rx-start'){raceStart();return}
   if(o.kind==='rx-score'){playState.peerScore=+o.taps||0;playState.peerName=o.name||playState.peerName;raceReveal();return}
  });
@@ -1764,7 +1776,7 @@ $('#main').innerHTML=`<h1>Profile</h1>
 <div class="card"><div class="card-h"><h3>Data</h3></div><button class="btn ghost" id="xj" style="width:100%">Export all data</button><button class="btn ghost" id="xi" style="width:100%;margin-top:10px">Restore from backup</button><input type="file" id="xif" accept="application/json,.json" hidden><p class="meta" style="margin:10px 0 0">A backup is the JSON file made by Export all data.</p><button class="btn pink" id="del" style="width:100%;margin-top:14px">Delete all my data</button></div>
 <button class="btn ghost" id="lo" style="width:100%">Log out</button>`;
  document.querySelectorAll('#goals .chip').forEach(c=>c.onclick=()=>c.setAttribute('aria-pressed',c.getAttribute('aria-pressed')!=='true'));
- $('#sv').onclick=()=>{p.name=$('#nm').value.trim();p.goals=[...document.querySelectorAll('#goals .chip[aria-pressed=true]')].map(c=>c.textContent);D.rem={on:$('#rm').checked,time:$('#rt').value||'20:00'};save();applyTheme();toast('Saved');shell()};
+ $('#sv').onclick=()=>{p.name=$('#nm').value.trim();p.goals=[...document.querySelectorAll('#goals .chip[aria-pressed=true]')].map(c=>c.textContent);D.rem={on:$('#rm').checked,time:$('#rt').value||'20:00'};save();applyTheme();toast('Saved');shell();try{notifyProfile(D.p.name,!!D.p.avatar)}catch(vs){}};
  $('#av').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f)pickAvatar(f)};
  const saveRem=async()=>{D.rem={on:$('#rm').checked,time:$('#rt').value||'20:00'};save();
   const r=await reminderSync(),note=document.getElementById('remNote');
