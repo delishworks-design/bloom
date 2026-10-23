@@ -420,8 +420,16 @@ async function sbAfterLogin(u){sbUser=u;
  // onboarding counts as done if the local cache says so OR the cloud does (offline friendly)
  D.p.done=!!((keep.p&&keep.p.done)||(doc&&doc.p&&doc.p.done));
  if(!D.p.name)D.p.name=(u.email||'Bloom').split('@')[0];
- user=mail||user;setSession(user);try{ST.set('bloom_own',user)}catch(e){}
- if(pLocked()&&!D.p.avatar){try{const j=JSON.parse(ST.get('bloom_pavatar')||'null');if(j&&j.a){D.p.avatar=j.a;D.p.avatarCrop=j.c||{z:1,x:0,y:0};save()}}catch(ea){}}
+ user=mail||user;
+ try{if(ST.get('bloom_plocked')==='1'&&user)ST.set('bloom_plocked',JSON.stringify([user.toLowerCase()]))}catch(em){}
+ setSession(user);try{ST.set('bloom_own',user)}catch(e){}
+ // a partner account keeps its own nickname and photo across sign-outs (cloud is the source of truth)
+ if(pLocked()){
+  try{if(!ST.get('bloom_pname')&&D.p.name)ST.set('bloom_pname',D.p.name);
+   const j=JSON.parse(ST.get('bloom_pavatar')||'null');
+   if((!j||!j.a)&&D.p.avatar)ST.set('bloom_pavatar',JSON.stringify({a:D.p.avatar,c:D.p.avatarCrop||{z:1,x:0,y:0}}))}catch(ea){}
+  try{const j2=JSON.parse(ST.get('bloom_pavatar')||'null');if(j2&&j2.a&&!D.p.avatar){D.p.avatar=j2.a;D.p.avatarCrop=j2.c||{z:1,x:0,y:0};save()}}catch(eb){}
+ }
  save();view=(pLocked()?'me':'cycle');shell();
  startCloudSync();
  setTimeout(()=>{try{reminderSync(true)}catch(e){}},1200);
@@ -478,7 +486,8 @@ function exitPartnerNow(){
  RO=false;ROowner=null;D=null;clearSession();
  const own=ST.get('bloom_own');
  if(own&&sbUser){
-  if(wasRO)ST.set('bloom_plocked','1');
+  if(wasRO)lockPartner();
+  ROcloud=false;roHash='';
   setSession(own);
   sbAfterLogin(sbUser).then(()=>{});
   return}
@@ -521,7 +530,9 @@ function errText(e){const m=String(e||'');
  if(/Email not confirmed/i.test(m))return 'Confirm your email address first.';
  return m||'Something went wrong. Try again.'}
 function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.display='none',2200)}
-function pLocked(){try{return ST&&ST.get('bloom_plocked')==='1'}catch(e){return false}}
+function lockList(){try{const raw=ST.get('bloom_plocked')||'';if(!raw)return [];if(raw==='1')return ['*'];const a=JSON.parse(raw);return Array.isArray(a)?a:[]}catch(e){return []}}
+function pLocked(){const l=lockList();if(!l.length)return false;const u=(user||'').toLowerCase();if(l.indexOf('*')>=0)return true;return !!u&&l.indexOf(u)>=0}
+function lockPartner(){try{const u=(user||'').toLowerCase(),l=lockList().filter(x=>x!=='*');if(u&&l.indexOf(u)<0)l.push(u);ST.set('bloom_plocked',JSON.stringify(l))}catch(e){}}
 function roAvatarHTML(sz){const s=sz||34;const n=((ST.get('bloom_pname')||'P')+'').trim();const ini=n.charAt(0).toUpperCase()||'P';
  let av=null,crop=null;try{const j=JSON.parse(ST.get('bloom_pavatar')||'null');if(j){av=j.a;crop=j.c||{z:1,x:0,y:0}}}catch(e){}
  if(av)return `<span class="avatar-wrap" style="width:${s}px;height:${s}px"><img class="avatar" src="${av}" alt="" style="transform:translate(${crop.x||0}%,${crop.y||0}%) scale(${crop.z||1})"></span>`;
@@ -632,9 +643,12 @@ function authView(mode){mode=mode||'in';
  $('#authForm').addEventListener('submit',e=>{e.preventDefault();sub()});
 }
 function login(u){user=u;D=Object.assign(blank(),J(key(u),{}));setSession(u);applyTheme();view='cycle';shell()}
-function logout(){RO=false;ROowner=null;user=null;D=null;clearSession();
- try{if(playCh&&sb)sb.removeChannel(playCh)}catch(pcl){}playCh=null;playKey='';opponentUid=null;
- playState.race=false;playState.raceStarted=false;playState.incoming=false;playState.peerScore=null;playState.myTaps=null;try{ST.del('bloom_own')}catch(e){}try{reminderCancel()}catch(e){}if(sb){sb.auth.signOut().catch(()=>{});sbUser=null}if(cloudTimer){clearInterval(cloudTimer);cloudTimer=null}authView('in')}
+function logout(){RO=false;ROcloud=false;ROowner=null;roHash='';user=null;D=null;clearSession();
+ try{if(playCh&&sb)sb.removeChannel(playCh)}catch(pcl){}playCh=null;playKey='';opponentUid=null;playJoining=null;
+ playState.peer=false;playState.peerName=null;playState.race=false;playState.raceStarted=false;playState.incoming=false;playState.peerScore=null;playState.myTaps=null;
+ pfLast=null;rxLastIn=0;lastInviteAt=0;
+ try{['bloom_pname','bloom_pavatar','bloom_pown'].forEach(k=>ST.del(k))}catch(ep){}
+ try{ST.del('bloom_own')}catch(e){}try{reminderCancel()}catch(e){}if(sb){sb.auth.signOut().catch(()=>{});sbUser=null}if(cloudTimer){clearInterval(cloudTimer);cloudTimer=null}hideUpdateBanner();authView('in')}
 function applyTheme(){document.documentElement.removeAttribute('data-theme')}
 // ---------- helpers
 const L=d=>D.logs[d]||{};
@@ -643,7 +657,7 @@ function starts(){return Object.keys(D.logs).filter(d=>bleed(d)&&!bleed(addD(d,-
 function cycleStats(){const s=starts(),len=[];for(let i=1;i<s.length;i++){len.push(Math.round((new Date(s[i])-new Date(s[i-1]))/864e5))}
  const ok=len.filter(x=>x>=15&&x<=120);if(ok.length<2)return{len,n:ok.length};const avg=Math.round(ok.reduce((a,b)=>a+b,0)/ok.length);return{len,n:ok.length,avg,min:Math.min(...ok),max:Math.max(...ok),last:s[s.length-1],irregular:Math.max(...ok)-Math.min(...ok)>7||avg>35}}
 function cycleLine(){const c=cycleStats();if(c.n<2)return'Log 3 period starts to estimate';
- const day=Math.round((new Date(today())-new Date(c.last))/864e5)+1;return`Day ${day}  ${c.min===c.max?c.min+' days':c.min+''+c.max+' days (avg '+c.avg+')'}  next  ${fmt(addD(c.last,c.min))}${fmt(addD(c.last,c.max))}`}
+ const day=Math.round((new Date(today())-new Date(c.last))/864e5)+1;const nx=c.min===c.max?fmt(addD(c.last,c.min)):fmt(addD(c.last,c.min))+'\u2013'+fmt(addD(c.last,c.max));return`Day ${day} \u00b7 ${c.min===c.max?c.min+' days':c.min+'\u2013'+c.max+' days (avg '+c.avg+')'} \u00b7 next ${nx}`}
 function tasksFor(d){return D.tasks.filter(t=>!t.days||t.days.includes(new Date(d+'T12:00').getDay()))}
 const isDone=(id,d)=>!!(D.done[d]||{})[id];
 function toggle(id,d){D.done[d]=D.done[d]||{};D.done[d][id]=!D.done[d][id];save()}
@@ -696,7 +710,7 @@ async function fetchManifest(){const bust='?t='+Date.now();
  const r=await fetch(UPDATE_MANIFEST+bust,{cache:'no-store'});if(!r.ok)throw new Error('manifest '+r.status);
  return await r.json()}
 // Baked-in build identity. Keep in sync with android/app/build.gradle (versionCode/versionName).
-const APP_VERSION={code:23,name:'1.2.8'};
+const APP_VERSION={code:29,name:'1.2.14'};
 const UPD_SKIP_KEY='bloom_upd_skip';
 const updater=()=>{const C=window.Capacitor;if(!C)return null;
  const P=C.Plugins&&C.Plugins.BloomUpdater;
@@ -705,10 +719,11 @@ const updater=()=>{const C=window.Capacitor;if(!C)return null;
  return{getVersion:async()=>({versionCode:APP_VERSION.code,versionName:APP_VERSION.name}),
   installUpdate:async o=>{try{window.open(o.url,'_system')}catch(e){location.href=o.url}}};
 };
+let lastUpdV=null;
 async function checkUpdate(manual){
  const up=updater();if(!up){if(manual)toast('Updates are only available in the app');return}
  try{
-  const v=await up.getVersion();
+  const v=await up.getVersion();lastUpdV=v;
   const m=await fetchManifest();
   if(!m||!m.versionCode||m.versionCode<=v.versionCode){hideUpdateBanner();if(manual)toast('You are on the latest version');return}
   // "Later" is remembered per version, so the banner doesn't nag
@@ -727,7 +742,7 @@ function showUpdateBanner(m){
  <button id="updBannerGo" class="btn sm" style="padding:8px 14px;white-space:nowrap">Update</button>
  <button id="updBannerX" aria-label="Dismiss update" style="background:none;border:0;font-size:22px;line-height:1;color:#8a7f77;padding:0 2px;cursor:pointer">\u00d7</button>`;
  document.getElementById('updBannerX').onclick=()=>{try{ST.set(UPD_SKIP_KEY,String(m.versionCode))}catch(e){}hideUpdateBanner()};
- document.getElementById('updBannerGo').onclick=()=>{hideUpdateBanner();showUpdateSheet(m,{versionCode:APP_VERSION.code,versionName:APP_VERSION.name})};
+ document.getElementById('updBannerGo').onclick=()=>{hideUpdateBanner();showUpdateSheet(m,lastUpdV||{versionCode:APP_VERSION.code,versionName:APP_VERSION.name})};
 }
 function hideUpdateBanner(){const el=document.getElementById('updBanner');if(el)el.remove()}
 function showUpdateSheet(m,v){
@@ -769,11 +784,8 @@ function shell(){splashAppIsReady();
  gAlive=false;
  if(!sbUser&&playCh){try{sb.removeChannel(playCh)}catch(e){}playCh=null;playKey='';opponentUid=null}
  if(sbUser&&!playCh){try{playJoin()}catch(ej){}}
- playState.peer=false;playState.peerName=null;
- for(const k of ['race','raceStarted','incoming','myTaps'])playState[k]=false;
- playState.peerScore=null;
  if(funTimer){clearInterval(funTimer);funTimer=null}if(foodTimer){clearInterval(foodTimer);foodTimer=null}if(roTimer){clearInterval(roTimer);roTimer=null}
- if(RO){const raw=ST.get(key(ROowner));if(raw!=null){roHash=roHashOf(raw);D=Object.assign(blank(),J(key(ROowner),{}))}}
+ if(RO&&!ROcloud){const raw=ST.get(key(ROowner));if(raw!=null){roHash=roHashOf(raw);D=Object.assign(blank(),J(key(ROowner),{}))}}
  if(!D.p.done&&!RO){if(pLocked()){D.p.done=true;D.p=D.p||{};D.p.role='partner';save()}else return onboarding()}
  const N=[['cycle','Cycle',IC.ring],['planner','Planner',IC.list] ,['insights','Insights',IC.chart],['games','Play',IC.play],['learn','Learn',IC.book]];
  $('#app').innerHTML=`<div class="blob blob-a"></div><div class="blob blob-b"></div><div class="blob blob-c"></div><div class="wrap"><header class="topbar"><div class="wordmark">Bloom<i>.</i></div>${RO?`<div class="row" style="gap:8px"><button class="profbtn" id="rome" aria-label="Your profile">${roAvatarHTML()}<span>${E(ST.get('bloom_pname')||'You')}</span></button></div>`:`<button class="profbtn" id="me" aria-label="Profile and settings">${avatarHTML(44)}<span>${E(D.p.name||user)}</span></button>`}</header><main id="main"></main></div><nav aria-label="Main">${N.map(([k,l,ic])=>`<button data-v="${k}" ${view==k?'aria-current="page"':''}>${ic(17)}<span>${l}</span></button>`).join('')}</nav>`;
@@ -842,7 +854,7 @@ function partnerOnboard(){
    try{ST.set('bloom_pname',nm)}catch(nmerr){}
    const btn=$('#pGo');btn.disabled=true;btn.innerHTML='<span class="spinner" aria-hidden="true"></span>Opening\u2026';
   try{const ok=await redeemCode(v,m=>setErr(m));
-    if(ok){try{ST.set('bloom_plocked','1')}catch(e9){}try{const cl=await sbInit();if(cl&&sbUser)await cl.from('bloom_profiles').upsert({id:sbUser.id,name:nm})}catch(e8){}}}
+    if(ok){lockPartner();try{const cl=await sbInit();if(cl&&sbUser)await cl.from('bloom_profiles').upsert({id:sbUser.id,name:nm})}catch(e8){}}}
   finally{btn.disabled=false;btn.textContent='Open'}
  });
 }
@@ -965,8 +977,9 @@ function planner(){const d=today();tab=tab||'day';
  document.querySelectorAll('[data-tb]').forEach(b=>b.onclick=()=>{tab=b.dataset.tb;planner()});({day:pDay,week:pWeek,meals:pMeals,journal:pJournal})[tab]()}
 function pDay(){const d=today(),ts=tasksFor(d);$('#pb').innerHTML=`<div class="card"><div class="card-h"><h3>Today</h3>${RO?'':'<button class="btn ghost sm" id="gp">Generate plan</button>'}</div><div style="margin-top:6px">${ts.length?ts.map(t=>`<div class="taskrow">${ck(t,d).replace('<input type="checkbox"',`<input type="checkbox" ${RO?'disabled':''}`)}${RO?'':`<button class="btn ghost sm del" data-del="${t.id}" aria-label="Delete ${E(t.t)}"></button>`}</div>`).join(''):'<p class="meta">No tasks</p>'}</div>
 ${RO?'':`<form id="af" style="margin-top:14px"><input id="nt" maxlength="80" placeholder="Add a task" aria-label="New task" style="width:100%;margin:0 0 10px">${chipField('rp','Repeat',[['all','Every day'],['wk','Weekdays'],['one','Today only']],'all')}<button class="btn" type="submit" style="width:100%;margin-top:12px">Add task</button></form><div class="err" id="er"></div></div>`}`;
- bindCk(d,planner);bindFields();$('#gp').onclick=()=>{genPlan();planner()};
- $('#af').onsubmit=e=>{e.preventDefault();const t=$('#nt').value.trim();if(!t)return $('#er').textContent='Please type a task.';const r=$('#rp').value;D.tasks.push({id:uid(),t,days:r=='wk'?[1,2,3,4,5]:r=='one'?[new Date().getDay()]:undefined,once:r=='one'?d:undefined});save();planner()};
+ bindCk(d,planner);bindFields();
+ const gpBtn=document.getElementById('gp');if(gpBtn)gpBtn.onclick=()=>{genPlan();planner()};
+ const afForm=document.getElementById('af');if(afForm)afForm.onsubmit=e=>{e.preventDefault();const t=$('#nt').value.trim();if(!t)return $('#er').textContent='Please type a task.';const r=$('#rp').value;D.tasks.push({id:uid(),t,days:r=='wk'?[1,2,3,4,5]:r=='one'?[new Date().getDay()]:undefined,once:r=='one'?d:undefined});save();planner()};
  document.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{D.tasks=D.tasks.filter(t=>t.id!=b.dataset.del);save();planner()})}
 function pWeek(){const days=[...Array(7)].map((_,i)=>addD(today(),i-new Date().getDay()+0));$('#pb').innerHTML=`<div class="weekgrid">`+days.map(d=>{const ts=tasksFor(d),n=ts.filter(t=>isDone(t.id,d)).length;return`<div class="card"><div class="card-h"><h3 style="font-size:1rem">${fmt(d,{weekday:'long',day:'numeric'})}${d==today()?'  today':''}</h3><span class="meta">${n}/${ts.length}</span></div><div style="margin-top:6px">${ts.map(t=>`<div class="meta">${isDone(t.id,d)?'':''} ${E(t.t)}</div>`).join('')||'<span class="meta">Rest day</span>'}</div></div>`}).join('')+`</div>`}
 function pMeals(){const d=today(),m=D.meals[d]||[],bud=D.p.bud||999;
@@ -1019,7 +1032,7 @@ function pickAvatar(file){const r=new FileReader();r.onload=e=>{const img=new Im
  const cv=document.createElement('canvas');cv.width=Math.max(1,Math.round(img.width*sc));cv.height=Math.max(1,Math.round(img.height*sc));
  cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
  D.p.avatar=cv.toDataURL('image/jpeg',0.85);D.p.avatarCrop={z:1,x:0,y:0};
- try{ST.set('bloom_pavatar',JSON.stringify({a:D.p.avatar,c:{z:1,x:0,y:0}}))}catch(ev9){}
+ if(pLocked()){try{ST.set('bloom_pavatar',JSON.stringify({a:D.p.avatar,c:{z:1,x:0,y:0}}))}catch(ev9){}}
  openAvatarAdjust()};img.src=e.target.result};r.readAsDataURL(file)}
 function openAvatarAdjust(){const src=D.p.avatar;if(!src)return;
  const c=Object.assign({z:1,x:0,y:0},D.p.avatarCrop||{});
@@ -1040,7 +1053,7 @@ function openAvatarAdjust(){const src=D.p.avatar;if(!src)return;
   c.y=Math.max(-60,Math.min(60,drag.oy+(e.clientY-drag.y)/w*100));apply()};
  box.onpointerup=()=>{drag=null};box.onpointercancel=()=>{drag=null};
  document.getElementById('adjReset').onclick=()=>{c.z=1;c.x=0;c.y=0;zs.value=100;apply()};
- document.getElementById('adjSave').onclick=()=>{D.p.avatarCrop={z:c.z||1,x:c.x||0,y:c.y||0};save();try{ST.set('bloom_pavatar',JSON.stringify({a:D.p.avatar,c:D.p.avatarCrop}))}catch(evx){}sheet();if(pLocked())mePartner();else me();toast('Photo saved');try{notifyProfile(nameOf(),true)}catch(vy){}}}
+ document.getElementById('adjSave').onclick=()=>{D.p.avatarCrop={z:c.z||1,x:c.x||0,y:c.y||0};save();if(pLocked()){try{ST.set('bloom_pavatar',JSON.stringify({a:D.p.avatar,c:D.p.avatarCrop}))}catch(evx){}}sheet();if(pLocked())mePartner();else me();toast('Photo saved');try{notifyProfile(nameOf(),true)}catch(vy){}}}
 function series(k,n){return[...Array(n)].map((_,i)=>{const d=addD(today(),i-n+1);return{d,v:L(d)[k]}})}
 function line(k,n,max,col){const s=series(k,n),W=320,H=110,x=i=>20+i*(W-30)/(n-1||1),y=v=>H-14-(v/max)*(H-24);let pts='',dots='';s.forEach((p,i)=>{if(p.v!=null){pts+=(pts&&s[i-1]?.v!=null?'L':'M')+x(i)+' '+y(p.v);dots+=`<circle cx="${x(i)}" cy="${y(p.v)}" r="3" fill="${col}"/>`}});
  return s.some(p=>p.v!=null)?`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${k} over last ${n} days"><line x1="20" x2="${W-8}" y1="${H-14}" y2="${H-14}" stroke="var(--line)"/><text x="2" y="${y(max)+3}">${max}</text><text x="6" y="${y(1)+3}">1</text><path d="${pts}" fill="none" stroke="${col}" stroke-width="2"/>${dots}<text x="20" y="${H-1}">${fmt(s[0].d)}</text><text x="${W-40}" y="${H-1}">${fmt(s[n-1].d)}</text></svg>`:'<p class="meta">No entries</p>'}
@@ -1595,7 +1608,7 @@ async function doDeleteAll(){
  try{if(cl&&sbUser)await cl.rpc('bloom_revoke_partner_codes')}catch(e){}
  try{await reminderCancel()}catch(e){}
  // local caches for every account on this device, plus the session
- try{Object.keys(localStorage).filter(k=>k.indexOf('bloom_d_')===0||k==='bloom_s'||k==='bloom_own'||k==='bloom_last_bg'||k==='bloom_upd_skip').forEach(k=>localStorage.removeItem(k))}catch(e){}
+ try{Object.keys(localStorage).filter(k=>k.indexOf('bloom_d_')===0||k==='bloom_s'||k==='bloom_own'||k==='bloom_last_bg'||k==='bloom_upd_skip'||k==='bloom_pname'||k==='bloom_pavatar'||k==='bloom_pown').forEach(k=>localStorage.removeItem(k))}catch(e){}
  try{sessionStorage.clear()}catch(e){}
  try{if(cl)await cl.auth.signOut()}catch(e){}
  sbUser=null;user=null;D=null;
@@ -1624,7 +1637,7 @@ function playPage(){gAlive=false;const g=D.games||{};
  $('#main').innerHTML=`<h1>Play</h1>
  <div class="card"><div class="card-h"><h3>Tap Race</h3><span class="meta">${bestOf('tap')?bestOf('tap')+' taps':'\u2014'}</span></div><p class="meta">Fastest tapper wins: who lands more taps in 20 seconds takes the race. Practice alone to set your best.</p>
    <div class="row" style="gap:10px"><button class="btn" id="gTap" style="flex:1">Practice</button><button class="btn pink" id="gRace" style="flex:1">Race partner</button></div>
-   <p class="meta" id="raceMsg" style="margin-top:8px">${sbUser?'Invite your partner to a live tap race \u2014 both of you need Play open.':'Sign in to race your partner.'}</p></div>
+   <p class="meta" id="raceMsg" style="margin-top:8px">${sbUser?'Invite your partner to a live tap race \u2014 the invite reaches them anywhere in the app.':'Sign in to race your partner.'}</p></div>
  <div class="card"><div class="card-h"><h3>Memory Bloom</h3><span class="meta">${bestOf('mem')?'level '+bestOf('mem'):'\u2014'}</span></div><p class="meta">Repeat the pattern of lights. It grows by one step every round.</p><button class="btn" id="gMem" style="width:100%">Play</button></div>
  <div class="card"><div class="card-h"><h3>Leaderboard</h3><span class="meta" id="pOnline">\u2014</span></div>
   <div id="boardBox" style="display:flex;flex-direction:column;gap:10px"></div>
@@ -1651,7 +1664,8 @@ async function raceInviteGo(){
   if(!playState.race)return; // declined or left
   if(playState.peerScore!=null||playState.raceStarted)return;
   const m=document.getElementById('raceMsg');if(m)m.textContent='Still waiting for '+(playState.peerName||'your partner')+'\u2026';
-  setTimeout(waitRace,4000)},4000)}
+  setTimeout(waitRace,4000)},4000)
+ setTimeout(function(){if(!playState.race||playState.raceStarted)return;playState.race=false;lastInviteAt=Date.now();const m=document.getElementById('raceMsg');if(m)m.textContent='No answer \u2014 try again in a bit.';toast('No answer from your partner')},18000)}
 function raceStart(){
  if(playState.raceStarted)return;
  if(playState.race&&playState.peerScore!=null)return;
@@ -1672,14 +1686,20 @@ function raceReveal(){
  if(!RO){const g=(D.games=D.games||{});g.races=(g.races||[]);g.races.push({d:today(),mine:m,theirs:t,won:m>=t});save()}
  boardScores(false)}
 // ---------- leaderboard: partner bests exchanged over a Supabase realtime broadcast
-let playCh=null,playKey='',opponentUid=null;
+let playCh=null,playKey='',opponentUid=null,playJoining=null;
 const playState={peer:false,peerName:null,race:false,raceStarted:false,incoming:false,peerScore:null,myTaps:null};
 let rxLastIn=0,lastInviteAt=0,pfLast=null;
 // tell the connected partner that this account's profile changed (name and/or photo)
-function notifyProfile(name,photo){try{if(!sbUser)return;if(pfLast&&pfLast.n===(name||null)&&pfLast.p===!!photo)return;pfLast={n:name||null,p:!!photo};playSend({kind:'pfup',name:name||undefined,photo:!!photo})}catch(e){}}
+function notifyProfile(name,photo){
+ if(!sbUser)return Promise.resolve();
+ if(pfLast&&pfLast.n===(name||null)&&pfLast.p===!!photo)return Promise.resolve();
+ pfLast={n:name||null,p:!!photo};
+ return Promise.resolve().then(()=>playCh||playJoin()).then(ch=>{if(ch)try{ch.send({type:'broadcast',event:'play',payload:{kind:'pfup',name:name||undefined,photo:!!photo}})}catch(e){}}).catch(()=>{})}
 function nameOf(){return RO?(ST.get('bloom_pname')||'Partner'):((D&&D.p&&D.p.name)||(sbUser&&sbUser.email&&sbUser.email.split('@')[0])||'Bloom')}
 function pairKeyOf(a,b){return 'bloomduel-'+(a<b?a+'-'+b:b+'-'+a)}
 async function playJoin(){
+ if(playJoining)return playJoining;
+ playJoining=(async()=>{
  const cl=await sbInit();if(!cl||!sbUser)return null;
  if(RO)opponentUid=ROowner;
  else{try{const {data}=await cl.from('bloom_partners').select('partner_id').eq('owner_id',sbUser.id).not('partner_id','is',null).limit(1);
@@ -1705,7 +1725,7 @@ async function playJoin(){
    document.getElementById('dYes').onclick=()=>{sheet();playState.incoming=false;playSend({kind:'rx-start',name:nameOf()});raceStart()};
    setTimeout(function(){if(!playState.incoming)return;playState.incoming=false;try{if(document.getElementById('dNo'))sheet()}catch(e7){}playSend({kind:'rx-decline',name:nameOf()})},10000);
    return}
-  if(o.kind==='rx-decline'){playState.race=false;playState.incoming=false;lastInviteAt=Date.now();toast('They passed \u2014 try again later');return}
+  if(o.kind==='rx-decline'){playState.race=false;playState.raceStarted=false;playState.incoming=false;lastInviteAt=Date.now();toast('They passed \u2014 try again later');return}
   if(o.kind==='pfup'){
    const nn=o.name||null;
    if(nn&&nn!==playState.peerName){playState.peerName=nn;const g=(D.games=D.games||{});const pr=g.peer=(g.peer||{});pr.n=nn;pr.d=pr.d||today();save();boardPaint()}
@@ -1721,7 +1741,8 @@ async function playJoin(){
   if(pn)playState.peerName=pn;
   if(playState.peer)boardScores(false);playPaint()});
  playCh.subscribe(s=>{if(s==='SUBSCRIBED'&&playCh){playCh.track({uid:sbUser.id,name:nameOf()});boardScores(false)}});
- return playCh}
+ return playCh})().then(r=>{playJoining=null;return r},()=>{playJoining=null;return null});
+ return playJoining}
 function boardScores(){try{if(playCh&&sbUser)playCh.send({type:'broadcast',event:'play',payload:{kind:'hi',name:nameOf(),tap:+bestOf('tap'),mem:+bestOf('mem')}})}catch(e){}}
 function playPaint(){const el=document.getElementById('pOnline');if(!el)return;
  el.textContent=playState.peer?(playState.peerName||'partner online'):'partner offline'}
@@ -1744,7 +1765,7 @@ function tapGame(){gAlive=true;const big0='Tap!';
  const clear=()=>{gAlive=false;ivs.forEach(i=>{clearTimeout(i);clearInterval(i)})};
  document.getElementById('gBk').onclick=()=>{clear();playPage()};
  big.onpointerdown=()=>{if(!run)return;taps++;nEl.textContent=taps};
- ivs.push(setTimeout(()=>{if(!gAlive)return;run=true;big.textContent=big0;
+ ivs.push(setTimeout(()=>{if(!gAlive)return;run=true;big.disabled=false;big.textContent=big0;
   ivs.push(setInterval(()=>{if(!gAlive){clear();return}
    if(!run)return;
    left-=.1;tEl.textContent=(left>0?left:0).toFixed(1);
@@ -1764,20 +1785,20 @@ async function memGame(){gAlive=true;
  const wrap=document.getElementById('pads'),msg=document.getElementById('mMsg'),lvl=document.getElementById('mLvl'),
   agn=document.getElementById('mAgn'),done=document.getElementById('mDone');
  const pads=[...wrap.querySelectorAll('[data-pad]')];
- let seq=[],step=0,gone=false;
+ let seq=[],step=0,gone=false,turn=false;
  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
  const flash=(i,ms)=>new Promise(r=>{pads[i].style.opacity='1';setTimeout(()=>{pads[i].style.opacity='.45';r()},ms)});
  document.getElementById('gBk').onclick=()=>{gone=true;playPage()};
- agn.onclick=()=>{seq=[];step=0;msg.textContent='Watch the pattern.';agn.style.display='none';next()};
- pads.forEach((p,i)=>p.onclick=async()=>{if(gone||step>=seq.length)return;
+ agn.onclick=()=>{seq=[];step=0;turn=false;pads.forEach(x=>x.style.opacity='.45');msg.textContent='Watch the pattern.';agn.style.display='none';next()};
+ pads.forEach((p,i)=>p.onclick=async()=>{if(gone||!turn||step>=seq.length)return;turn=false;
   await flash(i,150);
   if(i===seq[step]){step++;
    if(step===seq.length){msg.textContent='Nice \u2014 '+(seq.length)+' in a row.';await sleep(650);next()}}
   else{gone=true;msg.textContent='Wrong pad \u2014 you reached level '+(seq.length-1);
-   if(gameHigh('mem',seq.length-1)){msg.textContent='You reached level '+(seq.length-1)+' \u2014 new best!';done.textContent='best '+(D.games.mem||0)};boardScores(false)
+   if(gameHigh('mem',seq.length-1)){msg.textContent='You reached level '+(seq.length-1)+' \u2014 new best!';done.textContent='best '+bestOf('mem')};boardScores(false)
    pads.forEach(x=>x.style.opacity='.2');agn.style.display='block'}});
- async function show(){for(const s of seq){if(gone)return;await flash(s,320);await sleep(170)}
-  step=0;msg.textContent='Your turn.'}
+ async function show(){turn=false;for(const s of seq){if(gone)return;await flash(s,320);await sleep(170)}
+  step=0;msg.textContent='Your turn.';turn=true}
  async function next(){seq.push(Math.floor(Math.random()*4));lvl.textContent='Level '+seq.length;msg.textContent='Watch the pattern.';await sleep(500);if(gone)return;await show()}
  next()}
 function mePartner(){const p=D.p||{};
@@ -1786,12 +1807,12 @@ function mePartner(){const p=D.p||{};
  <div style="display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:20px">${avatarHTML(192)}<label class="btn ghost" for="av" style="display:inline-flex !important;align-items:center !important;justify-content:center !important;gap:8px !important;cursor:pointer !important;align-self:center">${IC.camera(18)} Change photo</label><input type="file" id="av" accept="image/*" hidden></div>
  <label for="nm">Nickname</label><input id="nm" value="${E(p.name||'')}" maxlength="30">
  <p class="meta" style="margin:8px 0 0">Your name shows in Tap Race and on the leaderboard.</p>
- <button class="btn" id="sv" style="width:100%;margin-top:12px"><p class="meta" style="margin:10px 0 0">Saves automatically when you change the name.</p>
+ <p class="meta" style="margin:8px 0 0">Saves automatically when you change the name.</p>
 </div>
-<div class="card"><div class="card-h"><h3>Follow a partner</h3></div><p class="meta">Enter their sync code to see their cycle read-only. This account is a partner account, so cycle tracking stays off and their data lives only on their own account.</p><button class="btn" id="gFollow" style="width:100%">Enter a sync code</button></div>
+<div class="card"><div class="card-h"><h3>Partner account</h3></div><p class="meta">This account follows someone read-only, so its own cycle tracking stays off. Enter their sync code to open their view.</p><button class="btn" id="gFollow" style="width:100%">Enter a sync code</button></div>
 <div class="card"><div class="card-h"><h3>App</h3><span class="meta" id="appVer">\u2014</span></div><button class="btn ghost" id="chkUp" style="width:100%">Check for updates</button></div>
 <button class="btn ghost" id="lo" style="width:100%">Log out</button>`;
- $('#nm').onchange=async()=>{const v=$('#nm').value.trim();if(!v)return;p.name=v;D.p.name=v;save();try{const cl=await sbInit();if(cl&&sbUser)await cl.from('bloom_profiles').upsert({id:sbUser.id,name:v})}catch(ev){}toast('Saved');shell()};
+ $('#nm').onchange=async()=>{const v=$('#nm').value.trim();if(!v)return;p.name=v;D.p.name=v;save();try{const cl=await sbInit();if(cl&&sbUser)await cl.from('bloom_profiles').upsert({id:sbUser.id,name:v})}catch(ev){}toast('Saved');shell();try{notifyProfile(v,false)}catch(e2){}};
  $('#av').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f)pickAvatar(f)};
  $('#gFollow').onclick=()=>partnerOnboard();
  $('#lo').onclick=logout;
@@ -1920,12 +1941,13 @@ if(splashShouldShow())splashPlay();else splashSkip();  // only after 3 minutes a
  // update check runs for everyone, signed in or not
  setTimeout(()=>{try{checkUpdate(false)}catch(e){}},2400);
  if(s&&String(s).indexOf('p:')===0){const owner=String(s).slice(2);
-  RO=true;ROowner=owner;
+  RO=true;ROcloud=true;ROowner=owner;
   const cached=J(key(owner),{});
   D=Object.assign(blank(),cached||{});backfillMeals();view='cycle';shell();
   sbInit().then(async()=>{try{const doc=await sbFetchDoc(owner);
    if(doc&&(Object.keys(doc.logs||{}).length||Object.keys(doc.tasks||[]).length)){
-    D=Object.assign(blank(),doc);roHash=roHashOf(JSON.stringify(doc));shell()}}catch(e){}});
+    D=Object.assign(blank(),doc);roHash=roHashOf(JSON.stringify(doc));shell()}
+   if(sbUser&&!playCh){try{await playJoin()}catch(ej){}}}catch(e){}});
   return}
  await sbInit();
  if(sbUser&&!RO){try{await sbAfterLogin(sbUser);backfillMeals();setTimeout(()=>checkUpdate(false),1500);return}catch(e){}}
