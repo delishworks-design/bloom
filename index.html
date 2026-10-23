@@ -44,7 +44,6 @@ p{margin:0;line-height:1.5}
 #pb{display:flex;flex-direction:column;gap:14px}
 .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:6px 0 8px;min-height:52px;animation:fadeUp .5s ease both}
 .pchip{display:inline-flex !important;align-items:center !important;height:38px !important;padding:0 14px !important;border-radius:999px !important;background:var(--pinkS) !important;border:1.5px solid rgba(232,160,180,.6) !important;color:var(--rose) !important;font-size:.74rem !important;font-weight:700 !important;white-space:nowrap}
-#exitp{height:38px !important;min-height:38px !important;padding:0 16px !important}
 .wordmark{font-family:'Playfair Display',serif;font-size:30px;font-weight:700;color:#B8456B;line-height:1}
 .wordmark i{font-size:20px;font-weight:400;font-style:normal;vertical-align:super;margin-left:2px}
 
@@ -479,16 +478,7 @@ function exitPartner(){
   return}
  authView('in')}
 // partner's own profile: no sync code, no cycle fields - just identity and exit
-function roProfile(){
- const cur=ST.get('bloom_pname')||'';
- sheet(`<h2>Your profile</h2>
-  <label for="rpn">Name</label><input id="rpn" maxlength="30" value="${E(cur)}" placeholder="What you call yourself">
-  <p class="meta" style="margin:8px 0 14px">Your name shows in Tap Race and on the leaderboard.</p>
-  <div class="row" style="gap:10px;margin-bottom:10px"><button class="btn ghost" id="rpnX" style="flex:1">Sign out</button><button class="btn" id="rpnS" style="flex:1">Save</button></div>
-  <p class="meta" style="margin:0 0 14px">Signed in as ${E((sbUser&&sbUser.email)||'')} \u00b7 Bloom ${APP_VERSION.name}</p>`);
- $('#rpnS').onclick=()=>{const v=$('#rpn').value.trim();if(!v)return toast('Type a name');
-  ST.set('bloom_pname',v);sheet();toast('Name saved');shell()};
- $('#rpnX').onclick=()=>{sheet();logout()}}
+function roProfile(){ const cur=ST.get('bloom_pname')||''; sheet(`<h2>Your profile</h2>  <label for="rpn">Name</label><input id="rpn" maxlength="30" value="${E(cur)}" placeholder="What you call yourself">  <p class="meta" style="margin:8px 0 14px">Your name shows in Tap Race and on the leaderboard.</p>  <div style="margin:0 0 14px"><span class="pchip">Following ${E((D.p&&D.p.name)||'partner')}</span></div>  <div class="row" style="gap:10px;margin-bottom:10px"><button class="btn ghost" id="rpnX" style="flex:1">Exit</button><button class="btn" id="rpnS" style="flex:1">Save</button></div>  <p class="meta" style="margin:0 0 10px">Signed in as ${E((sbUser&&sbUser.email)||'')} \u00b7 Bloom ${APP_VERSION.name}</p>  <button class="btn ghost sm" id="rpnOut" style="width:100%">Sign out of Bloom</button>`); $('#rpnS').onclick=async()=>{const v=$('#rpn').value.trim();if(!v)return toast('Type a name');  ST.set('bloom_pname',v);sheet();toast('Name saved');shell()}; $('#rpnX').onclick=()=>{sheet();exitPartner()}; $('#rpnOut').onclick=()=>{sheet();logout()}}
 function cloudStatus(){
  const el=document.getElementById('cloudStat');if(!el)return;
  const txt=document.getElementById('cloudText')||el;
@@ -724,8 +714,8 @@ function shell(){splashAppIsReady();
  if(RO){const raw=ST.get(key(ROowner));if(raw!=null){roHash=roHashOf(raw);D=Object.assign(blank(),J(key(ROowner),{}))}}
  if(!D.p.done&&!RO){return onboarding()}
  const N=[['cycle','Cycle',IC.ring],['planner','Planner',IC.list] ,['insights','Insights',IC.chart],['games','Play',IC.play],['learn','Learn',IC.book]];
- $('#app').innerHTML=`<div class="blob blob-a"></div><div class="blob blob-b"></div><div class="blob blob-c"></div><div class="wrap"><header class="topbar"><div class="wordmark">Bloom<i>.</i></div>${RO?`<div class="row" style="gap:8px"><button class="profbtn" id="rome" aria-label="Your profile">${(()=>{const n=(ST.get('bloom_pname')||'P').trim();const c=n.charAt(0).toUpperCase()||'P';return `<span class="avatar-fb" style="width:34px;height:34px;font-size:15px">${E(c)}</span>`})()}<span>${E(ST.get('bloom_pname')||'You')}</span></button><span class="pchip">Following ${E((D.p&&D.p.name)||'partner')}</span><button class="btn ghost sm" id="exitp">Exit</button></div>`:`<button class="profbtn" id="me" aria-label="Profile and settings">${avatarHTML(44)}<span>${E(D.p.name||user)}</span></button>`}</header><main id="main"></main></div><nav aria-label="Main">${N.map(([k,l,ic])=>`<button data-v="${k}" ${view==k?'aria-current="page"':''}>${ic(17)}<span>${l}</span></button>`).join('')}</nav>`;
- if(RO){document.getElementById('exitp').onclick=exitPartner;
+ $('#app').innerHTML=`<div class="blob blob-a"></div><div class="blob blob-b"></div><div class="blob blob-c"></div><div class="wrap"><header class="topbar"><div class="wordmark">Bloom<i>.</i></div>${RO?`<div class="row" style="gap:8px"><button class="profbtn" id="rome" aria-label="Your profile">${(()=>{const n=(ST.get('bloom_pname')||'P').trim();const c=n.charAt(0).toUpperCase()||'P';return `<span class="avatar-fb" style="width:34px;height:34px;font-size:15px">${E(c)}</span>`})()}<span>${E(ST.get('bloom_pname')||'You')}</span></button></div>`:`<button class="profbtn" id="me" aria-label="Profile and settings">${avatarHTML(44)}<span>${E(D.p.name||user)}</span></button>`}</header><main id="main"></main></div><nav aria-label="Main">${N.map(([k,l,ic])=>`<button data-v="${k}" ${view==k?'aria-current="page"':''}>${ic(17)}<span>${l}</span></button>`).join('')}</nav>`;
+ if(RO){
  const rm=document.getElementById('rome');if(rm)rm.onclick=roProfile;
  roTimer=setInterval(roReload,4000)}
  document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{view=b.dataset.v;shell()});
@@ -838,23 +828,23 @@ function cyclePage(){const d=today(),l=L(d),ts=tasksFor(d),n=ts.filter(t=>isDone
  <button class="logpill" id="lp" ${RO?'disabled':''}><span class="plus">${IC.plus(16)}</span>Log Period</button>
  <div class="stats3">
   <div class="stat"><span class="ic">${IC.flower(13)}</span><b class="word">${ph.k}</b><span class="lbl">Phase</span></div>
-  <div class="stat"><span class="ic">${IC.pulse(13)}</span><b>${l.mood?l.mood:''}</b><span class="lbl">Mood</span></div>
-  <div class="stat"><span class="ic">${IC.drop(13)}</span><b>${l.energy?l.energy:''}</b><span class="lbl">Energy</span></div>
+  <div class="stat"><span class="ic">${IC.pulse(13)}</span><b>${l.mood?l.mood:'\u2014'}</b><span class="lbl">Mood</span></div>
+  <div class="stat"><span class="ic">${IC.drop(13)}</span><b>${l.energy?l.energy:'\u2014'}</b><span class="lbl">Energy</span></div>
  </div>
 <div class="card"><div class="card-h"><h3>Water</h3><div class="waterrow"><span class="watercount">${l.water||0}</span><span class="meta">/ ${goal}</span></div></div>
   <div class="glasses">${Array.from({length:goal},(_,i)=>`<button class="glassbtn ${i<(l.water||0)?'on':''}" data-g="${i+1}" aria-label="${i+1} glasses" ${RO?'disabled':''}>${glassIcon(i<(l.water||0),28)}</button>`).join('')}</div>
   <div class="row" style="gap:10px"><button class="btn ghost" id="wminus" aria-label="Remove one glass" style="width:48px;padding:0" ${RO?'disabled':''}></button><button class="btn" id="wplus" style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px" ${RO?'disabled':''}>${glassIcon(true,16)} +1 glass</button></div>
   <div class="goalbox"><span class="lbl">Daily goal</span><div class="goalopts" role="group" aria-label="Daily glass goal">${[6,8,10,12].map(v=>`<button class="goalopt ${goal==v?'on':''}" data-goal="${v}" ${RO?'disabled':''}>${v}</button>`).join('')}</div></div></div>
- <div class="card"><div class="card-h"><h3>Mood</h3><div class="row" style="gap:8px"><span class="meta">${l.mood?l.mood+'/5':''}</span><button class="btn ghost sm" id="logme" ${RO?'disabled':''}>Log</button></div></div>
+ <div class="card"><div class="card-h"><h3>Mood</h3><div class="row" style="gap:8px"><span class="meta">${l.mood?l.mood+'/5':'\u2014'}</span><button class="btn ghost sm" id="logme" ${RO?'disabled':''}>Log</button></div></div>
   <div class="faces">${[1,2,3,4,5].map(i=>`<button class="facebtn ${l.mood==i?'on':''}" data-mood="${i}" aria-label="Mood ${i} of 5" ${RO?'disabled':''}>${faceIcon(i,34,l.mood==i)}</button>`).join('')}</div>
   <span class="lbl" style="display:block;margin-top:12px">Last 7 days</span>${miniBars('mood',7,'var(--rose)')}
   <div class="divider"></div>
-  <div class="card-h" style="margin-bottom:6px"><h3 style="font-size:15px">Energy</h3><span class="meta">${l.energy?l.energy+'/5':''}</span></div>
+  <div class="card-h" style="margin-bottom:6px"><h3 style="font-size:15px">Energy</h3><span class="meta">${l.energy?l.energy+'/5':'\u2014'}</span></div>
   <span class="lbl" style="display:block">Last 7 days</span>${miniBars('energy',7,'var(--teal)')}</div>
  <div class="card"><div class="card-h"><h3>Today</h3></div>
-  <div class="kv"><span>Sleep</span><b>${l.sleep?l.sleep+' h':''}</b></div>
+  <div class="kv"><span>Sleep</span><b>${l.sleep?l.sleep+' h':'\u2014'}</b></div>
   <div class="kv"><span>Meals</span><b>${m.length}</b></div>
-  <div class="kv"><span>Symptoms</span><b>${l.tags&&l.tags.length?l.tags.join(', '):''}</b></div></div>
+  <div class="kv"><span>Symptoms</span><b>${l.tags&&l.tags.length?l.tags.join(', '):'\u2014'}</b></div></div>
  <div class="card"><div class="card-h"><h3>Quick actions</h3></div><div class="qa"><button data-a="log" ${RO?'disabled':''}>Log symptoms</button><button data-a="period" ${RO?'disabled':''}>Record period</button><button data-a="meal" ${RO?'disabled':''}>Log a meal</button><button data-a="mood" ${RO?'disabled':''}>Mood & energy</button><button data-a="plan" ${RO?'disabled':''}>Today's plan</button><button data-a="water" ${RO?'disabled':''}>+1 glass water</button></div></div>
  <div class="card"><div class="card-h"><h3>Today's checklist</h3><span class="meta">${n}/${ts.length}</span></div>${ts.length?`<div class="bar" aria-hidden="true"><i style="width:${n/ts.length*100}%"></i></div><div class="cklist">`+ts.map(t=>ck(t,d).replace('<input type="checkbox"',`<input type="checkbox" ${RO?'disabled':''}`)).join('')+'</div>':'<p class="meta">No tasks</p>'}</div>
  <div class="card"><div class="card-h"><h3>This week</h3><span class="meta">${wt?`${wd}/${wt}`:'0/0'}</span></div>${wt?`<div class="bar" aria-hidden="true"><i style="width:${Math.round(wd/wt*100)}%"></i></div>`:'<p class="meta">Nothing planned</p>'}</div>
@@ -995,7 +985,7 @@ function insights(){const n=range,days=[...Array(n)].map((_,i)=>addD(today(),i-n
  const sl=days.map(d=>L(d).sleep).filter(Boolean);
  $('#main').innerHTML=`<h1>Insights</h1><div class="row">${[7,14,30,90].map(v=>`<button class="chip" data-r="${v}" aria-pressed="${range==v}">${v} days</button>`).join('')}</div>
 <div class="card"><div class="card-h"><h3>Mood</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Recorded</span></div>${line('mood',n,5,'var(--rose)')}</div><div class="card"><div class="card-h"><h3>Energy</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Recorded</span></div>${line('energy',n,5,'var(--teal)')}</div>
-<div class="card"><div class="card-h"><h3>Sleep</h3><span class="meta">${sl.length?(sl.reduce((a,b)=>a+b,0)/sl.length).toFixed(1)+' h avg  '+sl.length+' nights':''}</span></div>${line('sleep',n,12,'var(--teal)')}</div>
+<div class="card"><div class="card-h"><h3>Sleep</h3><span class="meta">${sl.length?(sl.reduce((a,b)=>a+b,0)/sl.length).toFixed(1)+' h avg  '+sl.length+' nights':'\u2014'}</span></div>${line('sleep',n,12,'var(--teal)')}</div>
 <div class="card"><div class="card-h"><h3>Symptoms</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Recorded</span></div>${tk.length?tk.map(([t,v])=>`<div class="row sp"><span>${E(t)}</span><span class="meta">${v} d</span></div><div class="bar"><i style="width:${v/mx*100}%"></i></div>`).join(''):'<p class="meta">None logged</p>'}</div>
 <div class="card"><div class="card-h"><h3>Habit completion</h3><span class="meta">${ha==null?'':ha+'%'}</span></div>${ha==null?'<p class="meta">No planned tasks</p>':`<div class="bar"><i style="width:${ha}%"></i></div>`}</div>
 <div class="card"><div class="card-h"><h3>Cycle length</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Calculated</span></div>${c.len.length?`<div class="row" style="align-items:end;height:90px">${c.len.slice(-10).map(v=>`<div style="flex:1;text-align:center"><div style="height:${Math.min(v,90)}px;background:var(--pink);border-radius:6px 6px 0 0"></div><span class="meta" style="font-size:.7rem">${v}</span></div>`).join('')}</div>`:'<p class="meta">Needs 2 logged starts</p>'}</div>
@@ -1563,7 +1553,7 @@ function playPage(){gAlive=false;const g=D.games||{};
  <div class="card"><div class="card-h"><h3>Tap Race</h3><span class="meta">${bestOf('tap')?bestOf('tap')+' taps':'\u2014'}</span></div><p class="meta">Fastest tapper wins: who lands more taps in 20 seconds takes the race. Practice alone to set your best.</p>
    <div class="row" style="gap:10px"><button class="btn" id="gTap" style="flex:1">Practice</button><button class="btn pink" id="gRace" style="flex:1">Race partner</button></div>
    <p class="meta" id="raceMsg" style="margin-top:8px">${sbUser?'Invite your partner to a live tap race \u2014 both of you need Play open.':'Sign in to race your partner.'}</p></div>
- <div class="card"><div class="card-h"><h3>Memory Bloom</h3><span class="meta">${bestOf('mem')?'level '+bestOf('mem'):''}</span></div><p class="meta">Repeat the pattern of lights. It grows by one step every round.</p><button class="btn" id="gMem" style="width:100%">Play</button></div>
+ <div class="card"><div class="card-h"><h3>Memory Bloom</h3><span class="meta">${bestOf('mem')?'level '+bestOf('mem'):'\u2014'}</span></div><p class="meta">Repeat the pattern of lights. It grows by one step every round.</p><button class="btn" id="gMem" style="width:100%">Play</button></div>
  <div class="card"><div class="card-h"><h3>Leaderboard</h3><span class="meta" id="pOnline">\u2014</span></div>
   <div id="boardBox" style="display:flex;flex-direction:column;gap:10px"></div>
   </div>`;
