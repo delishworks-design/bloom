@@ -339,6 +339,13 @@ const MEALS=[
 {n:'Fruit (papaya/guava) & nuts',t:'s',c:35,ing:['fruit','nuts']},
 {n:'Taho (small cup)',t:'s',c:20,ing:['taho']}];
 const TN={b:'Breakfast',l:'Lunch',d:'Dinner',s:'Snack'};
+const MEAL_TYPES=[['b','Breakfast'],['l','Lunch'],['d','Dinner'],['s','Snack']];
+// Pick a sensible default from the clock: people log dinner in the evening.
+function mealTypeNow(){const h=new Date().getHours();return h<11?'b':h<15?'l':h<21?'d':'s'}
+// People often type "Dinner: paksiw"; honour the word and strip it from the name.
+function mealPrefix(s){const m=/^\s*(breakfast|lunch|dinner|supper|snack|merienda)\s*[:\-\u2013\u2014\u00b7]\s*/i.exec(s);
+ if(!m)return null;const k=m[1].toLowerCase();
+ return{t:(k==='breakfast'?'b':k==='lunch'?'l':(k==='dinner'||k==='supper')?'d':'s'),len:m[0].length}}
 const SVG=(p,sz)=>`<svg viewBox="0 0 24 24" width="${sz||26}" height="${sz||26}" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
 const IC={flower:s=>SVG('<circle cx="12" cy="12" r="3.1"/><path d="M12 8.9c0-2.5 1.1-4.4 3.2-4.4 1.5 0 2.5 1.1 2.5 2.6 0 1.8-1.5 2.7-3 2.7M15.1 12c2.5 0 4.4 1.1 4.4 3.2 0 1.5-1.1 2.5-2.6 2.5-1.8 0-2.7-1.5-2.7-3M12 15.1c0 2.5-1.1 4.4-3.2 4.4-1.5 0-2.5-1.1-2.5-2.6 0-1.8 1.5-2.7 3-2.7M8.9 12c-2.5 0-4.4-1.1-4.4-3.2 0-1.5 1.1-2.5 2.6-2.5 1.8 0 2.7 1.5 2.7 3"/>',s),
  list:s=>SVG('<rect x="3.5" y="4.5" width="17" height="15" rx="3.5"/><path d="M7.5 10h9M7.5 14.5h5"/>',s),
@@ -414,6 +421,7 @@ async function sbAfterLogin(u){sbUser=u;
  user=mail||user;setSession(user);try{ST.set('bloom_own',user)}catch(e){}
  save();view='cycle';shell();
  startCloudSync();
+ setTimeout(()=>{try{reminderSync(true)}catch(e){}},1200);
  if(D.partner&&D.partner.on&&D.partner.code){try{const cl=await sbInit();if(cl)await cl.rpc('bloom_create_partner_code',{p_code:D.partner.code})}catch(e){}}
  toast('Signed in \u00b7 syncing')}
 async function sbSignIn(email,pw){await sbInit();if(!sb)return 'offline';
@@ -552,7 +560,7 @@ function authView(mode){mode=mode||'in';
  $('#authForm').addEventListener('submit',e=>{e.preventDefault();sub()});
 }
 function login(u){user=u;D=Object.assign(blank(),J(key(u),{}));setSession(u);applyTheme();view='cycle';shell()}
-function logout(){user=null;D=null;clearSession();try{ST.del('bloom_own')}catch(e){}if(user)ST.del(key(user));if(sb){sb.auth.signOut().catch(()=>{});sbUser=null}if(cloudTimer){clearInterval(cloudTimer);cloudTimer=null}authView('in')}
+function logout(){user=null;D=null;clearSession();try{ST.del('bloom_own')}catch(e){}try{reminderCancel()}catch(e){}if(sb){sb.auth.signOut().catch(()=>{});sbUser=null}if(cloudTimer){clearInterval(cloudTimer);cloudTimer=null}authView('in')}
 function applyTheme(){document.documentElement.removeAttribute('data-theme')}
 // ---------- helpers
 const L=d=>D.logs[d]||{};
@@ -614,7 +622,7 @@ async function fetchManifest(){const bust='?t='+Date.now();
  const r=await fetch(UPDATE_MANIFEST+bust,{cache:'no-store'});if(!r.ok)throw new Error('manifest '+r.status);
  return await r.json()}
 // Baked-in build identity. Keep in sync with android/app/build.gradle (versionCode/versionName).
-const APP_VERSION={code:21,name:'1.2.6'};
+const APP_VERSION={code:22,name:'1.2.7'};
 const UPD_SKIP_KEY='bloom_upd_skip';
 const updater=()=>{const C=window.Capacitor;if(!C)return null;
  const P=C.Plugins&&C.Plugins.BloomUpdater;
@@ -875,8 +883,8 @@ function pMeals(){const d=today(),m=D.meals[d]||[],bud=D.p.bud||999;
  const fi=(foodPos+FOOD.length)%FOOD.length;
  const pool=t=>MEALS.filter(x=>x.t==t&&x.c<=bud);
  const wk=D.plan.week||null;
- $('#pb').innerHTML=`<div class="card"><div class="card-h"><h3>Today’s meals</h3><span class="meta">${m.length}</span></div>${m.length?m.map((x,i)=>`<div class="row sp ck"><span>${TN[x.t]}: ${E(x.n)}${x.q&&x.q!==1?' \u00d7'+x.q:''}</span><button class="btn ghost sm" data-rm="${i}" aria-label="Remove">✕</button></div>`).join(''):'<p class="meta">None logged</p>'}
-${RO?'':`<div class="lbl">Add a meal</div><button type="button" class="field-btn" id="mlBtn"><span id="mlLabel">Choose a meal</span><span class="chev">\u25be</span></button><input type="hidden" id="ml" value=""><input type="hidden" id="mlQ" value="1"><label for="mc">Or type your own</label><input id="mc" maxlength="60" placeholder="Meal name"><button class="btn" id="la" style="width:100%">Add</button>`}</div>
+ $('#pb').innerHTML=`<div class="card"><div class="card-h"><h3>Today’s meals</h3><span class="meta">${m.length}</span></div>${m.length?m.map((x,i)=>`<div class="row sp ck"><span>${E(TN[x.t]||'Meal')}: ${E(x.n)}${x.q&&x.q!==1?' \u00d7'+x.q:''}</span><button class="btn ghost sm" data-rm="${i}" aria-label="Remove">✕</button></div>`).join(''):'<p class="meta">None logged</p>'}
+${RO?'':`<div class="lbl">Add a meal</div><div class="row" id="mtRow" role="group" aria-label="Meal type" style="flex-wrap:wrap;gap:8px;margin:0 0 14px">${MEAL_TYPES.map(([k,v])=>`<button type="button" class="chip" data-mt="${k}" aria-pressed="${k===mealTypeNow()}">${v}</button>`).join('')}</div><button type="button" class="field-btn" id="mlBtn"><span id="mlLabel">Choose a meal</span><span class="chev">\u25be</span></button><input type="hidden" id="ml" value=""><input type="hidden" id="mlQ" value="1"><label for="mc">Or type your own</label><input id="mc" maxlength="60" placeholder="Paksiw na bangus"><button class="btn" id="la" style="width:100%">Add</button>`}</div>
 <div class="card"><div class="card-h"><h3>Weekly plan</h3></div>${RO?'':`${chipField('bd','Budget per meal (\u20b1)',[['','Any'],['50','up to \u20b150'],['80','up to \u20b180'],['100','up to \u20b1100'],['130','up to \u20b1130']],D.p.bud!=null?String(D.p.bud):'')}<button class="btn pink" id="gw" style="width:100%">Build my week</button>`}
 ${wk?`<div class="divider"></div>`+wk.map((r,i)=>`<div class="kv"><span>Day ${i+1}</span><b style="font-size:.85rem;font-family:inherit;font-weight:400;text-align:right">${r.map(x=>E(x.n)).join(' · ')}</b></div>`).join('')+`<h3 style="margin-top:14px">Grocery list</h3><p class="meta">${[...new Set(wk.flat().flatMap(x=>x.ing))].sort().join(', ')}</p>`:''}</div>
  <div class="card fun"><span class="lbl" style="margin:0 0 2px">Food tip</span><p class="funtext" id="foodText">${E(FOOD[fi][1])}</p></div>
@@ -886,7 +894,17 @@ ${wk?`<div class="divider"></div>`+wk.map((r,i)=>`<div class="kv"><span>Day ${i+
   if(i<0)return;
   amountSheet(it.t,q=>{$('#ml').value=i;$('#mlQ').value=q;const lb=document.getElementById('mlLabel');if(lb)lb.textContent=it.t+(q===1?'':' \u00d7'+q)});
  },'Search meals\u2026');
- if(!RO)$('#la').onclick=()=>{const i=$('#ml').value,c=$('#mc').value.trim(),q=+$('#mlQ').value||1;let it=null;if(i!=='')it={n:MEALS[i].n,t:MEALS[i].t,q:q};else if(c)it={n:c,t:'s',q:q};if(!it)return toast('Choose or type a meal');D.meals[d]=[...m,it];save();pMeals()};
+ if(!RO)document.querySelectorAll('#mtRow .chip').forEach(c=>c.onclick=()=>{document.querySelectorAll('#mtRow .chip').forEach(x=>x.setAttribute('aria-pressed',x===c))});
+ if(!RO)$('#la').onclick=()=>{const i=$('#ml').value,c=$('#mc').value.trim(),q=+$('#mlQ').value||1;
+  const sel=document.querySelector('#mtRow .chip[aria-pressed=true]');
+  let it=null;
+  if(i!=='')it={n:MEALS[i].n,t:MEALS[i].t,q:q};
+  else if(c){const pre=mealPrefix(c),n=pre?c.slice(pre.len).trim():c;
+   if(!n)return toast('Type a meal name');
+   const t=pre?pre.t:(sel?sel.dataset.mt:mealTypeNow());
+   it={n:n,t:t,q:q}}
+  if(!it)return toast('Choose or type a meal');
+  D.meals[d]=[...m,it];save();pMeals()};
  document.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{if(RO)return;m.splice(+b.dataset.rm,1);D.meals[d]=m;save();pMeals()});
  bindFields();
  if(foodTimer)clearInterval(foodTimer);foodTimer=setInterval(()=>{foodPos=(foodPos+1)%FOOD.length;paintFood()},5000);
@@ -1426,6 +1444,69 @@ function lTips(){const el=document.getElementById('lb');
  el.innerHTML=`<div class="row tabsrow" style="margin-bottom:4px">${['All',...cats].map(c=>`<button class="chip" data-tc="${E(c)}" aria-pressed="${f===c}">${E(c)}</button>`).join('')}</div>
  <div class="card" style="margin-top:8px"><div class="card-h"><h3 style="margin:0">${f==='All'?'Tips':E(f)}</h3><span class="meta">${list.length}</span></div>${list.map(x=>`<div class="kv"><span>${E(x[1])}</span></div>`).join('')}</div>`;
  el.querySelectorAll('[data-tc]').forEach(b=>b.onclick=()=>{tipCat=b.dataset.tc;lTips()})}
+// ---------- daily reminder (native local notification)
+const REM_ID=1001;
+const notifPlugin=()=>{const C=window.Capacitor;return (C&&C.Plugins&&C.Plugins.LocalNotifications)||null};
+async function reminderCancel(){const LN=notifPlugin();if(!LN)return;
+ try{await LN.cancel({notifications:[{id:REM_ID}]})}catch(e){}}
+async function reminderSync(quiet){
+ if(!D||!D.rem)return {native:false,off:true};
+ const rem=D.rem,LN=notifPlugin();
+ if(!LN)return {native:false,off:!rem.on};
+ try{
+  let p=await LN.checkPermissions();
+  if(rem.on&&p.display!=='granted')p=await LN.requestPermissions();
+  if(rem.on&&p.display!=='granted'){
+   if(!quiet)toast('Allow notifications for Bloom in Android settings');
+   return {native:true,blocked:true}}
+  await reminderCancel();
+  if(!rem.on)return {native:true,off:true};
+  const [h,mi]=String(rem.time||'20:00').split(':').map(Number);
+  await LN.schedule({notifications:[{
+   id:REM_ID,title:'Bloom',body:'A moment to log how you feel today.',
+   schedule:{on:{hour:isNaN(h)?20:h,minute:isNaN(mi)?0:mi}},
+   smallIcon:'ic_stat_bloom',iconColor:'#B8456B'}]});
+  if(!quiet)toast('Reminder set for '+String(rem.time||'20:00'));
+  return {native:true,scheduled:true};
+ }catch(e){
+  if(!quiet)toast('Could not set the reminder');
+  return {native:true,error:String((e&&e.message)||e)}}}
+// ---------- data deletion
+function deleteAllData(){
+ const yes=confirm('Delete all your Bloom data?\n\nEvery log, meal, task and journal entry will be erased from this phone and from the cloud. Your account stays, so you can start fresh. This cannot be undone.');
+ if(!yes)return;
+ sheet(`<h2>Delete everything</h2><p class="meta" style="margin:0 0 14px">This erases all logs, meals, tasks and journal entries \u2014 on this phone and in the cloud. Your partner loses access, and nothing can be recovered.</p>
+  <label for="dlt">Type DELETE to confirm</label><input id="dlt" autocapitalize="characters" autocomplete="off" spellcheck="false"><p class="hint" id="dltErr"></p>
+  <div class="row" style="gap:10px;margin-top:16px"><button class="btn ghost" id="dltNo" style="flex:1">Cancel</button><button class="btn pink" id="dltGo" style="flex:1">Delete everything</button></div>`);
+ $('#dltNo').onclick=()=>sheet();
+ $('#dltGo').onclick=async()=>{
+  if($('#dlt').value.trim().toUpperCase()!=='DELETE'){$('#dltErr').textContent='Type DELETE exactly, then press again.';return}
+  $('#dltGo').disabled=true;$('#dltGo').innerHTML='<span class="spinner" aria-hidden="true"></span>Deleting\u2026';
+  await doDeleteAll()};
+}
+async function doDeleteAll(){
+ sheet();
+ const cl=await sbInit();
+ // The cloud copy wins on the next sign-in, so wipe it first. If that fails we stop
+ // before touching the phone, otherwise the data would simply come back.
+ if(cl&&sbUser){
+  D=blank();
+  try{const {error}=await cl.from('bloom_data').upsert({user_id:sbUser.id,doc:D});
+   if(error)return toast('Could not reach the cloud \u2014 nothing was deleted')}
+  catch(e){return toast('Could not reach the cloud \u2014 nothing was deleted')}
+  try{await cl.from('bloom_profiles').upsert({id:sbUser.id,name:'',avatar:null,goals:[]})}catch(e){}
+ }
+ // partner access goes next, so nobody keeps following an empty cycle
+ try{if(cl&&sbUser)await cl.rpc('bloom_revoke_partner_codes')}catch(e){}
+ try{await reminderCancel()}catch(e){}
+ // local caches for every account on this device, plus the session
+ try{Object.keys(localStorage).filter(k=>k.indexOf('bloom_d_')===0||k==='bloom_s'||k==='bloom_own'||k==='bloom_last_bg'||k==='bloom_upd_skip').forEach(k=>localStorage.removeItem(k))}catch(e){}
+ try{sessionStorage.clear()}catch(e){}
+ try{if(cl)await cl.auth.signOut()}catch(e){}
+ sbUser=null;user=null;D=null;
+ if(cloudTimer){clearInterval(cloudTimer);cloudTimer=null}
+ toast('All your data was deleted');
+ authView('in')}
 function me(){const p=D.p;const hasCode=!!(D.partner&&D.partner.on&&D.partner.code);
 $('#main').innerHTML=`<h1>Profile</h1>
 <div class="card">
@@ -1438,16 +1519,36 @@ $('#main').innerHTML=`<h1>Profile</h1>
  ${hasCode?`<p class="meta">Share this code with a partner. They will see your cycle, mood and energy read-only.</p><div class="syncbox"><span class="synccode">${E(D.partner.code)}</span><button class="btn ghost sm" id="cp">Copy</button></div><div class="row" style="gap:10px;margin-top:10px"><button class="btn ghost sm" id="pg" style="flex:1">New code</button><button class="btn ghost sm" id="pv" style="flex:1">Revoke</button></div>`
  :`<p class="meta">Create a code so someone you trust can follow your cycle read-only. You can revoke it any time.</p><button class="btn" id="gc" style="width:100%">Generate sync code</button>`}
 </div>
-<div class="card"><div class="card-h"><h3>Reminder</h3></div><label class="row" style="color:var(--ink)"><input type="checkbox" id="rm" style="width:22px;margin:0" ${D.rem.on?'checked':''}> Daily logging reminder</label><label for="rt">Time</label><input id="rt" type="time" value="${D.rem.time}"><button class="btn ghost" id="rs" style="width:100%;margin-top:4px">Save reminder</button><p class="meta" style="margin-top:10px">Web version: no push notifications.</p></div>
+<div class="card"><div class="card-h"><h3>Reminder</h3></div><label class="row" style="color:var(--ink)"><input type="checkbox" id="rm" style="width:22px;margin:0" ${D.rem.on?'checked':''}> Daily logging reminder</label><label for="rt">Time</label><input id="rt" type="time" value="${D.rem.time}"><button class="btn ghost" id="rs" style="width:100%;margin-top:4px">Save reminder</button><p class="meta" style="margin-top:10px" id="remNote">${notifPlugin()?'One notification a day. Android will ask for permission the first time.':'Reminders are only sent by the Android app.'}</p></div>
 <div class="card"><div class="card-h"><h3>App</h3><span class="meta" id="appVer">\u2014</span></div><button class="btn ghost" id="chkUp" style="width:100%">Check for updates</button></div>
-<div class="card"><div class="card-h"><h3>Data</h3></div><button class="btn ghost" id="xj" style="width:100%">Export all data</button><button class="btn pink" id="del" style="width:100%;margin-top:10px">Delete all my data</button></div>
+<div class="card"><div class="card-h"><h3>Data</h3></div><button class="btn ghost" id="xj" style="width:100%">Export all data</button><button class="btn ghost" id="xi" style="width:100%;margin-top:10px">Restore from backup</button><input type="file" id="xif" accept="application/json,.json" hidden><p class="meta" style="margin:10px 0 0">A backup is the JSON file made by “Export all data”.</p><button class="btn pink" id="del" style="width:100%;margin-top:14px">Delete all my data</button></div>
 <button class="btn ghost" id="lo" style="width:100%">Log out</button>`;
  document.querySelectorAll('#goals .chip').forEach(c=>c.onclick=()=>c.setAttribute('aria-pressed',c.getAttribute('aria-pressed')!=='true'));
  $('#sv').onclick=()=>{p.name=$('#nm').value.trim();p.goals=[...document.querySelectorAll('#goals .chip[aria-pressed=true]')].map(c=>c.textContent);D.rem={on:$('#rm').checked,time:$('#rt').value||'20:00'};save();applyTheme();toast('Saved');shell()};
  $('#av').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f)pickAvatar(f)};
- const saveRem=()=>{D.rem={on:$('#rm').checked,time:$('#rt').value||'20:00'};save();toast('Reminder saved')};
+ const saveRem=async()=>{D.rem={on:$('#rm').checked,time:$('#rt').value||'20:00'};save();
+  const r=await reminderSync(),note=document.getElementById('remNote');
+  if(!r.native){if(note)note.textContent='Reminders are only sent by the Android app.';toast('Saved');return}
+  if(r.blocked){if(note)note.textContent='Notifications are blocked. Allow them in Android Settings \u203a Apps \u203a Bloom \u203a Notifications.'}
+  else if(r.off){if(note)note.textContent='Turn on to get one reminder a day.'}
+  else if(r.error){if(note)note.textContent='The reminder could not be scheduled. Try again.'}
+  else if(note)note.textContent='One reminder a day at '+D.rem.time+'.'};
  $('#rs').onclick=saveRem;$('#rt').onchange=saveRem;$('#rm').onchange=saveRem;
- $('#xj').onclick=()=>saveFile('bloom-data.json',JSON.stringify(D,null,1));$('#lo').onclick=logout;
+ $('#xj').onclick=()=>saveFile('bloom-data.json',JSON.stringify(D,null,1));
+ $('#xi').onclick=()=>$('#xif').click();
+ $('#xif').onchange=async e=>{const f=e.target.files&&e.target.files[0];e.target.value='';if(!f)return;
+  let j=null;
+  try{j=JSON.parse(await f.text())}catch(err){return toast('That file is not valid JSON')}
+  if(!j||typeof j!=='object'||Array.isArray(j)||(!('logs' in j)&&!('meals' in j)&&!('p' in j)))return toast('That is not a Bloom backup');
+  if(!confirm('Restore this backup?\n\nEverything currently on this device will be replaced.'))return;
+  const clean=Object.assign(blank(),j);
+  if(!clean.p||typeof clean.p!=='object'||Array.isArray(clean.p))clean.p={};
+  ['logs','done','meals','plan'].forEach(k=>{if(!clean[k]||typeof clean[k]!=='object'||Array.isArray(clean[k]))clean[k]={}});
+  ['tasks','journal'].forEach(k=>{if(!Array.isArray(clean[k]))clean[k]=[]});
+  clean.rem=Object.assign({on:false,time:'20:00'},(j.rem&&typeof j.rem==='object')?j.rem:{});
+  D=clean;save();me();toast('Backup restored');reminderSync(true)};
+ $('#del').onclick=deleteAllData;
+ $('#lo').onclick=logout;
  if(document.getElementById('gc'))$('#gc').onclick=async()=>{const c=await genPartnerCode();if(c)me()};
  if(document.getElementById('cp'))$('#cp').onclick=async()=>{try{await navigator.clipboard.writeText(D.partner.code);toast('Code copied')}catch(e){toast(D.partner.code)}};
  if(document.getElementById('pg'))$('#pg').onclick=async()=>{await genPartnerCode();me()};
