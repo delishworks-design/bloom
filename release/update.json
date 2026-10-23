@@ -1,7 +1,7 @@
-{
-  "versionCode": 20,
-  "versionName": "1.2.5",
-  "notes": "Fix: account sign-in works again - sbInit no longer dies on a bad session, real errors, connection check on the auth screen",
-  "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/release/bloom-1.2.5.apk",
-  "publishedAt": "2026-10-22"
+﻿{
+    "versionCode":  22,
+    "versionName":  "1.2.7",
+    "notes":  "Fixes: meals log with the right meal type, working Delete-all and Restore-from-backup, real daily reminders, sleep log wording, meal budget now persistent. Updates directly from 1.2.6 - no uninstall needed.",
+    "url":  "https://github.com/delishworks-design/bloom/releases/download/v1.2.7/bloom-1.2.7.apk",
+    "publishedAt":  "2026-10-23"
 }
