@@ -1,7 +1,7 @@
 ﻿{
-    "versionCode":  23,
-    "versionName":  "1.2.8",
-    "notes":  "New Play tab: Tap Race (live races vs your partner with invite + accept), Memory Bloom, and a partner leaderboard with your bests synced live. Fixed garbled characters across the app, meal types saving as Snack, and partner accounts now get a profile of their own. Updates directly from 1.2.7 - no uninstall needed.",
-    "url":  "https://github.com/delishworks-design/bloom/releases/download/v1.2.8/bloom-1.2.8.apk",
+    "versionCode":  24,
+    "versionName":  "1.2.9",
+    "notes":  "Cleaner partner view: Following status and Exit now live in your Profile sheet. Consistent dash placeholders across Mood, Energy, Sleep, Symptoms and game cards. Updates directly from 1.2.8 - no uninstall needed.",
+    "url":  "https://github.com/delishworks-design/bloom/releases/download/v1.2.9/bloom-1.2.9.apk",
     "publishedAt":  "2026-10-24"
 }
