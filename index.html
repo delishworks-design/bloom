@@ -482,8 +482,24 @@ function exitPartnerNow(){
   return}
  authView('in')}
 // partner's own profile: no sync code, no cycle fields - just identity and exit
-function roProfile(){ const cur=ST.get('bloom_pname')||''; sheet(`<h2>Your profile</h2>  <label for="rpn">Name</label><input id="rpn" maxlength="30" value="${E(cur)}" placeholder="What you call yourself">  <p class="meta" style="margin:8px 0 14px">Your name shows in Tap Race and on the leaderboard.</p>  <div class="row" style="gap:10px;margin:0 0 14px;align-items:center"><label class="btn ghost sm" for="rpav" style="margin:0;display:inline-flex !important;align-items:center !important;gap:8px !important">Change photo</label><input type="file" id="rpav" accept="image/*" hidden><span class="pchip">Following ${E((D.p&&D.p.name)||'partner')}</span></div>  <div class="row" style="gap:10px;margin-bottom:10px"><button class="btn ghost" id="rpnX" style="flex:1">Exit</button><button class="btn" id="rpnS" style="flex:1">Save</button></div>  <p class="meta" style="margin:0 0 10px">Signed in as ${E((sbUser&&sbUser.email)||'')} \u00b7 Bloom ${APP_VERSION.name}</p>  <button class="btn ghost sm" id="rpnOut" style="width:100%">Sign out of Bloom</button>`); $('#rpnS').onclick=async()=>{const v=$('#rpn').value.trim();if(!v)return toast('Type a name');  ST.set('bloom_pname',v);sheet();toast('Name saved');shell()}; $('#rpav').onchange=e=>{const f=e.target.files&&e.target.files[0];e.target.value='';if(f)roPickAvatar(f)};
- $('#rpnX').onclick=()=>{sheet();exitPartner()}; $('#rpnOut').onclick=()=>{sheet();logout()}}
+function roProfile(){
+ const cur=ST.get('bloom_pname')||'';
+ const c=cycleStats(),len=c.avg||28;let sum='No cycle logged yet';
+ if(c.last){const day=Math.round((new Date(today())-new Date(c.last))/864e5)+1,dt=((day-1)%len)+1;sum='Day '+dt+' \u00b7 '+phaseInfo(dt,len).k}
+ const nd=Object.keys(D.logs||{}).length;if(nd)sum+=' \u00b7 '+nd+' day'+(nd>1?'s':'')+' logged';
+ sheet(`<h2>Your profile</h2>
+  <label for="rpn">Your name</label><input id="rpn" maxlength="30" value="${E(cur)}" placeholder="What you call yourself">
+  <p class="meta" style="margin:8px 0 14px">Saves automatically. It shows in Tap Race and on the leaderboard.</p>
+  <div class="row" style="gap:10px;margin:0 0 16px;align-items:center"><label class="btn ghost sm" for="rpav" style="margin:0;display:inline-flex !important;align-items:center !important;gap:8px !important">${IC.camera(15)} Change photo</label><input type="file" id="rpav" accept="image/*" hidden></div>
+  <div class="lbl">Following</div>
+  <div class="row" style="gap:12px;align-items:center;margin:0 0 14px">${avatarHTML(56)}<div style="min-width:0"><b style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${E((D.p&&D.p.name)||'partner')}</b><p class="meta" style="margin:4px 0 0">${E(sum)}</p></div></div>
+  <button class="btn ghost" id="rpnOut" style="width:100%">Sign out</button>
+  <p class="meta" style="margin-top:8px">Signing out also unbinds you from their sync code. You will need their code again to follow them.</p>`);
+ $('#rpn').onchange=()=>{const v=$('#rpn').value.trim();if(!v)return;
+  ST.set('bloom_pname',v);toast('Name saved');shell()};
+ $('#rpav').onchange=e=>{const f=e.target.files&&e.target.files[0];e.target.value='';if(f)roPickAvatar(f)};
+ $('#rpnOut').onclick=()=>logout()}
+
 function cloudStatus(){
  const el=document.getElementById('cloudStat');if(!el)return;
  const txt=document.getElementById('cloudText')||el;
@@ -1720,12 +1736,12 @@ function mePartner(){const p=D.p||{};
  <div style="display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:20px">${avatarHTML(192)}<label class="btn ghost" for="av" style="display:inline-flex !important;align-items:center !important;justify-content:center !important;gap:8px !important;cursor:pointer !important;align-self:center">${IC.camera(18)} Change photo</label><input type="file" id="av" accept="image/*" hidden></div>
  <label for="nm">Nickname</label><input id="nm" value="${E(p.name||'')}" maxlength="30">
  <p class="meta" style="margin:8px 0 0">Your name shows in Tap Race and on the leaderboard.</p>
- <button class="btn" id="sv" style="width:100%;margin-top:12px">Save</button>
+ <button class="btn" id="sv" style="width:100%;margin-top:12px"><p class="meta" style="margin:10px 0 0">Saves automatically when you change the name.</p>
 </div>
 <div class="card"><div class="card-h"><h3>Follow a partner</h3></div><p class="meta">Enter their sync code to see their cycle read-only. This account is a partner account, so cycle tracking stays off and their data lives only on their own account.</p><button class="btn" id="gFollow" style="width:100%">Enter a sync code</button></div>
 <div class="card"><div class="card-h"><h3>App</h3><span class="meta" id="appVer">\u2014</span></div><button class="btn ghost" id="chkUp" style="width:100%">Check for updates</button></div>
 <button class="btn ghost" id="lo" style="width:100%">Log out</button>`;
- $('#sv').onclick=async()=>{const v=$('#nm').value.trim();if(!v)return toast('Type a name');p.name=v;D.p.name=v;save();try{const cl=await sbInit();if(cl&&sbUser)await cl.from('bloom_profiles').upsert({id:sbUser.id,name:v})}catch(ev){}toast('Saved');shell()};
+ $('#nm').onchange=async()=>{const v=$('#nm').value.trim();if(!v)return;p.name=v;D.p.name=v;save();try{const cl=await sbInit();if(cl&&sbUser)await cl.from('bloom_profiles').upsert({id:sbUser.id,name:v})}catch(ev){}toast('Saved');shell()};
  $('#av').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f)pickAvatar(f)};
  $('#gFollow').onclick=()=>partnerOnboard();
  $('#lo').onclick=logout;
