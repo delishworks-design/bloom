@@ -1,7 +1,7 @@
 ﻿{
-    "versionCode":  27,
-    "versionName":  "1.2.12",
-    "notes":  "Race invites are now real in-app notifications with Accept and Decline - they reach you anywhere in the app, with cooldowns so invites and re-invites cannot be spammed. Profile changes (name, photo) notify your connected partner in real time, both ways. Notifications now appear at the top of the screen over a slightly darker header band.",
-    "url":  "https://github.com/delishworks-design/bloom/releases/download/v1.2.12/bloom-1.2.12.apk",
+    "versionCode":  28,
+    "versionName":  "1.2.13",
+    "notes":  "Partner profile is now a full page just like For you\u0027s: big photo with zoom and drag adjust, autosaved name, the person you follow in preview, and a Check for updates card. The home screen greets you by YOUR name when following. The person you follow now sees your profile card on their profile. Fixed: sign-out no longer keeps the follow view. Updates directly from 1.2.12.",
+    "url":  "https://github.com/delishworks-design/bloom/releases/download/v1.2.13/bloom-1.2.13.apk",
     "publishedAt":  "2026-10-24"
 }
