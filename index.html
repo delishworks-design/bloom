@@ -848,7 +848,7 @@ function bindCk(d,re){document.querySelectorAll('input[data-t]').forEach(i=>i.on
 function dayLog(d){const l=L(d);const sc=(k,lab)=>`<label>${lab}</label><div class="row" role="group" aria-label="${lab}">${[1,2,3,4,5].map(i=>`<button class="chip" data-k="${k}" data-v="${i}" aria-pressed="${l[k]==i}">${i}</button>`).join('')}</div>`;
  sheet(`<h2>${fmt(d,{weekday:'long',month:'short',day:'numeric'})}</h2><label>Bleeding</label><div class="row" role="group" aria-label="Bleeding">${['none','spotting','light','medium','heavy'].map(f=>`<button class="chip" data-k="flow" data-v="${f}" aria-pressed="${(l.flow||'none')==f}">${f}</button>`).join('')}</div>
 ${sc('mood','Mood (1 low – 5 great)')}${sc('energy','Energy (1 low – 5 high)')}${sc('stress','Stress (1 calm – 5 high)')}${sc('sleepq','Sleep quality')}
-<label for="sl">Hours slept last night</label><input id="sl" type="number" min="0" max="24" step="0.5" value="${l.sleep||''}"><p class="meta" style="margin:4px 0 0">Sleep is written under the date it ended. Log tonight\u2019s sleep tomorrow, under the new day.</p>
+<label for="sl">Hours slept last night</label><input id="sl" type="number" min="0" max="24" step="0.5" value="${l.sleep||''}">
 <label>Symptoms</label><div class="row" id="tg">${TAGS.map(t=>`<button class="chip" aria-pressed="${(l.tags||[]).includes(t)}">${t}</button>`).join('')}</div>
 <label for="cu" style="margin-top:8px">Other symptom</label><input id="cu" maxlength="30" placeholder="Optional">
 <label for="nt">Note</label><textarea id="nt" rows="2">${E(l.note||'')}</textarea><div class="err" id="er"></div>
