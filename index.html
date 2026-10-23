@@ -419,7 +419,8 @@ async function sbAfterLogin(u){sbUser=u;
  D.p.done=!!((keep.p&&keep.p.done)||(doc&&doc.p&&doc.p.done));
  if(!D.p.name)D.p.name=(u.email||'Bloom').split('@')[0];
  user=mail||user;setSession(user);try{ST.set('bloom_own',user)}catch(e){}
- save();view='cycle';shell();
+ if(pLocked()&&!D.p.avatar){try{const j=JSON.parse(ST.get('bloom_pavatar')||'null');if(j&&j.a){D.p.avatar=j.a;D.p.avatarCrop=j.c||{z:1,x:0,y:0};save()}}catch(ea){}}
+ save();view=(pLocked()?'me':'cycle');shell();
  startCloudSync();
  setTimeout(()=>{try{reminderSync(true)}catch(e){}},1200);
  if(D.partner&&D.partner.on&&D.partner.code){try{const cl=await sbInit();if(cl)await cl.rpc('bloom_create_partner_code',{p_code:D.partner.code})}catch(e){}}
@@ -463,22 +464,26 @@ async function revokePartnerCode(){
  D.partner={code:'',on:false};save();
  toast('Code revoked')}
 function exitPartner(){
+ const wasRO=RO,ownerName=((D&&D.p&&D.p.name)||'');
+ if(wasRO){sheet(`<h2>Exit ${E(ownerName)}'s view?</h2><p class="meta" style="margin:0 0 14px">Exiting unbinds you from their sync code - you will need their code again to follow them. Their data stays untouched.</p><div class="row" style="gap:10px;margin-top:10px"><button class="btn ghost" id="exStay" style="flex:1">Stay</button><button class="btn pink" id="exGo" style="flex:1">Exit</button></div>`);
+  $('#exStay').onclick=sheet;
+  $('#exGo').onclick=()=>{sheet();exitPartnerNow()};
+  return}
+ exitPartnerNow()}
+// leaving follow mode always opens the partner account's own Profile - never the cycle feed
+function exitPartnerNow(){
  const wasRO=RO;
  RO=false;ROowner=null;D=null;clearSession();
  const own=ST.get('bloom_own');
  if(own&&sbUser){
-  if(wasRO)ST.set('bloom_waspartner','1');
+  if(wasRO)ST.set('bloom_plocked','1');
   setSession(own);
-  sbAfterLogin(sbUser).then(()=>{
-   // a following-partner account never runs the cycle onboarding
-   if(D&&D.p&&!D.p.done){D.p=D.p||{};D.p.done=true;
-    if(!D.p.name)D.p.name=ST.get('bloom_pname')||(sbUser.email||'').split('@')[0];
-    save();view='me';shell();toast('Welcome to your profile')}
-  });
+  sbAfterLogin(sbUser).then(()=>{});
   return}
  authView('in')}
 // partner's own profile: no sync code, no cycle fields - just identity and exit
-function roProfile(){ const cur=ST.get('bloom_pname')||''; sheet(`<h2>Your profile</h2>  <label for="rpn">Name</label><input id="rpn" maxlength="30" value="${E(cur)}" placeholder="What you call yourself">  <p class="meta" style="margin:8px 0 14px">Your name shows in Tap Race and on the leaderboard.</p>  <div style="margin:0 0 14px"><span class="pchip">Following ${E((D.p&&D.p.name)||'partner')}</span></div>  <div class="row" style="gap:10px;margin-bottom:10px"><button class="btn ghost" id="rpnX" style="flex:1">Exit</button><button class="btn" id="rpnS" style="flex:1">Save</button></div>  <p class="meta" style="margin:0 0 10px">Signed in as ${E((sbUser&&sbUser.email)||'')} \u00b7 Bloom ${APP_VERSION.name}</p>  <button class="btn ghost sm" id="rpnOut" style="width:100%">Sign out of Bloom</button>`); $('#rpnS').onclick=async()=>{const v=$('#rpn').value.trim();if(!v)return toast('Type a name');  ST.set('bloom_pname',v);sheet();toast('Name saved');shell()}; $('#rpnX').onclick=()=>{sheet();exitPartner()}; $('#rpnOut').onclick=()=>{sheet();logout()}}
+function roProfile(){ const cur=ST.get('bloom_pname')||''; sheet(`<h2>Your profile</h2>  <label for="rpn">Name</label><input id="rpn" maxlength="30" value="${E(cur)}" placeholder="What you call yourself">  <p class="meta" style="margin:8px 0 14px">Your name shows in Tap Race and on the leaderboard.</p>  <div class="row" style="gap:10px;margin:0 0 14px;align-items:center"><label class="btn ghost sm" for="rpav" style="margin:0;display:inline-flex !important;align-items:center !important;gap:8px !important">Change photo</label><input type="file" id="rpav" accept="image/*" hidden><span class="pchip">Following ${E((D.p&&D.p.name)||'partner')}</span></div>  <div class="row" style="gap:10px;margin-bottom:10px"><button class="btn ghost" id="rpnX" style="flex:1">Exit</button><button class="btn" id="rpnS" style="flex:1">Save</button></div>  <p class="meta" style="margin:0 0 10px">Signed in as ${E((sbUser&&sbUser.email)||'')} \u00b7 Bloom ${APP_VERSION.name}</p>  <button class="btn ghost sm" id="rpnOut" style="width:100%">Sign out of Bloom</button>`); $('#rpnS').onclick=async()=>{const v=$('#rpn').value.trim();if(!v)return toast('Type a name');  ST.set('bloom_pname',v);sheet();toast('Name saved');shell()}; $('#rpav').onchange=e=>{const f=e.target.files&&e.target.files[0];e.target.value='';if(f)roPickAvatar(f)};
+ $('#rpnX').onclick=()=>{sheet();exitPartner()}; $('#rpnOut').onclick=()=>{sheet();logout()}}
 function cloudStatus(){
  const el=document.getElementById('cloudStat');if(!el)return;
  const txt=document.getElementById('cloudText')||el;
@@ -495,6 +500,17 @@ function errText(e){const m=String(e||'');
  if(/Email not confirmed/i.test(m))return 'Confirm your email address first.';
  return m||'Something went wrong. Try again.'}
 function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.display='none',2200)}
+function pLocked(){try{return ST&&ST.get('bloom_plocked')==='1'}catch(e){return false}}
+function roAvatarHTML(){const n=((ST.get('bloom_pname')||'P')+'').trim();const ini=n.charAt(0).toUpperCase()||'P';
+ let av=null,crop=null;try{const j=JSON.parse(ST.get('bloom_pavatar')||'null');if(j){av=j.a;crop=j.c||{z:1,x:0,y:0}}}catch(e){}
+ if(av)return `<span class="avatar-wrap" style="width:34px;height:34px"><img class="avatar" src="${av}" alt="" style="transform:translate(${crop.x||0}%,${crop.y||0}%) scale(${crop.z||1})"></span>`;
+ return `<span class="avatar-fb" style="width:34px;height:34px;font-size:15px">${E(ini)}</span>`}
+function roPickAvatar(file){const r=new FileReader();r.onload=e=>{const img=new Image();img.onload=()=>{
+ const mx=1024,sc=Math.min(1,mx/Math.max(img.width,img.height));
+ const cv=document.createElement('canvas');cv.width=Math.max(1,Math.round(img.width*sc));cv.height=Math.max(1,Math.round(img.height*sc));
+ cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
+ try{ST.set('bloom_pavatar',JSON.stringify({a:cv.toDataURL('image/jpeg',0.85),c:{z:1,x:0,y:0}}))}catch(ev){}
+ shell();toast('Photo saved')};img.src=e.target.result};r.readAsDataURL(file)}
 // ---------- auth (online accounts only)
 async function redeemCode(code,onErr){
  const c=String(code||'').trim().toUpperCase();
@@ -712,9 +728,9 @@ function shell(){splashAppIsReady();
  playState.peerScore=null;
  if(funTimer){clearInterval(funTimer);funTimer=null}if(foodTimer){clearInterval(foodTimer);foodTimer=null}if(roTimer){clearInterval(roTimer);roTimer=null}
  if(RO){const raw=ST.get(key(ROowner));if(raw!=null){roHash=roHashOf(raw);D=Object.assign(blank(),J(key(ROowner),{}))}}
- if(!D.p.done&&!RO){return onboarding()}
+ if(!D.p.done&&!RO){if(pLocked()){D.p.done=true;D.p=D.p||{};D.p.role='partner';save()}else return onboarding()}
  const N=[['cycle','Cycle',IC.ring],['planner','Planner',IC.list] ,['insights','Insights',IC.chart],['games','Play',IC.play],['learn','Learn',IC.book]];
- $('#app').innerHTML=`<div class="blob blob-a"></div><div class="blob blob-b"></div><div class="blob blob-c"></div><div class="wrap"><header class="topbar"><div class="wordmark">Bloom<i>.</i></div>${RO?`<div class="row" style="gap:8px"><button class="profbtn" id="rome" aria-label="Your profile">${(()=>{const n=(ST.get('bloom_pname')||'P').trim();const c=n.charAt(0).toUpperCase()||'P';return `<span class="avatar-fb" style="width:34px;height:34px;font-size:15px">${E(c)}</span>`})()}<span>${E(ST.get('bloom_pname')||'You')}</span></button></div>`:`<button class="profbtn" id="me" aria-label="Profile and settings">${avatarHTML(44)}<span>${E(D.p.name||user)}</span></button>`}</header><main id="main"></main></div><nav aria-label="Main">${N.map(([k,l,ic])=>`<button data-v="${k}" ${view==k?'aria-current="page"':''}>${ic(17)}<span>${l}</span></button>`).join('')}</nav>`;
+ $('#app').innerHTML=`<div class="blob blob-a"></div><div class="blob blob-b"></div><div class="blob blob-c"></div><div class="wrap"><header class="topbar"><div class="wordmark">Bloom<i>.</i></div>${RO?`<div class="row" style="gap:8px"><button class="profbtn" id="rome" aria-label="Your profile">${roAvatarHTML()}<span>${E(ST.get('bloom_pname')||'You')}</span></button></div>`:`<button class="profbtn" id="me" aria-label="Profile and settings">${avatarHTML(44)}<span>${E(D.p.name||user)}</span></button>`}</header><main id="main"></main></div><nav aria-label="Main">${N.map(([k,l,ic])=>`<button data-v="${k}" ${view==k?'aria-current="page"':''}>${ic(17)}<span>${l}</span></button>`).join('')}</nav>`;
  if(RO){
  const rm=document.getElementById('rome');if(rm)rm.onclick=roProfile;
  roTimer=setInterval(roReload,4000)}
@@ -722,7 +738,7 @@ function shell(){splashAppIsReady();
  // #me only exists outside partner (read-only) mode  that header shows the Exit button instead
  const meBtn=$('#me');if(meBtn)meBtn.onclick=()=>{view='me';shell()};
  if(view=='me')document.querySelector('nav [aria-current]')?.removeAttribute('aria-current');
- ({cycle:cyclePage,month:monthView,planner,insights,learn,me,games:playPage})[view]()}
+ ({cycle:cyclePage,month:monthView,planner,insights,learn,me:(pLocked()?mePartner:me),games:playPage})[view]()}
 function onboarding(){splashAppIsReady();const p=D.p;if(p.role==='me'&&onbStep===0)onbStep=1;
  if(p.role==='partner'){partnerOnboard();return}
  const steps=[
@@ -738,6 +754,7 @@ function onboarding(){splashAppIsReady();const p=D.p;if(p.role==='me'&&onbStep==
   document.querySelectorAll('.rolebtn').forEach(b=>b.onclick=()=>{p.role=b.dataset.role;save();
    if(p.role==='partner'){partnerOnboard();return}
    onbStep=1;onboarding()});
+  if(pLocked()){const mb=document.querySelector('.rolebtn[data-role="me"]');if(mb)mb.remove()}
   return}
  $('#app').innerHTML=`<div class="auth"><div class="card" style="display:flex;flex-direction:column;gap:24px;padding:28px 24px 32px"><div class="lbl">Step ${onbStep} of 3</div><div style="display:flex;flex-direction:column;gap:18px">${steps[onbStep]}</div><p class="note">Not a diagnosis. Severe pain, very heavy bleeding or sudden symptoms need prompt medical care.</p><div class="row sp" style="margin-top:8px"><button class="btn ghost" id="sk">Skip</button><button class="btn" id="nx">${onbStep===3?'Finish':'Next'}</button></div></div></div>`;
  document.querySelectorAll('#goals .chip').forEach(c=>c.onclick=()=>c.setAttribute('aria-pressed',c.getAttribute('aria-pressed')!=='true'));
@@ -768,7 +785,7 @@ function partnerOnboard(){
  const setErr=m=>{er.textContent=m||'';er.classList.toggle('on',!!m)};
  const setField=m=>{pf.classList.toggle('invalid',!!m);pe.textContent=m||''};
  code.addEventListener('input',()=>{code.value=code.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6);setField('');setErr('')});
- $('#pBack').onclick=()=>{p.role='';save();onbStep=0;onboarding()};
+ $('#pBack').onclick=()=>{if(pLocked()){D.p=D.p||{};D.p.done=true;save();view='me';shell();return}p.role='';save();onbStep=0;onboarding()};
  $('#pForm').addEventListener('submit',async e=>{
   e.preventDefault();setErr('');
   const v=code.value.trim();
@@ -779,7 +796,7 @@ function partnerOnboard(){
    try{ST.set('bloom_pname',nm)}catch(nmerr){}
    const btn=$('#pGo');btn.disabled=true;btn.innerHTML='<span class="spinner" aria-hidden="true"></span>Opening\u2026';
   try{const ok=await redeemCode(v,m=>setErr(m));
-    if(ok){try{const cl=await sbInit();if(cl&&sbUser)await cl.from('bloom_profiles').upsert({id:sbUser.id,name:nm})}catch(e8){}}}
+    if(ok){try{ST.set('bloom_plocked','1')}catch(e9){}try{const cl=await sbInit();if(cl&&sbUser)await cl.from('bloom_profiles').upsert({id:sbUser.id,name:nm})}catch(e8){}}}
   finally{btn.disabled=false;btn.textContent='Open'}
  });
 }
@@ -956,6 +973,7 @@ function pickAvatar(file){const r=new FileReader();r.onload=e=>{const img=new Im
  const cv=document.createElement('canvas');cv.width=Math.max(1,Math.round(img.width*sc));cv.height=Math.max(1,Math.round(img.height*sc));
  cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
  D.p.avatar=cv.toDataURL('image/jpeg',0.85);D.p.avatarCrop={z:1,x:0,y:0};
+ try{ST.set('bloom_pavatar',JSON.stringify({a:D.p.avatar,c:{z:1,x:0,y:0}}))}catch(ev9){}
  openAvatarAdjust()};img.src=e.target.result};r.readAsDataURL(file)}
 function openAvatarAdjust(){const src=D.p.avatar;if(!src)return;
  const c=Object.assign({z:1,x:0,y:0},D.p.avatarCrop||{});
@@ -976,7 +994,7 @@ function openAvatarAdjust(){const src=D.p.avatar;if(!src)return;
   c.y=Math.max(-60,Math.min(60,drag.oy+(e.clientY-drag.y)/w*100));apply()};
  box.onpointerup=()=>{drag=null};box.onpointercancel=()=>{drag=null};
  document.getElementById('adjReset').onclick=()=>{c.z=1;c.x=0;c.y=0;zs.value=100;apply()};
- document.getElementById('adjSave').onclick=()=>{D.p.avatarCrop={z:c.z||1,x:c.x||0,y:c.y||0};save();sheet();me();toast('Photo saved')}}
+ document.getElementById('adjSave').onclick=()=>{D.p.avatarCrop={z:c.z||1,x:c.x||0,y:c.y||0};save();try{ST.set('bloom_pavatar',JSON.stringify({a:D.p.avatar,c:D.p.avatarCrop}))}catch(evx){}sheet();if(pLocked())mePartner();else me();toast('Photo saved')}}
 function series(k,n){return[...Array(n)].map((_,i)=>{const d=addD(today(),i-n+1);return{d,v:L(d)[k]}})}
 function line(k,n,max,col){const s=series(k,n),W=320,H=110,x=i=>20+i*(W-30)/(n-1||1),y=v=>H-14-(v/max)*(H-24);let pts='',dots='';s.forEach((p,i)=>{if(p.v!=null){pts+=(pts&&s[i-1]?.v!=null?'L':'M')+x(i)+' '+y(p.v);dots+=`<circle cx="${x(i)}" cy="${y(p.v)}" r="3" fill="${col}"/>`}});
  return s.some(p=>p.v!=null)?`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${k} over last ${n} days"><line x1="20" x2="${W-8}" y1="${H-14}" y2="${H-14}" stroke="var(--line)"/><text x="2" y="${y(max)+3}">${max}</text><text x="6" y="${y(1)+3}">1</text><path d="${pts}" fill="none" stroke="${col}" stroke-width="2"/>${dots}<text x="20" y="${H-1}">${fmt(s[0].d)}</text><text x="${W-40}" y="${H-1}">${fmt(s[n-1].d)}</text></svg>`:'<p class="meta">No entries</p>'}
@@ -1696,6 +1714,23 @@ async function memGame(){gAlive=true;
   step=0;msg.textContent='Your turn.'}
  async function next(){seq.push(Math.floor(Math.random()*4));lvl.textContent='Level '+seq.length;msg.textContent='Watch the pattern.';await sleep(500);if(gone)return;await show()}
  next()}
+function mePartner(){const p=D.p||{};
+ $('#main').innerHTML=`<h1>Profile</h1>
+<div class="card">
+ <div style="display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:20px">${avatarHTML(192)}<label class="btn ghost" for="av" style="display:inline-flex !important;align-items:center !important;justify-content:center !important;gap:8px !important;cursor:pointer !important;align-self:center">${IC.camera(18)} Change photo</label><input type="file" id="av" accept="image/*" hidden></div>
+ <label for="nm">Nickname</label><input id="nm" value="${E(p.name||'')}" maxlength="30">
+ <p class="meta" style="margin:8px 0 0">Your name shows in Tap Race and on the leaderboard.</p>
+ <button class="btn" id="sv" style="width:100%;margin-top:12px">Save</button>
+</div>
+<div class="card"><div class="card-h"><h3>Follow a partner</h3></div><p class="meta">Enter their sync code to see their cycle read-only. This account is a partner account, so cycle tracking stays off and their data lives only on their own account.</p><button class="btn" id="gFollow" style="width:100%">Enter a sync code</button></div>
+<div class="card"><div class="card-h"><h3>App</h3><span class="meta" id="appVer">\u2014</span></div><button class="btn ghost" id="chkUp" style="width:100%">Check for updates</button></div>
+<button class="btn ghost" id="lo" style="width:100%">Log out</button>`;
+ $('#sv').onclick=async()=>{const v=$('#nm').value.trim();if(!v)return toast('Type a name');p.name=v;D.p.name=v;save();try{const cl=await sbInit();if(cl&&sbUser)await cl.from('bloom_profiles').upsert({id:sbUser.id,name:v})}catch(ev){}toast('Saved');shell()};
+ $('#av').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f)pickAvatar(f)};
+ $('#gFollow').onclick=()=>partnerOnboard();
+ $('#lo').onclick=logout;
+ if(document.getElementById('chkUp'))$('#chkUp').onclick=()=>checkUpdate(true);
+ (async()=>{const up=updater();if(!up)return;try{const v=await up.getVersion();const el=document.getElementById('appVer');if(el)el.textContent='v'+v.versionName+' ('+v.versionCode+')'}catch(e){}})()}
 function me(){const p=D.p;const hasCode=!!(D.partner&&D.partner.on&&D.partner.code);
 $('#main').innerHTML=`<h1>Profile</h1>
 <div class="card">
