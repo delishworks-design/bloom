@@ -1,7 +1,7 @@
 ﻿{
-    "versionCode":  26,
-    "versionName":  "1.2.11",
-    "notes":  "The partner profile sheet now previews who you follow - their photo, name and an insights summary - with your name and photo auto-saved. Exit and Save buttons are gone; signing out is the one action, with an unbinding note.",
-    "url":  "https://github.com/delishworks-design/bloom/releases/download/v1.2.11/bloom-1.2.11.apk",
+    "versionCode":  27,
+    "versionName":  "1.2.12",
+    "notes":  "Race invites are now real in-app notifications with Accept and Decline - they reach you anywhere in the app, with cooldowns so invites and re-invites cannot be spammed. Profile changes (name, photo) notify your connected partner in real time, both ways. Notifications now appear at the top of the screen over a slightly darker header band.",
+    "url":  "https://github.com/delishworks-design/bloom/releases/download/v1.2.12/bloom-1.2.12.apk",
     "publishedAt":  "2026-10-24"
 }
