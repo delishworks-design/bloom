@@ -1,7 +1,7 @@
 ﻿{
-    "versionCode":  24,
-    "versionName":  "1.2.9",
-    "notes":  "Cleaner partner view: Following status and Exit now live in your Profile sheet. Consistent dash placeholders across Mood, Energy, Sleep, Symptoms and game cards. Updates directly from 1.2.8 - no uninstall needed.",
-    "url":  "https://github.com/delishworks-design/bloom/releases/download/v1.2.9/bloom-1.2.9.apk",
+    "versionCode":  25,
+    "versionName":  "1.2.10",
+    "notes":  "Partner accounts are now locked in: Exit asks for confirmation (it unbinds the sync code) and lands on the partner\u0027s own Profile - never the For you feed. Partner profile now has photo, name, and follow entry. Updates directly from 1.2.9.",
+    "url":  "https://github.com/delishworks-design/bloom/releases/download/v1.2.10/bloom-1.2.10.apk",
     "publishedAt":  "2026-10-24"
 }
