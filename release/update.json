@@ -1,7 +1,7 @@
 ﻿{
-    "versionCode":  22,
-    "versionName":  "1.2.7",
-    "notes":  "Fixes: meals log with the right meal type, working Delete-all and Restore-from-backup, real daily reminders, sleep log wording, meal budget now persistent. Updates directly from 1.2.6 - no uninstall needed.",
-    "url":  "https://github.com/delishworks-design/bloom/releases/download/v1.2.7/bloom-1.2.7.apk",
+    "versionCode":  23,
+    "versionName":  "1.2.8",
+    "notes":  "New: Play tab with mini-games (Tap Bloom, Memory Bloom), cloud-saved highscores, and live partner duels with chat and reactions. Updates directly from 1.2.7 - no uninstall needed.",
+    "url":  "https://github.com/delishworks-design/bloom/releases/download/v1.2.8/bloom-1.2.8.apk",
     "publishedAt":  "2026-10-23"
 }
