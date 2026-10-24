@@ -1,7 +1,7 @@
 {
-    "versionCode":  31,
-    "versionName":  "1.2.16",
-    "notes":  "Cycle view fix: when you log many symptoms, the Symptoms label and the list no longer squeeze into each other. The label now sits on its own line with the full list wrapped underneath, so every symptom stays readable.",
-    "url":  "https://github.com/delishworks-design/bloom/releases/download/v1.2.16/bloom-1.2.16.apk",
+    "versionCode":  32,
+    "versionName":  "1.2.17",
+    "notes":  "Play fixes. Tap Race invites now arrive reliably and can\u0027t get lost while the connection is opening; races no longer end in a false tie, practice taps never count as a race score, and leaving mid-race sends your result. The leaderboard now shows your partner\u0027s real bests (persisted while following read-only) with a dash until they sync, plus a name and synced date.",
+    "url":  "https://github.com/delishworks-design/bloom/releases/download/v1.2.17/bloom-1.2.17.apk",
     "publishedAt":  "2026-10-24"
 }
