@@ -1,7 +1,7 @@
 {
-    "versionCode":  32,
-    "versionName":  "1.2.17",
-    "notes":  "Play fixes. Tap Race invites now arrive reliably and can\u0027t get lost while the connection is opening; races no longer end in a false tie, practice taps never count as a race score, and leaving mid-race sends your result. The leaderboard now shows your partner\u0027s real bests (persisted while following read-only) with a dash until they sync, plus a name and synced date.",
-    "url":  "https://github.com/delishworks-design/bloom/releases/download/v1.2.17/bloom-1.2.17.apk",
+    "versionCode":  33,
+    "versionName":  "1.2.18",
+    "notes":  "Cycle ring fix. The ring now shows Day 1 and the Menstrual phase as soon as you log your first period, instead of staying at \u0027Log a period to start\u0027 until you had logged 3 or more period starts.",
+    "url":  "https://github.com/delishworks-design/bloom/releases/download/v1.2.18/bloom-1.2.18.apk",
     "publishedAt":  "2026-10-24"
 }
