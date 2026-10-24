@@ -646,11 +646,12 @@ function authView(mode){mode=mode||'in';
  $('#authForm').addEventListener('submit',e=>{e.preventDefault();sub()});
 }
 function login(u){user=u;D=Object.assign(blank(),J(key(u),{}));setSession(u);applyTheme();view='cycle';shell()}
-function logout(){RO=false;ROcloud=false;ROowner=null;roHash='';user=null;D=null;clearSession();
- try{if(playCh&&sb)sb.removeChannel(playCh)}catch(pcl){}playCh=null;playKey='';opponentUid=null;playJoining=null;
- playState.peer=false;playState.peerName=null;playState.race=false;playState.raceStarted=false;playState.incoming=false;playState.peerScore=null;playState.myTaps=null;
+function logout(){const who=ownWho();RO=false;ROcloud=false;ROowner=null;roHash='';user=null;D=null;clearSession();
+ try{if(playCh&&sb)sb.removeChannel(playCh)}catch(pcl){}playCh=null;playKey='';opponentUid=null;playJoining=null;playQ=[];playReady=false;
+ playState.peer=false;playState.peerName=null;playState.race=false;playState.raceStarted=false;playState.incoming=false;playState.peerScore=null;playState.myTaps=null;playState.rid=null;playState.last=null;
  pfLast=null;rxLastIn=0;lastInviteAt=0;
  try{['bloom_pname','bloom_pavatar','bloom_pown'].forEach(k=>ST.del(k))}catch(ep){}
+ if(who)try{ST.del('bloom_ppeer_'+who)}catch(epp){}
  try{ST.del('bloom_own')}catch(e){}try{reminderCancel()}catch(e){}if(sb){sb.auth.signOut().catch(()=>{});sbUser=null}if(cloudTimer){clearInterval(cloudTimer);cloudTimer=null}hideUpdateBanner();authView('in')}
 function applyTheme(){document.documentElement.removeAttribute('data-theme')}
 // ---------- helpers
@@ -713,7 +714,7 @@ async function fetchManifest(){const bust='?t='+Date.now();
  const r=await fetch(UPDATE_MANIFEST+bust,{cache:'no-store'});if(!r.ok)throw new Error('manifest '+r.status);
  return await r.json()}
 // Baked-in build identity. Keep in sync with android/app/build.gradle (versionCode/versionName).
-const APP_VERSION={code:31,name:'1.2.16'};
+const APP_VERSION={code:32,name:'1.2.17'};
 const UPD_SKIP_KEY='bloom_upd_skip';
 const updater=()=>{const C=window.Capacitor;if(!C)return null;
  const P=C.Plugins&&C.Plugins.BloomUpdater;
@@ -784,9 +785,10 @@ async function roReload(){if(!RO)return;
  if(ROcloud){const doc=await sbFetchDoc(ROowner);if(!doc)return;const h=roHashOf(JSON.stringify(doc));if(h===roHash)return;roHash=h;D=Object.assign(blank(),doc);shell();return}
  const raw=ST.get(key(ROowner));if(raw==null)return;const h=roHashOf(raw);if(h===roHash)return;roHash=h;D=Object.assign(blank(),J(key(ROowner),{}));shell()}
 function shell(){splashAppIsReady();
- gAlive=false;
- if(!sbUser&&playCh){try{sb.removeChannel(playCh)}catch(e){}playCh=null;playKey='';opponentUid=null}
- if(sbUser&&!playCh){try{playJoin()}catch(ej){}}
+ gAlive=false;gameSeq++;
+ if(!sbUser&&playCh){try{sb.removeChannel(playCh)}catch(e){}playCh=null;playKey='';playReady=false;playQ=[];opponentUid=null}
+ if(sbUser&&playCh&&RO&&ROowner&&playKey!==pairKeyOf(sbUser.id,ROowner)){try{sb.removeChannel(playCh)}catch(er){}playCh=null;playKey='';playReady=false;playQ=[]}
+ if(sbUser&&!playCh){try{playJoin().catch(()=>{})}catch(ej){}}
  if(funTimer){clearInterval(funTimer);funTimer=null}if(foodTimer){clearInterval(foodTimer);foodTimer=null}if(roTimer){clearInterval(roTimer);roTimer=null}
  if(RO&&!ROcloud){const raw=ST.get(key(ROowner));if(raw!=null){roHash=roHashOf(raw);D=Object.assign(blank(),J(key(ROowner),{}))}}
  if(!D.p.done&&!RO){if(pLocked()){D.p.done=true;D.p=D.p||{};D.p.role='partner';save()}else return onboarding()}
@@ -1629,51 +1631,82 @@ async function loadPartnerPreview(){try{const cl=await sbInit();if(!cl||!sbUser|
  el.innerHTML=`<div class="row" style="gap:12px;align-items:center">${av?`<span class="avatar-wrap" style="width:56px;height:56px"><img class="avatar" src="${av}" alt=""></span>`:`<span class="avatar-fb" style="width:56px;height:56px;font-size:20px">${E((nm||'P').charAt(0).toUpperCase())}</span>`}<div style="min-width:0"><b style="display:block">${E(nm)}</b><p class="meta" style="margin:2px 0 0">following you</p></div></div>`;
 }catch(e){}}
 // ---------- play: mini-games with cloud highscores + partner leaderboard (realtime scores, no DB writes)
-let gAlive=false;      // lets a running game stop itself when the view changes
+let gAlive=false,gameSeq=0; // lets a running game stop itself when the view changes or another game starts
 // scores are per device: in follow mode they live in local storage, never in the owner's doc
+function ownWho(){return (((sbUser&&sbUser.email)||user||'')+'').toLowerCase()}
 function ownScores(){
  if(!RO){D=D||blank();return (D.games=D.games||{})}
- let o=null;try{o=JSON.parse(ST.get('bloom_pown')||'{}')}catch(e){o=null}
- if(!o||typeof o!=='object')o={};return o}
-function ownSaveScore(g){if(RO){try{ST.set('bloom_pown',JSON.stringify(g))}catch(e){}}else{D.games=g;save()}}
+ let o=null;try{o=JSON.parse(ST.get('bloom_pown_'+ownWho())||'null')}catch(e){o=null}
+ if(!o||typeof o!=='object'){try{o=JSON.parse(ST.get('bloom_pown')||'null')}catch(e2){o=null}}
+ if(!o||typeof o!=='object')o={}
+ return o}
+function ownSaveScore(g){if(RO){try{ST.set('bloom_pown_'+ownWho(),JSON.stringify(g))}catch(e){}}else{D.games=g;save()}}
 function gameHigh(k,s){const g=ownScores();if(s<=(+(g[k]||0)))return false;g[k]=s;ownSaveScore(g);return true}
 function bestOf(k){return ownScores()[k]||0}
-function playPage(){gAlive=false;const g=D.games||{};
+// partner bests live in the owner's doc, and on this device while following someone read-only
+function peerSnap(){
+ if(!RO)return ((D.games=D.games||{}).peer||(D.games.peer={}));
+ let o=null;try{o=JSON.parse(ST.get('bloom_ppeer_'+ownWho())||'null')}catch(e){o=null}
+ return (o&&typeof o==='object')?o:{}}
+function peerSave(pr){if(RO){try{ST.set('bloom_ppeer_'+ownWho(),JSON.stringify(pr))}catch(e){}}else{(D.games=D.games||{}).peer=pr;save()}}
+function playPage(){gAlive=false;gameSeq++;const g=D.games||{};
  $('#main').innerHTML=`<h1>Play</h1>
  <div class="card"><div class="card-h"><h3>Tap Race</h3><span class="meta">${bestOf('tap')?bestOf('tap')+' taps':'\u2014'}</span></div><p class="meta">Fastest tapper wins: who lands more taps in 20 seconds takes the race. Practice alone to set your best.</p>
-   <div class="row" style="gap:10px"><button class="btn" id="gTap" style="flex:1">Practice</button><button class="btn pink" id="gRace" style="flex:1">Race partner</button></div>
-   <p class="meta" id="raceMsg" style="margin-top:8px">${sbUser?'Invite your partner to a live tap race \u2014 the invite reaches them anywhere in the app.':'Sign in to race your partner.'}</p></div>
+   <div class="row" style="gap:10px"><button class="btn" id="gTap" style="flex:1">Practice</button><button class="btn pink" id="gRace" style="flex:1"${playState.race?' disabled':''}>${playState.race?'Racing\u2026':'Race partner'}</button></div>
+   <p class="meta" id="raceMsg" style="margin-top:8px">${raceLine()}</p></div>
  <div class="card"><div class="card-h"><h3>Memory Bloom</h3><span class="meta">${bestOf('mem')?'level '+bestOf('mem'):'\u2014'}</span></div><p class="meta">Repeat the pattern of lights. It grows by one step every round.</p><button class="btn" id="gMem" style="width:100%">Play</button></div>
  <div class="card"><div class="card-h"><h3>Leaderboard</h3><span class="meta" id="pOnline">\u2014</span></div>
   <div id="boardBox" style="display:flex;flex-direction:column;gap:10px"></div>
   </div>`;
  $('#gTap').onclick=()=>tapGame();$('#gMem').onclick=()=>memGame();
  if(document.getElementById('gRace'))document.getElementById('gRace').onclick=raceInvite;
- if(sbUser){playJoin().then(()=>{boardPaint();playPaint()});
-  boardScores(false)}}
-function playSend(o){try{if(playCh)playCh.send({type:'broadcast',event:'play',payload:o})}catch(e){}}
-function playIn(p){} // races handled directly in the broadcast handler above
+ boardPaint();playPaint();
+ if(sbUser)playJoin().then(()=>{boardPaint();playPaint();boardScores()}).catch(()=>{})}
+function raceLine(){
+ if(!sbUser)return 'Sign in to race your partner.';
+ if(playState.race)return 'A race is set \u2014 waiting for both of you to tap\u2026';
+ const l=playState.last;
+ if(l)return 'Last race: you '+l.m+' \u00b7 them '+l.t+' \u2014 '+l.out;
+ return 'Invite your partner to a live tap race \u2014 the invite reaches them anywhere in the app.'}
+// every message carries the sender uid so a client can ignore its own echo;
+// while the channel is still joining, messages wait in a queue instead of getting lost
+let playQ=[],playReady=false;
+function playRaw(o){try{const ch=playCh;if(!ch||!playReady)return false;const r=ch.send({type:'broadcast',event:'play',payload:o});if(r&&r.catch)r.catch(()=>{});return true}catch(e){return false}}
+function playSend(o){
+ if(!sbUser)return;
+ const m=Object.assign({},o,{uid:sbUser.id});
+ if(playRaw(m))return;
+ if(playQ.length>24)playQ.shift();
+ playQ.push(m);
+ if(!playCh)playJoin()}
+function playFlush(){if(!playCh||!playReady)return;const q=playQ;playQ=[];q.forEach(o=>{if(!playRaw(o))playQ.push(o)})}
 function raceInvite(){
  if(!sbUser){toast('Sign in to race');return}
- if(!opponentUid){toast('No partner yet \u2014 use a sync code on your profile');return}
- if(playState.race)return;
+ if(playState.race||playState.incoming){toast('A race is already in progress');return}
  if(Date.now()-lastInviteAt<12000){toast('Wait a bit before inviting again');return}
- raceInviteGo()}
+ raceInviteGo().catch(()=>toast('Could not start the race'))}
 async function raceInviteGo(){
- if(!(await playJoin())||!playState.peer){toast('Your partner must have Play open right now');return}
- playState.race=true;lastInviteAt=Date.now();
+ const ch=await playJoin();
+ if(!ch){toast('Could not connect \u2014 check your connection');return}
+ if(!opponentUid){toast('No partner yet \u2014 use a sync code on your profile');return}
+ if(!playState.peer)await waitPeer(2600);
+ playState.race=true;playState.raceStarted=false;playState.peerScore=null;playState.myTaps=null;
+ playState.rid=Math.random().toString(36).slice(2,9);
+ lastInviteAt=Date.now();
+ const rid=playState.rid;
+ playSend({kind:'rx-invite',rid:rid,from:nameOf()});
  const when=document.getElementById('raceMsg');
- playSend({kind:'rx-invite',from:nameOf()});
- if(when)when.textContent='Waiting for '+(playState.peerName||'your partner')+' \u2026';
- if(playState.peerScore==null)setTimeout(function waitRace(){
-  if(!playState.race)return; // declined or left
-  if(playState.peerScore!=null||playState.raceStarted)return;
-  const m=document.getElementById('raceMsg');if(m)m.textContent='Still waiting for '+(playState.peerName||'your partner')+'\u2026';
-  setTimeout(waitRace,4000)},4000)
- setTimeout(function(){if(!playState.race||playState.raceStarted)return;playState.race=false;lastInviteAt=Date.now();const m=document.getElementById('raceMsg');if(m)m.textContent='No answer \u2014 try again in a bit.';toast('No answer from your partner')},18000)}
-function raceStart(){
+ if(when)when.textContent=playState.peer?('Waiting for '+(playState.peerName||'your partner')+'\u2026'):'Invite sent \u2014 their app may be closed. Still waiting\u2026';
+ setTimeout(function(){if(!playState.race||playState.raceStarted||playState.rid!==rid)return;
+  playState.race=false;playState.rid=null;lastInviteAt=Date.now();
+  playSend({kind:'rx-cancel',rid:rid});
+  const m=document.getElementById('raceMsg');if(m)m.textContent='No answer \u2014 try again in a bit.';
+  toast('No answer from your partner')},22000)}
+function waitPeer(ms){return new Promise(res=>{const t0=Date.now();const iv=setInterval(()=>{if(playState.peer||Date.now()-t0>ms){clearInterval(iv);res(playState.peer)}},200)})}
+function raceStart(rid){
  if(playState.raceStarted)return;
- if(playState.race&&playState.peerScore!=null)return;
+ if(rid&&playState.rid&&rid!==playState.rid)return;
+ if(rid)playState.rid=rid;
  playState.raceStarted=true;
  raceStartGo()}
 function raceStartGo(){
@@ -1682,24 +1715,27 @@ function raceStartGo(){
  toast('Race is starting!')}
 function raceReveal(){
  if(playState.myTaps==null||playState.peerScore==null)return;
- const el=document.getElementById('gMsg');
  const m=playState.myTaps,t=playState.peerScore;
- playState.myTaps=null;playState.raceStarted=false;playState.race=false;
- if(!el)return;
+ playState.myTaps=null;playState.peerScore=null;playState.raceStarted=false;playState.race=false;playState.rid=null;
  const out=m>t?'You win \u2014 faster taps!':(m<t?'They won this race.':'Tie!');
- el.textContent=t+' taps vs your '+m+' \u00b7 '+out;
+ playState.last={m:m,t:t,out:out};
+ const el=document.getElementById('gMsg');
+ if(el){el.textContent=t+' taps vs your '+m+' \u00b7 '+out;const bk=document.getElementById('gBk');if(bk)bk.textContent='\u2190 Back to Play'}
  if(!RO){const g=(D.games=D.games||{});g.races=(g.races||[]);g.races.push({d:today(),mine:m,theirs:t,won:m>=t});save()}
- boardScores(false)}
+ boardScores();boardPaint()}
 // ---------- leaderboard: partner bests exchanged over a Supabase realtime broadcast
 let playCh=null,playKey='',opponentUid=null,playJoining=null;
-const playState={peer:false,peerName:null,race:false,raceStarted:false,incoming:false,peerScore:null,myTaps:null};
+const playState={peer:false,peerName:null,race:false,raceStarted:false,incoming:false,peerScore:null,myTaps:null,rid:null,last:null};
 let rxLastIn=0,lastInviteAt=0,pfLast=null;
 // tell the connected partner that this account's profile changed (name and/or photo)
 function notifyProfile(name,photo){
  if(!sbUser)return Promise.resolve();
  if(pfLast&&pfLast.n===(name||null)&&pfLast.p===!!photo)return Promise.resolve();
- pfLast={n:name||null,p:!!photo};
- return Promise.resolve().then(()=>playCh||playJoin()).then(ch=>{if(ch)try{ch.send({type:'broadcast',event:'play',payload:{kind:'pfup',name:name||undefined,photo:!!photo}})}catch(e){}}).catch(()=>{})}
+ return playJoin().then(()=>{
+  pfLast={n:name||null,p:!!photo};
+  playSend({kind:'pfup',name:name||undefined,photo:!!photo});
+  playSend({kind:'hi',name:nameOf(),tap:+bestOf('tap'),mem:+bestOf('mem')});
+ }).catch(()=>{})}
 function nameOf(){return RO?(ST.get('bloom_pname')||'Partner'):((D&&D.p&&D.p.name)||(sbUser&&sbUser.email&&sbUser.email.split('@')[0])||'Bloom')}
 function pairKeyOf(a,b){return 'bloomduel-'+(a<b?a+'-'+b:b+'-'+a)}
 async function playJoin(){
@@ -1711,76 +1747,113 @@ async function playJoin(){
   opponentUid=data&&data.length?data[0].partner_id:null}catch(e){opponentUid=null}}
  if(!opponentUid)return null;
  const key=pairKeyOf(sbUser.id,opponentUid);
- if(playCh&&playKey===key)return playCh;
+ if(playCh&&playKey===key){
+  if(playCh.state==='closed'||playCh.state==='errored'){try{cl.removeChannel(playCh)}catch(ec){}playCh=null;playReady=false;playQ=[]}
+  else return playCh}
  try{if(playCh)cl.removeChannel(playCh)}catch(e){}
- playKey=key;playCh=cl.channel(key,{config:{presence:{key:sbUser.id}}});
+ playKey=key;playReady=false;playQ=[];
+ playCh=cl.channel(key,{config:{presence:{key:sbUser.id},broadcast:{self:false}}});
  playCh.on('broadcast',{event:'play'},p=>{const o=p.payload||{};
+  if(!sbUser||!D)return;
+  if(o.uid&&o.uid===sbUser.id)return; // our own broadcast echoed back
   if(o.kind==='hi'&&o.name){playState.peerName=playState.peerName||o.name;
-   const g=(D.games=D.games||{});const pr=g.peer=(g.peer||{});
-   if(+o.tap>+ (pr.tap||0)||!pr.d)pr.tap=Math.max(+(pr.tap||0),+o.tap||0);
-   if(+o.mem>+(pr.mem||0)||!pr.d)pr.mem=Math.max(+(pr.mem||0),+o.mem||0);
-   pr.d=pr.d||today();pr.n=o.name;save();boardPaint();return}
+   const pr=peerSnap();
+   pr.tap=Math.max(+pr.tap||0,+o.tap||0);
+   pr.mem=Math.max(+pr.mem||0,+o.mem||0);
+   pr.n=o.name;pr.d=today();pr.t=Date.now();
+   peerSave(pr);boardPaint();return}
   if(o.kind==='rx-invite'){
    if(playState.race||playState.incoming)return;
-   const nowIn=Date.now();if(nowIn-rxLastIn<8000)return;rxLastIn=nowIn;
-   playState.incoming=true;playState.peerName=o.from||playState.peerName;
+   const nowIn=Date.now();if(nowIn-rxLastIn<6000)return;rxLastIn=nowIn;
+   const rid=o.rid||null;
+   playState.incoming=true;playState.rid=rid;playState.peerName=o.from||playState.peerName;
    sheet(`<h2>Tap race</h2><p class="meta" style="margin:0 0 14px">${E(o.from||'Your partner')} wants to race: most taps in 20 seconds wins.</p>
     <div class="row" style="gap:10px"><button class="btn ghost" id="dNo" style="flex:1">Pass</button><button class="btn" id="dYes" style="flex:1">Race</button></div>`);
-   document.getElementById('dNo').onclick=()=>{sheet();playState.incoming=false;playSend({kind:'rx-decline',name:nameOf()})};
-   document.getElementById('dYes').onclick=()=>{sheet();playState.incoming=false;playSend({kind:'rx-start',name:nameOf()});raceStart()};
-   setTimeout(function(){if(!playState.incoming)return;playState.incoming=false;try{if(document.getElementById('dNo'))sheet()}catch(e7){}playSend({kind:'rx-decline',name:nameOf()})},10000);
+   const closeInvite=()=>{playState.incoming=false;if((playState.rid||null)===rid)playState.rid=null};
+   document.getElementById('dNo').onclick=()=>{sheet();closeInvite();playSend({kind:'rx-decline',rid:rid,from:nameOf()})};
+   document.getElementById('dYes').onclick=()=>{sheet();closeInvite();playSend({kind:'rx-start',rid:rid,from:nameOf()});raceStart(rid)};
+   const sh=document.getElementById('sh');
+   if(sh){const prevClose=sh.onclick;sh.onclick=e=>{if(e.target.id!=='sh')return;if(prevClose)prevClose(e);
+    if(playState.incoming&&(playState.rid||null)===rid){closeInvite();playSend({kind:'rx-decline',rid:rid,from:nameOf()})}}}
+   setTimeout(function(){if(!playState.incoming||(playState.rid||null)!==rid)return;closeInvite();try{if(document.getElementById('dNo'))sheet()}catch(e7){}playSend({kind:'rx-decline',rid:rid,from:nameOf()})},20000);
    return}
-  if(o.kind==='rx-decline'){playState.race=false;playState.raceStarted=false;playState.incoming=false;lastInviteAt=Date.now();toast('They passed \u2014 try again later');return}
+  if(o.kind==='rx-cancel'){
+   if((playState.rid||null)!==(o.rid||null))return;
+   if(playState.incoming){playState.incoming=false;playState.rid=null;try{sheet()}catch(e9){}toast('Invite cancelled');return}
+   if(playState.race&&!playState.raceStarted){playState.race=false;playState.rid=null;
+    const m=document.getElementById('raceMsg');if(m)m.textContent='Invite cancelled.'}
+   return}
+  if(o.kind==='rx-decline'){
+   if(o.rid&&playState.rid&&o.rid!==playState.rid)return;
+   playState.race=false;playState.raceStarted=false;playState.incoming=false;playState.rid=null;lastInviteAt=Date.now();
+   const m=document.getElementById('raceMsg');if(m)m.textContent='They passed \u2014 try again later.';
+   toast('They passed \u2014 try again later');return}
   if(o.kind==='pfup'){
    const nn=o.name||null;
-   if(nn&&nn!==playState.peerName){playState.peerName=nn;const g=(D.games=D.games||{});const pr=g.peer=(g.peer||{});pr.n=nn;pr.d=pr.d||today();save();boardPaint()}
+   if(nn&&nn!==playState.peerName){playState.peerName=nn;const pr=peerSnap();pr.n=nn;pr.d=pr.d||today();peerSave(pr);boardPaint()}
    toast((nn||'Your partner')+' updated their profile'+(o.photo?' \u00b7 new photo':''));
    try{if(!RO&&view==='me')setTimeout(loadPartnerPreview,600)}catch(pfE){}
    return}
-  if(o.kind==='rx-start'){raceStart();return}
-  if(o.kind==='rx-score'){playState.peerScore=+o.taps||0;playState.peerName=o.name||playState.peerName;raceReveal();return}
+  if(o.kind==='rx-start'){raceStart(o.rid||null);return}
+  if(o.kind==='rx-score'){
+   if(o.rid&&playState.rid&&o.rid!==playState.rid)return;
+   if(!playState.raceStarted&&playState.myTaps==null)return;
+   playState.peerScore=+o.taps||0;playState.peerName=o.from||playState.peerName;raceReveal();return}
  });
  playCh.on('presence',{event:'sync'},()=>{const st=playCh.presenceState();
   playState.peer=Object.keys(st).some(k=>k!==sbUser.id);
   let pn=null;Object.entries(st).forEach(([k,arr])=>{if(k!==sbUser.id&&arr&&arr.length&&arr[0])pn=arr[0].name||pn});
   if(pn)playState.peerName=pn;
-  if(playState.peer)boardScores(false);playPaint()});
- playCh.subscribe(s=>{if(s==='SUBSCRIBED'&&playCh){playCh.track({uid:sbUser.id,name:nameOf()});boardScores(false)}});
+  if(playState.peer)boardScores();playPaint()});
+ playCh.subscribe(s=>{
+  if(s==='SUBSCRIBED'&&playCh){playReady=true;playCh.track({uid:sbUser.id,name:nameOf()});playFlush();boardScores();boardPaint()}
+  else if(s!=='SUBSCRIBED'){playReady=false}});
  return playCh})().then(r=>{playJoining=null;return r},()=>{playJoining=null;return null});
  return playJoining}
-function boardScores(){try{if(playCh&&sbUser)playCh.send({type:'broadcast',event:'play',payload:{kind:'hi',name:nameOf(),tap:+bestOf('tap'),mem:+bestOf('mem')}})}catch(e){}}
+function boardScores(){playSend({kind:'hi',name:nameOf(),tap:+bestOf('tap'),mem:+bestOf('mem')})}
 function playPaint(){const el=document.getElementById('pOnline');if(!el)return;
  el.textContent=playState.peer?(playState.peerName||'partner online'):'partner offline'}
 function boardPaint(){const el=document.getElementById('boardBox');if(!el)return;
- const g=D.games||{},pr=g.peer||{};
- const rows=[['Tap Race',bestOf('tap'),pr.tap||0],['Memory Bloom',bestOf('mem'),pr.mem||0]];
- el.innerHTML=rows.map(([label,mine,they])=>{
-  const tot=(mine>0?mine:0)+(they>0?they:0);
-  const lead=tot===0?null:(mine===they?'tie':(mine>they?'you':'they'));
-  const chip=tot===0?'':(lead==='tie'?`<span class="pchip">tied</span>`:`<span class="pchip" style="${lead==='you'?'background:var(--pinkS)':''}">${lead==='you'?'you lead':'they lead'}</span>`);
-  return `<div class="row sp"><b>${label}</b><span class="meta"><b>${lead==='you'?'<b style="color:var(--rose)">':''}${mine}${lead==='you'?'</b>':''} vs ${they}</b></span></div>`}).join('')+
- (pr.n?`<p class="meta" style="margin:0">${E(pr.n)} \u00b7 last synced ${(pr.d||'')}</p>`:'')}
-function tapGame(){gAlive=true;const big0='Tap!';
+ const pr=peerSnap();const known=!!pr.t||!!pr.tap||!!pr.mem;
+ el.innerHTML=[['Tap Race','tap'],['Memory Bloom','mem']].map(([label,k])=>{
+  const mine=+bestOf(k)||0,they=known?(+pr[k]||0):null;
+  const tot=mine+(they||0);
+  const lead=(they==null||tot===0)?null:(mine===they?'tie':(mine>they?'you':'they'));
+  const chip=lead==null?'':(lead==='tie'?`<span class="pchip">tied</span>`:`<span class="pchip" style="${lead==='you'?'background:var(--pinkS)':''}">${lead==='you'?'you lead':'they lead'}</span>`);
+  return `<div class="row sp"><b>${label}</b><span class="meta"><b>${lead==='you'?'<b style="color:var(--rose)">':''}${mine}${lead==='you'?'</b>':''} vs ${they==null?'\u2014':they}</b> ${chip}</span></div>`}).join('')+
+ (known?`<p class="meta" style="margin:0">${E(pr.n||'Your partner')} \u00b7 synced ${E(pr.d||today())}</p>`:`<p class="meta" style="margin:0">${sbUser?'Waiting for your partner\u2019s scores\u2026':'Sign in to compare scores.'}</p>`)}
+function tapGame(isRace){gAlive=true;const me=++gameSeq;const big0='Tap!';const racing=!!isRace&&playState.raceStarted;
  $('#main').innerHTML=`<div class="card">
   <div class="row sp"><button class="btn ghost sm" id="gBk">\u2190 Back</button><b id="gT" style="font-variant-numeric:tabular-nums;font-size:1.15rem">20.0</b><b id="gN" style="font-variant-numeric:tabular-nums">0</b></div>
   <button id="gBig" style="width:100%;height:320px;border:0;border-radius:22px;background:var(--pinkS);color:var(--rose);font-family:inherit;font-size:1.1rem;margin-top:12px" disabled>Ready\u2026</button>
   <p class="meta" id="gMsg" style="margin-top:10px;text-align:center">Tap as fast as you can once the pad lights up.</p></div>`;
  const big=document.getElementById('gBig'),tEl=document.getElementById('gT'),nEl=document.getElementById('gN'),msg=document.getElementById('gMsg');
  let left=20,taps=0,run=false;const ivs=[];
- const clear=()=>{gAlive=false;ivs.forEach(i=>{clearTimeout(i);clearInterval(i)})};
- document.getElementById('gBk').onclick=()=>{clear();playPage()};
- big.onpointerdown=()=>{if(!run)return;taps++;nEl.textContent=taps};
- ivs.push(setTimeout(()=>{if(!gAlive)return;run=true;big.disabled=false;big.textContent=big0;
-  ivs.push(setInterval(()=>{if(!gAlive){clear();return}
+ const clear=()=>{ivs.forEach(i=>{clearTimeout(i);clearInterval(i)})};
+ document.getElementById('gBk').onclick=()=>{clear();
+  if(racing&&playState.raceStarted&&playState.myTaps==null){const rid=playState.rid;
+   playState.myTaps=0;playSend({kind:'rx-score',rid:rid,taps:0,from:nameOf()});
+   playState.myTaps=null;playState.race=false;playState.raceStarted=false;playState.rid=null}
+  playPage()};
+ big.onpointerdown=()=>{if(!run||me!==gameSeq)return;taps++;nEl.textContent=taps};
+ ivs.push(setTimeout(()=>{if(me!==gameSeq)return;run=true;big.disabled=false;big.textContent=big0;
+  ivs.push(setInterval(()=>{if(me!==gameSeq){clear();return}
    if(!run)return;
    left-=.1;tEl.textContent=(left>0?left:0).toFixed(1);
    if(left<=0){run=false;big.disabled=true;clear();const isBest=gameHigh('tap',taps);
-    if(playState.race){playState.myTaps=taps;
-     playSend({kind:'rx-score',taps:taps,name:nameOf()});raceReveal();
-     msg.textContent=taps+' taps \u00b7 waiting for '+((playState.peerName||'their result'))+'\u2026'}
+    if(racing){const rid=playState.rid;playState.myTaps=taps;
+     playSend({kind:'rx-score',rid:rid,taps:taps,from:nameOf()});
+     if(playState.peerScore!=null)raceReveal();
+     else{
+      msg.textContent=taps+' taps \u00b7 waiting for '+(playState.peerName||'their result')+'\u2026';
+      document.getElementById('gBk').textContent='\u2190 Back to Play';
+      ivs.push(setTimeout(()=>{if(playState.myTaps==null||playState.rid!==rid)return;
+       playState.myTaps=null;playState.race=false;playState.raceStarted=false;playState.rid=null;
+       if(document.getElementById('gMsg')===msg)msg.textContent=taps+' taps \u00b7 no result from '+(playState.peerName||'your partner')},25000))}
+     if(isBest)boardScores()}
     else{msg.textContent=taps+(isBest?' \u2014 new best!':' taps \u00b7 best '+bestOf('tap'));
      document.getElementById('gBk').textContent='\u2190 Back to Play';
-     if(isBest)boardScores(false)}}},100))},1300))}
+     if(isBest)boardScores()}}},100))},1300))}
 async function memGame(){gAlive=true;
  const cols=['#E8A0B4','#2A8A87','#B8456B','#C98A5B'];
  $('#main').innerHTML=`<div class="card">
@@ -1800,7 +1873,7 @@ async function memGame(){gAlive=true;
   if(i===seq[step]){step++;
    if(step===seq.length){msg.textContent='Nice \u2014 '+(seq.length)+' in a row.';await sleep(650);next()}}
   else{gone=true;msg.textContent='Wrong pad \u2014 you reached level '+(seq.length-1);
-   if(gameHigh('mem',seq.length-1)){msg.textContent='You reached level '+(seq.length-1)+' \u2014 new best!';done.textContent='best '+bestOf('mem')};boardScores(false)
+   if(gameHigh('mem',seq.length-1)){msg.textContent='You reached level '+(seq.length-1)+' \u2014 new best!';done.textContent='best '+bestOf('mem')};boardScores()
    pads.forEach(x=>x.style.opacity='.2');agn.style.display='block'}});
  async function show(){turn=false;for(const s of seq){if(gone)return;await flash(s,320);await sleep(170)}
   step=0;msg.textContent='Your turn.';turn=true}
