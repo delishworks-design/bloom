@@ -245,6 +245,9 @@ details{border-bottom:1px solid #EADFD2;padding:14px 0}summary{cursor:pointer;fo
 .funtext{font-family:'Playfair Display',serif;font-size:13.5px;line-height:1.4;color:#3A2E33;margin:0}
 .artbody{font-size:.88rem;line-height:1.55;color:#5C4A50}
 .kv b{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:#3A2E33}
+.kv.kvstack{flex-direction:column;align-items:flex-start;gap:2px}
+.kv.kvstack span{flex:0 0 auto;min-width:auto;font-weight:600}
+.kv.kvstack b{font-family:inherit;font-size:.95rem;font-weight:600;line-height:1.5;text-align:left;overflow-wrap:anywhere;max-width:100%}
 .divider{height:1px;background:#EADFD2;margin:16px 0}
 .faces{display:flex;gap:8px;justify-content:space-between;margin:8px 0}
 .facebtn{flex:1;background:#FFFBF5 !important;border:1.5px solid #EADFD2 !important;padding:8px 4px !important;border-radius:16px !important;opacity:.55;min-height:58px !important;display:grid !important;place-items:center !important}
@@ -710,7 +713,7 @@ async function fetchManifest(){const bust='?t='+Date.now();
  const r=await fetch(UPDATE_MANIFEST+bust,{cache:'no-store'});if(!r.ok)throw new Error('manifest '+r.status);
  return await r.json()}
 // Baked-in build identity. Keep in sync with android/app/build.gradle (versionCode/versionName).
-const APP_VERSION={code:30,name:'1.2.15'};
+const APP_VERSION={code:31,name:'1.2.16'};
 const UPD_SKIP_KEY='bloom_upd_skip';
 const updater=()=>{const C=window.Capacitor;if(!C)return null;
  const P=C.Plugins&&C.Plugins.BloomUpdater;
@@ -921,7 +924,7 @@ function cyclePage(){const d=today(),l=L(d),ts=tasksFor(d),n=ts.filter(t=>isDone
  <div class="card"><div class="card-h"><h3>Today</h3></div>
   <div class="kv"><span>Sleep</span><b>${l.sleep?l.sleep+' h':'\u2014'}</b></div>
   <div class="kv"><span>Meals</span><b>${m.length}</b></div>
-  <div class="kv"><span>Symptoms</span><b>${l.tags&&l.tags.length?l.tags.join(', '):'\u2014'}</b></div></div>
+  <div class="kv kvstack"><span>Symptoms</span><b>${l.tags&&l.tags.length?l.tags.join(', '):'\u2014'}</b></div></div>
  <div class="card"><div class="card-h"><h3>Quick actions</h3></div><div class="qa"><button data-a="log" ${RO?'disabled':''}>Log symptoms</button><button data-a="period" ${RO?'disabled':''}>Record period</button><button data-a="meal" ${RO?'disabled':''}>Log a meal</button><button data-a="mood" ${RO?'disabled':''}>Mood & energy</button><button data-a="plan" ${RO?'disabled':''}>Today's plan</button><button data-a="water" ${RO?'disabled':''}>+1 glass water</button></div></div>
  <div class="card"><div class="card-h"><h3>Today's checklist</h3><span class="meta">${n}/${ts.length}</span></div>${ts.length?`<div class="bar" aria-hidden="true"><i style="width:${n/ts.length*100}%"></i></div><div class="cklist">`+ts.map(t=>ck(t,d).replace('<input type="checkbox"',`<input type="checkbox" ${RO?'disabled':''}`)).join('')+'</div>':'<p class="meta">No tasks</p>'}</div>
  <div class="card"><div class="card-h"><h3>This week</h3><span class="meta">${wt?`${wd}/${wt}`:'0/0'}</span></div>${wt?`<div class="bar" aria-hidden="true"><i style="width:${Math.round(wd/wt*100)}%"></i></div>`:'<p class="meta">Nothing planned</p>'}</div>
