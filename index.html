@@ -659,7 +659,10 @@ const L=d=>D.logs[d]||{};
 const bleed=d=>['light','medium','heavy'].includes(L(d).flow);
 function starts(){return Object.keys(D.logs).filter(d=>bleed(d)&&!bleed(addD(d,-1))).sort()}
 function cycleStats(){const s=starts(),len=[];for(let i=1;i<s.length;i++){len.push(Math.round((new Date(s[i])-new Date(s[i-1]))/864e5))}
- const ok=len.filter(x=>x>=15&&x<=120);if(ok.length<2)return{len,n:ok.length};const avg=Math.round(ok.reduce((a,b)=>a+b,0)/ok.length);return{len,n:ok.length,avg,min:Math.min(...ok),max:Math.max(...ok),last:s[s.length-1],irregular:Math.max(...ok)-Math.min(...ok)>7||avg>35}}
+ const ok=len.filter(x=>x>=15&&x<=120);
+ if(!s.length)return{len,n:0};
+ if(ok.length<2)return{len,n:ok.length,last:s[s.length-1]};
+ const avg=Math.round(ok.reduce((a,b)=>a+b,0)/ok.length);return{len,n:ok.length,avg,min:Math.min(...ok),max:Math.max(...ok),last:s[s.length-1],irregular:Math.max(...ok)-Math.min(...ok)>7||avg>35}}
 function cycleLine(){const c=cycleStats();if(c.n<2)return'Log 3 period starts to estimate';
  const day=Math.round((new Date(today())-new Date(c.last))/864e5)+1;const nx=c.min===c.max?fmt(addD(c.last,c.min)):fmt(addD(c.last,c.min))+'\u2013'+fmt(addD(c.last,c.max));return`Day ${day} \u00b7 ${c.min===c.max?c.min+' days':c.min+'\u2013'+c.max+' days (avg '+c.avg+')'} \u00b7 next ${nx}`}
 function tasksFor(d){return D.tasks.filter(t=>!t.days||t.days.includes(new Date(d+'T12:00').getDay()))}
@@ -714,7 +717,7 @@ async function fetchManifest(){const bust='?t='+Date.now();
  const r=await fetch(UPDATE_MANIFEST+bust,{cache:'no-store'});if(!r.ok)throw new Error('manifest '+r.status);
  return await r.json()}
 // Baked-in build identity. Keep in sync with android/app/build.gradle (versionCode/versionName).
-const APP_VERSION={code:32,name:'1.2.17'};
+const APP_VERSION={code:33,name:'1.2.18'};
 const UPD_SKIP_KEY='bloom_upd_skip';
 const updater=()=>{const C=window.Capacitor;if(!C)return null;
  const P=C.Plugins&&C.Plugins.BloomUpdater;
