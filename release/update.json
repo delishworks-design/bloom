@@ -1,7 +1,7 @@
 {
     "versionCode": 34,
     "versionName": "1.2.19",
-    "notes": "Partner view: cooler read-only theme, logging controls removed, and a swipeable ‘How to help’ carousel (10 cards, phase and symptom aware). For you: matching ‘What helps’ carousel with tips for your phase, symptoms and energy.",
+    "notes": "Partner view: cooler read-only theme, logging removed, ‘How to help’ carousel. For you: ‘What helps’ carousel. Install 1.2.19 manually once — in-app updates work from this version on.",
     "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.19/bloom-1.2.19.apk",
     "publishedAt": "2026-10-24"
 }
