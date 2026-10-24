@@ -1,7 +1,7 @@
-﻿{
-    "versionCode":  30,
-    "versionName":  "1.2.15",
-    "notes":  "Bug sweep release. Tap Race pad now actually counts taps. Signing out fully clears the follow view and partner identity while keeping each account\u0027s partner lock separate. Live races survive moving between tabs, and invites time out instead of locking you out. Cloud follow keeps updating after a restart. Memory Bloom no longer crashes in follow mode, the read-only Planner opens cleanly, profile updates reach your partner even if the channel was not ready yet, the update banner reports the installed version, and a partner account no longer has the For me cycle feed.",
-    "url":  "https://github.com/delishworks-design/bloom/releases/download/v1.2.15/bloom-1.2.15.apk",
-    "publishedAt":  "2026-10-24"
+{
+  "versionCode": 30,
+  "versionName": "1.2.15",
+  "notes": "Bug sweep release. Tap Race pad now actually counts taps. Signing out fully clears the follow view and partner identity while keeping each account's partner lock separate. Live races survive moving between tabs, and invites time out instead of locking you out. Cloud follow keeps updating after a restart. Memory Bloom no longer crashes in follow mode, the read-only Planner opens cleanly, profile updates reach your partner even if the channel was not ready yet, the update banner reports the installed version, and a partner account no longer has the For me cycle feed.",
+  "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.15/bloom-1.2.15.apk",
+  "publishedAt": "2026-10-24"
 }
