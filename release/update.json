@@ -1,7 +1,7 @@
 {
-    "versionCode":  33,
-    "versionName":  "1.2.18",
-    "notes":  "Cycle ring fix. The ring now shows Day 1 and the Menstrual phase as soon as you log your first period, instead of staying at \u0027Log a period to start\u0027 until you had logged 3 or more period starts.",
-    "url":  "https://github.com/delishworks-design/bloom/releases/download/v1.2.18/bloom-1.2.18.apk",
-    "publishedAt":  "2026-10-24"
+    "versionCode": 34,
+    "versionName": "1.2.19",
+    "notes": "Partner view: cooler read-only theme, logging controls removed, and a swipeable ‘How to help’ carousel (10 cards, phase and symptom aware). For you: matching ‘What helps’ carousel with tips for your phase, symptoms and energy.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.19/bloom-1.2.19.apk",
+    "publishedAt": "2026-10-24"
 }

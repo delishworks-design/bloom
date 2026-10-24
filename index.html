@@ -291,6 +291,56 @@ nav button[aria-current=page]{background:#B8456B !important;color:#fff !importan
 .readrow.done .readrow-cat{opacity:.55}
 .arttools{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
 
+/* ---------- partner (following) theme ---------- */
+body.ro{
+ --bg:#EEF3F6;--card:#FAFCFD;--ink:#2A353D;--mut:#66757E;
+ --pink:#A8C6D4;--rose:#2F6B7E;--teal:#6E5FA8;--tealS:#E3E8F2;--pinkS:#DDEAF0;
+ --line:#D9E3E9;--sh:0 2px 10px rgba(40,70,90,.08);--shb:0 12px 34px rgba(40,70,90,.16);
+}
+body.ro,body.ro #app,body.ro .wrap,body.ro .auth,body.ro nav,body.ro .sheet>div,body.ro #toast{background:#EEF3F6 !important;color:#2A353D !important}
+body.ro .card,body.ro .profbtn,body.ro .stat,body.ro .field-btn,body.ro .pickrow,body.ro .rolebtn,body.ro .chip,body.ro .facebtn,body.ro .glassbtn,body.ro .goalopts,body.ro .readrow,body.ro .dr-card,body.ro .cal button,body.ro input,body.ro select,body.ro textarea,body.ro .auth .card,body.ro .statcard{background:#FAFCFD !important;border-color:#D9E3E9 !important;color:#2A353D !important}
+body.ro .blob-a{background:radial-gradient(60% 60% at 50% 50%,#DDEAF0 0%,#EEF3F6 62%,transparent 78%)}
+body.ro .blob-b{background:radial-gradient(55% 55% at 50% 50%,#E3E8F2 0%,#EEF3F6 55%,transparent 75%)}
+body.ro .blob-c{background:radial-gradient(circle,#DDEAF0 0%,transparent 70%)}
+body.ro .wordmark,body.ro .brand,body.ro .greet .date,body.ro .statnum,body.ro .synccode,body.ro .dr-count{color:#2F6B7E !important}
+body.ro .btn{background:linear-gradient(180deg,#3E8195 0%,#2F6B7E 100%) !important;box-shadow:0 4px 14px rgba(47,107,126,.32),0 2px 6px rgba(40,70,90,.14),inset 0 1px 0 rgba(255,255,255,.25) !important}
+body.ro .btn.pink{background:#2F6B7E !important;box-shadow:0 4px 14px rgba(47,107,126,.24) !important}
+body.ro .btn.ghost{background:#FAFCFD !important;color:#2F6B7E !important;border-color:rgba(47,107,126,.55) !important}
+body.ro .chip:hover,body.ro .field-btn:hover,body.ro .pickrow:hover,body.ro .rolebtn:hover,body.ro .readrow:hover{border-color:#2F6B7E !important;background:#F2F7FA !important}
+body.ro .chip[aria-pressed=true]{background:#DDEAF0 !important;border-color:#2F6B7E !important;color:#2F6B7E !important}
+body.ro nav button[aria-current=page]{background:#2F6B7E !important;color:#fff !important;box-shadow:0 6px 16px rgba(47,107,126,.3) !important}
+body.ro nav{background:#FAFCFD !important;border-color:#D9E3E9 !important}
+body.ro .cal .p{background:#A8C6D4 !important;border-color:#A8C6D4 !important;color:#14323B !important}
+body.ro .cal .s{background:#DDEAF0 !important}
+body.ro .cal .t{outline-color:#6E5FA8 !important}
+body.ro .cal .d::after{background:#6E5FA8 !important}
+body.ro .bar{background:#E3E8F2 !important}
+body.ro .bar i{background:#6E5FA8 !important}
+body.ro .watercount,body.ro .dr-done{color:#6E5FA8 !important}
+body.ro .fun{background:linear-gradient(180deg,#F5F8FB 0%,#DDEAF0 100%) !important;border-color:rgba(168,198,212,.7) !important}
+body.ro .qa button{background:#E3E8F2 !important;border-color:#D6DEEC !important}
+body.ro .avatar-fb{background:linear-gradient(135deg,#DDEAF0,#E3E8F2) !important;color:#2F6B7E !important}
+body.ro .ringdisc{background:radial-gradient(100% 100% at 50% 30%,#FFFFFF 0%,#FAFCFD 55%,#EEF3F6 100%) !important}
+body.ro .ringpill{background:#FAFCFD !important;border-color:#D9E3E9 !important}
+body.ro .logpill{background:linear-gradient(180deg,#3E8195 0%,#2F6B7E 100%) !important}
+body.ro .stat .ic{background:#DDEAF0 !important;color:#2F6B7E !important}
+body.ro .ringlbl,body.ro .ringcap,body.ro .lbl,body.ro .meta,body.ro label,body.ro .statlbl,body.ro .calh,body.ro .goalopt{color:#66757E !important}
+body.ro .ringday,body.ro .greet .hi,body.ro .greet .nm,body.ro .stat b,body.ro .kv b,body.ro .funtext{color:#2A353D !important}
+body.ro .readonlynote{font-size:.78rem;color:#66757E;background:#E7EEF2;border:1px solid #D9E3E9;border-radius:14px;padding:10px 12px;line-height:1.4}
+body.ro nav button{color:#66757E !important}
+body.ro .glassbtn.on{border-color:#2F6B7E !important;background:#DDEAF0 !important}
+body.ro .facebtn.on{border-color:#2F6B7E !important;background:#DDEAF0 !important}
+body.ro input:focus,body.ro select:focus,body.ro textarea:focus{border-color:#2F6B7E !important;outline-color:#2F6B7E !important}
+.pgcarousel{overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin-top:4px}
+.pgcarousel::-webkit-scrollbar{display:none}
+.pgtrack{display:flex;gap:10px}
+.pgcard{scroll-snap-align:start;flex:0 0 100%;width:100%;box-sizing:border-box;background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:8px}
+.pgcard b{display:block;font-size:1rem;font-weight:700;line-height:1.3;color:var(--ink)}
+.pgcard p{font-size:.9rem;line-height:1.5;color:var(--mut)}
+.pgdots{display:flex;gap:6px;justify-content:center;align-items:center;margin-top:2px;min-height:8px}
+.pgdot{width:6px;height:6px;border-radius:999px;background:var(--line);transition:width .2s,background .2s}
+.pgdot.on{width:18px;background:var(--rose)}
+
 /* ---------- flower splash ---------- */
 #splash{position:fixed;inset:0;z-index:9999;background:#fdf3ee;display:flex;align-items:center;justify-content:center;overflow:hidden;opacity:1;transition:opacity .38s ease}
 #splash.gone{opacity:0;pointer-events:none}
@@ -326,6 +376,120 @@ const fmt=(s,o)=>new Date(s+'T12:00').toLocaleDateString(undefined,o||{month:'sh
 let user=null,D=null,view='cycle',tab='',calM=today().slice(0,7),range=14,onbStep=0,learnTab='today',foodCat='All',tipCat='All',articleIdx=null,searchQ='';
 const GOALS=['Understand my cycle','Steadier energy','Better sleep','Move more','Eat regularly','Manage stress','Prepare for doctor visits'];
 const TAGS=['Acne','Hair changes','Bloating','Cramps','Fatigue','Cravings','Headache','Low mood','Anxious','Breast tenderness'];
+// partner-mode care notes, keyed by cycle phase. Short, practical, non-prescriptive.
+const P_GUIDE={
+General:[
+['Ask before you fix',"\"Do you want help, space, or company?\" lands better than guessing. Then do the thing she picks."],
+['Believe the symptom',"If she says she is exhausted or in pain, that is the report, not an opening bid. Do not ask her to prove it."],
+['Take a task, do not offer one',"\"I will handle dinner\" beats \"let me know if you need anything\". Offers put the planning back on her."],
+['No body commentary',"Not about weight, skin, hair, or appetite. If she brings it up, listen. Do not turn it into a joke."]
+],
+Menstrual:[
+['Heat beats advice',"A hot water bottle, a warm drink, a bath. Offer it before she asks; cramps respond to heat faster than to a pep talk."],
+['Take something off her plate',"Cook, drive, run the errand. Do it without negotiating and without announcing it."],
+['Pain is not a mood',"If she is short with you, it is usually pain and tiredness talking. Ask what would help instead of defending yourself."],
+['Food without commentary',"Iron-rich meals and regular snacks help. Skip remarks about what or how much she eats."],
+['Let her rest without earning it',"Rest is not a reward for finishing everything first. Say you have it handled, and mean it."]
+],
+Follicular:[
+['Energy is coming back',"This is usually the easier window. Use it: plan the walk, the date, the admin you have both been avoiding."],
+['Move together',"Suggest something shared: a walk, the gym, dancing in the kitchen. Company beats instructions."],
+['Ask about the bigger stuff',"She may have more bandwidth for decisions now. Bring up logistics, money, family, next steps."],
+['Do not bank on it',"A good week does not mean every week will match it. Keep asking instead of assuming."]
+],
+Ovulation:[
+['Follow her lead',"Energy and libido can peak here, for some people. Do not treat it as a green light; check in."],
+['Fertility talk, privately',"If you are trying or avoiding pregnancy, this is the window. Ask before raising it in front of others."],
+['A twinge is still real',"Ovulation pain can be sharp and sudden. Do not wave it off as nothing."]
+],
+Luteal:[
+['Mood is hormonal, not personal',"If her mood drops, it is usually the phase, not a verdict on you. Respond to the feeling, not the tone."],
+['Ask before you fix',"\"Do you want help, space, or company?\" is a better opener than a solution."],
+['Cravings are not a character flaw',"Keep easy snacks around. Do not police food, and do not comment on her body."],
+['Protect sleep and quiet',"She may need more rest and less noise. Take the late errand, lower the volume, guard her bedtime."],
+['Tenderness and bloating are real',"Loose clothes, water, and the pain relief she already trusts. Offer, do not lecture."],
+['Know when it is more than PMS',"If low mood lasts more than two weeks, or she mentions self-harm, help her book a clinician. That is not something to wait out."]
+]};
+const P_SYMPTOM={
+'Cramps':"Heat, quiet, and the pain relief she already trusts. Offer to take the next task off her list.",
+'Fatigue':"Cancel one thing. Do not make her justify resting.",
+'Low mood':"Listen first. Ask whether she wants advice or company before offering either.",
+'Anxious':"Reduce decisions. Handle the small logistics and tell her what you are taking care of.",
+'Cravings':"Keep snacks within reach. No commentary.",
+'Headache':"Dim the lights, bring water, lower the noise.",
+'Bloating':"Loose clothes, no body comments.",
+'Acne':"Do not bring it up unless she does.",
+'Breast tenderness':"Gentle, no pressure. A soft top and a break from tight hugs.",
+};
+const P_MORE=[
+['Sleep is the cheapest fix',"Late nights make pain, cravings, and mood worse. Take the late shift, dim the room, guard her bedtime."],
+['Protein at breakfast',"It steadies energy and cravings through the day. Cook it or put it in front of her. Not a diet talk."],
+['Fifteen minutes outside',"A short walk together does more for mood than a long talk about it. Suggest it once, then go."],
+['Let her log it, do not quiz her',"If she tracks symptoms, read it and act on it. Do not ask her to repeat what she already wrote down."],
+['Appointments are team work',"Book it, drive her, take notes, ask what she forgets. Sitting in the room counts."],
+['Pain relief early, not late',"Waiting for it to peak makes it harder to control. Offer what she trusts before it gets bad."],
+['You cannot fix her body',"You can carry the load around it. Say it out loud: this is not hers to manage alone."],
+['Shield her from comments',"Relatives, friends, coworkers with opinions about her body or fertility. Step in before she has to."]
+];
+const S_GUIDE={
+General:[
+['Eat before you decide','Low blood sugar makes everything feel worse. Protein and something warm first. Decisions after.'],
+['Rest is not a reward','You do not have to finish the list to earn it. Lie down now. The list will still be there.'],
+['Move smaller than you think','Ten minutes counts. A walk to the corner and back is a real workout on a bad day.'],
+['Log it, then close the app','Write the symptom down and stop checking. Watching the numbers all day turns data into anxiety.'],
+['Say the true sentence','Tell one person what today actually feels like. You do not have to perform being fine.'],
+['Your body is not a project','PCOS is something to manage, not a self to fix. Some days you just live in it.']
+],
+Menstrual:[
+['Heat before anything else','Hot water bottle, warm drink, bath. Start early, before the pain settles in.'],
+['Iron and water','Heavy days drain both. Red meat, beans, dark greens, and a glass of water next to you.'],
+['Cancel one thing','Pick the least important item on today and drop it. No replacement, no guilt.'],
+['Pain is information','If it stops you living your day, that is worth telling a clinician. Do not just push through.'],
+['Sleep is pain relief','An early night does more for cramps than another hour of scrolling.'],
+['Name the exact task','Asking for dinner to be handled works better than hoping someone notices.']
+],
+Follicular:[
+['Use the window','Energy usually climbs here. Book the appointment, the haircut, the thing you keep postponing.'],
+['Lift something heavy','Strength work pays off most in this phase. Two sessions beat zero.'],
+['Do not overcommit','Feeling good is not a debt you owe. Leave some room in the week.'],
+['Prep for the dip','Cook extra, freeze a portion, buy the easy snacks now. Future you will be grateful.'],
+['Ask for the bigger things','This is a better week for hard conversations. Say the thing you have been holding.']
+],
+Ovulation:[
+['Peak energy, not a deadline','You do not have to maximise it. Enjoy it, do not spend it.'],
+['A twinge is real','Sharp ovulation pain happens and heat helps. Sudden severe pain needs a doctor.'],
+['Fertility decisions, your pace','If you are trying or avoiding, decide with your clinician, not with an app guess.'],
+['Notice what changes','Clear discharge is normal here. A change in smell or colour is worth checking.']
+],
+Luteal:[
+['Cravings are chemistry','Progesterone shifts appetite. Eat the thing with protein beside it. Restriction makes it louder.'],
+['Protect sleep','The week before your period, sleep is the first thing to break. Guard it like an appointment.'],
+['Lower the volume','Fewer plans, softer light, earlier nights. This is not laziness, it is pacing.'],
+['Mood is not the truth','A bad afternoon in luteal is a hormone, not a verdict on your life. Wait a day before deciding anything big.'],
+['Ask for specifics','An hour alone, stated plainly, lands better than a sigh from the next room.'],
+['Tenderness is normal','Soft clothes, less caffeine, heat or cold. It usually lifts when the period starts.'],
+['Know when it is more than PMS','Two weeks of low mood, or thoughts of self-harm, need a clinician. Do not wait it out.']
+]};
+const S_SYMPTOM={
+'Cramps':"Heat, pain relief if you can take it, and a horizontal hour. Treat cramps early, not at the peak.",
+'Fatigue':"One thing off the list. Fatigue is a symptom, not a discipline problem.",
+'Low mood':"Name it, do not argue with it. Food, water, a short walk, and one person who knows.",
+'Anxious':"Write the worry down, then pick one small next step. Anxiety shrinks when it has a container.",
+'Cravings':"Eat the thing, with protein next to it. Restriction makes the craving louder.",
+'Headache':"Water, food, dim light, less screen. A new and severe headache needs checking.",
+'Bloating':"Loose clothes, water, and no mirror audits today.",
+'Acne':"It is the hormone, not your face. Do not pick at it. Treat it gently.",
+'Breast tenderness':"Soft top, no underwire, less caffeine. Heat or cold, whichever feels better.",
+'Hair changes':"It grows in cycles, and so does this. Ask a clinician before buying anything."
+};
+const S_MORE=[
+['Sleep is the first lever','Seven hours changes pain, cravings, and mood more than any supplement.'],
+['Protein at breakfast','It steadies energy for hours. Eggs, yoghurt, beans, leftovers from last night.'],
+['Sunlight before noon','Ten minutes outside in the morning helps your body clock and your mood.'],
+['Book the appointment','If something has been off for three months, it is worth a visit. Write your questions first.'],
+['One boundary this week','Pick one thing you will not do this week. Say it before someone assumes otherwise.'],
+['Ask in specifics','Naming the exact task is easier to answer than a general request for help.']
+];
 const MEALS=[
 {n:'Tapsilog (lean beef, egg, rice)',t:'b',c:90,ing:['beef tapa','eggs','rice','garlic']},
 {n:'Oatmeal with banana & peanut butter',t:'b',c:45,ing:['oats','banana','peanut butter']},
@@ -540,6 +704,7 @@ function roAvatarHTML(sz){const s=sz||34;const n=((ST.get('bloom_pname')||'P')+'
  let av=null,crop=null;try{const j=JSON.parse(ST.get('bloom_pavatar')||'null');if(j){av=j.a;crop=j.c||{z:1,x:0,y:0}}}catch(e){}
  if(av)return `<span class="avatar-wrap" style="width:${s}px;height:${s}px"><img class="avatar" src="${av}" alt="" style="transform:translate(${crop.x||0}%,${crop.y||0}%) scale(${crop.z||1})"></span>`;
  return `<span class="avatar-fb" style="width:${s}px;height:${s}px;font-size:${Math.round(s*0.42)}px">${E(ini)}</span>`}
+function ownName(){const n=(ST.get('bloom_pname')||'').trim();if(n)return n;const e=sbUser&&sbUser.email?sbUser.email.split('@')[0]:'';return e||'You'}
 function roPickAvatar(file){const r=new FileReader();r.onload=e=>{const img=new Image();img.onload=()=>{
  const mx=1024,sc=Math.min(1,mx/Math.max(img.width,img.height));
  const cv=document.createElement('canvas');cv.width=Math.max(1,Math.round(img.width*sc));cv.height=Math.max(1,Math.round(img.height*sc));
@@ -585,7 +750,7 @@ async function redeemCode(code,onErr){
  if(!Object.keys(D.logs||{}).length)toast('No logs shared yet');
  return true
 }
-function authView(mode){mode=mode||'in';
+function authView(mode){mode=mode||'in';document.body.classList.remove('ro');
  const up=mode=='up';
  const pwBlock=(id,label,ac)=>`<div class="field" id="f-${id}">
   <label for="${id}">${label}</label>
@@ -794,11 +959,12 @@ function shell(){splashAppIsReady();
  if(sbUser&&!playCh){try{playJoin().catch(()=>{})}catch(ej){}}
  if(funTimer){clearInterval(funTimer);funTimer=null}if(foodTimer){clearInterval(foodTimer);foodTimer=null}if(roTimer){clearInterval(roTimer);roTimer=null}
  if(RO&&!ROcloud){const raw=ST.get(key(ROowner));if(raw!=null){roHash=roHashOf(raw);D=Object.assign(blank(),J(key(ROowner),{}))}}
+ document.body.classList.toggle('ro',!!RO);
  if(!D.p.done&&!RO){if(pLocked()){D.p.done=true;D.p=D.p||{};D.p.role='partner';save()}else return onboarding()}
  const N=[['cycle','Cycle',IC.ring],['planner','Planner',IC.list] ,['insights','Insights',IC.chart],['games','Play',IC.play],['learn','Learn',IC.book]]
    .filter(x=>!(pLocked()&&!RO&&x[0]==='cycle'));
  if(pLocked()&&!RO&&view==='cycle')view='me';
- $('#app').innerHTML=`<div class="blob blob-a"></div><div class="blob blob-b"></div><div class="blob blob-c"></div><div class="wrap"><header class="topbar"><div class="wordmark">Bloom<i>.</i></div>${RO?`<div class="row" style="gap:8px"><button class="profbtn" id="rome" aria-label="Your profile">${roAvatarHTML()}<span>${E(ST.get('bloom_pname')||'You')}</span></button></div>`:`<button class="profbtn" id="me" aria-label="Profile and settings">${avatarHTML(44)}<span>${E(D.p.name||user)}</span></button>`}</header><main id="main"></main></div><nav aria-label="Main">${N.map(([k,l,ic])=>`<button data-v="${k}" ${view==k?'aria-current="page"':''}>${ic(17)}<span>${l}</span></button>`).join('')}</nav>`;
+ $('#app').innerHTML=`<div class="blob blob-a"></div><div class="blob blob-b"></div><div class="blob blob-c"></div><div class="wrap"><header class="topbar"><div class="wordmark">Bloom<i>.</i></div>${RO?`<button class="profbtn" id="rome" aria-label="Your profile">${roAvatarHTML(44)}<span>${E(ownName())}</span></button>`:`<button class="profbtn" id="me" aria-label="Profile and settings">${avatarHTML(44)}<span>${E(D.p.name||user)}</span></button>`}</header><main id="main"></main></div><nav aria-label="Main">${N.map(([k,l,ic])=>`<button data-v="${k}" ${view==k?'aria-current="page"':''}>${ic(17)}<span>${l}</span></button>`).join('')}</nav>`;
  if(RO){
  const rm=document.getElementById('rome');if(rm)rm.onclick=()=>{view='me';shell()};
  roTimer=setInterval(roReload,4000)}
@@ -881,15 +1047,16 @@ function miniBars(k,n,col){const days=[...Array(n)].map((_,i)=>addD(today(),i-n+
  if(!vals.some(v=>v!=null))return `<div class="spark empty">No data in the last ${n} days</div>`;
  return `<div class="spark"><svg viewBox="0 0 ${n*16} 44" preserveAspectRatio="none" role="img" aria-label="${k} over the last ${n} days">${vals.map((v,i)=>v==null?`<rect x="${i*16+2}" y="4" width="12" height="36" rx="3" fill="#F1E6D7"/>`:`<rect x="${i*16+2}" y="${(44-(v/5)*38).toFixed(1)}" width="12" height="${((v/5)*38).toFixed(1)}" rx="3" fill="${col}"/>`).join('')}</svg></div>`}
 function ringSVG(){const c=cycleStats(),len=c.avg||28,has=!!c.last;
+ const T=RO?{track:'#DCE6EC',mark:'#2F6B7E',num:'#22313A',g:['#245A6B','#3E8195','#A8C6D4']}:{track:'#F1E6D7',mark:'#B8456B',num:'#2B1E1E',g:['#A83A5E','#C4567A','#E8A0B4']};
  const day=has?Math.round((new Date(today())-new Date(c.last))/864e5)+1:1,dt=((day-1)%len)+1;
  const R=88,C=2*Math.PI*R,frac=dt/len,step=len>20?2:1;let nums='';
  for(let i=0;i<len;i++){const d=i+1;if(has&&d===dt)continue;if((d-1)%step)continue;
   const a=(-90+360*(i/len))*Math.PI/180,nx=110+R*Math.cos(a),ny=110+R*Math.sin(a);
-  nums+=`<text x="${nx.toFixed(1)}" y="${(ny+3.4).toFixed(1)}" text-anchor="middle" letter-spacing="0.5" style="fill:#2B1E1E;font-size:9.4px;font-weight:700;font-family:'Playfair Display',serif">${d}</text>`}
+  nums+=`<text x="${nx.toFixed(1)}" y="${(ny+3.4).toFixed(1)}" text-anchor="middle" letter-spacing="0.5" style="fill:${T.num};font-size:9.4px;font-weight:700;font-family:'Playfair Display',serif">${d}</text>`}
  let mark='';
  if(has){const a=(-90+360*((dt-1)/len))*Math.PI/180,bx=110+R*Math.cos(a),by=110+R*Math.sin(a);
-  mark=`<circle cx="${bx.toFixed(1)}" cy="${by.toFixed(1)}" r="15" fill="#FFFFFF" stroke="#B8456B" stroke-width="2.2" style="filter:drop-shadow(0 5px 10px rgba(184,69,107,.3))"/><text x="${bx.toFixed(1)}" y="${(by+4.6).toFixed(1)}" text-anchor="middle" style="fill:#B8456B;font-size:13px;font-weight:700;font-family:'Playfair Display',serif">${dt}</text>`}
- return `<svg viewBox="0 0 220 220" style="width:100%;height:100%;display:block" role="img" aria-label="${has?'Cycle day '+dt:'No cycle logged yet'}"><defs><linearGradient id="bloomRingGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#A83A5E"/><stop offset="55%" stop-color="#C4567A"/><stop offset="100%" stop-color="#E8A0B4"/></linearGradient></defs><circle cx="110" cy="110" r="${R}" fill="none" stroke="#F1E6D7" stroke-width="12"/>${has?`<circle cx="110" cy="110" r="${R}" fill="none" stroke="url(#bloomRingGrad)" stroke-width="12" stroke-linecap="round" stroke-dasharray="${(C*frac).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 110 110)" style="transition:stroke-dasharray .7s ease"/>`:''}${nums}${mark}</svg>`}
+  mark=`<circle cx="${bx.toFixed(1)}" cy="${by.toFixed(1)}" r="15" fill="#FFFFFF" stroke="${T.mark}" stroke-width="2.2" style="filter:drop-shadow(0 5px 10px rgba(47,107,126,.25))"/><text x="${bx.toFixed(1)}" y="${(by+4.6).toFixed(1)}" text-anchor="middle" style="fill:${T.mark};font-size:13px;font-weight:700;font-family:'Playfair Display',serif">${dt}</text>`}
+ return `<svg viewBox="0 0 220 220" style="width:100%;height:100%;display:block" role="img" aria-label="${has?'Cycle day '+dt:'No cycle logged yet'}"><defs><linearGradient id="bloomRingGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${T.g[0]}"/><stop offset="55%" stop-color="${T.g[1]}"/><stop offset="100%" stop-color="${T.g[2]}"/></linearGradient></defs><circle cx="110" cy="110" r="${R}" fill="none" stroke="${T.track}" stroke-width="12"/>${has?`<circle cx="110" cy="110" r="${R}" fill="none" stroke="url(#bloomRingGrad)" stroke-width="12" stroke-linecap="round" stroke-dasharray="${(C*frac).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 110 110)" style="transition:stroke-dasharray .7s ease"/>`:''}${nums}${mark}</svg>`}
 function periodSheet(){dateSheet('First day of bleeding',v=>{
   for(let i=0;i<5;i++){const dd=addD(v,i);if(dd>today())break;const x=L(dd);D.logs[dd]=Object.assign(x,{flow:i===0?'medium':'light'})}
   save();toast('Period logged');shell()})}
@@ -900,6 +1067,61 @@ function funNow(){const total=TRIVIA.length+TIPS.length,k=((funPos%total)+total)
 function paintFun(){const t=document.getElementById('funText'),g=document.getElementById('funTag');
  if(!t)return;const f=funNow();t.textContent=f.text;if(g)g.textContent=f.tag}
 function startFun(){if(funTimer)clearInterval(funTimer);funTimer=setInterval(()=>{funPos++;paintFun()},5000)}
+function guidePick(out){
+ const seen={},uniq=[];
+ out.forEach(x=>{if(seen[x.t])return;seen[x.t]=1;uniq.push(x)});
+ while(uniq.length<10)uniq.push({t:'Small help, often',b:'One small thing done beats a perfect plan that never starts.'});
+ return uniq.slice(0,10);
+}
+function partnerGuideData(){
+ const c=cycleStats(),len=c.avg||28,has=!!c.last;
+ const day=has?Math.round((new Date(today())-new Date(c.last))/864e5)+1:1,dt=((day-1)%len)+1;
+ const ph=has?phaseInfo(dt,len):null,l=L(today());
+ const sym=Object.keys(P_SYMPTOM).filter(t=>(l.tags||[]).includes(t)).slice(0,3);
+ const out=sym.map(t=>({t:t,b:P_SYMPTOM[t]}));
+ const add=a=>a.forEach(x=>out.push({t:x[0],b:x[1]}));
+ add(P_GUIDE[ph?ph.k:'General']||P_GUIDE.General);add(P_GUIDE.General);add(P_MORE);
+ return guidePick(out);
+}
+function selfGuideData(){
+ const c=cycleStats(),len=c.avg||28,has=!!c.last;
+ const day=has?Math.round((new Date(today())-new Date(c.last))/864e5)+1:1,dt=((day-1)%len)+1;
+ const ph=has?phaseInfo(dt,len):null,l=L(today());
+ const sym=Object.keys(S_SYMPTOM).filter(t=>(l.tags||[]).includes(t)).slice(0,3);
+ const out=sym.map(t=>({t:t,b:S_SYMPTOM[t]}));
+ const add=a=>a.forEach(x=>out.push({t:x[0],b:x[1]}));
+ add(S_GUIDE[ph?ph.k:'General']||S_GUIDE.General);add(S_GUIDE.General);add(S_MORE);
+ return guidePick(out);
+}
+let pgIdx=0,pgSettle=null;
+function guideCarouselHTML(title,items){
+ const card=x=>`<div class="pgcard"><b>${E(x.t)}</b><p>${E(x.b)}</p></div>`;
+ const set=items.map(card).join('');
+ return `<div class="card"><div class="card-h"><h3>${E(title)}</h3></div>
+ <div class="pgcarousel" id="pgCar" aria-label="${E(title)}"><div class="pgtrack" id="pgTrack">${set}${set}${set}</div></div>
+ <div class="pgdots" id="pgDots">${items.map((_,i)=>`<span class="pgdot${i===pgIdx?' on':''}"></span>`).join('')}</div></div>`;
+}
+function partnerGuideHTML(){return guideCarouselHTML('How to help',partnerGuideData())}
+function selfGuideHTML(){return guideCarouselHTML('What helps',selfGuideData())}
+function initPartnerCarousel(){
+ clearTimeout(pgSettle);
+ const car=document.getElementById('pgCar');if(!car)return;
+ const dots=document.querySelectorAll('#pgDots .pgdot');
+ const N=dots.length||1;
+ const cards=car.querySelectorAll('.pgcard');if(cards.length<N*3)return;
+ const stp=()=>Math.max(1,cards[0].getBoundingClientRect().width+10);
+ const w=stp();if(w<20){setTimeout(initPartnerCarousel,80);return}
+ const jump=v=>{car.scrollLeft=v};
+ const paint=()=>{const i=Math.round(car.scrollLeft/stp());pgIdx=((i%N)+N)%N;dots.forEach((x,k)=>x.classList.toggle('on',k===pgIdx))};
+ const place=()=>{jump((N+pgIdx)*stp());paint()};
+ place();if(typeof requestAnimationFrame==='function')requestAnimationFrame(place);
+ car.onscroll=()=>{clearTimeout(pgSettle);pgSettle=setTimeout(()=>{
+   const step=stp(),i=Math.round(car.scrollLeft/step);
+   if(i<N)jump((i+N)*step);else if(i>=2*N)jump((i-N)*step);
+   paint();
+ },120)};
+ if(!window.__pgRz){window.__pgRz=1;window.addEventListener('resize',()=>{clearTimeout(pgSettle);pgSettle=setTimeout(()=>{if(document.getElementById('pgCar'))initPartnerCarousel()},150)})}
+}
 function cyclePage(){const d=today(),l=L(d),ts=tasksFor(d),n=ts.filter(t=>isDone(t.id,d)).length;const h=new Date().getHours();
  const m=D.meals[d]||[];const wk=[...Array(7)].map((_,i)=>addD(d,-i)),wd=wk.reduce((a,x)=>a+tasksFor(x).filter(t=>isDone(t.id,x)).length,0),wt=wk.reduce((a,x)=>a+tasksFor(x).length,0);
  const c=cycleStats(),len=c.avg||28,day=c.last?Math.round((new Date(today())-new Date(c.last))/864e5)+1:1,dt=((day-1)%len)+1;
@@ -910,18 +1132,18 @@ function cyclePage(){const d=today(),l=L(d),ts=tasksFor(d),n=ts.filter(t=>isDone
  <div class="greet"><h1 class="sr">Cycle</h1><div class="hi">${h<12?'Good morning':h<18?'Good afternoon':'Good evening'},</div><div class="hi nm">${E(first)}</div><div class="date">${fmt(d,{weekday:'long',month:'long',day:'numeric'})}</div></div>
  <div class="ringwrap"><div class="ringdisc"></div>${ringSVG()}<div class="ringcenter"><div class="ringlbl">${c.last?'Day':'Cycle'}</div><div class="ringday">${c.last?dt:'\u2014'}</div><div class="ringcap">${c.last?(c.n>=2?`of an average ${len}-day cycle`:'cycle day'):'Log a period to start'}</div><div class="ringpill">${c.last?(c.n>=2?`${left} day${left>1?'s':''} until next`:'Log to see estimates'):'No cycle yet'}</div></div></div>
  
- <button class="logpill" id="lp" ${RO?'disabled':''}><span class="plus">${IC.plus(16)}</span>Log Period</button>
+ ${RO?'':`<button class="logpill" id="lp"><span class="plus">${IC.plus(16)}</span>Log Period</button>`}
  <div class="stats3">
   <div class="stat"><span class="ic">${IC.flower(13)}</span><b class="word">${ph.k}</b><span class="lbl">Phase</span></div>
   <div class="stat"><span class="ic">${IC.pulse(13)}</span><b>${l.mood?l.mood:'\u2014'}</b><span class="lbl">Mood</span></div>
   <div class="stat"><span class="ic">${IC.drop(13)}</span><b>${l.energy?l.energy:'\u2014'}</b><span class="lbl">Energy</span></div>
  </div>
 <div class="card"><div class="card-h"><h3>Water</h3><div class="waterrow"><span class="watercount">${l.water||0}</span><span class="meta">/ ${goal}</span></div></div>
-  <div class="glasses">${Array.from({length:goal},(_,i)=>`<button class="glassbtn ${i<(l.water||0)?'on':''}" data-g="${i+1}" aria-label="${i+1} glasses" ${RO?'disabled':''}>${glassIcon(i<(l.water||0),28)}</button>`).join('')}</div>
-  <div class="row" style="gap:10px"><button class="btn ghost" id="wminus" aria-label="Remove one glass" style="width:48px;padding:0" ${RO?'disabled':''}></button><button class="btn" id="wplus" style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px" ${RO?'disabled':''}>${glassIcon(true,16)} +1 glass</button></div>
-  <div class="goalbox"><span class="lbl">Daily goal</span><div class="goalopts" role="group" aria-label="Daily glass goal">${[6,8,10,12].map(v=>`<button class="goalopt ${goal==v?'on':''}" data-goal="${v}" ${RO?'disabled':''}>${v}</button>`).join('')}</div></div></div>
- <div class="card"><div class="card-h"><h3>Mood</h3><div class="row" style="gap:8px"><span class="meta">${l.mood?l.mood+'/5':'\u2014'}</span><button class="btn ghost sm" id="logme" ${RO?'disabled':''}>Log</button></div></div>
-  <div class="faces">${[1,2,3,4,5].map(i=>`<button class="facebtn ${l.mood==i?'on':''}" data-mood="${i}" aria-label="Mood ${i} of 5" ${RO?'disabled':''}>${faceIcon(i,34,l.mood==i)}</button>`).join('')}</div>
+  <div class="glasses">${Array.from({length:goal},(_,i)=>RO?`<span class="glassbtn ${i<(l.water||0)?'on':''}" style="cursor:default">${glassIcon(i<(l.water||0),28)}</span>`:`<button class="glassbtn ${i<(l.water||0)?'on':''}" data-g="${i+1}" aria-label="${i+1} glasses">${glassIcon(i<(l.water||0),28)}</button>`).join('')}</div>
+  ${RO?'':`<div class="row" style="gap:10px"><button class="btn ghost" id="wminus" aria-label="Remove one glass" style="width:48px;padding:0"></button><button class="btn" id="wplus" style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px">${glassIcon(true,16)} +1 glass</button></div>
+  <div class="goalbox"><span class="lbl">Daily goal</span><div class="goalopts" role="group" aria-label="Daily glass goal">${[6,8,10,12].map(v=>`<button class="goalopt ${goal==v?'on':''}" data-goal="${v}">${v}</button>`).join('')}</div></div>`}</div>
+ <div class="card"><div class="card-h"><h3>Mood</h3><div class="row" style="gap:8px"><span class="meta">${l.mood?l.mood+'/5':'\u2014'}</span>${RO?'':`<button class="btn ghost sm" id="logme">Log</button>`}</div></div>
+  <div class="faces">${[1,2,3,4,5].map(i=>RO?`<span class="facebtn ${l.mood==i?'on':''}" style="cursor:default">${faceIcon(i,34,l.mood==i)}</span>`:`<button class="facebtn ${l.mood==i?'on':''}" data-mood="${i}" aria-label="Mood ${i} of 5">${faceIcon(i,34,l.mood==i)}</button>`).join('')}</div>
   <span class="lbl" style="display:block;margin-top:12px">Last 7 days</span>${miniBars('mood',7,'var(--rose)')}
   <div class="divider"></div>
   <div class="card-h" style="margin-bottom:6px"><h3 style="font-size:15px">Energy</h3><span class="meta">${l.energy?l.energy+'/5':'\u2014'}</span></div>
@@ -930,17 +1152,19 @@ function cyclePage(){const d=today(),l=L(d),ts=tasksFor(d),n=ts.filter(t=>isDone
   <div class="kv"><span>Sleep</span><b>${l.sleep?l.sleep+' h':'\u2014'}</b></div>
   <div class="kv"><span>Meals</span><b>${m.length}</b></div>
   <div class="kv kvstack"><span>Symptoms</span><b>${l.tags&&l.tags.length?l.tags.join(', '):'\u2014'}</b></div></div>
- <div class="card"><div class="card-h"><h3>Quick actions</h3></div><div class="qa"><button data-a="log" ${RO?'disabled':''}>Log symptoms</button><button data-a="period" ${RO?'disabled':''}>Record period</button><button data-a="meal" ${RO?'disabled':''}>Log a meal</button><button data-a="mood" ${RO?'disabled':''}>Mood & energy</button><button data-a="plan" ${RO?'disabled':''}>Today's plan</button><button data-a="water" ${RO?'disabled':''}>+1 glass water</button></div></div>
- <div class="card"><div class="card-h"><h3>Today's checklist</h3><span class="meta">${n}/${ts.length}</span></div>${ts.length?`<div class="bar" aria-hidden="true"><i style="width:${n/ts.length*100}%"></i></div><div class="cklist">`+ts.map(t=>ck(t,d).replace('<input type="checkbox"',`<input type="checkbox" ${RO?'disabled':''}`)).join('')+'</div>':'<p class="meta">No tasks</p>'}</div>
+ ${RO?partnerGuideHTML():selfGuideHTML()}
+ ${RO?'':`<div class="card"><div class="card-h"><h3>Quick actions</h3></div><div class="qa"><button data-a="log">Log symptoms</button><button data-a="period">Record period</button><button data-a="meal">Log a meal</button><button data-a="mood">Mood &amp; energy</button><button data-a="plan">Today's plan</button><button data-a="water">+1 glass water</button></div></div>`}
+ <div class="card"><div class="card-h"><h3>Today's checklist</h3><span class="meta">${n}/${ts.length}</span></div>${ts.length?`<div class="bar" aria-hidden="true"><i style="width:${n/ts.length*100}%"></i></div><div class="cklist">`+(RO?ts.map(t=>`<div class="ck"><span class="ckt" style="${isDone(t.id,d)?'opacity:.55':''}">${isDone(t.id,d)?'&#10003;':''} ${E(t.t)}</span></div>`).join(''):ts.map(t=>ck(t,d)).join(''))+'</div>':'<p class="meta">No tasks</p>'}</div>
  <div class="card"><div class="card-h"><h3>This week</h3><span class="meta">${wt?`${wd}/${wt}`:'0/0'}</span></div>${wt?`<div class="bar" aria-hidden="true"><i style="width:${Math.round(wd/wt*100)}%"></i></div>`:'<p class="meta">Nothing planned</p>'}</div>
  <div class="card fun"><span class="lbl" id="funTag" style="margin:0 0 2px">Did you know?</span><p class="funtext" id="funText">${E(funNow().text)}</p></div>
- <div class="row" style="gap:10px"><button class="btn ghost" id="cal" style="flex:1">Month calendar</button><button class="btn ghost" id="logs" style="flex:1" ${RO?'disabled':''}>Log symptoms</button></div>`;
+ <div class="row" style="gap:10px"><button class="btn ghost" id="cal" style="flex:1">Month calendar</button>${RO?'':`<button class="btn ghost" id="logs" style="flex:1">Log symptoms</button>`}</div>`;
  if(!RO)bindCk(d);
  if(!RO)$('#lp').onclick=()=>periodSheet();
  $('#cal').onclick=()=>{view='month';shell()};
- $('#logs').onclick=()=>dayLog(d);
+ if(!RO)$('#logs').onclick=()=>dayLog(d);
  if(!RO)$('#logme').onclick=()=>dayLog(d);
  startFun();
+ initPartnerCarousel();
  document.querySelectorAll('[data-mood]').forEach(b=>b.onclick=()=>{const x=L(d);D.logs[d]=Object.assign(x,{mood:+b.dataset.mood});save();cyclePage()});
  const setWater=v=>{const x=L(d);D.logs[d]=Object.assign(x,{water:Math.max(0,Math.min(goal,v))});save();cyclePage()};
  if(!RO){$('#wplus').onclick=()=>setWater((l.water||0)+1);
@@ -985,8 +1209,8 @@ function monthView(){const [y,mo]=calM.split('-').map(Number),first=new Date(y,m
 function planner(){const d=today();tab=tab||'day';
  $('#main').innerHTML=`<h1>Planner</h1><div class="tabsrow" role="tablist">${(RO?[['day','Today'],['week','Week'],['meals','Meals']]:[['day','Today'],['week','Week'],['meals','Meals'],['journal','Journal']]).map(([k,l])=>`<button class="chip" role="tab" data-tb="${k}" aria-pressed="${tab==k}">${l}</button>`).join('')}</div><div id="pb" style="margin-top:12px"></div>`;
  document.querySelectorAll('[data-tb]').forEach(b=>b.onclick=()=>{tab=b.dataset.tb;planner()});({day:pDay,week:pWeek,meals:pMeals,journal:pJournal})[tab]()}
-function pDay(){const d=today(),ts=tasksFor(d);$('#pb').innerHTML=`<div class="card"><div class="card-h"><h3>Today</h3>${RO?'':'<button class="btn ghost sm" id="gp">Generate plan</button>'}</div><div style="margin-top:6px">${ts.length?ts.map(t=>`<div class="taskrow">${ck(t,d).replace('<input type="checkbox"',`<input type="checkbox" ${RO?'disabled':''}`)}${RO?'':`<button class="btn ghost sm del" data-del="${t.id}" aria-label="Delete ${E(t.t)}"></button>`}</div>`).join(''):'<p class="meta">No tasks</p>'}</div>
-${RO?'':`<form id="af" style="margin-top:14px"><input id="nt" maxlength="80" placeholder="Add a task" aria-label="New task" style="width:100%;margin:0 0 10px">${chipField('rp','Repeat',[['all','Every day'],['wk','Weekdays'],['one','Today only']],'all')}<button class="btn" type="submit" style="width:100%;margin-top:12px">Add task</button></form><div class="err" id="er"></div></div>`}`;
+function pDay(){const d=today(),ts=tasksFor(d);$('#pb').innerHTML=`<div class="card"><div class="card-h"><h3>Today</h3>${RO?'':'<button class="btn ghost sm" id="gp">Generate plan</button>'}</div><div style="margin-top:6px">${ts.length?ts.map(t=>RO?`<div class="taskrow"><span class="ckt" style="${isDone(t.id,d)?'opacity:.55':''}">${isDone(t.id,d)?'&#10003;':''} ${E(t.t)}</span></div>`:`<div class="taskrow">${ck(t,d)}<button class="btn ghost sm del" data-del="${t.id}" aria-label="Delete ${E(t.t)}"></button></div>`).join(''):'<p class="meta">No tasks</p>'}</div>
+${RO?'':`<form id="af" style="margin-top:14px"><input id="nt" maxlength="80" placeholder="Add a task" aria-label="New task" style="width:100%;margin:0 0 10px">${chipField('rp','Repeat',[['all','Every day'],['wk','Weekdays'],['one','Today only']],'all')}<button class="btn" type="submit" style="width:100%;margin-top:12px">Add task</button></form><div class="err" id="er"></div>`}</div>`;
  bindCk(d,planner);bindFields();
  const gpBtn=document.getElementById('gp');if(gpBtn)gpBtn.onclick=()=>{genPlan();planner()};
  const afForm=document.getElementById('af');if(afForm)afForm.onsubmit=e=>{e.preventDefault();const t=$('#nt').value.trim();if(!t)return $('#er').textContent='Please type a task.';const r=$('#rp').value;D.tasks.push({id:uid(),t,days:r=='wk'?[1,2,3,4,5]:r=='one'?[new Date().getDay()]:undefined,once:r=='one'?d:undefined});save();planner()};
@@ -996,7 +1220,7 @@ function pMeals(){const d=today(),m=D.meals[d]||[],bud=D.p.bud||999;
  const fi=(foodPos+FOOD.length)%FOOD.length;
  const pool=t=>MEALS.filter(x=>x.t==t&&x.c<=bud);
  const wk=D.plan.week||null;
- $('#pb').innerHTML=`<div class="card"><div class="card-h"><h3>Todays meals</h3><span class="meta">${m.length}</span></div>${m.length?m.map((x,i)=>`<div class="row sp ck"><span>${E(TN[x.t]||'Meal')}: ${E(x.n)}${x.q&&x.q!==1?' \u00d7'+x.q:''}</span><button class="btn ghost sm" data-rm="${i}" aria-label="Remove"></button></div>`).join(''):'<p class="meta">None logged</p>'}
+ $('#pb').innerHTML=`<div class="card"><div class="card-h"><h3>Todays meals</h3><span class="meta">${m.length}</span></div>${m.length?m.map((x,i)=>`<div class="row sp ck"><span>${E(TN[x.t]||'Meal')}: ${E(x.n)}${x.q&&x.q!==1?' \u00d7'+x.q:''}</span>${RO?'':`<button class="btn ghost sm" data-rm="${i}" aria-label="Remove"></button>`}</div>`).join(''):'<p class="meta">None logged</p>'}
 ${RO?'':`<div class="lbl">Add a meal</div><div class="row" id="mtRow" role="group" aria-label="Meal type" style="flex-wrap:wrap;gap:8px;margin:0 0 14px">${MEAL_TYPES.map(([k,v])=>`<button type="button" class="chip" data-mt="${k}" aria-pressed="${k===mealTypeNow()}">${v}</button>`).join('')}</div><button type="button" class="field-btn" id="mlBtn"><span id="mlLabel">Choose a meal</span><span class="chev">\u25be</span></button><input type="hidden" id="ml" value=""><input type="hidden" id="mlQ" value="1"><label for="mc">Or type your own</label><input id="mc" maxlength="60" placeholder="Paksiw na bangus"><button class="btn" id="la" style="width:100%">Add</button>`}</div>
 <div class="card"><div class="card-h"><h3>Weekly plan</h3></div>${RO?'':`${chipField('bd','Budget per meal (\u20b1)',[['','Any'],['50','up to \u20b150'],['80','up to \u20b180'],['100','up to \u20b1100'],['130','up to \u20b1130']],String(D.p.bud||''))}<button class="btn pink" id="gw" style="width:100%">Build my week</button>`}
 ${wk?`<div class="divider"></div>`+wk.map((r,i)=>`<div class="kv"><span>Day ${i+1}</span><b style="font-size:.85rem;font-family:inherit;font-weight:400;text-align:right">${r.map(x=>E(x.n)).join('  ')}</b></div>`).join('')+`<h3 style="margin-top:14px">Grocery list</h3><p class="meta">${[...new Set(wk.flat().flatMap(x=>x.ing))].sort().join(', ')}</p>`:''}</div>
