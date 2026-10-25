@@ -914,7 +914,7 @@ async function fetchManifest(){const bust='?t='+Date.now();
  const r=await fetch(UPDATE_MANIFEST+bust,{cache:'no-store'});if(!r.ok)throw new Error('manifest '+r.status);
  return await r.json()}
 // Baked-in build identity. Keep in sync with android/app/build.gradle (versionCode/versionName).
-const APP_VERSION={code:35,name:'1.2.20'};
+const APP_VERSION={code:36,name:'1.2.21'};
 const UPD_SKIP_KEY='bloom_upd_skip';
 const updater=()=>{const C=window.Capacitor;if(!C)return null;
  const P=C.Plugins&&C.Plugins.BloomUpdater;
@@ -1040,7 +1040,7 @@ function partnerOnboard(){
    <p class="lede">Ask the person you want to follow for their 6-character code. You\u2019ll see their cycle read-only.</p></div>
   <form id="pForm" novalidate>
    <div class="field" id="f-pc"><label for="pc">Sync code</label>
-    <input id="pc" class="code" maxlength="6" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="ABC123" aria-describedby="e-pc">
+    <input id="pc" class="code" maxlength="6" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="ABC123" value="${E((()=>{try{return (ST.get('bloom_lastcode')||'').toUpperCase()}catch(e){return ''}})())}" aria-describedby="e-pc">
     <p class="hint" id="e-pc"></p></div>
     <div class="field" id="f-pn"><label for="pn">Your name</label>
      <input id="pn" maxlength="30" autocomplete="name" placeholder="What you call me">
@@ -1058,6 +1058,7 @@ function partnerOnboard(){
   e.preventDefault();setErr('');
   const v=code.value.trim();
   if(v.length<6){setField('Enter the 6-character code.');code.focus();return}
+  try{ST.set('bloom_lastcode',v)}catch(e){}
   setField('');
    const nm=(document.getElementById('pn')?document.getElementById('pn').value.trim():'');
    if(!nm){const he=document.getElementById('e-pn');const fn=document.getElementById('f-pn');if(he){he.textContent='Tell us your name - it shows in games.';he.style.color='var(--rose)'}if(fn)fn.classList.add('invalid');return}

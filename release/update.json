@@ -1,7 +1,7 @@
 {
-    "versionCode": 35,
-    "versionName": "1.2.20",
-    "notes": "Quick actions: draggable Bloom button with a petal menu (Log, Period, Meal, Mood, Plan, Water). Profile: simpler sync code card, data tools removed.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.20/bloom-1.2.20.apk",
+    "versionCode": 36,
+    "versionName": "1.2.21",
+    "notes": "Fixes login in 1.2.20 (bundled cloud library was broken, so sign-in showed 'Still starting up'). The sync code you enter is now remembered.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.21/bloom-1.2.21.apk",
     "publishedAt": "2026-10-25"
 }
