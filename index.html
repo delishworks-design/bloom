@@ -343,6 +343,12 @@ body.ro .cal .p{background:#A8C6D4 !important;border-color:#A8C6D4 !important;co
 body.ro .cal .s{background:#DDEAF0 !important}
 body.ro .cal .t{outline-color:#6E5FA8 !important}
 body.ro .cal .d::after{background:#6E5FA8 !important}
+body.ro .chip:hover,body.ro .pickrow:hover,body.ro .rolebtn:hover,body.ro .readrow:hover,body.ro .field-btn:hover{box-shadow:0 4px 14px rgba(47,107,126,.14) !important}
+body.ro .chip[aria-pressed=true]{box-shadow:0 4px 14px rgba(47,107,126,.2),inset 0 1px 0 rgba(255,255,255,.3) !important}
+body.ro .cal button{box-shadow:0 1px 3px rgba(40,70,90,.06) !important}
+body.ro .cal .p{box-shadow:0 4px 12px rgba(47,107,126,.3) !important}
+body.ro .goalopt.on{background:#2F6B7E !important;box-shadow:0 2px 8px rgba(47,107,126,.28) !important}
+body.ro .btn:active{box-shadow:0 2px 6px rgba(47,107,126,.28),inset 0 1px 3px rgba(0,0,0,.18) !important}
 body.ro .bar{background:#E3E8F2 !important}
 body.ro .bar i{background:#6E5FA8 !important}
 body.ro .watercount,body.ro .dr-done{color:#6E5FA8 !important}
@@ -360,6 +366,22 @@ body.ro nav button{color:#66757E !important}
 body.ro .glassbtn.on{border-color:#2F6B7E !important;background:#DDEAF0 !important}
 body.ro .facebtn.on{border-color:#2F6B7E !important;background:#DDEAF0 !important}
 body.ro input:focus,body.ro select:focus,body.ro textarea:focus{border-color:#2F6B7E !important;outline-color:#2F6B7E !important}
+.phaselist{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.phaserow{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:13px;background:var(--pinkS);border:1.5px solid transparent}
+.phaserow.now{background:var(--card);border-color:currentColor}
+.phase-dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto;background:currentColor}
+.phaserow b{font-size:.82rem;color:var(--ink);font-weight:700}
+.phaserow .nowtag{font-size:.58rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
+.phaserow .range{margin-left:auto;font-size:.73rem;color:var(--mut);white-space:nowrap}
+#app{isolation:isolate}
+#app::before{content:'';position:fixed;left:50%;bottom:-24vh;transform:translateX(-50%);width:min(175vw,880px);height:min(175vw,880px);background:#2B1E1E;opacity:.045;z-index:-1;pointer-events:none;-webkit-mask-position:center;-webkit-mask-size:contain;-webkit-mask-repeat:no-repeat;mask-position:center;mask-size:contain;mask-repeat:no-repeat}
+body.ro #app::before{background:#14323B;opacity:.055}
+#app::after{content:'';position:fixed;left:0;right:0;bottom:0;height:46vh;background:linear-gradient(to bottom,transparent 0%,var(--bg) 82%);z-index:-1;pointer-events:none}
+#updBanner.dark{background:#2E2226 !important;border-color:rgba(255,255,255,.14) !important;color:#FBF4EA !important}
+#updBanner.dark strong{color:#fff !important}
+#updBanner.dark span{color:rgba(255,255,255,.78) !important}
+#updBanner.dark #updBannerX{color:rgba(255,255,255,.75) !important}
+body.ro #updBanner.dark{background:#173F4B !important}
 .pgcarousel{overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin-top:4px}
 .pgcarousel::-webkit-scrollbar{display:none}
 .pgtrack{display:flex;gap:10px}
@@ -914,7 +936,7 @@ async function fetchManifest(){const bust='?t='+Date.now();
  const r=await fetch(UPDATE_MANIFEST+bust,{cache:'no-store'});if(!r.ok)throw new Error('manifest '+r.status);
  return await r.json()}
 // Baked-in build identity. Keep in sync with android/app/build.gradle (versionCode/versionName).
-const APP_VERSION={code:36,name:'1.2.21'};
+const APP_VERSION={code:37,name:'1.2.22'};
 const UPD_SKIP_KEY='bloom_upd_skip';
 const updater=()=>{const C=window.Capacitor;if(!C)return null;
  const P=C.Plugins&&C.Plugins.BloomUpdater;
@@ -942,6 +964,7 @@ function showUpdateBanner(m){
  if(!el){el=document.createElement('div');el.id='updBanner';el.setAttribute('role','status');
   el.style.cssText='position:fixed;left:50%;transform:translateX(-50%);top:calc(8px + env(safe-area-inset-top,0px));z-index:60;width:min(408px,calc(100% - 20px));background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:16px;box-shadow:0 10px 28px rgba(0,0,0,.16);padding:12px 14px;display:flex;gap:10px;align-items:center;font:14px/1.35 system-ui,-apple-system,sans-serif;color:#2b2320';
   document.body.appendChild(el)}
+ el.className='dark';
  el.innerHTML=`<div style="flex:1;min-width:0"><strong style="display:block;font-size:14px">Update available</strong><span style="opacity:.72">Bloom ${E(m.versionName||'')} is ready</span></div>
  <button id="updBannerGo" class="btn sm" style="padding:8px 14px;white-space:nowrap">Update</button>
  <button id="updBannerX" aria-label="Dismiss update" style="background:none;border:0;font-size:22px;line-height:1;color:#8a7f77;padding:0 2px;cursor:pointer">\u00d7</button>`;
@@ -1074,8 +1097,25 @@ function genPlan(silent){const a={walk:'Walk 20 minutes',strength:'Strength: 15-
  const base=[['Drink water through the day'],['Breakfast, lunch and dinner'],[a,[1,3,5]],['Wind down & lights out on time'],['5 slow breaths'],['Take medicine as prescribed (if applicable)']];
  base.forEach(([t,days])=>{if(!D.tasks.some(x=>x.t==t))D.tasks.push({id:uid(),t,days})});save();if(!silent)toast('Plan added')}
 // ---------- views
-function phaseInfo(dt,len){if(dt<=5)return{t:'Menstrual phase',k:'Menstrual',c:'var(--rose)'};
- if(dt<=Math.round(len*.45))return{t:'Follicular phase',k:'Follicular',c:'var(--teal)'};
+function phaseRanges(len){const fol=Math.round(len*.45),ovu=Math.round(len*.58);
+ return [['Menstrual',1,5,'var(--rose)'],['Follicular',6,fol,'var(--teal)'],['Ovulation',fol+1,ovu,'var(--pink)'],['Luteal',ovu+1,len,'var(--rose)']]}
+function ringPillText(dt,len,left){
+ const who=RO?'Her':'Your',p=phaseInfo(dt,len);
+ if(dt<=5)return RO?'Her period is here':'Period day '+dt;
+ if(left<=1)return who+' period may start today';
+ if(left<=4)return who+' period may start in ~'+left+' days';
+ if(p.k==='Ovulation')return RO?'Her fertile window':'Fertile window';
+ if(p.k==='Follicular')return RO?'Her energy may be rising':'Energy may be rising';
+ return who+' period may start in '+left+' days'}
+function phaseCard(c,dt){
+ if(!c.last)return `<div class="card"><div class="card-h"><h3>Four phases</h3></div><p class="meta">Log a period start to estimate all four phases.</p></div>`;
+ const len=c.avg||28;
+ const rows=phaseRanges(len).map(([n,from,to,col])=>{
+  const s0=addD(c.last,from-1),e0=addD(c.last,to-1),now=dt>=from&&dt<=to;
+  return `<div class="phaserow${now?' now':''}" style="color:${col}"><span class="phase-dot"></span><b>${n}</b>${now?'<span class="nowtag">Now</span>':''}<span class="range">${fmt(s0,{month:'short',day:'numeric'})} \u2013 ${fmt(e0,{month:'short',day:'numeric'})}</span></div>`}).join('');
+ return `<div class="card"><div class="card-h"><h3>Four phases</h3><span class="meta">${c.n>=2?'est. '+len+'-day cycle':'estimate'}</span></div><div class="phaselist">${rows}</div></div>`}
+ function phaseInfo(dt,len){if(dt<=5)return{t:'Menstrual phase',k:'Menstrual',c:'var(--rose)'};
+if(dt<=Math.round(len*.45))return{t:'Follicular phase',k:'Follicular',c:'var(--teal)'};
  if(dt<=Math.round(len*.58))return{t:'Ovulation window',k:'Ovulation',c:'var(--pink)'};
  return{t:'Luteal phase',k:'Luteal',c:'var(--rose)'}}
 function miniBars(k,n,col){const days=[...Array(n)].map((_,i)=>addD(today(),i-n+1)),vals=days.map(d=>L(d)[k]);
@@ -1096,45 +1136,129 @@ function periodSheet(){dateSheet('First day of bleeding',v=>{
   for(let i=0;i<5;i++){const dd=addD(v,i);if(dd>today())break;const x=L(dd);D.logs[dd]=Object.assign(x,{flow:i===0?'medium':'light'})}
   save();toast('Period logged');shell()})}
 let funTimer=null,foodTimer=null,funPos=0,foodPos=0;
-function paintFood(){const t=document.getElementById('foodText');if(t)t.textContent=FOOD[(foodPos+FOOD.length)%FOOD.length][1]}
-function funNow(){const total=TRIVIA.length+TIPS.length,k=((funPos%total)+total)%total;
- return k<TRIVIA.length?{tag:'Did you know?',icon:'',text:TRIVIA[k]}:{tag:'Tip',icon:'',text:TIPS[k-TRIVIA.length][1]}}
+// ---- extra content: phase-aware, reshuffled on every app open
+const P_MORE2=[
+['Warm drinks, not lectures',"Ginger tea, soup, warm water. Hand it over and skip the commentary about caffeine."],
+['Keep the room quiet',"Lower the volume, dim the lights, move the loud task elsewhere. Small sensory relief adds up."],
+['Track the pattern with her',"If symptoms repeat monthly, note the days. A pattern is easier to plan around than a surprise."],
+['Do the invisible work',"Restock pads or tampons, refill the water, wash the hot pack cover. Noticing is the job."],
+['Never joke about hormones',"\"It is just your period\" ends the conversation and starts a fight. Say nothing instead."],
+['Check in, do not hover',"One calm question beats five check-ins. Then respect the answer you get."],
+['Plan around the low days',"Put the big social plans in her good week. Move what can move instead of pushing through."],
+['Know the urgent signs',"Severe pain, soaking a pad an hour, or fainting means a clinic now, not later."]
+];
+const S_MORE2=[
+['Warmth over willpower',"A hot pack on the lower belly relaxes cramps. Ten minutes is enough to notice."],
+['Keep water where you sit',"A bottle within reach gets drunk. One across the room does not."],
+['Say no once, kindly',"One clear no this week costs less than three resentful yeses."],
+['Move before you feel ready',"Two minutes of stretching counts. Momentum comes after starting, not before."],
+['Watch the caffeine',"It can sharpen cramps and anxiety. Swap the afternoon cup for water."],
+['Write it down once',"A note on your phone is enough. You do not have to hold the month in your head."],
+['Ask for the exact thing',"\"Can you take the bins tonight\" is answerable. \"I need help\" is not."],
+['Sleep before midnight',"The hours before midnight do more for your cycle than the ones after."]
+];
+const TRIVIA2=[
+'PMOS is diagnosed by two of three signs: irregular cycles, high androgens, or polycystic ovaries on ultrasound.',
+'An ultrasound is not required for diagnosis when the other two signs are already clear.',
+'Irregular cycles in PMOS usually mean cycles longer than 35 days, or fewer than eight a year.',
+'Insulin resistance is common in PMOS, at any body weight.',
+'Strength training improves insulin sensitivity about as much as standard lifestyle advice.',
+'Sleeping under six hours can raise hunger hormones the next day.',
+'PMOS is not caused by weight. Weight can worsen symptoms, not cause them.',
+'Type 2 diabetes screening is recommended with PMOS, usually every one to three years.',
+'Anxiety and depression are more common with PMOS, so mental health screening matters.',
+'Three months of cycle data helps a clinician more than a single appointment.',
+'PMOS is a metabolic and hormonal condition, not a fertility verdict.',
+'Symptoms can change across the lifespan, and the plan should change with them.'
+];
+const TIPS2=[
+['Tracking','A cycle is counted from the first day of bleeding, not the last.'],
+['Tracking','Log the days you feel best too. The pattern is the point.'],
+['Energy','Put the hardest task in your best two hours, not your longest ones.'],
+['Food','Eat breakfast within an hour of waking to steady the whole day.'],
+['Sleep','Keep the same wake time on weekends. The cycle likes rhythm.'],
+['Movement','Two ten-minute walks beat one skipped hour.'],
+['Mood','Name the feeling before solving it. It lowers the volume.'],
+['Care','Write your top three questions before an appointment. You will forget two.']
+];
+const FOOD2=[
+['Iron','Pair iron-rich food with vitamin C (calamansi, tomato) to absorb more of it.'],
+['Iron','Coffee and tea block iron. Leave an hour between them and meals.'],
+['Blood sugar','Start the meal with vegetables or protein, then rice.'],
+['Blood sugar','A short walk after eating lowers the glucose spike.'],
+['Luteal','Complex carbs like kamote and oats help cravings without the crash.'],
+['Menstrual','Warm soups and ginger tea ease cramps and keep you hydrated.'],
+['Protein','Tinned fish is cheap protein with omega-3, good on low-energy days.'],
+['Practical','Keep a frozen backup meal. Takeout is fine; deciding is the hard part.']
+];
+const PHASE_FUN={
+Menstrual:[
+{tag:'This phase',text:"Iron and water matter most on heavy days. Red meat, beans, dark greens."},
+{tag:'This phase',text:"Cramps respond to heat faster than to pushing through. Start early."},
+{tag:'This phase',text:"If pain stops your day, that is worth telling a clinician."}],
+Follicular:[
+{tag:'This phase',text:"Energy usually climbs now. Book the appointment you keep postponing."},
+{tag:'This phase',text:"Strength work pays off most in this window. Two sessions beat zero."},
+{tag:'This phase',text:"Prep for the dip: cook extra, freeze a portion, buy the easy snacks."}],
+Ovulation:[
+{tag:'This phase',text:"Ovulation pain can be sharp and sudden. Heat helps; severe pain needs a doctor."},
+{tag:'This phase',text:"Fertility decisions belong with your clinician, not an app guess."},
+{tag:'This phase',text:"Peak energy is not a deadline. Enjoy it, do not spend it."}],
+Luteal:[
+{tag:'This phase',text:"Cravings are chemistry. Eat the thing with protein beside it."},
+{tag:'This phase',text:"Sleep is the first thing to break this week. Guard it like an appointment."},
+{tag:'This phase',text:"A bad afternoon is a hormone, not a verdict. Wait a day before deciding anything big."}]
+};
+const PHASE_FOOD={
+Menstrual:[['Iron','Heavy days drain iron. Red meat, munggo, kangkong, plus vitamin C to absorb it.'],['Warmth','Ginger tea and warm soup ease cramps and keep water going in.'],['Energy','Small frequent meals beat one big one when you are wiped out.']],
+Follicular:[['Protein','Build meals around protein while energy is up; it carries you into the luteal week.'],['Prep','Cook double and freeze half. Future you on a low day will thank you.'],['Fibre','Oats, barley and brown rice keep you full longer than white rice.']],
+Ovulation:[['Zinc','Eggs, shellfish and seeds support ovulation and skin.'],['Hydration','More water and less salt blunts bloating around ovulation.'],['Light','Keep meals light and regular if appetite dips.']],
+Luteal:[['Complex carbs','Kamote, oats and brown rice steady the craving crash.'],['Magnesium','Dark chocolate, nuts and greens help mood and sleep.'],['Salt','Watch salty food if bloating is bad; it holds water for days.']]
+};
+function shuffle(a){const x=a.slice();for(let i=x.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)),t=x[i];x[i]=x[j];x[j]=t}return x}
+function phaseNow(){const c=cycleStats();if(!c.last)return null;const len=c.avg||28,day=Math.round((new Date(today())-new Date(c.last))/864e5)+1;return phaseInfo(((day-1)%len)+1,len)}
+let FUNQ=null,FUNQK='',FOODQ=null,FOODQK='';
+function funQueue(){const k=(phaseNow()||{k:'General'}).k;if(FUNQ&&FUNQK===k)return FUNQ;
+ FUNQ=shuffle(PHASE_FUN[k]||[]).concat(shuffle(TRIVIA.concat(TRIVIA2)).map(t=>({tag:'Did you know?',text:t})),shuffle(TIPS.concat(TIPS2)).map(t=>({tag:'Tip',text:t[1]})));
+ FUNQK=k;funPos=0;return FUNQ}
+function funNow(){const q=funQueue();return q[((funPos%q.length)+q.length)%q.length]}
 function paintFun(){const t=document.getElementById('funText'),g=document.getElementById('funTag');
  if(!t)return;const f=funNow();t.textContent=f.text;if(g)g.textContent=f.tag}
 function startFun(){if(funTimer)clearInterval(funTimer);funTimer=setInterval(()=>{funPos++;paintFun()},5000)}
-function guidePick(out){
+function foodQueue(){const k=(phaseNow()||{k:'General'}).k;if(FOODQ&&FOODQK===k)return FOODQ;
+ FOODQ=shuffle((PHASE_FOOD[k]||[]).map(x=>({t:x[0],b:x[1]}))).concat(shuffle(FOOD.concat(FOOD2)).map(f=>({t:f[0],b:f[1]})));
+ FOODQK=k;foodPos=0;return FOODQ}
+function paintFood(){const t=document.getElementById('foodText');if(t){const q=foodQueue();t.textContent=q[((foodPos%q.length)+q.length)%q.length].b}}
+const guideCache={};
+function guidePick(out,key){
+ if(guideCache[key])return guideCache[key];
  const seen={},uniq=[];
  out.forEach(x=>{if(seen[x.t])return;seen[x.t]=1;uniq.push(x)});
- while(uniq.length<10)uniq.push({t:'Small help, often',b:'One small thing done beats a perfect plan that never starts.'});
- return uniq.slice(0,10);
-}
+ while(uniq.length<12)uniq.push({t:'Small help, often',b:'One small thing done beats a perfect plan that never starts.'});
+ const list=uniq.slice(0,12);guideCache[key]=list;return list}
 function partnerGuideData(){
  const c=cycleStats(),len=c.avg||28,has=!!c.last;
  const day=has?Math.round((new Date(today())-new Date(c.last))/864e5)+1:1,dt=((day-1)%len)+1;
  const ph=has?phaseInfo(dt,len):null,l=L(today());
- const sym=Object.keys(P_SYMPTOM).filter(t=>(l.tags||[]).includes(t)).slice(0,3);
- const out=sym.map(t=>({t:t,b:P_SYMPTOM[t]}));
- const add=a=>a.forEach(x=>out.push({t:x[0],b:x[1]}));
- add(P_GUIDE[ph?ph.k:'General']||P_GUIDE.General);add(P_GUIDE.General);add(P_MORE);
- return guidePick(out);
-}
+ const sym=Object.keys(P_SYMPTOM).filter(t=>(l.tags||[]).includes(t));
+ const M=a=>a.map(x=>({t:x[0],b:x[1]}));
+ const out=[...shuffle(M(sym.map(t=>[t,P_SYMPTOM[t]]))),...shuffle(M(P_GUIDE[ph?ph.k:'General']||P_GUIDE.General)),...shuffle(M(P_GUIDE.General)),...shuffle(M(P_MORE.concat(P_MORE2)))];
+ return guidePick(out,'p:'+(ph?ph.k:'General'))}
 function selfGuideData(){
  const c=cycleStats(),len=c.avg||28,has=!!c.last;
  const day=has?Math.round((new Date(today())-new Date(c.last))/864e5)+1:1,dt=((day-1)%len)+1;
  const ph=has?phaseInfo(dt,len):null,l=L(today());
- const sym=Object.keys(S_SYMPTOM).filter(t=>(l.tags||[]).includes(t)).slice(0,3);
- const out=sym.map(t=>({t:t,b:S_SYMPTOM[t]}));
- const add=a=>a.forEach(x=>out.push({t:x[0],b:x[1]}));
- add(S_GUIDE[ph?ph.k:'General']||S_GUIDE.General);add(S_GUIDE.General);add(S_MORE);
- return guidePick(out);
-}
+ const sym=Object.keys(S_SYMPTOM).filter(t=>(l.tags||[]).includes(t));
+ const M=a=>a.map(x=>({t:x[0],b:x[1]}));
+ const out=[...shuffle(M(sym.map(t=>[t,S_SYMPTOM[t]]))),...shuffle(M(S_GUIDE[ph?ph.k:'General']||S_GUIDE.General)),...shuffle(M(S_GUIDE.General)),...shuffle(M(S_MORE.concat(S_MORE2)))];
+ return guidePick(out,'s:'+(ph?ph.k:'General'))}
 let pgIdx=0,pgSettle=null;
 function guideCarouselHTML(title,items){
  const card=x=>`<div class="pgcard"><b>${E(x.t)}</b><p>${E(x.b)}</p></div>`;
  const set=items.map(card).join('');
  return `<div class="card"><div class="card-h"><h3>${E(title)}</h3></div>
  <div class="pgcarousel" id="pgCar" aria-label="${E(title)}"><div class="pgtrack" id="pgTrack">${set}${set}${set}</div></div>
- <div class="pgdots" id="pgDots">${items.map((_,i)=>`<span class="pgdot${i===pgIdx?' on':''}"></span>`).join('')}</div></div>`;
+ <div class="pgdots" id="pgDots">${items.map((_,i)=>`<span class="pgdot${i===Math.min(pgIdx,items.length-1)?' on':''}"></span>`).join('')}</div></div>`;
 }
 function partnerGuideHTML(){return guideCarouselHTML('How to help',partnerGuideData())}
 function selfGuideHTML(){return guideCarouselHTML('What helps',selfGuideData())}
@@ -1265,7 +1389,7 @@ function cyclePage(){const d=today(),l=L(d),ts=tasksFor(d),n=ts.filter(t=>isDone
 
  $('#main').innerHTML=`
  <div class="greet"><h1 class="sr">Cycle</h1><div class="hi">${h<12?'Good morning':h<18?'Good afternoon':'Good evening'},</div><div class="hi nm">${E(first)}</div><div class="date">${fmt(d,{weekday:'long',month:'long',day:'numeric'})}</div></div>
- <div class="ringwrap"><div class="ringdisc"></div>${ringSVG()}<div class="ringcenter"><div class="ringlbl">${c.last?'Day':'Cycle'}</div><div class="ringday">${c.last?dt:'\u2014'}</div><div class="ringcap">${c.last?(c.n>=2?`of an average ${len}-day cycle`:'cycle day'):'Log a period to start'}</div><div class="ringpill">${c.last?(c.n>=2?`${left} day${left>1?'s':''} until next`:'Log to see estimates'):'No cycle yet'}</div></div></div>
+ <div class="ringwrap"><div class="ringdisc"></div>${ringSVG()}<div class="ringcenter"><div class="ringlbl">${c.last?'Day':'Cycle'}</div><div class="ringday">${c.last?dt:'\u2014'}</div><div class="ringcap">${c.last?(c.n>=2?`of an average ${len}-day cycle`:'cycle day'):'Log a period to start'}</div><div class="ringpill">${c.last?(c.n>=2?ringPillText(dt,len,left):'Log to see estimates'):'No cycle yet'}</div></div></div>
  
  ${RO?'':`<button class="logpill" id="lp"><span class="plus">${IC.plus(16)}</span>Log Period</button>`}
  <div class="stats3">
@@ -1273,6 +1397,7 @@ function cyclePage(){const d=today(),l=L(d),ts=tasksFor(d),n=ts.filter(t=>isDone
   <div class="stat"><span class="ic">${IC.pulse(13)}</span><b>${l.mood?l.mood:'\u2014'}</b><span class="lbl">Mood</span></div>
   <div class="stat"><span class="ic">${IC.drop(13)}</span><b>${l.energy?l.energy:'\u2014'}</b><span class="lbl">Energy</span></div>
  </div>
+ ${phaseCard(c,dt)}
 <div class="card"><div class="card-h"><h3>Water</h3><div class="waterrow"><span class="watercount">${l.water||0}</span><span class="meta">/ ${goal}</span></div></div>
   <div class="glasses">${Array.from({length:goal},(_,i)=>RO?`<span class="glassbtn ${i<(l.water||0)?'on':''}" style="cursor:default">${glassIcon(i<(l.water||0),28)}</span>`:`<button class="glassbtn ${i<(l.water||0)?'on':''}" data-g="${i+1}" aria-label="${i+1} glasses">${glassIcon(i<(l.water||0),28)}</button>`).join('')}</div>
   ${RO?'':`<div class="row" style="gap:10px"><button class="btn ghost" id="wminus" aria-label="Remove one glass" style="width:48px;padding:0"></button><button class="btn" id="wplus" style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px">${glassIcon(true,16)} +1 glass</button></div>
@@ -1353,7 +1478,7 @@ function pMeals(){const d=today(),m=D.meals[d]||[],bud=D.p.bud||999;
 ${RO?'':`<div class="lbl">Add a meal</div><div class="row" id="mtRow" role="group" aria-label="Meal type" style="flex-wrap:wrap;gap:8px;margin:0 0 14px">${MEAL_TYPES.map(([k,v])=>`<button type="button" class="chip" data-mt="${k}" aria-pressed="${k===mealTypeNow()}">${v}</button>`).join('')}</div><button type="button" class="field-btn" id="mlBtn"><span id="mlLabel">Choose a meal</span><span class="chev">\u25be</span></button><input type="hidden" id="ml" value=""><input type="hidden" id="mlQ" value="1"><label for="mc">Or type your own</label><input id="mc" maxlength="60" placeholder="Paksiw na bangus"><button class="btn" id="la" style="width:100%">Add</button>`}</div>
 <div class="card"><div class="card-h"><h3>Weekly plan</h3></div>${RO?'':`${chipField('bd','Budget per meal (\u20b1)',[['','Any'],['50','up to \u20b150'],['80','up to \u20b180'],['100','up to \u20b1100'],['130','up to \u20b1130']],String(D.p.bud||''))}<button class="btn pink" id="gw" style="width:100%">Build my week</button>`}
 ${wk?`<div class="divider"></div>`+wk.map((r,i)=>`<div class="kv"><span>Day ${i+1}</span><b style="font-size:.85rem;font-family:inherit;font-weight:400;text-align:right">${r.map(x=>E(x.n)).join('  ')}</b></div>`).join('')+`<h3 style="margin-top:14px">Grocery list</h3><p class="meta">${[...new Set(wk.flat().flatMap(x=>x.ing))].sort().join(', ')}</p>`:''}</div>
- <div class="card fun"><span class="lbl" style="margin:0 0 2px">Food tip</span><p class="funtext" id="foodText">${E(FOOD[fi][1])}</p></div>
+ <div class="card fun"><span class="lbl" style="margin:0 0 2px">Food tip</span><p class="funtext" id="foodText">${E(foodQueue()[0].b)}</p></div>
  `;
  if(!RO)$('#mlBtn').onclick=()=>sheetPick('Choose a meal',MEALS.map(x=>({t:TN[x.t]+' \u00b7 '+x.n,sub:'\u20b1'+x.c})),it=>{
   const i=MEALS.findIndex(x=>x.n===it.t.split(' \u00b7 ')[1]&&TN[x.t]===it.t.split(' \u00b7 ')[0]);
@@ -1377,7 +1502,7 @@ ${wk?`<div class="divider"></div>`+wk.map((r,i)=>`<div class="kv"><span>Day ${i+
  if(!RO){const bdRow=document.querySelector('[data-fg="bd"]');
   if(bdRow&&!bdRow.dataset.bound){bdRow.dataset.bound='1';bdRow.addEventListener('click',e=>{const c=e.target.closest('.chip');if(!c)return;
    const v=c.dataset.v;if(v){D.p.bud=+v;save()}else{delete D.p.bud;save()}})}}
- if(foodTimer)clearInterval(foodTimer);foodTimer=setInterval(()=>{foodPos=(foodPos+1)%FOOD.length;paintFood()},5000);
+ if(foodTimer)clearInterval(foodTimer);foodTimer=setInterval(()=>{foodPos=(foodPos+1)%foodQueue().length;paintFood()},5000);
  if(!RO)$('#gw').onclick=()=>{D.p.bud=+$('#bd').value||0;const b=D.p.bud||999;const pk=t=>{const p=MEALS.filter(x=>x.t==t&&x.c<=b);return p.length?p:MEALS.filter(x=>x.t==t)};
   D.plan.week=[...Array(7)].map((_,i)=>['b','l','d','s'].map(t=>{const p=pk(t);return p[(i+Math.floor(Math.random()*p.length))%p.length]}));save();pMeals()}}
 function pJournal(){if(RO)return;const J=D.journal;$('#pb').innerHTML=`<div class="card"><div class="card-h"><h3>New entry</h3></div><label for="jt" class="lbl">Entry</label><textarea id="jt" rows="3" placeholder="Anything on your mind"></textarea><div class="err" id="er"></div><button class="btn" id="js" style="width:100%">Save entry</button></div>${J.length?'<div class="lbl" style="margin:6px 0 0">Past entries</div>'+J.slice().reverse().map(j=>`<div class="card"><div class="meta">${fmt(j.d,{month:'long',day:'numeric'})}</div><p style="white-space:pre-wrap;margin:8px 0 0">${E(j.t)}</p><div class="row" style="gap:8px;margin-top:14px"><button class="btn ghost sm" data-e="${j.id}">Edit</button> <button class="btn ghost sm" data-x="${j.id}">Delete</button></div></div>`).join(''):''}`;
@@ -2355,6 +2480,10 @@ function backfillMeals(){try{if(!D||!D.meals)return;let fix=0;
   arr.forEach(x=>{const m=MEALS.find(k=>k.n===x.n);if(m&&x.t!==m.t){x.t=m.t;fix++}})}
  if(fix){save()}}catch(e){}}
 // ---------- start
+// big faded logo silhouette behind everything (theme tinted)
+(function(){try{const st=document.createElement('style');
+ st.textContent='#app::before{-webkit-mask-image:url("'+LOGO+'");mask-image:url("'+LOGO+'")}';
+ document.head.appendChild(st)}catch(e){}})();
 if(splashShouldShow())splashPlay();else splashSkip();  // only after 3 minutes away
 (async()=>{const s=getSession();
  // update check runs for everyone, signed in or not

@@ -1,7 +1,7 @@
 {
-    "versionCode": 36,
-    "versionName": "1.2.21",
-    "notes": "Fixes login in 1.2.20 (bundled cloud library was broken, so sign-in showed 'Still starting up'). The sync code you enter is now remembered.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.21/bloom-1.2.21.apk",
+    "versionCode": 37,
+    "versionName": "1.2.22",
+    "notes": "Partner theme shadows now green. Four-phase estimate card. Fresh shuffled tips every app open, matched to your phase. Partner ring says when her period may start. Faded Bloom watermark behind the app.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.22/bloom-1.2.22.apk",
     "publishedAt": "2026-10-25"
 }
