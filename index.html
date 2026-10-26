@@ -401,6 +401,30 @@ body.ro #updBanner.dark{background:#173F4B !important}
 #splashPetal{position:absolute;left:50%;top:50%;width:var(--w);height:var(--h);margin:calc(var(--h)/-2) 0 0 calc(var(--w)/-2);opacity:0;z-index:5;will-change:transform,opacity}
 #splashPetal svg{width:100%;height:100%;display:block;overflow:visible}
 #splashHint{position:absolute;z-index:9;bottom:calc(28px + env(safe-area-inset-bottom,0px));left:0;right:0;text-align:center;font:14px system-ui,sans-serif;color:#fdf3ee;opacity:0;transition:opacity .6s;pointer-events:none}
+/* partner accounts get a teal splash */
+body.roSplash #splash{background:#eef5f7}
+body.roSplash #splashWash{background:#245a6b}
+body.roSplash #splashFlower path:nth-child(1){fill:#a8c6d4}
+body.roSplash #splashFlower path:nth-child(2){fill:#7faebd}
+body.roSplash #splashFlower path:nth-child(3){fill:#5e97a8}
+body.roSplash #splashFlower path:nth-child(4){fill:#3e8195}
+body.roSplash #splashFlower path:nth-child(5){fill:#2f6b7e}
+body.roSplash #splashFlower path:nth-child(6){fill:#245a6b}
+/* profile: follower row + pairing */
+.pairrow{display:flex;align-items:center;gap:12px;width:100%;background:none;border:0;padding:0;margin:0;text-align:left;color:inherit;font:inherit;cursor:pointer;border-radius:14px}
+.pairrow:active{opacity:.65}
+.pairrow .chev{margin-left:auto;color:var(--mut);font-size:24px;line-height:1;padding-right:2px}
+/* stop sharing: spin, burst, done */
+#shareEnd{position:fixed;inset:0;z-index:9998;display:grid;place-items:center;background:var(--bg);opacity:0;transition:opacity .35s ease}
+#shareEnd.on{opacity:1}
+#shareEnd .se-stage{position:relative;width:min(78vw,300px);height:min(78vw,300px);display:grid;place-items:center}
+#shareEnd .se-logo{width:112px;height:112px;display:block;filter:drop-shadow(0 12px 26px rgba(0,0,0,.14));animation:seSpin 5s cubic-bezier(.4,0,.2,1) forwards}
+#shareEnd .se-logo.boom{animation:seBoom .6s cubic-bezier(.3,.85,.4,1) forwards}
+#shareEnd .se-msg{position:absolute;left:0;right:0;bottom:-6px;text-align:center;font:700 .95rem/1.4 system-ui,sans-serif;color:var(--ink);opacity:0;transform:translateY(8px);transition:opacity .4s,transform .4s}
+#shareEnd .se-msg.on{opacity:1;transform:none}
+#shareEnd .se-petal{position:absolute;left:50%;top:50%;pointer-events:none}
+@keyframes seSpin{0%{opacity:0;transform:rotate(0deg) scale(.55)}12%{opacity:1;transform:rotate(0deg) scale(1)}100%{opacity:1;transform:rotate(1440deg) scale(1)}}
+@keyframes seBoom{0%{opacity:1;transform:rotate(1440deg) scale(1)}55%{opacity:1;transform:rotate(1440deg) scale(1.5)}100%{opacity:0;transform:rotate(1440deg) scale(2.3)}}
 body.splashPlay #splashFlower{animation:splashBurst 3.4s cubic-bezier(.4,0,.2,1) forwards}
 body.splashPlay #splashWash{animation:splashWash 3.4s linear forwards}
 @keyframes splashBurst{
@@ -651,10 +675,16 @@ async function sbAfterLogin(u){sbUser=u;
    if((!j||!j.a)&&D.p.avatar)ST.set('bloom_pavatar',JSON.stringify({a:D.p.avatar,c:D.p.avatarCrop||{z:1,x:0,y:0}}))}catch(ea){}
   try{const j2=JSON.parse(ST.get('bloom_pavatar')||'null');if(j2&&j2.a&&!D.p.avatar){D.p.avatar=j2.a;D.p.avatarCrop=j2.c||{z:1,x:0,y:0};save()}}catch(eb){}
  }
- save();view=(pLocked()?'me':'cycle');shell();
+ // the cloud link decides the role: a live follower never lands on the cycle app
+ const q=await cloudPairing();
+ if(q.ok&&q.pair)return enterPartnerMode(q.pair.owner,q.pair.code,true);
+ if(q.ok&&pLocked())unlockPartner();
+ if(q.ok)setRoleFlag('');
+ // the owner stopped sharing since the last run: choose a role again
+ if(ST.get('bloom_unpaired')==='1'){setUnpaired(false);D.p.done=false;D.p.role='';onbStep=0}
+ save();view='cycle';shell();
  startCloudSync();
  setTimeout(()=>{try{reminderSync(true)}catch(e){}},1200);
- if(D.partner&&D.partner.on&&D.partner.code){try{const cl=await sbInit();if(cl)await cl.rpc('bloom_create_partner_code',{p_code:D.partner.code})}catch(e){}}
  toast('Signed in \u00b7 syncing')}
 async function sbSignIn(email,pw){await sbInit();if(!sb)return 'offline';
  const {error}=await sb.auth.signInWithPassword({email:email.trim(),password:pw});
@@ -671,49 +701,84 @@ function save(){if(RO||!user)return;ST.set(key(user),JSON.stringify(D));sbPushSo
 const setSession=v=>{try{ST.set('bloom_s',v);sessionStorage.setItem('bloom_s',v)}catch(e){}};
 const clearSession=()=>{try{ST.del('bloom_s');sessionStorage.removeItem('bloom_s')}catch(e){}delete mem.s};
 const getSession=()=>{let v=null;try{v=sessionStorage.getItem('bloom_s')}catch(e){}return v||ST.get('bloom_s')||mem.s||null};
-// ---------- partner sync (read-only sharing)
+// ---------- pairing: the link lives in the cloud, so it survives sign-outs and updates
+const setRoleFlag=r=>{try{r?ST.set('bloom_role',r):ST.del('bloom_role')}catch(e){}try{document.body.classList.toggle('roSplash',r==='partner')}catch(e){}};
+const setUnpaired=v=>{try{v?ST.set('bloom_unpaired','1'):ST.del('bloom_unpaired')}catch(e){}};
+function unlockPartner(){try{const u=(user||'').toLowerCase();const l=lockList().filter(x=>x!=='*'&&x!==u);ST.set('bloom_plocked',JSON.stringify(l))}catch(e){}}
+function isPartnerDevice(){try{if(ST.get('bloom_role')==='partner')return true;const s=getSession();return !!(s&&String(s).indexOf('p:')===0)}catch(e){return false}}
+async function cloudPairing(){
+ const cl=await sbInit();if(!cl||!sbUser)return{ok:false};
+ try{const {data,error}=await cl.from('bloom_partners').select('owner_id,code').eq('partner_id',sbUser.id).eq('revoked',false).limit(1);
+  if(error)return{ok:false};
+  return{ok:true,pair:data&&data.length?{owner:data[0].owner_id,code:data[0].code}:null};
+ }catch(e){return{ok:false}}}
+async function enterPartnerMode(owner,code,quiet){
+ RO=true;ROcloud=true;ROowner=owner;
+ if(sbUser&&sbUser.email)user=sbUser.email.toLowerCase();
+ try{ST.set('bloom_powner',owner);if(code)ST.set('bloom_lastcode',code)}catch(e){}
+ setRoleFlag('partner');setUnpaired(false);lockPartner();
+ // the follower's own name/photo live in their profile; pull them once
+ if(sbUser&&(!ST.get('bloom_pname')||!ST.get('bloom_pavatar'))){try{const {data:prof}=await sb.from('bloom_profiles').select('name,avatar').eq('id',sbUser.id).maybeSingle();
+  if(prof&&prof.name&&!ST.get('bloom_pname'))ST.set('bloom_pname',prof.name);
+  if(prof&&prof.avatar&&!ST.get('bloom_pavatar'))ST.set('bloom_pavatar',JSON.stringify({a:prof.avatar,c:{z:1,x:0,y:0}}));
+ }catch(e){}}
+ const doc=await sbFetchDoc(owner);
+ D=Object.assign(blank(),doc||{});roHash=roHashOf(JSON.stringify(doc||{}));
+ setSession('p:'+owner);
+ view='cycle';shell();
+ if(!quiet)toast('Paired \u00b7 following '+(((D.p&&D.p.name)||'your partner')));
+ return true}
+async function partnerDropped(){
+ const old=ROowner;
+ RO=false;ROcloud=false;ROowner=null;roHash='';D=null;
+ setRoleFlag('');unlockPartner();setUnpaired(true);clearSession();
+ try{ST.del('bloom_lastcode');ST.del('bloom_powner');if(old)ST.del(key(old))}catch(e){}
+ try{toast('Sharing was stopped')}catch(e){}
+ if(sbUser){try{await sbAfterLogin(sbUser);return}catch(e){}}
+ authView('in')}
+// ---------- pairing (read-only sharing)
 let RO=false,ROowner=null,ROcloud=false;
 function makeCode(){const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<6;i++)s+=A[Math.floor(Math.random()*A.length)];return s}
 async function genPartnerCode(){
  const client=await sbInit();
- if(!client||!sbUser){toast('Partner sync needs an internet connection');return null}
- let c=makeCode();
+ if(!client||!sbUser){toast('Pairing needs an internet connection');return null}
+ const want=makeCode();let c=want;
  try{
-  const {error}=await client.rpc('bloom_create_partner_code',{p_code:c});
+  const {data,error}=await client.rpc('bloom_create_partner_code',{p_code:want});
   if(error){toast('Could not create code: '+(error.message||'try again'));return null}
+  if(data)c=String(data).toUpperCase();
  }catch(e){toast('Could not create code: '+(e.message||'try again'));return null}
  try{
   const {data:rows}=await client.from('bloom_partners').select('code').eq('code',c).limit(1);
   if(!rows||!rows.length){toast('Code was not saved - try again');return null}
  }catch(e){}
  D.partner={code:c,on:true};save();
- toast('Code ready \u00b7 works on any device');
+ toast('Pairing code ready');
  return c}
 async function revokePartnerCode(){
  const client=await sbInit();
  if(client&&sbUser){try{await client.rpc('bloom_revoke_partner_codes')}catch(e){}}
  D.partner={code:'',on:false};save();
- toast('Code revoked')}
+ toast('Sharing stopped')}
 function exitPartner(){
  const wasRO=RO,ownerName=((D&&D.p&&D.p.name)||'');
- if(wasRO){sheet(`<h2>Exit ${E(ownerName)}'s view?</h2><p class="meta" style="margin:0 0 14px">Exiting unbinds you from their sync code - you will need their code again to follow them. Their data stays untouched.</p><div class="row" style="gap:10px;margin-top:10px"><button class="btn ghost" id="exStay" style="flex:1">Stay</button><button class="btn pink" id="exGo" style="flex:1">Exit</button></div>`);
+ if(wasRO){sheet(`<h2>Exit ${E(ownerName)}'s view?</h2><p class="meta" style="margin:0 0 14px">Exiting removes the pairing - you will need their code again to follow them. Their data stays untouched.</p><div class="row" style="gap:10px;margin-top:10px"><button class="btn ghost" id="exStay" style="flex:1">Stay</button><button class="btn pink" id="exGo" style="flex:1">Exit</button></div>`);
   $('#exStay').onclick=sheet;
   $('#exGo').onclick=()=>{sheet();exitPartnerNow()};
   return}
  exitPartnerNow()}
 // leaving follow mode always opens the partner account's own Profile - never the cycle feed
-function exitPartnerNow(){
+async function exitPartnerNow(){
  const wasRO=RO;
- RO=false;ROowner=null;D=null;clearSession();
- const own=ST.get('bloom_own');
- if(own&&sbUser){
-  if(wasRO)lockPartner();
-  ROcloud=false;roHash='';
-  setSession(own);
-  sbAfterLogin(sbUser).then(()=>{});
-  return}
+ // leaving on purpose removes the cloud link too, so a sign-out cannot restore it
+ try{if(wasRO){const cl=await sbInit();if(cl&&sbUser)await cl.rpc('bloom_leave_pairing')}}catch(e){}
+ RO=false;ROcloud=false;ROowner=null;roHash='';D=null;clearSession();
+ setRoleFlag('');unlockPartner();
+ try{ST.del('bloom_lastcode');ST.del('bloom_powner')}catch(e){}
+ if(wasRO)setUnpaired(true);
+ if(sbUser){try{await sbAfterLogin(sbUser);return}catch(e){}}
  authView('in')}
-// partner's own profile: no sync code, no cycle fields - just identity and exit
+// partner's own profile: no pairing code, no cycle fields - just identity and exit
 function roPage(){
  const c=cycleStats(),len=c.avg||28;let sum='No cycle logged yet';
  if(c.last){const day=Math.round((new Date(today())-new Date(c.last))/864e5)+1,dt=((day-1)%len)+1;sum='Day '+dt+' \u00b7 '+phaseInfo(dt,len).k}
@@ -721,14 +786,15 @@ function roPage(){
  $('#main').innerHTML=`<h1>Profile</h1>
 <div class="card">
  <div style="display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:20px">${roAvatarHTML(192)}<label class="btn ghost" for="rpav" style="display:inline-flex !important;align-items:center !important;justify-content:center !important;gap:8px !important;cursor:pointer !important;align-self:center">${IC.camera(18)} Change photo</label><input type="file" id="rpav" accept="image/*" hidden></div>
- <label for="rpn">Nickname</label><input id="rpn" maxlength="30" value="${E(ST.get('bloom_pname')||'')}">
- <p class="meta" style="margin:8px 0 0">Saves automatically. It shows in Tap Race and on the leaderboard.</p>
+ <label for="rpn">Nickname</label><input id="rpn" maxlength="30" value="${E(ST.get('bloom_pname')||'')}" readonly>
+ <button class="btn ghost sm" id="rpnChg" style="margin-top:8px">Change name</button>
+ <p class="meta" style="margin:8px 0 0">Shows in Tap Race and on the leaderboard.</p>
 </div>
 <div class="card"><div class="card-h"><h3>Following</h3></div><div class="row" style="gap:12px;align-items:center">${avatarHTML(56)}<div style="min-width:0"><b style="display:block">${E((D.p&&D.p.name)||'partner')}</b><p class="meta" style="margin:2px 0 0">${E(sum)}</p></div></div></div>
 <div class="card"><div class="card-h"><h3>App</h3><span class="meta" id="appVer">\u2014</span></div><button class="btn ghost" id="chkUp" style="width:100%">Check for updates</button></div>
 <button class="btn ghost" id="lo" style="width:100%">Sign out</button>
-<p class="meta" style="margin-top:8px;text-align:center">Signing out also unbinds you from their sync code. Their data stays untouched.</p>`;
- $('#rpn').onchange=async()=>{const v=$('#rpn').value.trim();if(!v)return;ST.set('bloom_pname',v);toast('Name saved');shell();try{let a=null;try{a=(JSON.parse(ST.get('bloom_pavatar')||'null')||{}).a||null}catch(ea){}const cl=await sbInit();if(cl&&sbUser)await cl.from('bloom_profiles').upsert({id:sbUser.id,name:v,avatar:a})}catch(ev){}try{notifyProfile(v,false)}catch(e2){}};
+<p class="meta" style="margin-top:8px;text-align:center">Signing out keeps this pairing. Their data stays untouched.</p>`;
+ $('#rpnChg').onclick=()=>changeNameSheet(ST.get('bloom_pname'),async v=>{ST.set('bloom_pname',v);toast('Name updated');shell();try{let a=null;try{a=(JSON.parse(ST.get('bloom_pavatar')||'null')||{}).a||null}catch(ea){}const cl=await sbInit();if(cl&&sbUser)await cl.from('bloom_profiles').upsert({id:sbUser.id,name:v,avatar:a})}catch(ev){}try{notifyProfile(v,false)}catch(e2){}});
  $('#rpav').onchange=e=>{const f=e.target.files&&e.target.files[0];e.target.value='';if(f)roPickAvatar(f)};
  $('#lo').onclick=logout;
  if(document.getElementById('chkUp'))$('#chkUp').onclick=()=>checkUpdate(true);
@@ -790,17 +856,12 @@ function roAdjust(){let j=null;try{j=JSON.parse(ST.get('bloom_pavatar')||'null')
 // ---------- auth (online accounts only)
 async function redeemCode(code,onErr){
  const c=String(code||'').trim().toUpperCase();
- if(!c){onErr('Enter a sync code.');return false}
+ if(!c){onErr('Enter a pairing code.');return false}
  const client=await sbInit();
- if(!client||!sbUser){onErr('Partner sync needs an internet connection.');return false}
+ if(!client||!sbUser){onErr('Pairing needs an internet connection.');return false}
  const {data,error}=await client.rpc('bloom_redeem_partner_code',{p_code:c});
- if(error||!data){onErr('That code is not valid.');return false}
- RO=true;ROcloud=true;ROowner=data;
- const doc=await sbFetchDoc(data);
- D=Object.assign(blank(),doc||{});
- roHash=roHashOf(JSON.stringify(doc||{}));
- setSession('p:'+data);
- view='cycle';shell();
+ if(error||!data){onErr('That pairing code is not valid.');return false}
+ await enterPartnerMode(data,c,true);
  if(!Object.keys(D.logs||{}).length)toast('No logs shared yet');
  return true
 }
@@ -869,7 +930,7 @@ function logout(){const who=ownWho();RO=false;ROcloud=false;ROowner=null;roHash=
  try{if(playCh&&sb)sb.removeChannel(playCh)}catch(pcl){}playCh=null;playKey='';opponentUid=null;playJoining=null;playQ=[];playReady=false;
  playState.peer=false;playState.peerName=null;playState.race=false;playState.raceStarted=false;playState.incoming=false;playState.peerScore=null;playState.myTaps=null;playState.rid=null;playState.last=null;
  pfLast=null;rxLastIn=0;lastInviteAt=0;
- try{['bloom_pname','bloom_pavatar','bloom_pown'].forEach(k=>ST.del(k))}catch(ep){}
+ try{ST.del('bloom_pown')}catch(ep){}
  if(who)try{ST.del('bloom_ppeer_'+who)}catch(epp){}
  try{ST.del('bloom_own')}catch(e){}try{reminderCancel()}catch(e){}if(sb){sb.auth.signOut().catch(()=>{});sbUser=null}if(cloudTimer){clearInterval(cloudTimer);cloudTimer=null}hideUpdateBanner();authView('in')}
 function applyTheme(){document.documentElement.removeAttribute('data-theme')}
@@ -936,7 +997,7 @@ async function fetchManifest(){const bust='?t='+Date.now();
  const r=await fetch(UPDATE_MANIFEST+bust,{cache:'no-store'});if(!r.ok)throw new Error('manifest '+r.status);
  return await r.json()}
 // Baked-in build identity. Keep in sync with android/app/build.gradle (versionCode/versionName).
-const APP_VERSION={code:37,name:'1.2.22'};
+const APP_VERSION={code:38,name:'1.2.23'};
 const UPD_SKIP_KEY='bloom_upd_skip';
 const updater=()=>{const C=window.Capacitor;if(!C)return null;
  const P=C.Plugins&&C.Plugins.BloomUpdater;
@@ -1005,7 +1066,10 @@ document.addEventListener('storage',e=>{if(RO&&e.key===key(ROowner))roReload()})
 let roTimer=null,roHash='';
 function roHashOf(s){let h=0;for(let i=0;i<s.length;i++){h=(h*31+s.charCodeAt(i))|0}return h}
 async function roReload(){if(!RO)return;
- if(ROcloud){const doc=await sbFetchDoc(ROowner);if(!doc)return;const h=roHashOf(JSON.stringify(doc));if(h===roHash)return;roHash=h;D=Object.assign(blank(),doc);shell();return}
+ if(ROcloud){const doc=await sbFetchDoc(ROowner);
+  if(!doc){ // empty could be a network blip: ask the link itself
+   const q=await cloudPairing();if(q.ok&&!q.pair)await partnerDropped();return}
+  const h=roHashOf(JSON.stringify(doc));if(h===roHash)return;roHash=h;D=Object.assign(blank(),doc);shell();return}
  const raw=ST.get(key(ROowner));if(raw==null)return;const h=roHashOf(raw);if(h===roHash)return;roHash=h;D=Object.assign(blank(),J(key(ROowner),{}));shell()}
 function shell(){splashAppIsReady();
  gAlive=false;gameSeq++;
@@ -1035,14 +1099,14 @@ function onboarding(){splashAppIsReady();try{fabSync()}catch(e){}const p=D.p;if(
  const steps=[
 `<div class="rolepick">
  <button class="rolebtn" data-role="me"><b>For me</b><span>Track my own cycle, symptoms and goals</span></button>
- <button class="rolebtn" data-role="partner"><b>Following someone</b><span>See a partner's cycle read-only with their sync code</span></button>
+ <button class="rolebtn" data-role="partner"><b>Following someone</b><span>See a partner's cycle read-only with their pairing code</span></button>
 </div>`,
 `<h2>What should we call you?</h2><label for="nm">Nickname</label><input id="nm" value="${E(p.name)}" maxlength="30"><label for="dx">PCOS/PMOS diagnosis</label><div class="chiprow" id="dxChips" role="group" aria-label="Diagnosis">${['','diagnosed','suspected','none'].map(v=>`<button type="button" class="chip dx-chip ${(p.dx||'')==v?'on':''}" data-dx="${v}" aria-pressed="${(p.dx||'')==v}">${v?'':'Prefer not to say'}${v=='diagnosed'?'Diagnosed':''}${v=='suspected'?'Suspected':''}${v=='none'?'Not diagnosed / learning':''}</button>`).join('')}</div><input id="dx" type="hidden" value="${p.dx||''}">`,
 `<h2>Your goals</h2><div class="row" id="goals" style="flex-wrap:wrap;gap:8px">${GOALS.map(g=>`<button class="chip" aria-pressed="${(p.goals||[]).includes(g)}">${g}</button>`).join('')}</div>`,
 `<h2>Your cycle</h2>${chipField('cy','Typical cycle',[['','Not sure'],['reg','Fairly regular'],['irr','Irregular'],['none','Rarely/no periods']],p.cy||'')}<label for="food">Food preferences</label><input id="food" value="${E(p.food||'')}" placeholder="No pork, vegetarian">${chipField('act','Preferred activity',[['walk','Walking'],['strength','Strength'],['stretch','Stretching / yoga']],p.act||'walk')}`];
  if(onbStep===0){
   $('#app').innerHTML=`<div class="auth"><div class="card" style="display:flex;flex-direction:column;gap:22px;padding:28px 24px 32px"><h2 style="margin:0">Who is Bloom for?</h2><div style="display:flex;flex-direction:column;gap:18px">${steps[0]}</div><p class="note">You can change this later in your profile.</p></div></div>`;
-  document.querySelectorAll('.rolebtn').forEach(b=>b.onclick=()=>{p.role=b.dataset.role;save();
+  document.querySelectorAll('.rolebtn').forEach(b=>b.onclick=()=>{p.role=b.dataset.role;setUnpaired(false);save();
    if(p.role==='partner'){partnerOnboard();return}
    onbStep=1;onboarding()});
   if(pLocked()){const mb=document.querySelector('.rolebtn[data-role="me"]');if(mb)mb.remove()}
@@ -1057,17 +1121,18 @@ function onboarding(){splashAppIsReady();try{fabSync()}catch(e){}const p=D.p;if(
  $('#nx').onclick=()=>{grab();nx()};$('#sk').onclick=()=>{grab();skipAll()}}
 function partnerOnboard(){
  const p=D.p;
+ const savedName=(()=>{try{return (ST.get('bloom_pname')||'').trim()}catch(e){return ''}})();
  $('#app').innerHTML=`<div class="auth"><div class="card">
   <div class="auth-head"><div class="brand">Bloom</div>
-   <h2>Enter the sync code</h2>
+   <h2>Enter the pairing code</h2>
    <p class="lede">Ask the person you want to follow for their 6-character code. You\u2019ll see their cycle read-only.</p></div>
   <form id="pForm" novalidate>
-   <div class="field" id="f-pc"><label for="pc">Sync code</label>
+   <div class="field" id="f-pc"><label for="pc">Pairing code</label>
     <input id="pc" class="code" maxlength="6" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="ABC123" value="${E((()=>{try{return (ST.get('bloom_lastcode')||'').toUpperCase()}catch(e){return ''}})())}" aria-describedby="e-pc">
     <p class="hint" id="e-pc"></p></div>
-    <div class="field" id="f-pn"><label for="pn">Your name</label>
+    ${savedName?'':`<div class="field" id="f-pn"><label for="pn">Your name</label>
      <input id="pn" maxlength="30" autocomplete="name" placeholder="What you call me">
-     <p class="hint" id="e-pn">Used in games and on the leaderboard.</p></div>
+     <p class="hint" id="e-pn">Asked once. Used in games and on the leaderboard.</p></div>`}
    <div class="err" id="err" role="alert"></div>
    <div class="row" style="gap:10px;margin-top:20px"><button type="button" class="btn ghost" id="pBack" style="flex:1">Back</button><button type="submit" class="btn" id="pGo" style="flex:1">Open</button></div>
   </form>
@@ -1083,7 +1148,7 @@ function partnerOnboard(){
   if(v.length<6){setField('Enter the 6-character code.');code.focus();return}
   try{ST.set('bloom_lastcode',v)}catch(e){}
   setField('');
-   const nm=(document.getElementById('pn')?document.getElementById('pn').value.trim():'');
+   const nm=savedName||((document.getElementById('pn')||{}).value||'').trim();
    if(!nm){const he=document.getElementById('e-pn');const fn=document.getElementById('f-pn');if(he){he.textContent='Tell us your name - it shows in games.';he.style.color='var(--rose)'}if(fn)fn.classList.add('invalid');return}
    try{ST.set('bloom_pname',nm)}catch(nmerr){}
    const btn=$('#pGo');btn.disabled=true;btn.innerHTML='<span class="spinner" aria-hidden="true"></span>Opening\u2026';
@@ -2103,14 +2168,72 @@ async function doDeleteAll(){
  if(cloudTimer){clearInterval(cloudTimer);cloudTimer=null}
  toast('All your data was deleted');
  authView('in')}
-// owner's profile card: the connected partner's live photo + name from the cloud row (both ways updated)
-async function loadPartnerPreview(){try{const cl=await sbInit();if(!cl||!sbUser||RO)return;const el=document.getElementById('pLink0');if(!el)return;
- const {data:pp}=await cl.from('bloom_partners').select('partner_id').eq('owner_id',sbUser.id).not('partner_id','is',null).limit(1);
- if(!pp||!pp.length){el.innerHTML='<p class="meta" style="margin:0">No partner connected yet.</p>';return}
- const {data:prof}=await cl.from('bloom_profiles').select('name,avatar').eq('id',pp[0].partner_id).maybeSingle();
- const nm=(prof&&prof.name)||'Your partner',av=(prof&&prof.avatar)||null;
- el.innerHTML=`<div class="row" style="gap:12px;align-items:center">${av?`<span class="avatar-wrap" style="width:56px;height:56px"><img class="avatar" src="${av}" alt=""></span>`:`<span class="avatar-fb" style="width:56px;height:56px;font-size:20px">${E((nm||'P').charAt(0).toUpperCase())}</span>`}<div style="min-width:0"><b style="display:block">${E(nm)}</b><p class="meta" style="margin:2px 0 0">following you</p></div></div>`;
-}catch(e){}}
+// owner's profile card: a follower takes the place of the pairing code
+async function ownerPairing(){
+ try{const cl=await sbInit();if(!cl||!sbUser||RO)return null;
+  const {data}=await cl.from('bloom_partners').select('partner_id,code,created_at').eq('owner_id',sbUser.id).eq('revoked',false).not('partner_id','is',null).limit(1);
+  if(!data||!data.length)return null;
+  let prof=null;try{const r=await cl.from('bloom_profiles').select('name,avatar').eq('id',data[0].partner_id).maybeSingle();prof=r.data||null}catch(e){}
+  return{row:data[0],prof};
+ }catch(e){return null}}
+async function loadPairCard(){
+ const box=document.getElementById('pairCard');if(!box||RO)return;
+ const st=await ownerPairing();
+ if(!st||!document.body.contains(box))return;
+ const nm=(st.prof&&st.prof.name)||'Your follower',av=(st.prof&&st.prof.avatar)||null;
+ const dt=st.row.created_at?new Date(st.row.created_at):null;
+ const since=dt&&!isNaN(dt)?'Following you since '+dt.toLocaleDateString(undefined,{month:'short',day:'numeric'}):'Following you';
+ box.innerHTML=`<div class="card-h"><h3>Follower</h3></div>
+ <button class="pairrow" id="folRow" aria-label="Stop sharing with ${E(nm)}">${av?`<span class="avatar-wrap" style="width:56px;height:56px"><img class="avatar" src="${av}" alt=""></span>`:`<span class="avatar-fb" style="width:56px;height:56px;font-size:20px">${E(nm.charAt(0).toUpperCase())}</span>`}<div style="min-width:0"><b style="display:block">${E(nm)}</b><p class="meta" style="margin:2px 0 0">${E(since)}</p></div><span class="chev" aria-hidden="true">\u203a</span></button>
+ <p class="meta" style="margin:12px 0 0">They can see your cycle read-only. Tap to stop sharing.</p>`;
+ const row=document.getElementById('folRow');if(row)row.onclick=()=>stopShareSheet(nm);
+}
+function stopShareSheet(name){
+ const who=name?E(name)+' will lose access right away.':'That code stops working right away.';
+ sheet(`<h2>Stop sharing?</h2><p class="meta" style="margin:0 0 4px">${who} You can pair again with a new code.</p><div class="row" style="gap:10px;margin-top:14px"><button class="btn ghost" id="ssCancel" style="flex:1">Cancel</button><button class="btn pink" id="ssGo" style="flex:1">Stop sharing</button></div>`);
+ const c=document.getElementById('ssCancel');if(c)c.onclick=()=>sheet();
+ const g=document.getElementById('ssGo');if(g)g.onclick=()=>{sheet();stopShareRun()};
+}
+async function stopShareRun(){
+ const cl=await sbInit();
+ if(!cl||!sbUser){toast('Could not stop sharing \u2014 check your connection');return}
+ try{const {error}=await cl.rpc('bloom_revoke_partner_codes');if(error)throw error}
+ catch(e){toast('Could not stop sharing \u2014 try again');return}
+ D.partner={code:'',on:false};save();
+ await shareEndAnim();
+ toast('Sharing stopped');
+ if(view!=='me'){view='me';shell()}else me();
+}
+// confirm -> the logo spins for five seconds -> bursts -> "Sharing stopped"
+function shareEndAnim(){
+ return new Promise(done=>{
+  const o=document.createElement('div');o.id='shareEnd';
+  o.innerHTML='<div class="se-stage"><img class="se-logo" alt="" src="'+LOGO+'"><div class="se-msg">Sharing stopped</div></div>';
+  document.body.appendChild(o);
+  requestAnimationFrame(()=>o.classList.add('on'));
+  const stage=o.querySelector('.se-stage');
+  const PAL=SPLASH_PAL,W=Math.max(innerWidth,innerHeight);
+  for(let i=0;i<26;i++){
+   const d=document.createElement('div');d.className='se-petal';
+   const w=Math.min(innerWidth,innerHeight)*(.10+Math.random()*.18),h=w*1.15;
+   d.style.width=w+'px';d.style.height=h+'px';d.style.marginLeft=(-w/2)+'px';d.style.marginTop=(-h/2)+'px';
+   const ci=Math.floor(Math.random()*4);
+   d.innerHTML=splashPetalSVG(PAL[ci],PAL[Math.min(5,ci+2)]);
+   stage.appendChild(d);
+   if(!d.animate)continue;
+   const a=(i/26)*Math.PI*2+Math.random()*.5,dist=W*(.45+Math.random()*.45);
+   const dx=Math.cos(a)*dist,dy=Math.sin(a)*dist,rot=(Math.random()<.5?-1:1)*(240+Math.random()*420);
+   d.animate([
+    {opacity:0,transform:'translate(0,0) scale(.2) rotate(0deg)'},
+    {opacity:1,transform:'translate('+(dx*.25)+'px,'+(dy*.25)+'px) scale(.9) rotate('+(rot*.25)+'deg)'},
+    {opacity:0,transform:'translate('+dx+'px,'+dy+'px) scale(1.3) rotate('+rot+'deg)'}
+   ],{duration:900+Math.random()*300,delay:5000,easing:'cubic-bezier(.2,.7,.3,1)',fill:'both'});
+  }
+  setTimeout(()=>{const l=o.querySelector('.se-logo'),m=o.querySelector('.se-msg');if(l)l.classList.add('boom');if(m)m.classList.add('on')},5000);
+  setTimeout(()=>o.classList.remove('on'),6100);
+  setTimeout(()=>{try{o.remove()}catch(e){}done()},6520);
+ });
+}
 // ---------- play: mini-games with cloud highscores + partner leaderboard (realtime scores, no DB writes)
 let gAlive=false,gameSeq=0; // lets a running game stop itself when the view changes or another game starts
 // scores are per device: in follow mode they live in local storage, never in the owner's doc
@@ -2169,7 +2292,7 @@ function raceInvite(){
 async function raceInviteGo(){
  const ch=await playJoin();
  if(!ch){toast('Could not connect \u2014 check your connection');return}
- if(!opponentUid){toast('No partner yet \u2014 use a sync code on your profile');return}
+ if(!opponentUid){toast('No partner yet \u2014 use a pairing code on your profile');return}
  if(!playState.peer)await waitPeer(2600);
  playState.race=true;playState.raceStarted=false;playState.peerScore=null;playState.myTaps=null;
  playState.rid=Math.random().toString(36).slice(2,9);
@@ -2360,18 +2483,34 @@ async function memGame(){gAlive=true;
   step=0;msg.textContent='Your turn.';turn=true}
  async function next(){seq.push(Math.floor(Math.random()*4));lvl.textContent='Level '+seq.length;msg.textContent='Watch the pattern.';await sleep(500);if(gone)return;await show()}
  next()}
+// a name can change once a week, per account
+const NAME_MS=7*864e5;
+function nameLeft(){try{const t=+ST.get('bloom_nm_at_'+(ownWho()||''))||0;return Math.max(0,t+NAME_MS-Date.now())}catch(e){return 0}}
+function nameMark(){try{ST.set('bloom_nm_at_'+(ownWho()||''),String(Date.now()))}catch(e){}}
+function changeNameSheet(current,onDone){
+ const left=nameLeft();
+ if(left>0){const d=Math.ceil(left/864e5);toast('Name changes once a week \u00b7 '+d+' day'+(d>1?'s':'')+' left');return}
+ sheet(`<h2>Change name</h2><p class="meta" style="margin:0 0 12px">You can change it again in a week.</p><label for="nmx">Nickname</label><input id="nmx" maxlength="30" autocomplete="nickname" value="${E(current||'')}"><div class="row" style="gap:10px;margin-top:16px"><button class="btn ghost" id="nmc" style="flex:1">Cancel</button><button class="btn" id="nms" style="flex:1">Save</button></div>`);
+ const inp=document.getElementById('nmx');if(inp)setTimeout(()=>{try{inp.focus()}catch(e){}},80);
+ const c=document.getElementById('nmc');if(c)c.onclick=()=>sheet();
+ const b=document.getElementById('nms');if(b)b.onclick=()=>{
+  const el=document.getElementById('nmx');const nm=((el&&el.value)||'').trim();
+  if(!nm){toast('Enter a name');return}
+  if(nm===String(current||'').trim()){sheet();return}
+  nameMark();sheet();onDone(nm)};
+}
 function mePartner(){const p=D.p||{};
  $('#main').innerHTML=`<h1>Profile</h1>
 <div class="card">
  <div style="display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:20px">${avatarHTML(192)}<label class="btn ghost" for="av" style="display:inline-flex !important;align-items:center !important;justify-content:center !important;gap:8px !important;cursor:pointer !important;align-self:center">${IC.camera(18)} Change photo</label><input type="file" id="av" accept="image/*" hidden></div>
- <label for="nm">Nickname</label><input id="nm" value="${E(p.name||'')}" maxlength="30">
- <p class="meta" style="margin:8px 0 0">Your name shows in Tap Race and on the leaderboard.</p>
- <p class="meta" style="margin:8px 0 0">Saves automatically when you change the name.</p>
+ <label for="nm">Nickname</label><input id="nm" value="${E(p.name||'')}" maxlength="30" readonly>
+ <button class="btn ghost sm" id="nmChg" style="margin-top:8px">Change name</button>
+ <p class="meta" style="margin:8px 0 0">Shows in Tap Race and on the leaderboard.</p>
 </div>
-<div class="card"><div class="card-h"><h3>Partner account</h3></div><p class="meta">This account follows someone read-only, so its own cycle tracking stays off. Enter their sync code to open their view.</p><button class="btn" id="gFollow" style="width:100%">Enter a sync code</button></div>
+<div class="card"><div class="card-h"><h3>Partner account</h3></div><p class="meta">This account follows someone read-only, so its own cycle tracking stays off. Enter their pairing code to open their view.</p><button class="btn" id="gFollow" style="width:100%">Enter a pairing code</button></div>
 <div class="card"><div class="card-h"><h3>App</h3><span class="meta" id="appVer">\u2014</span></div><button class="btn ghost" id="chkUp" style="width:100%">Check for updates</button></div>
 <button class="btn ghost" id="lo" style="width:100%">Log out</button>`;
- $('#nm').onchange=async()=>{const v=$('#nm').value.trim();if(!v)return;p.name=v;D.p.name=v;save();try{const cl=await sbInit();if(cl&&sbUser)await cl.from('bloom_profiles').upsert({id:sbUser.id,name:v})}catch(ev){}toast('Saved');shell();try{notifyProfile(v,false)}catch(e2){}};
+ $('#nmChg').onclick=()=>changeNameSheet(p.name,async v=>{p.name=v;D.p.name=v;try{ST.set('bloom_pname',v)}catch(e){};save();try{const cl=await sbInit();if(cl&&sbUser)await cl.from('bloom_profiles').upsert({id:sbUser.id,name:v})}catch(ev){}toast('Name updated');shell();try{notifyProfile(v,false)}catch(e2){}});
  $('#av').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f)pickAvatar(f)};
  $('#gFollow').onclick=()=>partnerOnboard();
  $('#lo').onclick=logout;
@@ -2381,15 +2520,15 @@ function me(){const p=D.p;const hasCode=!!(D.partner&&D.partner.on&&D.partner.co
 $('#main').innerHTML=`<h1>Profile</h1>
 <div class="card">
  <div style="display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:20px">${avatarHTML(192)}<label class="btn ghost" for="av" style="display:inline-flex !important;align-items:center !important;justify-content:center !important;gap:8px !important;cursor:pointer !important;align-self:center">${IC.camera(18)} Change photo</label><input type="file" id="av" accept="image/*" hidden></div>
- <label for="nm">Nickname</label><input id="nm" value="${E(p.name)}" maxlength="30">
+ <label for="nm">Nickname</label><input id="nm" value="${E(p.name)}" maxlength="30" readonly>
+ <button class="btn ghost sm" id="nmChg" style="margin-top:8px">Change name</button>
  <label>Goals</label><div class="row" id="goals">${GOALS.map(g=>`<button class="chip" aria-pressed="${(p.goals||[]).includes(g)}">${g}</button>`).join('')}</div>
  <button class="btn" id="sv" style="width:100%;margin-top:12px">Save</button>
 </div>
-<div class="card"><div class="card-h"><h3>Sync code</h3></div>
- ${hasCode?`<p class="meta" style="margin:0 0 12px">Read-only access for one person. Revoke any time.</p><div class="syncbox"><span class="synccode">${E(D.partner.code)}</span><button class="btn ghost sm" id="cp">Copy</button></div><div class="linkrow"><button class="linkbtn" id="pg">New code</button><span class="linkdot">\u00b7</span><button class="linkbtn" id="pv">Revoke</button></div>`
- :`<p class="meta" style="margin:0 0 12px">Let one person follow your cycle read-only.</p><button class="btn" id="gc" style="width:100%">Create code</button>`}
+<div class="card" id="pairCard"><div class="card-h"><h3>Pairing code</h3></div>
+ ${hasCode?`<p class="meta" style="margin:0 0 12px">Read-only access for one person. Stop sharing any time.</p><div class="syncbox"><span class="synccode">${E(D.partner.code)}</span><button class="btn ghost sm" id="cp">Copy</button></div><div class="linkrow"><button class="linkbtn" id="pg">New code</button><span class="linkdot">\u00b7</span><button class="linkbtn" id="pv">Stop sharing</button></div>`
+ :`<p class="meta" style="margin:0 0 12px">Let one person follow your cycle read-only.</p><button class="btn" id="gc" style="width:100%">Create pairing code</button>`}
 </div>
-<div class="card"><div class="card-h"><h3>Your partner</h3></div><span id="pLink0"><p class="meta">No partner connected yet.</p></span></div>
 <div class="card"><div class="card-h"><h3>Reminder</h3></div><label class="row" style="color:var(--ink)"><input type="checkbox" id="rm" style="width:22px;margin:0" ${D.rem.on?'checked':''}> Daily logging reminder</label><label for="rt">Time</label><input id="rt" type="time" value="${D.rem.time}"><button class="btn ghost" id="rs" style="width:100%;margin-top:4px">Save reminder</button>${notifPlugin()?`<p class="meta" style="margin-top:10px" id="remNote">One notification a day. Android will ask for permission the first time.</p>`:''}</div>
 <div class="card"><div class="card-h"><h3>App</h3><span class="meta" id="appVer">\u2014</span></div><button class="btn ghost" id="chkUp" style="width:100%">Check for updates</button></div>
 <button class="btn ghost" id="lo" style="width:100%">Log out</button>`;
@@ -2404,11 +2543,12 @@ $('#main').innerHTML=`<h1>Profile</h1>
   else if(r.error){if(note)note.textContent='The reminder could not be scheduled. Try again.'}
   else if(note)note.textContent='One reminder a day at '+D.rem.time+'.'};
  $('#rs').onclick=saveRem;$('#rt').onchange=saveRem;$('#rm').onchange=saveRem;
- $('#lo').onclick=logout;loadPartnerPreview();
+ $('#lo').onclick=logout;loadPairCard();
+ $('#nmChg').onclick=()=>changeNameSheet(p.name,async v=>{p.name=v;D.p.name=v;save();try{const cl=await sbInit();if(cl&&sbUser)await cl.from('bloom_profiles').upsert({id:sbUser.id,name:v})}catch(e){};shell();toast('Name updated');try{notifyProfile(v,!!D.p.avatar)}catch(e2){}});
  if(document.getElementById('gc'))$('#gc').onclick=async()=>{const c=await genPartnerCode();if(c)me()};
  if(document.getElementById('cp'))$('#cp').onclick=async()=>{try{await navigator.clipboard.writeText(D.partner.code);toast('Code copied')}catch(e){toast(D.partner.code)}};
  if(document.getElementById('pg'))$('#pg').onclick=async()=>{await genPartnerCode();me()};
- if(document.getElementById('pv'))$('#pv').onclick=async()=>{if(!confirm('Revoke this sync code? Your partner will lose access.'))return;await revokePartnerCode();me();toast('Code revoked')};
+ if(document.getElementById('pv'))$('#pv').onclick=()=>stopShareSheet('');
  if(document.getElementById('chkUp'))$('#chkUp').onclick=()=>checkUpdate(true);
  (async()=>{const up=updater();if(!up)return;try{const v=await up.getVersion();const el=document.getElementById('appVer');if(el)el.textContent='v'+v.versionName+' ('+v.versionCode+')'}catch(e){}})()}
 
@@ -2434,6 +2574,7 @@ function splashAppIsReady(){
  if(Date.now()-splashT0>=splashMin)splashHide();
 }
 const SPLASH_PAL=['#e9a5ad','#d68f98','#cd818f','#b87082','#ac6476','#a15a6b'];
+const SPLASH_PAL_RO=['#a8c6d4','#7faebd','#5e97a8','#3e8195','#2f6b7e','#245a6b'];
 const splashPetalSVG=(c,c2)=>'<svg viewBox="-50 -60 100 120"><path d="M0,-56 C46,-42 52,22 0,58 C-52,22 -46,-42 0,-56Z" fill="'+c+'"/><path d="M0,-6 C22,-2 30,22 0,50 C-16,26 -12,8 0,-6Z" fill="'+c2+'" opacity=".9"/></svg>';
 function splashPlay(replay){
  const stage=splashMount();if(!stage)return;
@@ -2446,8 +2587,9 @@ function splashPlay(replay){
   const d=document.createElement('div');d.id='splashPetal';
   const w=Math.min(innerWidth,innerHeight)*(.16+Math.random()*.3),h=w*1.15;
   d.style.setProperty('--w',w+'px');d.style.setProperty('--h',h+'px');
+  const PAL=document.body.classList.contains('roSplash')?SPLASH_PAL_RO:SPLASH_PAL;
   const ci=Math.floor(Math.random()*4);
-  d.innerHTML=splashPetalSVG(SPLASH_PAL[ci],SPLASH_PAL[Math.min(5,ci+2)]);stage.appendChild(d);
+  d.innerHTML=splashPetalSVG(PAL[ci],PAL[Math.min(5,ci+2)]);stage.appendChild(d);
   const a=(i/N)*Math.PI*2+Math.random()*.4,dist=W*(.65+Math.random()*.55);
   const dx=Math.cos(a)*dist,dy=Math.sin(a)*dist,rot=(Math.random()<.5?-1:1)*(300+Math.random()*500);
   const r0=Math.random()*360,delay=1900+Math.random()*500;
@@ -2484,15 +2626,19 @@ function backfillMeals(){try{if(!D||!D.meals)return;let fix=0;
 (function(){try{const st=document.createElement('style');
  st.textContent='#app::before{-webkit-mask-image:url("'+LOGO+'");mask-image:url("'+LOGO+'")}';
  document.head.appendChild(st)}catch(e){}})();
+if(isPartnerDevice())document.body.classList.add('roSplash');
 if(splashShouldShow())splashPlay();else splashSkip();  // only after 3 minutes away
 (async()=>{const s=getSession();
  // update check runs for everyone, signed in or not
  setTimeout(()=>{try{checkUpdate(false)}catch(e){}},2400);
  if(s&&String(s).indexOf('p:')===0){const owner=String(s).slice(2);
-  RO=true;ROcloud=true;ROowner=owner;
+  RO=true;ROcloud=true;ROowner=owner;setRoleFlag('partner');
   const cached=J(key(owner),{});
   D=Object.assign(blank(),cached||{});backfillMeals();view='cycle';shell();
-  sbInit().then(async()=>{try{const doc=await sbFetchDoc(owner);
+  sbInit().then(async()=>{try{
+   // the link may have been stopped while this phone was closed
+   if(sbUser){const q=await cloudPairing();if(q.ok&&!q.pair){await partnerDropped();return}}
+   const doc=await sbFetchDoc(owner);
    if(doc&&(Object.keys(doc.logs||{}).length||Object.keys(doc.tasks||[]).length)){
     D=Object.assign(blank(),doc);roHash=roHashOf(JSON.stringify(doc));shell()}
    if(sbUser&&!playCh){try{await playJoin()}catch(ej){}}}catch(e){}});
