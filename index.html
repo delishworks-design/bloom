@@ -717,6 +717,8 @@ async function enterPartnerMode(owner,code,quiet){
  if(sbUser&&sbUser.email)user=sbUser.email.toLowerCase();
  try{ST.set('bloom_powner',owner);if(code)ST.set('bloom_lastcode',code)}catch(e){}
  setRoleFlag('partner');setUnpaired(false);lockPartner();
+ // a different account on this phone must not inherit the last follower's name
+ try{const pu=ST.get('bloom_puid');if(sbUser&&pu&&pu!==sbUser.id){ST.del('bloom_pname');ST.del('bloom_pavatar')}if(sbUser)ST.set('bloom_puid',sbUser.id)}catch(e){}
  // the follower's own name/photo live in their profile; pull them once
  if(sbUser&&(!ST.get('bloom_pname')||!ST.get('bloom_pavatar'))){try{const {data:prof}=await sb.from('bloom_profiles').select('name,avatar').eq('id',sbUser.id).maybeSingle();
   if(prof&&prof.name&&!ST.get('bloom_pname'))ST.set('bloom_pname',prof.name);
@@ -997,7 +999,7 @@ async function fetchManifest(){const bust='?t='+Date.now();
  const r=await fetch(UPDATE_MANIFEST+bust,{cache:'no-store'});if(!r.ok)throw new Error('manifest '+r.status);
  return await r.json()}
 // Baked-in build identity. Keep in sync with android/app/build.gradle (versionCode/versionName).
-const APP_VERSION={code:38,name:'1.2.23'};
+const APP_VERSION={code:39,name:'1.2.24'};
 const UPD_SKIP_KEY='bloom_upd_skip';
 const updater=()=>{const C=window.Capacitor;if(!C)return null;
  const P=C.Plugins&&C.Plugins.BloomUpdater;
@@ -2161,7 +2163,7 @@ async function doDeleteAll(){
  try{if(cl&&sbUser)await cl.rpc('bloom_revoke_partner_codes')}catch(e){}
  try{await reminderCancel()}catch(e){}
  // local caches for every account on this device, plus the session
- try{Object.keys(localStorage).filter(k=>k.indexOf('bloom_d_')===0||k==='bloom_s'||k==='bloom_own'||k==='bloom_last_bg'||k==='bloom_upd_skip'||k==='bloom_pname'||k==='bloom_pavatar'||k==='bloom_pown').forEach(k=>localStorage.removeItem(k))}catch(e){}
+ try{Object.keys(localStorage).filter(k=>k.indexOf('bloom_d_')===0||k==='bloom_s'||k==='bloom_own'||k==='bloom_last_bg'||k==='bloom_upd_skip'||k==='bloom_pname'||k==='bloom_pavatar'||k==='bloom_pown'||k==='bloom_puid'||k==='bloom_powner'||k==='bloom_role'||k==='bloom_unpaired'||k==='bloom_lastcode').forEach(k=>localStorage.removeItem(k))}catch(e){}
  try{sessionStorage.clear()}catch(e){}
  try{if(cl)await cl.auth.signOut()}catch(e){}
  sbUser=null;user=null;D=null;
@@ -2636,8 +2638,12 @@ if(splashShouldShow())splashPlay();else splashSkip();  // only after 3 minutes a
   const cached=J(key(owner),{});
   D=Object.assign(blank(),cached||{});backfillMeals();view='cycle';shell();
   sbInit().then(async()=>{try{
-   // the link may have been stopped while this phone was closed
-   if(sbUser){const q=await cloudPairing();if(q.ok&&!q.pair){await partnerDropped();return}}
+   if(sbUser){
+    const q=await cloudPairing();
+    // the link may have been stopped while this phone was closed
+    if(q.ok&&!q.pair){await partnerDropped();return}
+    if(q.ok&&q.pair){await enterPartnerMode(q.pair.owner,q.pair.code,true);return}
+   }
    const doc=await sbFetchDoc(owner);
    if(doc&&(Object.keys(doc.logs||{}).length||Object.keys(doc.tasks||[]).length)){
     D=Object.assign(blank(),doc);roHash=roHashOf(JSON.stringify(doc));shell()}

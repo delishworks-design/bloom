@@ -1,7 +1,7 @@
 {
-    "versionCode": 38,
-    "versionName": "1.2.23",
+    "versionCode": 39,
+    "versionName": "1.2.24",
     "notes": "Pairing is saved in the cloud now: a partner stays paired after signing out or updating, and only Stop sharing disconnects them. The owner's profile shows the follower with their photo and name; Stop sharing spins the Bloom logo, bursts it and says so. Sync code is now Pairing code. Partners give their name once, and both profiles get Change name (once a week). Partner accounts get a teal splash.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.23/bloom-1.2.23.apk",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.24/bloom-1.2.24.apk",
     "publishedAt": "2026-10-26"
 }
