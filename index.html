@@ -176,6 +176,14 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;
 .stat b{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:#3A2E33;line-height:1.1}
 .stat b.word{font-size:14px;line-height:1.2}
 .stat .lbl{margin-top:2px}
+.stats3 button.stat{font:inherit;-webkit-appearance:none;appearance:none;cursor:pointer;transition:transform .15s ease,box-shadow .15s ease}
+.stats3 button.stat:active{transform:scale(.97)}
+.stats3 button.stat:focus-visible{outline:2px solid #B8456B;outline-offset:3px}
+.stat .lbl .chev{color:#7C6B71;font-weight:700;margin-left:1px}
+.phasegraph{display:flex;justify-content:center;margin:0 0 2px}
+.phasegraph svg{width:min(232px,62vw);height:auto;display:block;overflow:visible}
+.phasegraph .pg-name{fill:#3A2E33;font-family:'Playfair Display',serif;font-size:19px;font-weight:700}
+.phasegraph .pg-sub{fill:#7C6B71;font-size:10.5px;letter-spacing:.03em}
 
 /* Forms */
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.sp{justify-content:space-between}
@@ -994,7 +1002,7 @@ async function fetchManifest(){const bust='?t='+Date.now();
  const r=await fetch(UPDATE_MANIFEST+bust,{cache:'no-store'});if(!r.ok)throw new Error('manifest '+r.status);
  return await r.json()}
 // Baked-in build identity. Keep in sync with android/app/build.gradle (versionCode/versionName).
-const APP_VERSION={code:40,name:'1.2.25'};
+const APP_VERSION={code:41,name:'1.2.26'};
 const UPD_SKIP_KEY='bloom_upd_skip';
 const updater=()=>{const C=window.Capacitor;if(!C)return null;
  const P=C.Plugins&&C.Plugins.BloomUpdater;
@@ -1072,6 +1080,7 @@ function shell(){splashAppIsReady();
  if(funTimer){clearInterval(funTimer);funTimer=null}if(foodTimer){clearInterval(foodTimer);foodTimer=null}if(roTimer){clearInterval(roTimer);roTimer=null}
  if(RO&&!ROcloud){const raw=ST.get(key(ROowner));if(raw!=null){roHash=roHashOf(raw);D=Object.assign(blank(),J(key(ROowner),{}))}}
  document.body.classList.toggle('ro',!!RO);
+ if(!RO)stripSeededTasks();
  if(!D.p.done&&!RO){if(pLocked()){D.p.done=true;D.p=D.p||{};D.p.role='partner';save()}else return onboarding()}
  const N=[['cycle','Cycle',IC.ring],['planner','Planner',IC.list] ,['insights','Insights',IC.chart],['learn','Learn',IC.book]]
    .filter(x=>!(pLocked()&&!RO&&x[0]==='cycle'));
@@ -1109,7 +1118,7 @@ function onboarding(){splashAppIsReady();try{fabSync()}catch(e){}const p=D.p;if(
  document.querySelectorAll('.dx-chip').forEach(c=>c.onclick=()=>{const v=c.dataset.dx;document.querySelectorAll('.dx-chip').forEach(x=>{x.classList.toggle('on',x.dataset.dx===v);x.setAttribute('aria-pressed',x.dataset.dx===v)});$('#dx').value=v;});
  bindFields();
  const grab=()=>{if(onbStep===1){p.name=$('#nm').value.trim();p.dx=$('#dx').value}if(onbStep===2)p.goals=[...document.querySelectorAll('#goals .chip[aria-pressed=true]')].map(c=>c.textContent);if(onbStep===3){p.cy=$('#cy').value;p.food=$('#food').value.trim();p.act=$('#act').value}};
- const nx=()=>{if(onbStep===3){p.done=true;if(!D.tasks.length)genPlan(true);save();view='cycle';return shell()}onbStep++;save();onboarding()};
+ const nx=()=>{if(onbStep===3){p.done=true;save();view='cycle';return shell()}onbStep++;save();onboarding()};
  const skipAll=()=>{if(onbStep<3){onbStep=3;save();onboarding();return}nx()};
  $('#nx').onclick=()=>{grab();nx()};$('#sk').onclick=()=>{grab();skipAll()}}
 function partnerOnboard(){
@@ -1151,12 +1160,15 @@ function partnerOnboard(){
  });
 }
 
-function genPlan(silent){const a={walk:'Walk 20 minutes',strength:'Strength: 15-minute beginner routine',stretch:'Stretching 10 minutes'}[D.p.act||'walk'];
- const base=[['Drink water through the day'],['Breakfast, lunch and dinner'],[a,[1,3,5]],['Wind down & lights out on time'],['5 slow breaths'],['Take medicine as prescribed (if applicable)']];
- base.forEach(([t,days])=>{if(!D.tasks.some(x=>x.t==t))D.tasks.push({id:uid(),t,days})});save();if(!silent)toast('Plan added')}
+// older builds seeded a fixed starter plan; clear it once so checklists only hold what the user adds
+const SEED_TASKS=['Drink water through the day','Breakfast, lunch and dinner','Walk 20 minutes','Strength: 15-minute beginner routine','Stretching 10 minutes','Wind down & lights out on time','5 slow breaths','Take medicine as prescribed (if applicable)'];
+function stripSeededTasks(){try{if(RO||!D||D.seedClean)return;D.seedClean=1;
+ if(Array.isArray(D.tasks)&&D.tasks.length){const before=D.tasks.length;D.tasks=D.tasks.filter(t=>!SEED_TASKS.includes(t&&t.t));
+  if(D.tasks.length!==before){const ids=new Set(D.tasks.map(t=>t.id));for(const d of Object.keys(D.done||{})){const m=D.done[d]||{};Object.keys(m).forEach(k=>{if(!ids.has(k))delete m[k]});if(!Object.keys(m).length)delete D.done[d]}}}
+ save()}catch(e){}}
 // ---------- views
 function phaseRanges(len){const fol=Math.round(len*.45),ovu=Math.round(len*.58);
- return [['Menstrual',1,5,'var(--rose)'],['Follicular',6,fol,'var(--teal)'],['Ovulation',fol+1,ovu,'var(--pink)'],['Luteal',ovu+1,len,'var(--rose)']]}
+ return [['Menstrual',1,5,'#B8456B'],['Follicular',6,fol,'#2A8A87'],['Ovulation',fol+1,ovu,'#6E5FA8'],['Luteal',ovu+1,len,'#B9803A']]}
 function ringPillText(dt,len,left){
  const who=RO?'Her':'Your',p=phaseInfo(dt,len);
  if(dt<=5)return RO?'Her period is here':'Period day '+dt;
@@ -1165,13 +1177,27 @@ function ringPillText(dt,len,left){
  if(p.k==='Ovulation')return RO?'Her fertile window':'Fertile window';
  if(p.k==='Follicular')return RO?'Her energy may be rising':'Energy may be rising';
  return who+' period may start in '+left+' days'}
-function phaseCard(c,dt){
- if(!c.last)return `<div class="card"><div class="card-h"><h3>Four phases</h3></div><p class="meta">Log a period start to estimate all four phases.</p></div>`;
+function polarPt(cx,cy,r,deg){const a=deg*Math.PI/180;return{x:(cx+r*Math.cos(a)).toFixed(2),y:(cy+r*Math.sin(a)).toFixed(2)}}
+function phaseWheelSVG(c,dt){
+ const len=c.avg||28,R=92,W=22,phases=phaseRanges(len),ph=phaseInfo(dt,len),cur=phases.find(p=>p[0]===ph.k)||phases[0];
+ const segs=phases.map(([n,from,to,col])=>{
+  const a0=-90+360*((from-1)/len)+1.2,a1=-90+360*(to/len)-1.2;
+  const p0=polarPt(120,120,R,a0),p1=polarPt(120,120,R,a1),large=(a1-a0)>180?1:0;
+  return `<path d="M${p0.x} ${p0.y} A${R} ${R} 0 ${large} 1 ${p1.x} ${p1.y}" fill="none" stroke="${col}" stroke-width="${W}"/>`}).join('');
+ const mp=polarPt(120,120,R,-90+360*((dt-.5)/len));
+ return `<svg viewBox="0 0 240 240" role="img" aria-label="Cycle phases graph: ${ph.k}, day ${dt} of ${len}"><circle cx="120" cy="120" r="${R}" fill="none" stroke="#F1E6D7" stroke-width="${W}"/>${segs}<circle cx="${mp.x}" cy="${mp.y}" r="7.5" fill="#FFFBF5" stroke="${cur[3]}" stroke-width="3"/><text x="120" y="111" text-anchor="middle" class="pg-name">${ph.k}</text><text x="120" y="132" text-anchor="middle" class="pg-sub">Day ${dt} of ${len}</text></svg>`}
+function phaseSheet(c,dt){
+ if(!c.last){
+  sheet(`<h2>Four phases</h2><p class="meta" style="margin:0 0 4px">Log a period start to estimate all four phases.</p>${RO?'':'<button class="btn" id="phLog">Log period</button>'}`);
+  if(!RO&&$('#phLog'))$('#phLog').onclick=()=>{sheet();periodSheet()};
+  return}
  const len=c.avg||28;
  const rows=phaseRanges(len).map(([n,from,to,col])=>{
   const s0=addD(c.last,from-1),e0=addD(c.last,to-1),now=dt>=from&&dt<=to;
   return `<div class="phaserow${now?' now':''}" style="color:${col}"><span class="phase-dot"></span><b>${n}</b>${now?'<span class="nowtag">Now</span>':''}<span class="range">${fmt(s0,{month:'short',day:'numeric'})} \u2013 ${fmt(e0,{month:'short',day:'numeric'})}</span></div>`}).join('');
- return `<div class="card"><div class="card-h"><h3>Four phases</h3><span class="meta">${c.n>=2?'est. '+len+'-day cycle':'estimate'}</span></div><div class="phaselist">${rows}</div></div>`}
+ sheet(`<h2>Four phases</h2><p class="meta" style="margin:-8px 0 0">${c.n>=2?'Estimated from a '+len+'-day cycle':'Based on one period start'}</p><div class="phasegraph">${phaseWheelSVG(c,dt)}</div><div class="phaselist">${rows}</div>${RO?'':'<button class="btn ghost" id="phLog" style="margin-top:4px">Log period</button>'}`);
+ if(!RO&&$('#phLog'))$('#phLog').onclick=()=>{sheet();periodSheet()};
+}
  function phaseInfo(dt,len){if(dt<=5)return{t:'Menstrual phase',k:'Menstrual',c:'var(--rose)'};
 if(dt<=Math.round(len*.45))return{t:'Follicular phase',k:'Follicular',c:'var(--teal)'};
  if(dt<=Math.round(len*.58))return{t:'Ovulation window',k:'Ovulation',c:'var(--pink)'};
@@ -1451,11 +1477,10 @@ function cyclePage(){const d=today(),l=L(d),ts=tasksFor(d),n=ts.filter(t=>isDone
  
  ${RO?'':`<button class="logpill" id="lp"><span class="plus">${IC.plus(16)}</span>Log Period</button>`}
  <div class="stats3">
-  <div class="stat"><span class="ic">${IC.flower(13)}</span><b class="word">${ph.k}</b><span class="lbl">Phase</span></div>
+  <button type="button" class="stat" id="phStat" aria-haspopup="dialog" aria-label="View cycle phases graph"><span class="ic">${IC.flower(13)}</span><b class="word">${ph.k}</b><span class="lbl">Phase <span class="chev" aria-hidden="true">\u203a</span></span></button>
   <div class="stat"><span class="ic">${IC.pulse(13)}</span><b>${l.mood?l.mood:'\u2014'}</b><span class="lbl">Mood</span></div>
   <div class="stat"><span class="ic">${IC.drop(13)}</span><b>${l.energy?l.energy:'\u2014'}</b><span class="lbl">Energy</span></div>
  </div>
- ${phaseCard(c,dt)}
 <div class="card"><div class="card-h"><h3>Water</h3><div class="waterrow"><span class="watercount">${l.water||0}</span><span class="meta">/ ${goal}</span></div></div>
   <div class="glasses">${Array.from({length:goal},(_,i)=>RO?`<span class="glassbtn ${i<(l.water||0)?'on':''}" style="cursor:default">${glassIcon(i<(l.water||0),28)}</span>`:`<button class="glassbtn ${i<(l.water||0)?'on':''}" data-g="${i+1}" aria-label="${i+1} glasses">${glassIcon(i<(l.water||0),28)}</button>`).join('')}</div>
   ${RO?'':`<div class="row" style="gap:10px"><button class="btn ghost" id="wminus" aria-label="Remove one glass" style="width:48px;padding:0"></button><button class="btn" id="wplus" style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px">${glassIcon(true,16)} +1 glass</button></div>
@@ -1471,11 +1496,12 @@ function cyclePage(){const d=today(),l=L(d),ts=tasksFor(d),n=ts.filter(t=>isDone
   <div class="kv"><span>Meals</span><b>${m.length}</b></div>
   <div class="kv kvstack"><span>Symptoms</span><b>${l.tags&&l.tags.length?l.tags.join(', '):'\u2014'}</b></div></div>
  ${RO?partnerGuideHTML():selfGuideHTML()}
- <div class="card"><div class="card-h"><h3>Today's checklist</h3><span class="meta">${n}/${ts.length}</span></div>${ts.length?`<div class="bar" aria-hidden="true"><i style="width:${n/ts.length*100}%"></i></div><div class="cklist">`+(RO?ts.map(t=>`<div class="ck"><span class="ckt" style="${isDone(t.id,d)?'opacity:.55':''}">${isDone(t.id,d)?'&#10003;':''} ${E(t.t)}</span></div>`).join(''):ts.map(t=>ck(t,d)).join(''))+'</div>':'<p class="meta">No tasks</p>'}</div>
+ <div class="card"><div class="card-h"><h3>Today's checklist</h3>${ts.length?`<span class="meta">${n}/${ts.length}</span>`:''}</div>${ts.length?`<div class="bar" aria-hidden="true"><i style="width:${n/ts.length*100}%"></i></div><div class="cklist">`+(RO?ts.map(t=>`<div class="ck"><span class="ckt" style="${isDone(t.id,d)?'opacity:.55':''}">${isDone(t.id,d)?'&#10003;':''} ${E(t.t)}</span></div>`).join(''):ts.map(t=>ck(t,d)).join(''))+'</div>':'<p class="meta">No tasks yet. Add them in Planner.</p>'}</div>
  <div class="card"><div class="card-h"><h3>This week</h3><span class="meta">${wt?`${wd}/${wt}`:'0/0'}</span></div>${wt?`<div class="bar" aria-hidden="true"><i style="width:${Math.round(wd/wt*100)}%"></i></div>`:'<p class="meta">Nothing planned</p>'}</div>
  <div class="card fun"><span class="lbl" id="funTag" style="margin:0 0 2px">Did you know?</span><p class="funtext" id="funText">${E(funNow().text)}</p></div>
  <div class="row" style="gap:10px"><button class="btn ghost" id="cal" style="flex:1">Month calendar</button>${RO?'':`<button class="btn ghost" id="logs" style="flex:1">Log symptoms</button>`}</div>`;
  if(!RO)bindCk(d);
+ $('#phStat').onclick=()=>phaseSheet(c,dt);
  if(!RO)$('#lp').onclick=()=>periodSheet();
  $('#cal').onclick=()=>{view='month';shell()};
  if(!RO)$('#logs').onclick=()=>dayLog(d);
@@ -1521,10 +1547,9 @@ function monthView(){const [y,mo]=calM.split('-').map(Number),first=new Date(y,m
 function planner(){const d=today();tab=tab||'day';
  $('#main').innerHTML=`<h1>Planner</h1><div class="tabsrow" role="tablist">${(RO?[['day','Today'],['week','Week'],['meals','Meals']]:[['day','Today'],['week','Week'],['meals','Meals'],['journal','Journal']]).map(([k,l])=>`<button class="chip" role="tab" data-tb="${k}" aria-pressed="${tab==k}">${l}</button>`).join('')}</div><div id="pb" style="margin-top:12px"></div>`;
  document.querySelectorAll('[data-tb]').forEach(b=>b.onclick=()=>{tab=b.dataset.tb;planner()});({day:pDay,week:pWeek,meals:pMeals,journal:pJournal})[tab]()}
-function pDay(){const d=today(),ts=tasksFor(d);$('#pb').innerHTML=`<div class="card"><div class="card-h"><h3>Today</h3>${RO?'':'<button class="btn ghost sm" id="gp">Generate plan</button>'}</div><div style="margin-top:6px">${ts.length?ts.map(t=>RO?`<div class="taskrow"><span class="ckt" style="${isDone(t.id,d)?'opacity:.55':''}">${isDone(t.id,d)?'&#10003;':''} ${E(t.t)}</span></div>`:`<div class="taskrow">${ck(t,d)}<button class="btn ghost sm del" data-del="${t.id}" aria-label="Delete ${E(t.t)}"></button></div>`).join(''):'<p class="meta">No tasks</p>'}</div>
+function pDay(){const d=today(),ts=tasksFor(d);$('#pb').innerHTML=`<div class="card"><div class="card-h"><h3>Today</h3></div><div style="margin-top:6px">${ts.length?ts.map(t=>RO?`<div class="taskrow"><span class="ckt" style="${isDone(t.id,d)?'opacity:.55':''}">${isDone(t.id,d)?'&#10003;':''} ${E(t.t)}</span></div>`:`<div class="taskrow">${ck(t,d)}<button class="btn ghost sm del" data-del="${t.id}" aria-label="Delete ${E(t.t)}"></button></div>`).join(''):'<p class="meta">No tasks yet. Add one below.</p>'}</div>
 ${RO?'':`<form id="af" style="margin-top:14px"><input id="nt" maxlength="80" placeholder="Add a task" aria-label="New task" style="width:100%;margin:0 0 10px">${chipField('rp','Repeat',[['all','Every day'],['wk','Weekdays'],['one','Today only']],'all')}<button class="btn" type="submit" style="width:100%;margin-top:12px">Add task</button></form><div class="err" id="er"></div>`}</div>`;
  bindCk(d,planner);bindFields();
- const gpBtn=document.getElementById('gp');if(gpBtn)gpBtn.onclick=()=>{genPlan();planner()};
  const afForm=document.getElementById('af');if(afForm)afForm.onsubmit=e=>{e.preventDefault();const t=$('#nt').value.trim();if(!t)return $('#er').textContent='Please type a task.';const r=$('#rp').value;D.tasks.push({id:uid(),t,days:r=='wk'?[1,2,3,4,5]:r=='one'?[new Date().getDay()]:undefined,once:r=='one'?d:undefined});save();planner()};
  document.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{D.tasks=D.tasks.filter(t=>t.id!=b.dataset.del);save();planner()})}
 function pWeek(){const days=[...Array(7)].map((_,i)=>addD(today(),i-new Date().getDay()+0));$('#pb').innerHTML=`<div class="weekgrid">`+days.map(d=>{const ts=tasksFor(d),n=ts.filter(t=>isDone(t.id,d)).length;return`<div class="card"><div class="card-h"><h3 style="font-size:1rem">${fmt(d,{weekday:'long',day:'numeric'})}${d==today()?'  today':''}</h3><span class="meta">${n}/${ts.length}</span></div><div style="margin-top:6px">${ts.map(t=>`<div class="meta">${isDone(t.id,d)?'':''} ${E(t.t)}</div>`).join('')||'<span class="meta">Rest day</span>'}</div></div>`}).join('')+`</div>`}

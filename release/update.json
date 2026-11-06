@@ -1,7 +1,7 @@
 {
-    "versionCode": 40,
-    "versionName": "1.2.25",
-    "notes": "Removed the Play tab (Tap Race, Memory Bloom, leaderboard) and the partner realtime channel; Cycle, Planner, Insights and Learn are unchanged.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.25/bloom-1.2.25.apk",
+    "versionCode": 41,
+    "versionName": "1.2.26",
+    "notes": "Four phases is now a cycle graph behind the Phase card; removed the hardcoded starter checklist. Checklists now only hold tasks you add.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.26/bloom-1.2.26.apk",
     "publishedAt": "2026-11-06"
 }
