@@ -1,7 +1,7 @@
 {
-    "versionCode": 44,
-    "versionName": "1.2.29",
-    "notes": "Profile cleanup: Fixed the Stay sheet '[object PointerEvent]' bug; profile now shows Change photo and a centered Hello greeting only.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.29/bloom-1.2.29.apk",
+    "versionCode": 45,
+    "versionName": "1.2.30",
+    "notes": "Learn made easier to scan: articles now open with an At a glance summary and are split into Part 1, Part 2, etc.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.30/bloom-1.2.30.apk",
     "publishedAt": "2026-11-07"
 }
