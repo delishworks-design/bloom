@@ -1,7 +1,7 @@
 {
-    "versionCode": 42,
-    "versionName": "1.2.27",
-    "notes": "Partner sharing and sync fixes: exports no longer leak journal data to followers, calendars align, offline edits use the local cache, Exit follow mode is available, and reminders stop when pairing.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.27/bloom-1.2.27.apk",
+    "versionCode": 43,
+    "versionName": "1.2.28",
+    "notes": "Settings now has its own page: Change name, Change password, and For me/Following someone account type.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.28/bloom-1.2.28.apk",
     "publishedAt": "2026-11-07"
 }
