@@ -644,7 +644,13 @@ const IC={play:s=>SVG('<path d="M8.5 5.5v13l11-6.5z"/>',s),
   spine:s=>SVG('<path d="M12 3v18"/><path d="M8 5h8M8 9h8M8 13h8M8 17h8"/>',s),
    updown:s=>SVG('<path d="M8 4v16M8 4L5.5 6.5M8 4l2.5 2.5M16 20V4M16 20l-2.5-2.5M16 20l2.5-2.5"/>',s),
    cycle:s=>SVG('<circle cx="6" cy="16" r="3"/><circle cx="18" cy="16" r="3"/><path d="M6 16l3.5-7h5L18 16M9.5 9 8 6h3M14.5 9 13 6"/>',s),
-   dance:s=>SVG('<path d="M9 18V5l10-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/>',s)};
+   dance:s=>SVG('<path d="M9 18V5l10-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/>',s),
+   badminton:s=>SVG('<path d="M14 3l7 7-3 3-7-7 3-3z"/><path d="M9 9l-5 5M7 12l2 2"/>',s),
+   pickle:s=>SVG('<path d="M7 3h6a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M10 11v8"/><circle cx="17.5" cy="17.5" r="2.8"/><circle cx="8.7" cy="6.2" r=".4"/><circle cx="11.3" cy="7.8" r=".4"/>',s),
+   tennis:s=>SVG('<circle cx="12" cy="12" r="8.5"/><path d="M6 5c3 3 3 11 0 14M18 5c-3 3-3 11 0 14"/>',s),
+   basketball:s=>SVG('<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5v17M6 5.5c3 3.5 9 3.5 12 0M6 18.5c3-3.5 9-3.5 12 0"/>',s),
+   soccer:s=>SVG('<circle cx="12" cy="12" r="8.5"/><path d="M12 8l3 2.2-1.2 3.6h-3.6L9 10.2 12 8zM12 3.5v4.5M12 20v-4.5M5 6l4 4M19 6l-4 4"/>',s),
+   volleyball:s=>SVG('<circle cx="12" cy="12" r="8.5"/><path d="M5 8c4 1 7 0 10-3M5 16c4-1 7 0 10 3M8 4c2 4 2 12 0 16"/>',s)};
 const GLASSPATH='<path d="M6 3h12l-1.35 16.3A2 2 0 0 1 14.65 21H9.35A2 2 0 0 1 7.35 19.3L6 3z"/>';
 const glassIcon=(full,size)=>{const s=size||26;
  return `<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="${full?'var(--teal)':'var(--mut)'}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${full?`<path d="M7.16 11.4h9.68l-.86 7.9A2 2 0 0 1 13.99 21h-3.98a2 2 0 0 1-2-1.7L7.16 11.4z" fill="var(--teal)" stroke="none"/>`:''}${GLASSPATH}${full?'':'<path d="M6.6 9.6h10.8"/>'}</svg>`};
@@ -840,17 +846,14 @@ function roPage(){
   <div style="display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:6px">${roAvatarHTML(192)}<label class="btn ghost" for="rpav" style="display:inline-flex !important;align-items:center !important;justify-content:center !important;gap:8px !important;cursor:pointer !important;align-self:center">${IC.camera(18)} Change photo</label><input type="file" id="rpav" accept="image/*" hidden></div>
   <div class="hi" style="text-align:center">Hello ${E(ownName())}!</div>
   </div>
- <div class="card"><div class="card-h"><h3>Following</h3></div><div class="row" style="gap:12px;align-items:center">${avatarHTML(56)}<div style="min-width:0"><b style="display:block">${E((D.p&&D.p.name)||'partner')}</b><p class="meta" style="margin:2px 0 0">${E(sum)}</p></div></div><button class="btn ghost" id="exv" style="width:100%;margin-top:14px">Exit ${E((D.p&&D.p.name)||'partner')}'s view</button></div>
- <div class="card"><div class="card-h"><h3>App</h3><span class="meta" id="appVer">\u2014</span></div><button class="btn ghost" id="chkUp" style="width:100%">Check for updates</button></div>
- <div class="card"><button class="btn ghost" id="stg" style="width:100%">Settings</button></div>
- <button class="btn ghost" id="lo" style="width:100%">Sign out</button>
+ <div class="card"><div class="card-h"><h3>Following</h3></div><div class="row" style="gap:12px;align-items:center">${avatarHTML(56)}<div style="min-width:0"><b style="display:block">${E((D.p&&D.p.name)||'partner')}</b></div></div><button class="btn ghost" id="exv" style="width:100%;margin-top:14px">Exit ${E((D.p&&D.p.name)||'partner')}'s view</button></div>
+  <div class="card"><button class="btn ghost" id="stg" style="width:100%">Settings</button></div>
+  <button class="btn ghost" id="lo" style="width:100%">Sign out</button>
 <p class="meta" style="margin-top:8px;text-align:center">Signing out keeps this pairing. Their data stays untouched.</p>`;
- $('#exv').onclick=exitPartner;
- $('#stg').onclick=()=>{view='settings';shell()};
- $('#rpav').onchange=e=>{const f=e.target.files&&e.target.files[0];e.target.value='';if(f)roPickAvatar(f)};
- $('#lo').onclick=logout;
- if(document.getElementById('chkUp'))$('#chkUp').onclick=()=>checkUpdate(true);
- (async()=>{const up=updater();if(!up)return;try{const v=await up.getVersion();const el=document.getElementById('appVer');if(el)el.textContent='v'+v.versionName+' ('+v.versionCode+')'}catch(e){}})()}
+  $('#exv').onclick=exitPartner;
+  $('#stg').onclick=()=>{view='settings';shell()};
+  $('#rpav').onchange=e=>{const f=e.target.files&&e.target.files[0];e.target.value='';if(f)roPickAvatar(f)};
+  $('#lo').onclick=logout;}
 
 
 function cloudStatus(){
@@ -1583,7 +1586,7 @@ function bindCk(d,re){document.querySelectorAll('input[data-t]').forEach(i=>i.on
   ${sc('bloat','Bloating (1 low  5 high)')}
   <label style="margin-top:8px">Waist bloated</label><div class="row" role="group" aria-label="Waist bloated">${qq(['Yes','No'],'waistBloat')}</div>
   <label class="log-t"><span class="log-ic">${IC.checklist(18)}</span>Habits</label>
-   <label style="margin-top:8px">Physical Activity</label><div class="row" role="group" aria-label="Physical Activity">${qqi([['Walk',IC.foot],['Run',IC.bolt],['Cycle',IC.cycle],['Swim',IC.wave],['Strength',IC.scale],['Yoga',IC.flower],['Dance',IC.dance],['Rest',IC.moon]],'exercise')}</div>
+   <label style="margin-top:8px">Physical Activity</label><div class="row" role="group" aria-label="Physical Activity">${qqi([['Walk',IC.foot],['Run',IC.bolt],['Cycle',IC.cycle],['Swim',IC.wave],['Badminton',IC.badminton],['Pickleball',IC.pickle],['Tennis',IC.tennis],['Basketball',IC.basketball],['Soccer',IC.soccer],['Volleyball',IC.volleyball],['Strength',IC.scale],['Yoga',IC.flower],['Pilates',IC.body],['Dance',IC.dance],['Rest',IC.moon]],'exercise')}</div>
    <label for="exMin">Physical activity minutes</label><input id="exMin" type="number" min="0" max="1440" step="1" value="${l.exMin||''}" placeholder="Optional">
   <label style="margin-top:8px">Medication taken</label><div class="row" role="group" aria-label="Medication taken">${qq(['Yes','No'],'medTaken')}</div>
   <label style="margin-top:8px">Supplement taken</label><div class="row" role="group" aria-label="Supplement taken">${qq(['Yes','No'],'suppTaken')}</div>
@@ -2222,12 +2225,15 @@ async function reminderSync(quiet){
    return {native:true,blocked:true}}
    await reminderCancel();
    if(!rem.on)return {native:true,off:true};
-   try{await LN.createChannel({id:'bloom_reminders',name:'Bloom reminders',description:'Daily logging reminders',sound:'beep.wav',importance:4})}catch(e){}
-   const [h,mi]=String(rem.time||'20:00').split(':').map(Number);
-   await LN.schedule({notifications:[{
-    id:REM_ID,title:'Bloom',body:'A moment to log how you feel today.',
-    channelId:'bloom_reminders',sound:'beep.wav',
-    schedule:{on:{hour:isNaN(h)?20:h,minute:isNaN(mi)?0:mi}},
+    try{await LN.createChannel({id:'bloom_reminders',name:'Bloom reminders',description:'Daily logging reminders',sound:'beep.wav',importance:4})}catch(e){}
+    if(rem.on&&LN.checkExactNotificationSetting){
+      try{const ex=await LN.checkExactNotificationSetting();if(ex&&ex.exact_alarm&&ex.exact_alarm!=='granted'){if(!quiet)toast('Exact alarms are off. Bloom may be delayed.');try{await LN.changeExactNotificationSetting()}catch(e){}}}catch(e){}
+    }
+    const [h,mi]=String(rem.time||'20:00').split(':').map(Number);
+    await LN.schedule({notifications:[{
+     id:REM_ID,title:'Bloom',body:'A moment to log how you feel today.',
+     channelId:'bloom_reminders',sound:'beep.wav',
+     schedule:{on:{hour:isNaN(h)?20:h,minute:isNaN(mi)?0:mi},allowWhileIdle:true},
     smallIcon:'ic_stat_bloom',iconColor:'#B8456B'}]});
   if(!quiet)toast('Reminder set for '+String(rem.time||'20:00'));
   return {native:true,scheduled:true};
@@ -2444,15 +2450,12 @@ function mePartner(){const p=D.p||{};
   <div class="hi" style="text-align:center">Hello ${E(p.name||user)}!</div>
  </div>
  <div class="card"><div class="card-h"><h3>Partner account</h3></div><p class="meta">This account follows someone read-only, so its own cycle tracking stays off. Enter their pairing code to open their view.</p><button class="btn" id="gFollow" style="width:100%">Enter a pairing code</button></div>
- <div class="card"><div class="card-h"><h3>App</h3><span class="meta" id="appVer">\u2014</span></div><button class="btn ghost" id="chkUp" style="width:100%">Check for updates</button></div>
- <div class="card"><button class="btn ghost" id="stg" style="width:100%">Settings</button></div>
- <button class="btn ghost" id="lo" style="width:100%">Log out</button>`;
+  <div class="card"><button class="btn ghost" id="stg" style="width:100%">Settings</button></div>
+  <button class="btn ghost" id="lo" style="width:100%">Log out</button>`;
   $('#av').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f)pickAvatar(f)};
   $('#gFollow').onclick=()=>partnerOnboard();
   $('#stg').onclick=()=>{view='settings';shell()};
-  $('#lo').onclick=logout;
- if(document.getElementById('chkUp'))$('#chkUp').onclick=()=>checkUpdate(true);
- (async()=>{const up=updater();if(!up)return;try{const v=await up.getVersion();const el=document.getElementById('appVer');if(el)el.textContent='v'+v.versionName+' ('+v.versionCode+')'}catch(e){}})()}
+  $('#lo').onclick=logout;}
 function me(){const p=D.p;const hasCode=!!(D.partner&&D.partner.on&&D.partner.code);
 $('#main').innerHTML=`<h1>Profile</h1>
 <div class="card">
@@ -2466,10 +2469,9 @@ $('#main').innerHTML=`<h1>Profile</h1>
  ${hasCode?`<p class="meta" style="margin:0 0 12px">Read-only access for one person. Stop sharing any time.</p><div class="syncbox"><span class="synccode">${E(D.partner.code)}</span><button class="btn ghost sm" id="cp">Copy</button></div><div class="linkrow"><button class="linkbtn" id="pg">New code</button><span class="linkdot">\u00b7</span><button class="linkbtn" id="pv">Stop sharing</button></div>`
  :`<p class="meta" style="margin:0 0 12px">Let one person follow your cycle read-only.</p><button class="btn" id="gc" style="width:100%">Create pairing code</button>`}
 </div>
-<div class="card"><div class="card-h"><h3>Reminder</h3></div><label class="row" style="color:var(--ink)"><input type="checkbox" id="rm" style="width:22px;margin:0" ${D.rem.on?'checked':''}> Daily logging reminder</label><label for="rt">Time</label><input id="rt" type="time" value="${D.rem.time}"><button class="btn ghost" id="rs" style="width:100%;margin-top:4px">Save reminder</button>${notifPlugin()?`<p class="meta" style="margin-top:10px" id="remNote">One notification a day. Android will ask for permission the first time.</p>`:''}</div>
-<div class="card"><div class="card-h"><h3>App</h3><span class="meta" id="appVer">\u2014</span></div><button class="btn ghost" id="chkUp" style="width:100%">Check for updates</button></div>
- <div class="card"><button class="btn ghost" id="stg" style="width:100%">Settings</button></div>
- <button class="btn ghost" id="lo" style="width:100%">Log out</button>`;
+<div class="card"><div class="card-h"><h3>Reminder</h3></div><label class="row" style="color:var(--ink)"><input type="checkbox" id="rm" style="width:22px;margin:0" ${D.rem.on?'checked':''}> Daily logging reminder</label><label for="rt">Time</label><input id="rt" type="time" value="${D.rem.time}"><button class="btn ghost" id="rs" style="width:100%;margin-top:4px">Save reminder</button></div>
+  <div class="card"><button class="btn ghost" id="stg" style="width:100%">Settings</button></div>
+  <button class="btn ghost" id="lo" style="width:100%">Log out</button>`;
  document.querySelectorAll('#goals .chip').forEach(c=>c.onclick=()=>c.setAttribute('aria-pressed',c.getAttribute('aria-pressed')!=='true'));
   $('#sv').onclick=()=>{p.goals=[...document.querySelectorAll('#goals .chip[aria-pressed=true]')].map(c=>c.textContent);D.rem={on:$('#rm').checked,time:$('#rt').value||'20:00'};save();applyTheme();toast('Saved');shell()};
  $('#av').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f)pickAvatar(f)};
@@ -2487,9 +2489,7 @@ $('#main').innerHTML=`<h1>Profile</h1>
   if(document.getElementById('gc'))$('#gc').onclick=async()=>{const c=await genPartnerCode();if(c)me()};
  if(document.getElementById('cp'))$('#cp').onclick=async()=>{try{await navigator.clipboard.writeText(D.partner.code);toast('Code copied')}catch(e){toast(D.partner.code)}};
  if(document.getElementById('pg'))$('#pg').onclick=async()=>{await genPartnerCode();me()};
- if(document.getElementById('pv'))$('#pv').onclick=()=>stopShareSheet('');
- if(document.getElementById('chkUp'))$('#chkUp').onclick=()=>checkUpdate(true);
- (async()=>{const up=updater();if(!up)return;try{const v=await up.getVersion();const el=document.getElementById('appVer');if(el)el.textContent='v'+v.versionName+' ('+v.versionCode+')'}catch(e){}})()}
+  if(document.getElementById('pv'))$('#pv').onclick=()=>stopShareSheet('');}
 
 const SPLASH_MIN=2600,SPLASH_MAX=3200,RESUME_MIN=1800,RESUME_MAX=2400,SPLASH_AFTER_MS=180000;
 let splashDone=false,splashAppReady=false,splashT0=0,splashMin=SPLASH_MIN;
