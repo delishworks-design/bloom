@@ -940,11 +940,9 @@ function authView(mode){mode=mode||'in';try{fabSync()}catch(e){}document.body.cl
    <div class="err" id="err" role="alert"></div>
    <button class="btn" type="submit" id="go">${up?'Create account':'Log in'}</button>
   </form>
-  <div class="auth-foot">
-   <p class="status" id="cloudStat"><span class="dot" aria-hidden="true"></span><span id="cloudText">Checking connection\u2026</span></p>
-   <p class="switch">${up?'Already have an account?':'New here?'} <button type="button" class="link" id="sw">${up?'Log in':'Create an account'}</button></p>
-  </div></div></div>`;
- cloudStatus();
+   <div class="auth-foot">
+    <p class="switch">${up?'Already have an account?':'New here?'} <button type="button" class="link" id="sw">${up?'Log in':'Create an account'}</button></p>
+   </div></div></div>`;
  $('#sw').onclick=()=>authView(up?'in':'up');
  const g=id=>document.getElementById(id);
  const setFieldErr=(id,msg)=>{const w=g('f-'+id),h=g('e-'+id);if(!w)return;w.classList.toggle('invalid',!!msg);h.textContent=msg||''};
@@ -2299,11 +2297,9 @@ async function loadPairCard(){
  const box=document.getElementById('pairCard');if(!box||RO)return;
  const st=await ownerPairing();
  if(!st||!document.body.contains(box))return;
- const nm=(st.prof&&st.prof.name)||'Your follower',av=(st.prof&&st.prof.avatar)||null;
- const dt=st.row.created_at?new Date(st.row.created_at):null;
- const since=dt&&!isNaN(dt)?'Following you since '+dt.toLocaleDateString(undefined,{month:'short',day:'numeric'}):'Following you';
- box.innerHTML=`<div class="card-h"><h3>Follower</h3></div>
- <button class="pairrow" id="folRow" aria-label="Stop sharing with ${E(nm)}">${av?`<span class="avatar-wrap" style="width:56px;height:56px"><img class="avatar" src="${E(av)}" alt=""></span>`:`<span class="avatar-fb" style="width:56px;height:56px;font-size:20px">${E(nm.charAt(0).toUpperCase())}</span>`}<div style="min-width:0"><b style="display:block">${E(nm)}</b><p class="meta" style="margin:2px 0 0">${E(since)}</p></div><span class="chev" aria-hidden="true">\u203a</span></button>
+  const nm=(st.prof&&st.prof.name)||'Your follower',av=(st.prof&&st.prof.avatar)||null;
+  box.innerHTML=`<div class="card-h"><h3>Follower</h3></div>
+  <button class="pairrow" id="folRow" aria-label="Stop sharing with ${E(nm)}">${av?`<span class="avatar-wrap" style="width:56px;height:56px"><img class="avatar" src="${E(av)}" alt=""></span>`:`<span class="avatar-fb" style="width:56px;height:56px;font-size:20px">${E(nm.charAt(0).toUpperCase())}</span>`}<div style="min-width:0"><b style="display:block">${E(nm)}</b></div><span class="chev" aria-hidden="true">\u203a</span></button>
  <p class="meta" style="margin:12px 0 0">They can see your cycle read-only. Tap to stop sharing.</p>`;
  const row=document.getElementById('folRow');if(row)row.onclick=()=>stopShareSheet(nm);
 }
