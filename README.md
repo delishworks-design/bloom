@@ -88,12 +88,15 @@ dashboard. The **Continue with Google** button appears automatically once the pr
 
 ## Privacy
 
-Notes stay in your browser and, if you sign in, in your own Supabase account. Nothing is sent to
-any third party. This is not a medical service and does not diagnose anything.
+Your notes are stored on this device. If you sign in, they are also stored in the Bloom cloud database (Supabase), protected by row-level security. A partner you pair with reads only a filtered copy. The app checks GitHub for updates. There are no ads, analytics or tracking. This is not a medical service and does not diagnose anything.
+
+## Fonts
+
+Playfair Display and Sansita are SIL Open Font License (OFL). They are embedded in `index.html` as base64 woff2 data URIs, so Bloom makes no request to Google Fonts.
 
 ## Deployed
 
-- GitHub: `delishworks-design/bloom` (private)
+- GitHub: `delishworks-design/bloom` (public)
 - Supabase project: `vggaswbjsmyvfheofnnj`
 
 ## Licence
