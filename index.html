@@ -698,8 +698,7 @@ function mergeDocs(local,remote){
   if(isPlainObject(l)&&isPlainObject(r)){
     const out={};const keys=new Set([...Object.keys(l),...Object.keys(r)]);
     keys.forEach(k=>{const hasL=k in l,hasR=k in r;out[k]=hasL&&hasR?merge(l[k],r[k]):(hasR?r[k]:l[k])});
-   out.savedAt=Math.max(+(l.savedAt||0),+(r.savedAt||0),+(out.savedAt||0));
-   return out;
+    return out;
   }
   if(Array.isArray(l)&&Array.isArray(r)){
    if(l.every(isIdObject)&&r.every(isIdObject)){
@@ -743,15 +742,18 @@ async function sbInit(){if(sb)return sb;
 async function sbFetchDoc(uid){if(!sb)return null;const {data,error}=await sb.from('bloom_data').select('doc,updated_at').eq('user_id',uid).maybeSingle();if(error)return null;return data?data.doc:null}
 async function sbFetchDocWithRev(uid){if(!sb)return null;const {data,error}=await sb.from('bloom_data').select('doc,rev').eq('user_id',uid).maybeSingle();if(error||!data)return null;return {doc:data.doc,rev:+(data.rev||0)}}
 let sbLastPush='';
+let sbPushing=false,sbPushAgain=false;
 function sbScheduleRetry(){if(sbRetryTimer||!sbUser)return;const delays=[15000,30000,60000,120000,300000];const ms=delays[Math.min(Math.max(SYNC.fails-1,0),4)];sbRetryTimer=setTimeout(()=>{sbRetryTimer=null;sbPush()},ms)}
 function sbNoteFailure(e){reportErr('sync.push',e);SYNC.fails++;if(SYNC.fails===3)toast('Cloud sync is having trouble. Your data is safe on this phone.');setSyncState(/fetch|network|ENOTFOUND|ETIMEDOUT|timeout|Failed to fetch/i.test(String(e&&e.message||e))?'offline':'error');sbScheduleRetry()}
 async function sbPush(){if(!sb||!sbUser||RO)return;
- const snap=JSON.stringify(D);if(snap===sbLastPush){setSyncState(SYNC.last?'synced':'idle');return}
- if(navigator.onLine===false){setSyncState('offline');sbScheduleRetry();return}
- setSyncState('syncing');clearTimeout(sbRetryTimer);sbRetryTimer=null;
- const p=D.p||{};
+ if(sbPushing){sbPushAgain=true;return}
+ sbPushing=true;
  try{
-  const profRes=await sb.from('bloom_profiles').upsert({id:sbUser.id,name:p.name||'',avatar:p.avatar||null,goals:p.goals||[]});
+  const snap=JSON.stringify(D);if(snap===sbLastPush){setSyncState(SYNC.last?'synced':'idle');return}
+ if(navigator.onLine===false){setSyncState('offline');sbScheduleRetry();return}
+  setSyncState('syncing');clearTimeout(sbRetryTimer);sbRetryTimer=null;
+  const p=D.p||{};
+   const profRes=await sb.from('bloom_profiles').upsert({id:sbUser.id,name:p.name||'',avatar:p.avatar||null,goals:p.goals||[]});
   if(profRes&&profRes.error)throw profRes.error;
   const res=await sb.rpc('bloom_push_doc',{p_doc:D,p_base_rev:sbRev});
   if(res&&res.error){
@@ -770,9 +772,9 @@ async function sbPush(){if(!sb||!sbUser||RO)return;
    backupLocal();
    D=mergeDocs(D,data.doc||{});sbRev=+(data.rev||0);saveRev();save();
    if(SYNC.fails>=3){toast('Back in sync');SYNC.fails=0}
-   toast('Merged changes from another device');setSyncState('pending');setTimeout(sbPush,0);return;
-  }
- }catch(e){sbNoteFailure(e)}}
+    toast('Merged changes from another device');setSyncState('pending');setTimeout(sbPush,0);return;
+   }
+  }catch(e){sbNoteFailure(e)}finally{sbPushing=false;if(sbPushAgain){sbPushAgain=false;sbPush()}}}
 function sbPushSoon(){if(!sbUser)return;if(JSON.stringify(D)!==sbLastPush)setSyncState('pending');clearTimeout(sbPushT);sbPushT=setTimeout(sbPush,1200)}
 async function sbPull(){if(!sb||!sbUser||RO||document.hidden)return;
  try{
@@ -781,8 +783,8 @@ async function sbPull(){if(!sb||!sbUser||RO||document.hidden)return;
   const rev=+(data.rev||0);if(rev<=sbRev)return;
   if(JSON.stringify(D)!==sbLastPush)return;
   backupLocal();const row=await sbFetchDocWithRev(sbUser.id);if(!row)return;
-  D=Object.assign(blank(),row.doc);sbRev=row.rev;saveRev();
-  try{ST.set(key(user),JSON.stringify(D))}catch(e){}
+   D=Object.assign(blank(),row.doc);sbRev=row.rev;saveRev();sbLastPush=JSON.stringify(D);
+   try{ST.set(key(user),JSON.stringify(D))}catch(e){}
   if(safeToRender())shell();else sbPendingRender=true;
  }catch(e){reportErr('sync.pull',e)}}
 function safeToRender(){const sheetEl=document.getElementById('sheet');if(sheetEl&&sheetEl.innerHTML.trim())return false;const a=document.activeElement;return !(a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA'||a.tagName==='SELECT'))}
@@ -794,13 +796,15 @@ async function sbAfterLogin(u){sbUser=u;
  const row=await sbFetchDocWithRev(u.id);
  const doc=row?row.doc:null;
  sbRev=row?row.rev:0;
- const localTs=+(keep.savedAt||0),cloudTs=+(doc&&doc.savedAt||0);
- if(doc)backupLocal();
- if(doc&&localTs>cloudTs){D=Object.assign(blank(),keep)}
- else if(doc){const cloudHas=Object.keys(doc.logs||{}).length||Object.keys(doc.tasks||[]).length||Object.keys(doc.journal||[]).length;
-  D=Object.assign(blank(),doc);
-  if(!cloudHas){D.logs=keep.logs||{};D.tasks=keep.tasks||[];D.done=keep.done||{};D.meals=keep.meals||{};D.journal=keep.journal||[];D.plan=keep.plan||{}}}
- else D=Object.assign(blank(),keep);
+ if(doc){
+  backupLocal();
+  const stripRoot=x=>{const y=JSON.parse(JSON.stringify(x||{}));delete y.savedAt;return JSON.stringify(y)};
+  const cloudHas=Object.keys(doc.logs||{}).length||Object.keys(doc.tasks||[]).length||Object.keys(doc.journal||[]).length;
+  if(stripRoot(keep)!==stripRoot(doc)){
+   if(!cloudHas){D=Object.assign(blank(),doc);D.logs=keep.logs||{};D.tasks=keep.tasks||[];D.done=keep.done||{};D.meals=keep.meals||{};D.journal=keep.journal||[];D.plan=keep.plan||{}}
+   else D=mergeDocs(keep,doc);
+  }else D=Object.assign(blank(),doc);
+ }else D=Object.assign(blank(),keep);
   try{const {data:prof}=await sb.from('bloom_profiles').select('*').eq('id',u.id).maybeSingle();
    if(prof){D.p=D.p||{};D.p.name=prof.name||D.p.name;D.p.avatar=prof.avatar||D.p.avatar;D.p.goals=prof.goals&&prof.goals.length?prof.goals:(D.p.goals||[])}}catch(e){reportErr('profile.load',e)}
  D.p=D.p||{};
@@ -1065,7 +1069,7 @@ function authView(mode){mode=mode||'in';try{fabSync()}catch(e){}document.body.cl
  };
  $('#authForm').addEventListener('submit',e=>{e.preventDefault();sub()});
 }
-function login(u){user=u;D=Object.assign(blank(),J(key(u),{}));setSession(u);applyTheme();view='cycle';shell()}
+function login(u){user=u;D=Object.assign(blank(),J(key(u),{}));loadRev(u);setSession(u);applyTheme();view='cycle';shell()}
 function logout(){RO=false;ROcloud=false;ROowner=null;roHash='';user=null;D=null;clearSession();setRoleFlag('');sbLastPush='';sbRev=0;
  view='cycle';tab='';onbStep=0;calM=today().slice(0,7);
  try{ST.del('bloom_own')}catch(e){}try{reminderCancel()}catch(e){}if(sb){sb.auth.signOut().catch(()=>{});sbUser=null}if(cloudTimer){clearInterval(cloudTimer);cloudTimer=null}hideUpdateBanner();authView('in')}
