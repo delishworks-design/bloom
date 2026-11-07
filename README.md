@@ -72,9 +72,7 @@ Deleting the owner's `bloom_data` row also deletes the shared copy.
 Never shared: `journal`, `rem`, `partner`, `games`, `cons`, `seedClean`, all
 other `p` keys, and log fields such as `note`, `sidefx`, and `weight`.
 
-Phase 2 (`supabase/pending/phase2_owner_only_data_read.sql`) is pending: after
-most partners run a version that reads `bloom_shared`, restrict `bloom_data`
-reads to the owner only.
+Phase 2 is applied: partners can no longer read bloom_data directly; only the owner can. Partners read bloom_shared only.
 
 ## Gmail / Google sign-in
 
