@@ -1,7 +1,7 @@
 {
-    "versionCode": 45,
-    "versionName": "1.2.30",
-    "notes": "Learn made easier to scan: articles now open with an At a glance summary and are split into Part 1, Part 2, etc.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.30/bloom-1.2.30.apk",
+    "versionCode": 46,
+    "versionName": "1.2.31",
+    "notes": "Fixed Learn article chunking: At a glance and Part headings now appear for single-paragraph articles too.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.31/bloom-1.2.31.apk",
     "publishedAt": "2026-11-07"
 }
