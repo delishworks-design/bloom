@@ -1,7 +1,7 @@
 {
-    "versionCode": 52,
-    "versionName": "1.2.37",
-    "notes": "Removed the Follower subtitle and the login cloud status.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.37/bloom-1.2.37.apk",
+    "versionCode": 53,
+    "versionName": "1.2.38",
+    "notes": "Removed redundant Follower text and duplicate Log Symptoms fields.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.38/bloom-1.2.38.apk",
     "publishedAt": "2026-11-07"
 }
