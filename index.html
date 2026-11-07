@@ -281,6 +281,10 @@ details{border-bottom:1px solid #EADFD2;padding:14px 0}summary{cursor:pointer;fo
 .fun{background:linear-gradient(180deg,#FDF3F0 0%,#F9DDE5 100%) !important;border-color:rgba(232,160,180,.35) !important;padding:12px 14px !important}
 .funtext{font-family:'Playfair Display',serif;font-size:13.5px;line-height:1.4;color:#3A2E33;margin:0}
 .artbody{font-size:.88rem;line-height:1.55;color:#5C4A50}
+.art-glance{background:#F9DDE5;border:1.5px solid rgba(232,160,180,.45);border-radius:16px;padding:14px 16px;margin:0 0 18px}
+.art-glance p{font-size:.96rem;line-height:1.5;margin:0;color:#3A2E33}
+.artbody h3{font-size:.95rem;line-height:1.3;margin:22px 0 8px;color:var(--ink)}
+.artbody p{margin:0 0 1.1em}
 .kv b{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:#3A2E33}
 .kv.kvstack{flex-direction:column;align-items:flex-start;gap:2px}
 .kv.kvstack span{flex:0 0 auto;min-width:auto;font-weight:600}
@@ -2104,17 +2108,23 @@ function renderArticleList(){const el=document.getElementById('lb');let list;
  el.innerHTML=(learnTab==='today'?'<div class="dr-sec">Today\'s articles</div>':'')+list.map(readRow).join('')+(list.length?'':'<p class="meta" style="text-align:center;padding:22px">Nothing here</p>');
  el.querySelectorAll('.readrow-txt').forEach(b=>b.onclick=()=>{articleIdx=+b.dataset.idx;learn()});
  el.querySelectorAll('.readrow-ic').forEach(b=>b.onclick=()=>{const i=+b.dataset.tg;setRead(i,!isRead(i));learn()})}
-function renderArticle(i){const a=ARTICLES[i],txt=a[4],done=isRead(i);
- const st=dailyStats(),nxt=st.plan.find(x=>x!==i&&!isRead(x));
- const el=document.getElementById('lb');
- el.innerHTML=`<article class="article-full">
-  <button class="btn ghost sm" id="backArt" style="margin-bottom:14px"> Back</button>
-  <div class="row" style="gap:8px;flex-wrap:wrap;margin-bottom:8px"><span class="chip" style="font-size:.66rem;padding:3px 9px">${E(a[0])}</span><span class="meta">${E(a[1])}  ${E(a[2])}  ${readMins(txt)} min read</span></div>
-  <h1 class="dr-h1">${E(a[3])}</h1>
-  <div class="arttools"><button class="btn sm${done?' ghost':''}" id="mkRead">${done?' Read':'Mark as read'}</button><button class="btn ghost sm" id="fsDec" aria-label="Smaller text">A</button><button class="btn ghost sm" id="fsInc" aria-label="Larger text">A+</button><button class="btn ghost sm" id="shArt">Share</button></div>
-  <div class="artbody" id="artBody"><p>${E(txt).replace(/\n\n/g,'</p><p>')}</p></div>
-  ${nxt!=null?`<button class="btn" id="nextArt" style="width:100%;margin-top:22px">Next read</button>`:''}
- </article>`;
+ function renderArticle(i){const a=ARTICLES[i],txt=a[4],done=isRead(i);
+  const st=dailyStats(),nxt=st.plan.find(x=>x!==i&&!isRead(x));
+  const el=document.getElementById('lb');
+  const paras=txt.split(/\n\s*\n+/).map(p=>p.trim()).filter(Boolean);
+  const first=paras[0]||txt;
+  const rest=paras.length>1?paras.slice(1):[];
+  const bodyHtml=paras.length>1?
+   `<div class="art-glance"><div class="lbl" style="margin:0 0 6px">At a glance</div><p>${E(first)}</p></div>`+rest.map((p,j)=>`<h3>Part ${j+1}</h3><p>${E(p)}</p>`).join(''):
+   `<p>${E(txt)}</p>`;
+  el.innerHTML=`<article class="article-full">
+   <button class="btn ghost sm" id="backArt" style="margin-bottom:14px"> Back</button>
+   <div class="row" style="gap:8px;flex-wrap:wrap;margin-bottom:8px"><span class="chip" style="font-size:.66rem;padding:3px 9px">${E(a[0])}</span><span class="meta">${E(a[1])}  ${E(a[2])}  ${readMins(txt)} min read</span></div>
+   <h1 class="dr-h1">${E(a[3])}</h1>
+   <div class="arttools"><button class="btn sm${done?' ghost':''}" id="mkRead">${done?' Read':'Mark as read'}</button><button class="btn ghost sm" id="fsDec" aria-label="Smaller text">A</button><button class="btn ghost sm" id="fsInc" aria-label="Larger text">A+</button><button class="btn ghost sm" id="shArt">Share</button></div>
+   <div class="artbody" id="artBody">${bodyHtml}</div>
+   ${nxt!=null?`<button class="btn" id="nextArt" style="width:100%;margin-top:22px">Next read</button>`:''}
+  </article>`;
  document.getElementById('backArt').onclick=()=>{articleIdx=null;learn()};
  document.getElementById('mkRead').onclick=()=>{setRead(i,!done);learn()};
  document.getElementById('fsInc').onclick=()=>adjustFont(1);
