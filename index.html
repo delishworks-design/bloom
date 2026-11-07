@@ -783,7 +783,7 @@ async function revokePartnerCode(){
 function exitPartner(){
  const wasRO=RO,ownerName=((D&&D.p&&D.p.name)||'');
  if(wasRO){sheet(`<h2>Exit ${E(ownerName)}'s view?</h2><p class="meta" style="margin:0 0 14px">Exiting removes the pairing - you will need their code again to follow them. Their data stays untouched.</p><div class="row" style="gap:10px;margin-top:10px"><button class="btn ghost" id="exStay" style="flex:1">Stay</button><button class="btn pink" id="exGo" style="flex:1">Exit</button></div>`);
-  $('#exStay').onclick=sheet;
+  $('#exStay').onclick=()=>sheet();
   $('#exGo').onclick=()=>{sheet();exitPartnerNow()};
   return}
  exitPartnerNow()}
@@ -804,11 +804,10 @@ function roPage(){
  if(c.last){const day=Math.round((new Date(today())-new Date(c.last))/864e5)+1,dt=((day-1)%len)+1;sum='Day '+dt+' \u00b7 '+phaseInfo(dt,len).k}
  const nd=Object.keys(D.logs||{}).length;if(nd)sum+=' \u00b7 '+nd+' day'+(nd>1?'s':'')+' logged';
  $('#main').innerHTML=`<h1>Profile</h1>
-<div class="card">
- <div style="display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:20px">${roAvatarHTML(192)}<label class="btn ghost" for="rpav" style="display:inline-flex !important;align-items:center !important;justify-content:center !important;gap:8px !important;cursor:pointer !important;align-self:center">${IC.camera(18)} Change photo</label><input type="file" id="rpav" accept="image/*" hidden></div>
-  <label for="rpn">Nickname</label><input id="rpn" maxlength="30" value="${E(ST.get('bloom_pname')||'')}" readonly>
-   <p class="meta" style="margin:8px 0 0">Shown to your partner in read-only view.</p>
- </div>
+ <div class="card">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:6px">${roAvatarHTML(192)}<label class="btn ghost" for="rpav" style="display:inline-flex !important;align-items:center !important;justify-content:center !important;gap:8px !important;cursor:pointer !important;align-self:center">${IC.camera(18)} Change photo</label><input type="file" id="rpav" accept="image/*" hidden></div>
+  <div class="hi" style="text-align:center">Hello ${E(ownName())}!</div>
+  </div>
  <div class="card"><div class="card-h"><h3>Following</h3></div><div class="row" style="gap:12px;align-items:center">${avatarHTML(56)}<div style="min-width:0"><b style="display:block">${E((D.p&&D.p.name)||'partner')}</b><p class="meta" style="margin:2px 0 0">${E(sum)}</p></div></div><button class="btn ghost" id="exv" style="width:100%;margin-top:14px">Exit ${E((D.p&&D.p.name)||'partner')}'s view</button></div>
  <div class="card"><div class="card-h"><h3>App</h3><span class="meta" id="appVer">\u2014</span></div><button class="btn ghost" id="chkUp" style="width:100%">Check for updates</button></div>
  <div class="card"><button class="btn ghost" id="stg" style="width:100%">Settings</button></div>
@@ -2367,9 +2366,8 @@ function settingsPage(){
 function mePartner(){const p=D.p||{};
  $('#main').innerHTML=`<h1>Profile</h1>
 <div class="card">
- <div style="display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:20px">${avatarHTML(192)}<label class="btn ghost" for="av" style="display:inline-flex !important;align-items:center !important;justify-content:center !important;gap:8px !important;cursor:pointer !important;align-self:center">${IC.camera(18)} Change photo</label><input type="file" id="av" accept="image/*" hidden></div>
-  <label for="nm">Nickname</label><input id="nm" value="${E(p.name||'')}" maxlength="30" readonly>
-   <p class="meta" style="margin:8px 0 0">Shown to your partner in read-only view.</p>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:6px">${avatarHTML(192)}<label class="btn ghost" for="av" style="display:inline-flex !important;align-items:center !important;justify-content:center !important;gap:8px !important;cursor:pointer !important;align-self:center">${IC.camera(18)} Change photo</label><input type="file" id="av" accept="image/*" hidden></div>
+  <div class="hi" style="text-align:center">Hello ${E(p.name||user)}!</div>
  </div>
  <div class="card"><div class="card-h"><h3>Partner account</h3></div><p class="meta">This account follows someone read-only, so its own cycle tracking stays off. Enter their pairing code to open their view.</p><button class="btn" id="gFollow" style="width:100%">Enter a pairing code</button></div>
  <div class="card"><div class="card-h"><h3>App</h3><span class="meta" id="appVer">\u2014</span></div><button class="btn ghost" id="chkUp" style="width:100%">Check for updates</button></div>
@@ -2385,7 +2383,7 @@ function me(){const p=D.p;const hasCode=!!(D.partner&&D.partner.on&&D.partner.co
 $('#main').innerHTML=`<h1>Profile</h1>
 <div class="card">
  <div style="display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:20px">${avatarHTML(192)}<label class="btn ghost" for="av" style="display:inline-flex !important;align-items:center !important;justify-content:center !important;gap:8px !important;cursor:pointer !important;align-self:center">${IC.camera(18)} Change photo</label><input type="file" id="av" accept="image/*" hidden></div>
- <label for="nm">Nickname</label><input id="nm" value="${E(p.name)}" maxlength="30" readonly>
+ <div class="hi" style="text-align:center">Hello ${E(p.name||user)}!</div>
  
  <label>Goals</label><div class="row" id="goals">${GOALS.map(g=>`<button class="chip" aria-pressed="${(p.goals||[]).includes(g)}">${g}</button>`).join('')}</div>
  <button class="btn" id="sv" style="width:100%;margin-top:12px">Save</button>
@@ -2399,7 +2397,7 @@ $('#main').innerHTML=`<h1>Profile</h1>
  <div class="card"><button class="btn ghost" id="stg" style="width:100%">Settings</button></div>
  <button class="btn ghost" id="lo" style="width:100%">Log out</button>`;
  document.querySelectorAll('#goals .chip').forEach(c=>c.onclick=()=>c.setAttribute('aria-pressed',c.getAttribute('aria-pressed')!=='true'));
- $('#sv').onclick=()=>{p.name=$('#nm').value.trim();p.goals=[...document.querySelectorAll('#goals .chip[aria-pressed=true]')].map(c=>c.textContent);D.rem={on:$('#rm').checked,time:$('#rt').value||'20:00'};save();applyTheme();toast('Saved');shell()};
+  $('#sv').onclick=()=>{p.goals=[...document.querySelectorAll('#goals .chip[aria-pressed=true]')].map(c=>c.textContent);D.rem={on:$('#rm').checked,time:$('#rt').value||'20:00'};save();applyTheme();toast('Saved');shell()};
  $('#av').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f)pickAvatar(f)};
  const saveRem=async()=>{D.rem={on:$('#rm').checked,time:$('#rt').value||'20:00'};save();
   const r=await reminderSync(),note=document.getElementById('remNote');
