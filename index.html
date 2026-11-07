@@ -1090,8 +1090,8 @@ function showUpdateSheet(m,v){
   const listen=()=>{try{const l=up.addListener&&up.addListener('downloadProgress',e=>{bytes=(e&&e.bytes)||0});return l}catch(e){return null}};
   const l=listen();
   toast('Downloading\u2026');
-  try{await up.installUpdate({url:m.url})}
-  catch(e){toast('Install failed')}
+   try{const r=await up.installUpdate({url:m.url});if(r&&r.status==='needsPermission')toast('Allow installs from Bloom, then tap Install again')}
+   catch(e){toast('Install failed')}
   finally{try{l&&l.remove&&l.remove()}catch(e){}}};
 }
 function dateSheet(title,cb){let m=today().slice(0,7);
