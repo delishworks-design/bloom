@@ -1354,8 +1354,22 @@ function ringSVG(){const c=cycleStats(),len=c.avg||28,has=!!c.last;
   mark=`<circle cx="${bx.toFixed(1)}" cy="${by.toFixed(1)}" r="15" fill="#FFFFFF" stroke="${T.mark}" stroke-width="2.2" style="filter:drop-shadow(0 5px 10px rgba(47,107,126,.25))"/><text x="${bx.toFixed(1)}" y="${(by+4.6).toFixed(1)}" text-anchor="middle" style="fill:${T.mark};font-size:13px;font-weight:700;font-family:'Playfair Display',serif">${dt}</text>`}
  return `<svg viewBox="0 0 220 220" style="width:100%;height:100%;display:block" role="img" aria-label="${has?'Cycle day '+dt:'No cycle logged yet'}"><defs><linearGradient id="bloomRingGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${T.g[0]}"/><stop offset="55%" stop-color="${T.g[1]}"/><stop offset="100%" stop-color="${T.g[2]}"/></linearGradient></defs><circle cx="110" cy="110" r="${R}" fill="none" stroke="${T.track}" stroke-width="12"/>${has?`<circle cx="110" cy="110" r="${R}" fill="none" stroke="url(#bloomRingGrad)" stroke-width="12" stroke-linecap="round" stroke-dasharray="${(C*frac).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 110 110)" style="transition:stroke-dasharray .7s ease"/>`:''}${nums}${mark}</svg>`}
 function periodSheet(){dateSheet('First day of bleeding',v=>{
-  for(let i=0;i<5;i++){const dd=addD(v,i);if(dd>today())break;const x=L(dd);D.logs[dd]=Object.assign(x,{flow:i===0?'medium':'light'})}
-  save();toast('Period logged');shell()})}
+  const elapsed=Math.max(1,Math.round((new Date(today())-new Date(v))/864e5)+1);
+  const write=n=>{
+    for(let i=0;i<n;i++){
+      const dd=addD(v,i);if(dd>today())break;
+      const x=L(dd);
+      if(i===0?!bleed(dd):(!x.flow||x.flow==='none'))D.logs[dd]=Object.assign(x,{flow:i===0?'medium':'light'});
+    }
+    save();toast('Period logged');shell();
+  };
+  if(elapsed===1)return write(1);
+  const max=Math.min(elapsed,10),def=Math.min(max,5);let n=def;
+  sheet(`<h2>How many days of bleeding so far?</h2><p class="meta" style="margin:0 0 12px">You can edit any day later from the calendar.</p><div class="row" id="plen" role="group" aria-label="Days of bleeding">${Array.from({length:max},(_,i)=>`<button class="chip" data-n="${i+1}" aria-pressed="${i+1===def}">${i+1}</button>`).join('')}</div><div class="row" style="gap:10px;margin-top:16px"><button class="btn ghost" id="plNo" style="flex:1">Cancel</button><button class="btn" id="plGo" style="flex:1">Save</button></div>`);
+  document.querySelectorAll('#plen .chip').forEach(c=>c.onclick=()=>{n=+c.dataset.n;document.querySelectorAll('#plen .chip').forEach(x=>x.setAttribute('aria-pressed',x===c))});
+  $('#plNo').onclick=()=>sheet();
+  $('#plGo').onclick=()=>{sheet();write(n)};
+})}
 let funTimer=null,foodTimer=null,funPos=0,foodPos=0;
 // ---- extra content: phase-aware, reshuffled on every app open
 const P_MORE2=[
