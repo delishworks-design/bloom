@@ -1,7 +1,7 @@
 {
-    "versionCode": 50,
-    "versionName": "1.2.35",
-    "notes": "In-app updates now download inside Bloom and open the installer; first-time updates may ask to allow Bloom to install apps.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.35/bloom-1.2.35.apk",
+    "versionCode": 51,
+    "versionName": "1.2.36",
+    "notes": "Settings-only update check, reminder sound with exact-alarm handling, and expanded Physical Activity sports.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.36/bloom-1.2.36.apk",
     "publishedAt": "2026-11-07"
 }
