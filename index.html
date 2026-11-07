@@ -2111,12 +2111,19 @@ function renderArticleList(){const el=document.getElementById('lb');let list;
  function renderArticle(i){const a=ARTICLES[i],txt=a[4],done=isRead(i);
   const st=dailyStats(),nxt=st.plan.find(x=>x!==i&&!isRead(x));
   const el=document.getElementById('lb');
-  const paras=txt.split(/\n\s*\n+/).map(p=>p.trim()).filter(Boolean);
-  const first=paras[0]||txt;
-  const rest=paras.length>1?paras.slice(1):[];
-  const bodyHtml=paras.length>1?
-   `<div class="art-glance"><div class="lbl" style="margin:0 0 6px">At a glance</div><p>${E(first)}</p></div>`+rest.map((p,j)=>`<h3>Part ${j+1}</h3><p>${E(p)}</p>`).join(''):
-   `<p>${E(txt)}</p>`;
+   const rawParas=txt.split(/\n\s*\n+/).map(p=>p.trim()).filter(Boolean);
+   const frags=[];
+   rawParas.forEach(p=>{const ms=p.replace(/\s+/g,' ').match(/[^.!?]+[.!?]+(?=\s|$)/g)||[p];ms.forEach(s=>{const t=s.trim();if(t)frags.push(t)})});
+   const units=[];let carry='';
+   frags.forEach(s=>{let t=s;if(carry){t=carry+' '+t;carry=''}if(t.split(/\s+/).filter(Boolean).length<4){carry=t;return}units.push(t)});
+   if(carry)units.push(carry);
+   const first=units[0]||txt;
+   const restUnits=units.length>1?units.slice(1):[];
+   const chunks=[];
+   for(let k=0;k<restUnits.length;k+=2)chunks.push(restUnits.slice(k,k+2).join(' '));
+   const bodyHtml=units.length>1?
+    `<div class="art-glance"><div class="lbl" style="margin:0 0 6px">At a glance</div><p>${E(first)}</p></div>`+chunks.map((p,j)=>`<h3>Part ${j+1}</h3><p>${E(p)}</p>`).join(''):
+    `<p>${E(txt)}</p>`;
   el.innerHTML=`<article class="article-full">
    <button class="btn ghost sm" id="backArt" style="margin-bottom:14px"> Back</button>
    <div class="row" style="gap:8px;flex-wrap:wrap;margin-bottom:8px"><span class="chip" style="font-size:.66rem;padding:3px 9px">${E(a[0])}</span><span class="meta">${E(a[1])}  ${E(a[2])}  ${readMins(txt)} min read</span></div>
