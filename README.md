@@ -25,8 +25,8 @@ to another device.
 | What | Where |
 |---|---|
 | Project | `vggaswbjsmyvfheofnnj` (`Selah`, Southeast Asia) |
-| Tables | `bloom_profiles`, `bloom_data`, `bloom_partners` |
-| Functions | `bloom_create_partner_code`, `bloom_redeem_partner_code`, `bloom_revoke_partner_codes`, `bloom_is_partner` |
+ | Tables | `bloom_profiles`, `bloom_data`, `bloom_partners`, `bloom_redeem_attempts` |
+ | Functions | `bloom_create_partner_code`, `bloom_redeem_partner_code`, `bloom_revoke_partner_codes`, `bloom_leave_pairing`, `bloom_owns_partner`, `bloom_is_partner` |
 | Schema | [`supabase/migrations/20261021000000_bloom.sql`](supabase/migrations/20261021000000_bloom.sql) |
 
 Row Level Security is on for every table:
@@ -47,9 +47,11 @@ supabase db push
 ## Partner sharing
 
 1. Profile → **Partner sync** → **Create sync code**
-2. Share the 6-character code with your partner
+2. Share the 8-character code with your partner
 3. They pick **Partner** on the login screen, sign in, and enter the code
 4. They get a read-only view: no logging, no notes, nothing editable — and it updates as you log
+
+Codes are generated on the server and expire after 24 hours if not claimed.
 
 Revoking deletes the code immediately and drops the partner's access.
 

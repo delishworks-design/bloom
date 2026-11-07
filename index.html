@@ -796,20 +796,16 @@ async function partnerDropped(){
  authView('in')}
 // ---------- pairing (read-only sharing)
 let RO=false,ROowner=null,ROcloud=false;
-function makeCode(){const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<6;i++)s+=A[Math.floor(Math.random()*A.length)];return s}
 async function genPartnerCode(){
  const client=await sbInit();
  if(!client||!sbUser){toast('Pairing needs an internet connection');return null}
- const want=makeCode();let c=want;
+ let c='';
  try{
-  const {data,error}=await client.rpc('bloom_create_partner_code',{p_code:want});
+  const {data,error}=await client.rpc('bloom_create_partner_code',{p_code:''});
   if(error){toast('Could not create code: '+(error.message||'try again'));return null}
-  if(data)c=String(data).toUpperCase();
+  if(data)c=String(data).trim().toUpperCase();
  }catch(e){toast('Could not create code: '+(e.message||'try again'));return null}
- try{
-  const {data:rows}=await client.from('bloom_partners').select('code').eq('code',c).limit(1);
-  if(!rows||!rows.length){toast('Code was not saved - try again');return null}
- }catch(e){}
+ if(!c){toast('Code was not saved - try again');return null}
  D.partner={code:c,on:true};save();
  toast('Pairing code ready');
  return c}
@@ -914,8 +910,9 @@ async function redeemCode(code,onErr){
  if(!c){onErr('Enter a pairing code.');return false}
  const client=await sbInit();
  if(!client||!sbUser){onErr('Pairing needs an internet connection.');return false}
- const {data,error}=await client.rpc('bloom_redeem_partner_code',{p_code:c});
- if(error||!data){onErr('That pairing code is not valid.');return false}
+  const {data,error}=await client.rpc('bloom_redeem_partner_code',{p_code:c});
+  if(error&&String(error.message||'').includes('too many attempts')){onErr('Too many tries. Wait 10 minutes and try again.');return false}
+  if(error||!data){onErr('That pairing code is not valid. Codes expire after 24 hours.');return false}
  await enterPartnerMode(data,c,true);
  if(!Object.keys(D.logs||{}).length)toast('No logs shared yet');
  return true
@@ -1171,10 +1168,10 @@ function partnerOnboard(){
  $('#app').innerHTML=`<div class="auth"><div class="card">
   <div class="auth-head"><div class="brand">Bloom</div>
    <h2>Enter the pairing code</h2>
-   <p class="lede">Ask the person you want to follow for their 6-character code. You\u2019ll see their cycle read-only.</p></div>
+    <p class="lede">Ask the person you want to follow for their 8-character code. You\u2019ll see their cycle read-only.</p></div>
   <form id="pForm" novalidate>
    <div class="field" id="f-pc"><label for="pc">Pairing code</label>
-    <input id="pc" class="code" maxlength="6" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="ABC123" value="${E((()=>{try{return (ST.get('bloom_lastcode')||'').toUpperCase()}catch(e){return ''}})())}" aria-describedby="e-pc">
+     <input id="pc" class="code" maxlength="8" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="ABC12345" value="${E((()=>{try{return (ST.get('bloom_lastcode')||'').toUpperCase()}catch(e){return ''}})())}" aria-describedby="e-pc">
     <p class="hint" id="e-pc"></p></div>
     ${savedName?'':`<div class="field" id="f-pn"><label for="pn">Your name</label>
      <input id="pn" maxlength="30" autocomplete="name" placeholder="What you call me">
@@ -1186,12 +1183,12 @@ function partnerOnboard(){
  const code=$('#pc'),pe=$('#e-pc'),pf=$('#f-pc'),er=$('#err');
  const setErr=m=>{er.textContent=m||'';er.classList.toggle('on',!!m)};
  const setField=m=>{pf.classList.toggle('invalid',!!m);pe.textContent=m||''};
- code.addEventListener('input',()=>{code.value=code.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6);setField('');setErr('')});
+ code.addEventListener('input',()=>{code.value=code.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8);setField('');setErr('')});
  $('#pBack').onclick=()=>{if(pLocked()){D.p=D.p||{};D.p.done=true;save();view='me';shell();return}p.role='';save();onbStep=0;onboarding()};
  $('#pForm').addEventListener('submit',async e=>{
   e.preventDefault();setErr('');
   const v=code.value.trim();
-  if(v.length<6){setField('Enter the 6-character code.');code.focus();return}
+   if(v.length<6||v.length>8){setField('Enter the pairing code.');code.focus();return}
   try{ST.set('bloom_lastcode',v)}catch(e){}
   setField('');
    const nm=savedName||((document.getElementById('pn')||{}).value||'').trim();
@@ -2278,8 +2275,9 @@ async function doDeleteAll(){
 async function syncPartnerCode(){
  if(RO||!sbUser)return false;
  try{const cl=await sbInit();if(!cl)return false;
-  const {data}=await cl.from('bloom_partners').select('code').eq('owner_id',sbUser.id).eq('revoked',false).order('created_at',{ascending:false}).limit(1);
-  const code=data&&data.length?String(data[0].code):'';
+   const {data}=await cl.from('bloom_partners').select('code,partner_id,expires_at').eq('owner_id',sbUser.id).eq('revoked',false).order('created_at',{ascending:false}).limit(1);
+   const row=data&&data.length?data[0]:null;
+   const code=row&&!((row.partner_id==null)&&row.expires_at&&(new Date(row.expires_at).getTime()<=Date.now()))?String(row.code):'';
   const cur=(D.partner&&D.partner.code)||'';
   if(code===cur)return false;
   D.partner=code?{code,on:true}:{code:'',on:false};save();return true;
