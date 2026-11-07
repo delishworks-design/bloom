@@ -686,6 +686,14 @@ function syncLineText(){
 function updateSyncLine(){const el=document.getElementById('syncLine');if(el)el.textContent=syncLineText()}
 function loadRev(mail){try{sbRev=Math.max(0,+ST.get('bloom_rev_'+mail)||0)}catch(e){sbRev=0}}
 function saveRev(){if(user)try{ST.set('bloom_rev_'+user,String(sbRev||0))}catch(e){}}
+function setDirtyFlag(v){if(user)try{ST.set('bloom_dirty_'+user,String(v))}catch(e){}}
+function chooseLoginDoc(keep,doc,dirty){
+ if(!doc)return keep;
+ const cloudHas=Object.keys(doc.logs||{}).length||Object.keys(doc.tasks||[]).length||Object.keys(doc.journal||[]).length;
+ if(!cloudHas){const out=Object.assign(blank(),doc);out.logs=keep.logs||{};out.tasks=keep.tasks||[];out.done=keep.done||{};out.meals=keep.meals||{};out.journal=keep.journal||[];out.plan=keep.plan||{};return out}
+ if(dirty!=='0')return mergeDocs(keep,doc);
+ return Object.assign(blank(),doc);
+}
 function backupLocal(){const m=user||(sbUser&&sbUser.email&&sbUser.email.toLowerCase());if(!m||!D)return;try{ST.set('bloom_backup_'+m,JSON.stringify(D))}catch(e){}}
 function isPlainObject(v){return v!==null&&typeof v==='object'&&!Array.isArray(v)}
 // Deletions made on one device can come back after a merge (no tombstones yet).
@@ -761,13 +769,14 @@ async function sbPush(){if(!sb||!sbUser||RO)return;
    const missing=res.error.code==='PGRST202'||res.error.status===404||/could not find the function/i.test(em);
    if(missing){
     const up=await sb.from('bloom_data').upsert({user_id:sbUser.id,doc:D});
-    if(up&&up.error)throw up.error;
-    sbLastPush=snap;setSyncState('synced');return;
+     if(up&&up.error)throw up.error;
+     if(JSON.stringify(D)===snap)setDirtyFlag(0);
+     sbLastPush=snap;setSyncState('synced');return;
    }
    throw res.error;
   }
   const data=res&&res.data;
-  if(data&&data.status==='ok'){sbRev=+(data.rev||0);saveRev();if(sbLastPush&&SYNC.fails>=3)toast('Back in sync');SYNC.fails=0;sbLastPush=snap;setSyncState('synced');return}
+   if(data&&data.status==='ok'){sbRev=+(data.rev||0);saveRev();if(sbLastPush&&SYNC.fails>=3)toast('Back in sync');SYNC.fails=0;if(JSON.stringify(D)===snap)setDirtyFlag(0);sbLastPush=snap;setSyncState('synced');return}
   if(data&&data.status==='conflict'){
    backupLocal();
    D=mergeDocs(D,data.doc||{});sbRev=+(data.rev||0);saveRev();save();
@@ -783,7 +792,7 @@ async function sbPull(){if(!sb||!sbUser||RO||document.hidden)return;
   const rev=+(data.rev||0);if(rev<=sbRev)return;
   if(JSON.stringify(D)!==sbLastPush)return;
   backupLocal();const row=await sbFetchDocWithRev(sbUser.id);if(!row)return;
-   D=Object.assign(blank(),row.doc);sbRev=row.rev;saveRev();sbLastPush=JSON.stringify(D);
+   D=Object.assign(blank(),row.doc);sbRev=row.rev;saveRev();setDirtyFlag(0);sbLastPush=JSON.stringify(D);
    try{ST.set(key(user),JSON.stringify(D))}catch(e){}
   if(safeToRender())shell();else sbPendingRender=true;
  }catch(e){reportErr('sync.pull',e)}}
@@ -796,15 +805,8 @@ async function sbAfterLogin(u){sbUser=u;
  const row=await sbFetchDocWithRev(u.id);
  const doc=row?row.doc:null;
  sbRev=row?row.rev:0;
- if(doc){
-  backupLocal();
-  const stripRoot=x=>{const y=JSON.parse(JSON.stringify(x||{}));delete y.savedAt;return JSON.stringify(y)};
-  const cloudHas=Object.keys(doc.logs||{}).length||Object.keys(doc.tasks||[]).length||Object.keys(doc.journal||[]).length;
-  if(stripRoot(keep)!==stripRoot(doc)){
-   if(!cloudHas){D=Object.assign(blank(),doc);D.logs=keep.logs||{};D.tasks=keep.tasks||[];D.done=keep.done||{};D.meals=keep.meals||{};D.journal=keep.journal||[];D.plan=keep.plan||{}}
-   else D=mergeDocs(keep,doc);
-  }else D=Object.assign(blank(),doc);
- }else D=Object.assign(blank(),keep);
+ if(doc){backupLocal();D=chooseLoginDoc(keep,doc,ST.get('bloom_dirty_'+mail))}
+ else D=Object.assign(blank(),keep);
   try{const {data:prof}=await sb.from('bloom_profiles').select('*').eq('id',u.id).maybeSingle();
    if(prof){D.p=D.p||{};D.p.name=prof.name||D.p.name;D.p.avatar=prof.avatar||D.p.avatar;D.p.goals=prof.goals&&prof.goals.length?prof.goals:(D.p.goals||[])}}catch(e){reportErr('profile.load',e)}
  D.p=D.p||{};
@@ -844,7 +846,7 @@ async function sbSignUp(email,pw){await sbInit();if(!sb)return 'offline';
 // ---------- storage
 const key=u=>'bloom_d_'+u;
 const blank=()=>({p:{},logs:{},tasks:[],done:{},meals:{},journal:[],plan:{},games:{},cons:true,rem:{on:false,time:'20:00'}});
-function save(){if(RO||!user)return;D.savedAt=Date.now();ST.set(key(user),JSON.stringify(D));sbPushSoon()}
+function save(){if(RO||!user)return;D.savedAt=Date.now();try{ST.set('bloom_dirty_'+user,'1')}catch(e){};ST.set(key(user),JSON.stringify(D));sbPushSoon()}
 // session must survive an app kill -> localStorage, not sessionStorage
 const setSession=v=>{try{ST.set('bloom_s',v);sessionStorage.setItem('bloom_s',v)}catch(e){}};
 const clearSession=()=>{try{ST.del('bloom_s');sessionStorage.removeItem('bloom_s')}catch(e){}delete mem.s};
