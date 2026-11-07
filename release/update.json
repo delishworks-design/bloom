@@ -1,7 +1,7 @@
 {
-    "versionCode": 49,
-    "versionName": "1.2.34",
-    "notes": "Settings now has Check for updates. Reminders use a sound (beep.wav) on a dedicated channel.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.34/bloom-1.2.34.apk",
+    "versionCode": 50,
+    "versionName": "1.2.35",
+    "notes": "In-app updates now download inside Bloom and open the installer; first-time updates may ask to allow Bloom to install apps.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.35/bloom-1.2.35.apk",
     "publishedAt": "2026-11-07"
 }
