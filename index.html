@@ -747,7 +747,7 @@ async function sbInit(){if(sb)return sb;
  }catch(e){sbUser=null;
   try{Object.keys(localStorage).filter(k=>k.indexOf('sb-')===0).forEach(k=>localStorage.removeItem(k))}catch(e2){}}
  return sb}
-async function sbFetchDoc(uid){if(!sb)return null;const {data,error}=await sb.from('bloom_data').select('doc,updated_at').eq('user_id',uid).maybeSingle();if(error)return null;return data?data.doc:null}
+async function sbFetchDoc(uid){if(!sb)return null;const {data,error}=await sb.from('bloom_shared').select('doc').eq('user_id',uid).maybeSingle();if(error){const code=error.code||'';const msg=String(error.message||'');if(code==='42P01'||code==='PGRST205'||msg.includes('bloom_shared')){const old=await sb.from('bloom_data').select('doc,updated_at').eq('user_id',uid).maybeSingle();if(old.error)return null;return old.data?old.data.doc:null}return null}return data?data.doc:null}
 async function sbFetchDocWithRev(uid){if(!sb)return null;const {data,error}=await sb.from('bloom_data').select('doc,rev').eq('user_id',uid).maybeSingle();if(error||!data)return null;return {doc:data.doc,rev:+(data.rev||0)}}
 let sbLastPush='';
 let sbPushing=false,sbPushAgain=false;

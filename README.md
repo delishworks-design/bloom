@@ -55,6 +55,25 @@ Codes are generated on the server and expire after 24 hours if not claimed.
 
 Revoking deletes the code immediately and drops the partner's access.
 
+## Partner privacy
+
+Partners do not read the owner's private `bloom_data` doc directly. They read
+`bloom_shared`, a server-filtered copy created by `bloom_make_shared()` and kept
+current by the `bloom_sync_shared` trigger.
+
+Shared with partners:
+
+- top level: `savedAt`, `p`, `logs`, `tasks`, `done`, `meals`, `plan`
+- `p` keys: `name`, `avatar`, `avatarCrop`, `bud`, `waterGoal`
+- log fields: `mood`, `flow`, `water`, `tags`, `sleep`, `exMin`
+
+Never shared: `journal`, `rem`, `partner`, `games`, `cons`, `seedClean`, all
+other `p` keys, and log fields such as `note`, `sidefx`, and `weight`.
+
+Phase 2 (`supabase/pending/phase2_owner_only_data_read.sql`) is pending: after
+most partners run a version that reads `bloom_shared`, restrict `bloom_data`
+reads to the owner only.
+
 ## Gmail / Google sign-in
 
 Not enabled on the project yet — it needs one OAuth client from Google Cloud. Once you have a
