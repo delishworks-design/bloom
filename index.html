@@ -642,7 +642,9 @@ const IC={play:s=>SVG('<path d="M8.5 5.5v13l11-6.5z"/>',s),
   scale:s=>SVG('<path d="M7 8h10M7 8l2 11h6l2-11M9 8a3 3 0 0 1 6 0"/>',s),
   foot:s=>SVG('<path d="M8 3c-1 4-1 6-1 9 0 4 1 6 3 7 3 1.5 6 .5 7-2 .7-1.6.7-3.6-.1-5.4C15.5 8 14 5.5 13 4z"/>',s),
   spine:s=>SVG('<path d="M12 3v18"/><path d="M8 5h8M8 9h8M8 13h8M8 17h8"/>',s),
-  updown:s=>SVG('<path d="M8 4v16M8 4L5.5 6.5M8 4l2.5 2.5M16 20V4M16 20l-2.5-2.5M16 20l2.5-2.5"/>',s)};
+   updown:s=>SVG('<path d="M8 4v16M8 4L5.5 6.5M8 4l2.5 2.5M16 20V4M16 20l-2.5-2.5M16 20l2.5-2.5"/>',s),
+   cycle:s=>SVG('<circle cx="6" cy="16" r="3"/><circle cx="18" cy="16" r="3"/><path d="M6 16l3.5-7h5L18 16M9.5 9 8 6h3M14.5 9 13 6"/>',s),
+   dance:s=>SVG('<path d="M9 18V5l10-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/>',s)};
 const GLASSPATH='<path d="M6 3h12l-1.35 16.3A2 2 0 0 1 14.65 21H9.35A2 2 0 0 1 7.35 19.3L6 3z"/>';
 const glassIcon=(full,size)=>{const s=size||26;
  return `<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="${full?'var(--teal)':'var(--mut)'}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${full?`<path d="M7.16 11.4h9.68l-.86 7.9A2 2 0 0 1 13.99 21h-3.98a2 2 0 0 1-2-1.7L7.16 11.4z" fill="var(--teal)" stroke="none"/>`:''}${GLASSPATH}${full?'':'<path d="M6.6 9.6h10.8"/>'}</svg>`};
@@ -1563,7 +1565,6 @@ function bindCk(d,re){document.querySelectorAll('input[data-t]').forEach(i=>i.on
  function dayLog(d){const l=L(d);const sc=(k,lab,ic)=>`<label class="log-t">${ic?`<span class="log-ic">${ic}</span>`:''}${lab}</label><div class="row" role="group" aria-label="${lab}">${[1,2,3,4,5].map(i=>`<button class="chip" data-k="${k}" data-v="${i}" aria-pressed="${l[k]==i}">${i}</button>`).join('')}</div>`;
   const qq=(vals,k)=>vals.map(v=>`<button class="chip" data-k="${k}" data-v="${v}" aria-pressed="${String(l[k]||'')===v}">${v}</button>`).join('');
   const qqi=(vals,k)=>vals.map(([v,ic])=>`<button class="chip" data-k="${k}" data-v="${v}" aria-pressed="${String(l[k]||'')===v}"><span class="log-ic">${ic(16)}</span>${v}</button>`).join('');
-   const st0=starts(),lp=st0.filter(x=>x<=d).slice(-1)[0],dslp=lp?Math.round((new Date(d+'T12:00')-new Date(lp+'T12:00'))/864e5):'';
    const SIC={Acne:IC.drop,'Hair changes':IC.hairfall,Bloating:IC.stomach,Cramps:IC.zigzag,Fatigue:IC.closedeye,Cravings:IC.plate,Headache:IC.cloud,'Low mood':IC.mood,Anxious:IC.wave,'Breast tenderness':IC.body};
    const NTS=[['Excess hair',IC.razor],['Hair fall',IC.hairfall],['Oily skin',IC.drop],['Brain fog',IC.cloud],['Irritable',IC.zigzag],['Pelvic pain',IC.pin],['Nausea',IC.stomach],['Increased appetite',IC.plate],['Dizziness after eating',IC.spiral],['Sleepy after eating',IC.closedeye],['Dark skin patches',IC.patch],['Weight gain',IC.scale],['Swollen feet',IC.foot],['Back pain',IC.spine],['Mood swings',IC.updown]];
   sheet(`<h2>${fmt(d,{weekday:'long',month:'short',day:'numeric'})}</h2><label class="log-t"><span class="log-ic">${IC.drop(18)}</span>Bleeding</label><div class="row" role="group" aria-label="Bleeding">${['none','spotting','light','medium','heavy'].map(f=>`<button class="chip" data-k="flow" data-v="${f}" aria-pressed="${(l.flow||'none')==f}">${f}</button>`).join('')}</div>
@@ -1576,20 +1577,19 @@ function bindCk(d,re){document.querySelectorAll('input[data-t]').forEach(i=>i.on
    <label class="log-t" for="nt"><span class="log-ic">${IC.note(18)}</span>Note</label><textarea id="nt" rows="2" placeholder="What affected your day the most?">${E(l.note||'')}</textarea><div class="err" id="er"></div>
   <label class="log-t"><span class="log-ic">${IC.meal(18)}</span>Food and Blood Sugar</label>
   <label style="margin-top:8px">Cravings type</label><div class="row" role="group" aria-label="Cravings type">${qq(['Sweet','Salty','Carbs'],'craving')}</div>
-  <label style="margin-top:8px">Antok after kumain</label><div class="row" role="group" aria-label="Antok after kumain">${qq(['Yes','No'],'antok')}</div>
-  <label style="margin-top:8px">Water intake</label><div class="row" role="group" aria-label="Water intake">${qq([1,2,3,4,5,6,7,8],'water')}</div>
-  <label class="log-t"><span class="log-ic">${IC.body(18)}</span>Body</label>
+   <label style="margin-top:8px">Sleepy after eating</label><div class="row" role="group" aria-label="Sleepy after eating">${qq(['Yes','No'],'antok')}</div>
+   <label class="log-t"><span class="log-ic">${IC.body(18)}</span>Body</label>
   <label for="wt">Weight (optional)</label><input id="wt" type="number" min="0" max="500" step="0.1" value="${l.weight||''}" placeholder="Optional">
   ${sc('bloat','Bloating (1 low  5 high)')}
   <label style="margin-top:8px">Waist bloated</label><div class="row" role="group" aria-label="Waist bloated">${qq(['Yes','No'],'waistBloat')}</div>
   <label class="log-t"><span class="log-ic">${IC.checklist(18)}</span>Habits</label>
-  <label style="margin-top:8px">Exercise type</label><div class="row" role="group" aria-label="Exercise type">${qqi([['Walk',IC.foot],['Workout',IC.bolt],['Yoga',IC.flower],['Rest',IC.moon]],'exercise')}</div>
-  <label for="exMin">Exercise minutes</label><input id="exMin" type="number" min="0" max="1440" step="1" value="${l.exMin||''}" placeholder="Optional">
+   <label style="margin-top:8px">Physical Activity</label><div class="row" role="group" aria-label="Physical Activity">${qqi([['Walk',IC.foot],['Run',IC.bolt],['Cycle',IC.cycle],['Swim',IC.wave],['Strength',IC.scale],['Yoga',IC.flower],['Dance',IC.dance],['Rest',IC.moon]],'exercise')}</div>
+   <label for="exMin">Physical activity minutes</label><input id="exMin" type="number" min="0" max="1440" step="1" value="${l.exMin||''}" placeholder="Optional">
   <label style="margin-top:8px">Medication taken</label><div class="row" role="group" aria-label="Medication taken">${qq(['Yes','No'],'medTaken')}</div>
   <label style="margin-top:8px">Supplement taken</label><div class="row" role="group" aria-label="Supplement taken">${qq(['Yes','No'],'suppTaken')}</div>
   <label for="sfx">Side effects</label><input id="sfx" maxlength="60" value="${E(l.sidefx||'')}" placeholder="Optional">
   <label class="log-t"><span class="log-ic">${IC.calendar(18)}</span>Cycle Context</label>
-  <label for="dslp">Days since last period</label><input id="dslp" type="number" value="${dslp}" readonly>
+
   <label style="margin-top:8px">Cervical mucus</label><div class="row" role="group" aria-label="Cervical mucus">${qq(['Dry','Sticky','Egg white'],'cm')}</div>
   <label style="margin-top:8px">Ovulation test</label><div class="row" role="group" aria-label="Ovulation test">${qq(['Positive','Negative','Not tested'],'ovTest')}</div>
   <div class="row sp" style="margin-top:14px;gap:12px"><button class="btn ghost" id="cx" style="flex:1">Cancel</button><button class="btn" id="sv" style="flex:1">Save</button></div>`);
@@ -2220,13 +2220,15 @@ async function reminderSync(quiet){
   if(rem.on&&p.display!=='granted'){
    if(!quiet)toast('Allow notifications for Bloom in Android settings');
    return {native:true,blocked:true}}
-  await reminderCancel();
-  if(!rem.on)return {native:true,off:true};
-  const [h,mi]=String(rem.time||'20:00').split(':').map(Number);
-  await LN.schedule({notifications:[{
-   id:REM_ID,title:'Bloom',body:'A moment to log how you feel today.',
-   schedule:{on:{hour:isNaN(h)?20:h,minute:isNaN(mi)?0:mi}},
-   smallIcon:'ic_stat_bloom',iconColor:'#B8456B'}]});
+   await reminderCancel();
+   if(!rem.on)return {native:true,off:true};
+   try{await LN.createChannel({id:'bloom_reminders',name:'Bloom reminders',description:'Daily logging reminders',sound:'beep.wav',importance:4})}catch(e){}
+   const [h,mi]=String(rem.time||'20:00').split(':').map(Number);
+   await LN.schedule({notifications:[{
+    id:REM_ID,title:'Bloom',body:'A moment to log how you feel today.',
+    channelId:'bloom_reminders',sound:'beep.wav',
+    schedule:{on:{hour:isNaN(h)?20:h,minute:isNaN(mi)?0:mi}},
+    smallIcon:'ic_stat_bloom',iconColor:'#B8456B'}]});
   if(!quiet)toast('Reminder set for '+String(rem.time||'20:00'));
   return {native:true,scheduled:true};
  }catch(e){
@@ -2413,8 +2415,9 @@ function settingsPage(){
    <button class="rolebtn" data-role="me" aria-pressed="${cur==='me'}"><b>For me</b><span>Track my own cycle, symptoms and goals</span></button>
    <button class="rolebtn" data-role="partner" aria-pressed="${cur==='partner'}"><b>Following someone</b><span>See a partner's cycle read-only with their pairing code</span></button>
   </div>
-  ${RO?'<p class="meta" style="margin:10px 0 0">To use Bloom for yourself, exit the partner’s view.</p>':''}
- </div>`;
+   ${RO?'<p class="meta" style="margin:10px 0 0">To use Bloom for yourself, exit the partner’s view.</p>':''}
+  </div>
+  <div class="card"><div class="card-h"><h3>App</h3><span class="meta" id="appVer">\u2014</span></div><button class="btn ghost" id="chkUp" style="width:100%">Check for updates</button></div>`;
  $('#bk').onclick=()=>{view='me';shell()};
  $('#sChg').onclick=()=>changeNameSheet(nm,async v=>{
   if(RO){
@@ -2429,8 +2432,10 @@ function settingsPage(){
   }
   toast('Name updated');shell();
  });
- $('#sPw').onclick=changePasswordSheet;
- document.querySelectorAll('[data-role]').forEach(b=>b.onclick=()=>setAccountType(b.dataset.role));
+  $('#sPw').onclick=changePasswordSheet;
+  document.querySelectorAll('[data-role]').forEach(b=>b.onclick=()=>setAccountType(b.dataset.role));
+  if(document.getElementById('chkUp'))$('#chkUp').onclick=()=>checkUpdate(true);
+  (async()=>{const up=updater();if(!up)return;try{const v=await up.getVersion();const el=document.getElementById('appVer');if(el)el.textContent='v'+v.versionName+' ('+v.versionCode+')'}catch(e){}})()
 }
 function mePartner(){const p=D.p||{};
  $('#main').innerHTML=`<h1>Profile</h1>
