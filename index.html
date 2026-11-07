@@ -1216,9 +1216,9 @@ async function roReload(){if(!RO||document.hidden)return;
 function shell(){splashAppIsReady();
  if(funTimer){clearInterval(funTimer);funTimer=null}if(foodTimer){clearInterval(foodTimer);foodTimer=null}if(roTimer){clearInterval(roTimer);roTimer=null}
  if(RO&&!ROcloud){const raw=ST.get(key(ROowner));if(raw!=null){roHash=roHashOf(raw);D=Object.assign(blank(),J(key(ROowner),{}))}}
- document.body.classList.toggle('ro',!!RO);
- if(!RO)stripSeededTasks();
- if(!D.p.done&&!RO){if(pLocked()){D.p.done=true;D.p=D.p||{};D.p.role='partner';save()}else return onboarding()}
+  document.body.classList.toggle('ro',!!RO);
+  if(!RO){stripSeededTasks();migrateCustomSymptoms()}
+  if(!D.p.done&&!RO){if(pLocked()){D.p.done=true;D.p=D.p||{};D.p.role='partner';save()}else return onboarding()}
  const N=[['cycle','Cycle',IC.ring],['planner','Planner',IC.list] ,['insights','Insights',IC.chart],['learn','Learn',IC.book]]
    .filter(x=>!(pLocked()&&!RO&&x[0]==='cycle'));
  if(pLocked()&&!RO&&view==='cycle')view='me';
@@ -1302,11 +1302,12 @@ const SEED_TASKS=['Drink water through the day','Breakfast, lunch and dinner','W
 function stripSeededTasks(){try{if(RO||!D||D.seedClean)return;D.seedClean=1;
  if(Array.isArray(D.tasks)&&D.tasks.length){const before=D.tasks.length;D.tasks=D.tasks.filter(t=>!SEED_TASKS.includes(t&&t.t));
   if(D.tasks.length!==before){const ids=new Set(D.tasks.map(t=>t.id));for(const d of Object.keys(D.done||{})){const m=D.done[d]||{};Object.keys(m).forEach(k=>{if(!ids.has(k))delete m[k]});if(!Object.keys(m).length)delete D.done[d]}}}
- save()}catch(e){}}
+  save()}catch(e){}}
+function migrateCustomSymptoms(){if(RO||!D||D.sxMigrated)return;D.sxMigrated=1;const known=new Set([...TAGS,...['Excess hair','Hair fall','Oily skin','Brain fog','Irritable','Pelvic pain','Nausea','Increased appetite','Dizziness after eating','Sleepy after eating','Dark skin patches','Weight gain','Swollen feet','Back pain','Mood swings']]);let changed=false;Object.keys(D.logs||{}).forEach(d=>{const l=D.logs[d]||{};const tags=Array.isArray(l.tags)?l.tags:[];const unknown=tags.filter(t=>!known.has(t));if(!unknown.length)return;const keep=tags.filter(t=>known.has(t));tags.splice(0,tags.length,...keep);const prev=Array.isArray(l.customSx)?l.customSx:[];const next=prev.slice();unknown.map(t=>String(t).trim().slice(0,30)).filter(Boolean).forEach(t=>{if(!next.includes(t))next.push(t)});l.customSx=next.slice(0,6);changed=true});D.sxMigrated=1;save()}
 // ---------- views
 function phaseRanges(len){const fol=Math.round(len*.45),ovu=Math.round(len*.58);
  return [['Menstrual',1,5,'#B8456B'],['Follicular',6,fol,'#2A8A87'],['Ovulation',fol+1,ovu,'#6E5FA8'],['Luteal',ovu+1,len,'#B9803A']]}
-function roWho(){const n=((ownName()||'')+'').trim().split(' ')[0];return n?n+"'s":'Their'}
+function roWho(){const n=(((D&&D.p&&D.p.name)||'')+'').trim().split(' ')[0];return n?n+"'s":'Their'}
 function ringPillText(dt,len,left,elapsed){
  if(elapsed>len)return 'Day '+elapsed+' since the last period';
  const who=RO?roWho():'Your',p=phaseInfo(dt,len);
@@ -1629,7 +1630,7 @@ function cyclePage(){const d=today(),l=L(d),ts=tasksFor(d),n=ts.filter(t=>isDone
 
  $('#main').innerHTML=`
  <div class="greet"><h1 class="sr">Cycle</h1><div class="hi">${h<12?'Good morning':h<18?'Good afternoon':'Good evening'},</div><div class="hi nm">${E(first)}</div><div class="date">${fmt(d,{weekday:'long',month:'long',day:'numeric'})}</div></div>
- <div class="ringwrap"><div class="ringdisc"></div>${ringSVG()}<div class="ringcenter"><div class="ringlbl">${c.last?'Day':'Cycle'}</div><div class="ringday">${c.last?dt:'\u2014'}</div><div class="ringcap">${c.last?(c.n>=2?`of an average ${len}-day cycle`:'cycle day'):'Log a period to start'}</div><div class="ringpill">${c.last?(c.n>=2?ringPillText(dt,len,left,day):'Log to see estimates'):'No cycle yet'}</div></div></div>
+ <div class="ringwrap"><div class="ringdisc"></div>${ringSVG()}<div class="ringcenter"><div class="ringlbl">${c.last?'Day':'Cycle'}</div><div class="ringday">${c.last?dt:'\u2014'}</div><div class="ringcap">${c.last?(c.n>=2?`of an average ${len}-day cycle`:'cycle day'):'Log a period to start'}</div><div class="ringpill">${E(c.last?(c.n>=2?ringPillText(dt,len,left,day):'Log to see estimates'):'No cycle yet')}</div></div></div>
  
  ${RO?'':`<button class="logpill" id="lp"><span class="plus">${IC.plus(16)}</span>Log Period</button>`}
  <div class="stats3">
