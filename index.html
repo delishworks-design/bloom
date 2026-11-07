@@ -689,10 +689,10 @@ function saveRev(){if(user)try{ST.set('bloom_rev_'+user,String(sbRev||0))}catch(
 function setDirtyFlag(v){if(user)try{ST.set('bloom_dirty_'+user,String(v))}catch(e){}}
 function chooseLoginDoc(keep,doc,dirty){
  if(!doc)return keep;
+ if(dirty==='0')return Object.assign(blank(),doc);
  const cloudHas=Object.keys(doc.logs||{}).length||Object.keys(doc.tasks||[]).length||Object.keys(doc.journal||[]).length;
  if(!cloudHas){const out=Object.assign(blank(),doc);out.logs=keep.logs||{};out.tasks=keep.tasks||[];out.done=keep.done||{};out.meals=keep.meals||{};out.journal=keep.journal||[];out.plan=keep.plan||{};return out}
- if(dirty!=='0')return mergeDocs(keep,doc);
- return Object.assign(blank(),doc);
+ return mergeDocs(keep,doc);
 }
 function backupLocal(){const m=user||(sbUser&&sbUser.email&&sbUser.email.toLowerCase());if(!m||!D)return;try{ST.set('bloom_backup_'+m,JSON.stringify(D))}catch(e){}}
 function isPlainObject(v){return v!==null&&typeof v==='object'&&!Array.isArray(v)}
@@ -2359,7 +2359,7 @@ async function doDeleteAll(){
   try{if(cl&&sbUser)await cl.rpc('bloom_revoke_partner_codes')}catch(e){reportErr('partner.revoke',e)}
  try{await reminderCancel()}catch(e){}
  // local caches for every account on this device, plus the session
- try{Object.keys(localStorage).filter(k=>k.indexOf('bloom_d_')===0||k==='bloom_s'||k==='bloom_own'||k==='bloom_last_bg'||k==='bloom_upd_skip'||k==='bloom_pname'||k==='bloom_pavatar'||k==='bloom_pown'||k==='bloom_puid'||k==='bloom_powner'||k==='bloom_role'||k==='bloom_unpaired'||k==='bloom_lastcode'||k==='bloom_plocked'||k==='bloom_read').forEach(k=>localStorage.removeItem(k))}catch(e){}
+ try{Object.keys(localStorage).filter(k=>k.indexOf('bloom_d_')===0||k.indexOf('bloom_backup_')===0||k.indexOf('bloom_dirty_')===0||k.indexOf('bloom_rev_')===0||k==='bloom_s'||k==='bloom_own'||k==='bloom_last_bg'||k==='bloom_upd_skip'||k==='bloom_pname'||k==='bloom_pavatar'||k==='bloom_pown'||k==='bloom_puid'||k==='bloom_powner'||k==='bloom_role'||k==='bloom_unpaired'||k==='bloom_lastcode'||k==='bloom_plocked'||k==='bloom_read'||k==='bloom_errlog').forEach(k=>localStorage.removeItem(k))}catch(e){}
  try{sessionStorage.clear()}catch(e){}
  try{if(cl)await cl.auth.signOut()}catch(e){}
  try{setRoleFlag('')}catch(e){}
