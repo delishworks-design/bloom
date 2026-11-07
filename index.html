@@ -2512,6 +2512,7 @@ function settingsPage(){
     ${RO?'<p class="meta" style="margin:10px 0 0">To use Bloom for yourself, exit the partner’s view.</p>':''}
    </div>
    <div class="card"><div class="card-h"><h3>Sync</h3></div><p class="meta" id="syncLine" style="margin:0 0 10px">${E(syncLineText())}</p><div class="row" style="gap:10px"><button class="btn ghost" id="syncNow" style="flex:1">Sync now</button><button class="btn ghost" id="syncCopy" style="flex:1">Copy diagnostics</button></div></div>
+   ${RO?'':'<div class="card"><div class="card-h"><h3>Your data</h3></div><p class="meta" style="margin:0 0 10px">Erase all your logs, meals, tasks and journal from this phone and the cloud. Your partner loses access. Your sign-in account itself is not deleted.</p><button class="btn pink" id="sDel" style="width:100%">Delete all my data</button></div>'}
    <div class="card"><div class="card-h"><h3>App</h3><span class="meta" id="appVer">\u2014</span></div><button class="btn ghost" id="chkUp" style="width:100%">Check for updates</button></div>`;
  $('#bk').onclick=()=>{view='me';shell()};
  $('#sChg').onclick=()=>changeNameSheet(nm,async v=>{
@@ -2527,8 +2528,9 @@ function settingsPage(){
   }
   toast('Name updated');shell();
  });
-   $('#sPw').onclick=changePasswordSheet;
-   document.querySelectorAll('[data-role]').forEach(b=>b.onclick=()=>setAccountType(b.dataset.role));
+    $('#sPw').onclick=changePasswordSheet;
+    if(document.getElementById('sDel'))$('#sDel').onclick=deleteAllData;
+    document.querySelectorAll('[data-role]').forEach(b=>b.onclick=()=>setAccountType(b.dataset.role));
    if(document.getElementById('syncNow'))$('#syncNow').onclick=()=>{sbPush();setTimeout(updateSyncLine,200)};
    if(document.getElementById('syncCopy'))$('#syncCopy').onclick=async()=>{const txt='sync: '+syncLineText()+'\nrev: '+sbRev+'\nfails: '+SYNC.fails+'\nlast: '+(SYNC.last?new Date(SYNC.last).toISOString():'none')+'\nlogs:\n'+errLog().map(e=>new Date(e.t).toISOString()+' ['+e.ctx+'] '+e.msg).join('\n');try{await navigator.clipboard.writeText(txt);toast('Copied')}catch(e){toast('Copy failed')}};
   if(document.getElementById('chkUp'))$('#chkUp').onclick=()=>checkUpdate(true);
