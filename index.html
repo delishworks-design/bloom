@@ -806,17 +806,16 @@ function roPage(){
  $('#main').innerHTML=`<h1>Profile</h1>
 <div class="card">
  <div style="display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:20px">${roAvatarHTML(192)}<label class="btn ghost" for="rpav" style="display:inline-flex !important;align-items:center !important;justify-content:center !important;gap:8px !important;cursor:pointer !important;align-self:center">${IC.camera(18)} Change photo</label><input type="file" id="rpav" accept="image/*" hidden></div>
- <label for="rpn">Nickname</label><input id="rpn" maxlength="30" value="${E(ST.get('bloom_pname')||'')}" readonly>
-  <button class="btn ghost sm" id="rpnChg" style="margin-top:8px">Change name</button>
-  <p class="meta" style="margin:8px 0 0">Shown to your partner in read-only view.</p>
+  <label for="rpn">Nickname</label><input id="rpn" maxlength="30" value="${E(ST.get('bloom_pname')||'')}" readonly>
+   <p class="meta" style="margin:8px 0 0">Shown to your partner in read-only view.</p>
  </div>
-<div class="card"><div class="card-h"><h3>Following</h3></div><div class="row" style="gap:12px;align-items:center">${avatarHTML(56)}<div style="min-width:0"><b style="display:block">${E((D.p&&D.p.name)||'partner')}</b><p class="meta" style="margin:2px 0 0">${E(sum)}</p></div></div></div>
-<div class="card"><div class="card-h"><h3>App</h3><span class="meta" id="appVer">\u2014</span></div><button class="btn ghost" id="chkUp" style="width:100%">Check for updates</button></div>
-<button class="btn ghost" id="lo" style="width:100%">Sign out</button>
+ <div class="card"><div class="card-h"><h3>Following</h3></div><div class="row" style="gap:12px;align-items:center">${avatarHTML(56)}<div style="min-width:0"><b style="display:block">${E((D.p&&D.p.name)||'partner')}</b><p class="meta" style="margin:2px 0 0">${E(sum)}</p></div></div><button class="btn ghost" id="exv" style="width:100%;margin-top:14px">Exit ${E((D.p&&D.p.name)||'partner')}'s view</button></div>
+ <div class="card"><div class="card-h"><h3>App</h3><span class="meta" id="appVer">\u2014</span></div><button class="btn ghost" id="chkUp" style="width:100%">Check for updates</button></div>
+ <div class="card"><button class="btn ghost" id="stg" style="width:100%">Settings</button></div>
+ <button class="btn ghost" id="lo" style="width:100%">Sign out</button>
 <p class="meta" style="margin-top:8px;text-align:center">Signing out keeps this pairing. Their data stays untouched.</p>`;
- $('#rpnChg').onclick=()=>changeNameSheet(ST.get('bloom_pname'),async v=>{ST.set('bloom_pname',v);toast('Name updated');shell();try{let a=null;try{a=(JSON.parse(ST.get('bloom_pavatar')||'null')||{}).a||null}catch(ea){}const cl=await sbInit();if(cl&&sbUser)await cl.from('bloom_profiles').upsert({id:sbUser.id,name:v,avatar:a})}catch(ev){}});
- $('#lo').insertAdjacentHTML('beforebegin',`<button class="btn ghost" id="exv" style="width:100%;margin-bottom:10px">Exit ${E((D.p&&D.p.name)||'partner')}'s view</button>`);
  $('#exv').onclick=exitPartner;
+ $('#stg').onclick=()=>{view='settings';shell()};
  $('#rpav').onchange=e=>{const f=e.target.files&&e.target.files[0];e.target.value='';if(f)roPickAvatar(f)};
  $('#lo').onclick=logout;
  if(document.getElementById('chkUp'))$('#chkUp').onclick=()=>checkUpdate(true);
@@ -1106,7 +1105,7 @@ function shell(){splashAppIsReady();
  // #me only exists outside partner (read-only) mode  that header shows the Exit button instead
  const meBtn=$('#me');if(meBtn)meBtn.onclick=()=>{view='me';shell()};
  if(view=='me')document.querySelector('nav [aria-current]')?.removeAttribute('aria-current');
- ({cycle:cyclePage,month:monthView,planner,insights,learn,me:(RO?roPage:(pLocked()?mePartner:me))})[view]()
+  ({cycle:cyclePage,month:monthView,planner,insights,learn,settings:settingsPage,me:(RO?roPage:(pLocked()?mePartner:me))})[view]()
  try{fabSync()}catch(e){}
 }
 function onboarding(){splashAppIsReady();try{fabSync()}catch(e){}const p=D.p;if(p.role==='me'&&onbStep===0)onbStep=1;
@@ -2295,21 +2294,91 @@ function changeNameSheet(current,onDone){
   if(nm===String(current||'').trim()){sheet();return}
   nameMark();sheet();onDone(nm)};
 }
+function currentAccountType(){if(RO)return 'partner';if(pLocked())return 'partner';const r=(D&&D.p&&D.p.role)||'';return r==='partner'?'partner':(r==='me'?'me':'')}
+async function setAccountType(role){
+ const cur=currentAccountType();
+ if(cur===role){toast('Already set');return}
+ if(role==='partner'){
+  if(RO){toast('Already following');return}
+  D.p=D.p||{};D.p.role='partner';save();partnerOnboard();return
+ }
+ if(RO){exitPartner();return}
+ D.p=D.p||{};D.p.role='me';D.p.done=true;setUnpaired(false);unlockPartner();
+ try{ST.del('bloom_lastcode');ST.del('bloom_powner')}catch(e){}
+ save();view='cycle';shell()
+}
+function changePasswordSheet(){
+ sheet(`<h2>Change password</h2><p class="meta" style="margin:0 0 12px">Use at least 6 characters.</p><label for="pw1">New password</label><input id="pw1" type="password" autocomplete="new-password"><label for="pw2" style="margin-top:10px;display:block">Confirm password</label><input id="pw2" type="password" autocomplete="new-password"><p class="hint" id="pwErr"></p><div class="row" style="gap:10px;margin-top:16px"><button class="btn ghost" id="pwCancel" style="flex:1">Cancel</button><button class="btn" id="pwSave" style="flex:1">Save</button></div>`);
+ $('#pwCancel').onclick=()=>sheet();
+ $('#pwSave').onclick=async()=>{
+  const a=$('#pw1').value,b=$('#pw2').value,er=$('#pwErr');
+  if(a.length<6){er.textContent='Use at least 6 characters.';return}
+  if(a!==b){er.textContent='Passwords do not match.';return}
+  er.textContent='';const bt=$('#pwSave');bt.disabled=true;bt.textContent='Saving…';
+  try{
+   const cl=await sbInit();
+   if(!cl){er.textContent='Could not start the cloud service.';return}
+   const {error}=await cl.auth.updateUser({password:a});
+   if(error){er.textContent=errText(error.message);return}
+   sheet();toast('Password updated');
+  }finally{bt.disabled=false;bt.textContent='Save'}
+ };
+}
+function settingsPage(){
+ const cur=currentAccountType();
+ const nm=RO?(ST.get('bloom_pname')||''):((D&&D.p&&D.p.name)||'');
+ $('#main').innerHTML=`<button class="btn ghost sm" id="bk" style="margin-bottom:10px">‹ Back</button><h1>Settings</h1>
+ <div class="card">
+  <div class="card-h"><h3>Name</h3></div>
+  <label for="snm">Nickname</label><input id="snm" maxlength="30" value="${E(nm)}" readonly>
+  <button class="btn ghost sm" id="sChg" style="margin-top:8px">Change name</button>
+  <p class="meta" style="margin:8px 0 0">${RO?'Shown to your partner in read-only view.':'You can change it once a week.'}</p>
+ </div>
+ <div class="card">
+  <div class="card-h"><h3>Password</h3></div>
+  <p class="meta" style="margin:0 0 10px">Change the password for this account.</p>
+  <button class="btn ghost" id="sPw" style="width:100%">Change password</button>
+ </div>
+ <div class="card">
+  <div class="card-h"><h3>Account type</h3></div>
+  <div class="rolepick" style="gap:10px">
+   <button class="rolebtn" data-role="me" aria-pressed="${cur==='me'}"><b>For me</b><span>Track my own cycle, symptoms and goals</span></button>
+   <button class="rolebtn" data-role="partner" aria-pressed="${cur==='partner'}"><b>Following someone</b><span>See a partner's cycle read-only with their pairing code</span></button>
+  </div>
+  ${RO?'<p class="meta" style="margin:10px 0 0">To use Bloom for yourself, exit the partner’s view.</p>':''}
+ </div>`;
+ $('#bk').onclick=()=>{view='me';shell()};
+ $('#sChg').onclick=()=>changeNameSheet(nm,async v=>{
+  if(RO){
+   try{ST.set('bloom_pname',v)}catch(e){}
+   try{let a=null;try{a=(JSON.parse(ST.get('bloom_pavatar')||'null')||{}).a||null}catch(ea){}
+    const cl=await sbInit();if(cl&&sbUser)await cl.from('bloom_profiles').upsert({id:sbUser.id,name:v,avatar:a})}catch(ev){}
+  }else{
+   D.p=D.p||{};D.p.name=v;
+   if(pLocked()){try{ST.set('bloom_pname',v)}catch(e){}}
+   save();
+   try{const cl=await sbInit();if(cl&&sbUser)await cl.from('bloom_profiles').upsert({id:sbUser.id,name:v})}catch(ev){}
+  }
+  toast('Name updated');shell();
+ });
+ $('#sPw').onclick=changePasswordSheet;
+ document.querySelectorAll('[data-role]').forEach(b=>b.onclick=()=>setAccountType(b.dataset.role));
+}
 function mePartner(){const p=D.p||{};
  $('#main').innerHTML=`<h1>Profile</h1>
 <div class="card">
  <div style="display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:20px">${avatarHTML(192)}<label class="btn ghost" for="av" style="display:inline-flex !important;align-items:center !important;justify-content:center !important;gap:8px !important;cursor:pointer !important;align-self:center">${IC.camera(18)} Change photo</label><input type="file" id="av" accept="image/*" hidden></div>
- <label for="nm">Nickname</label><input id="nm" value="${E(p.name||'')}" maxlength="30" readonly>
-  <button class="btn ghost sm" id="nmChg" style="margin-top:8px">Change name</button>
-  <p class="meta" style="margin:8px 0 0">Shown to your partner in read-only view.</p>
+  <label for="nm">Nickname</label><input id="nm" value="${E(p.name||'')}" maxlength="30" readonly>
+   <p class="meta" style="margin:8px 0 0">Shown to your partner in read-only view.</p>
  </div>
  <div class="card"><div class="card-h"><h3>Partner account</h3></div><p class="meta">This account follows someone read-only, so its own cycle tracking stays off. Enter their pairing code to open their view.</p><button class="btn" id="gFollow" style="width:100%">Enter a pairing code</button></div>
-<div class="card"><div class="card-h"><h3>App</h3><span class="meta" id="appVer">\u2014</span></div><button class="btn ghost" id="chkUp" style="width:100%">Check for updates</button></div>
-<button class="btn ghost" id="lo" style="width:100%">Log out</button>`;
- $('#nmChg').onclick=()=>changeNameSheet(p.name,async v=>{p.name=v;D.p.name=v;try{ST.set('bloom_pname',v)}catch(e){};save();try{const cl=await sbInit();if(cl&&sbUser)await cl.from('bloom_profiles').upsert({id:sbUser.id,name:v})}catch(ev){}toast('Name updated');shell()});
- $('#av').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f)pickAvatar(f)};
- $('#gFollow').onclick=()=>partnerOnboard();
- $('#lo').onclick=logout;
+ <div class="card"><div class="card-h"><h3>App</h3><span class="meta" id="appVer">\u2014</span></div><button class="btn ghost" id="chkUp" style="width:100%">Check for updates</button></div>
+ <div class="card"><button class="btn ghost" id="stg" style="width:100%">Settings</button></div>
+ <button class="btn ghost" id="lo" style="width:100%">Log out</button>`;
+  $('#av').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f)pickAvatar(f)};
+  $('#gFollow').onclick=()=>partnerOnboard();
+  $('#stg').onclick=()=>{view='settings';shell()};
+  $('#lo').onclick=logout;
  if(document.getElementById('chkUp'))$('#chkUp').onclick=()=>checkUpdate(true);
  (async()=>{const up=updater();if(!up)return;try{const v=await up.getVersion();const el=document.getElementById('appVer');if(el)el.textContent='v'+v.versionName+' ('+v.versionCode+')'}catch(e){}})()}
 function me(){const p=D.p;const hasCode=!!(D.partner&&D.partner.on&&D.partner.code);
@@ -2317,7 +2386,7 @@ $('#main').innerHTML=`<h1>Profile</h1>
 <div class="card">
  <div style="display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:20px">${avatarHTML(192)}<label class="btn ghost" for="av" style="display:inline-flex !important;align-items:center !important;justify-content:center !important;gap:8px !important;cursor:pointer !important;align-self:center">${IC.camera(18)} Change photo</label><input type="file" id="av" accept="image/*" hidden></div>
  <label for="nm">Nickname</label><input id="nm" value="${E(p.name)}" maxlength="30" readonly>
- <button class="btn ghost sm" id="nmChg" style="margin-top:8px">Change name</button>
+ 
  <label>Goals</label><div class="row" id="goals">${GOALS.map(g=>`<button class="chip" aria-pressed="${(p.goals||[]).includes(g)}">${g}</button>`).join('')}</div>
  <button class="btn" id="sv" style="width:100%;margin-top:12px">Save</button>
 </div>
@@ -2327,7 +2396,8 @@ $('#main').innerHTML=`<h1>Profile</h1>
 </div>
 <div class="card"><div class="card-h"><h3>Reminder</h3></div><label class="row" style="color:var(--ink)"><input type="checkbox" id="rm" style="width:22px;margin:0" ${D.rem.on?'checked':''}> Daily logging reminder</label><label for="rt">Time</label><input id="rt" type="time" value="${D.rem.time}"><button class="btn ghost" id="rs" style="width:100%;margin-top:4px">Save reminder</button>${notifPlugin()?`<p class="meta" style="margin-top:10px" id="remNote">One notification a day. Android will ask for permission the first time.</p>`:''}</div>
 <div class="card"><div class="card-h"><h3>App</h3><span class="meta" id="appVer">\u2014</span></div><button class="btn ghost" id="chkUp" style="width:100%">Check for updates</button></div>
-<button class="btn ghost" id="lo" style="width:100%">Log out</button>`;
+ <div class="card"><button class="btn ghost" id="stg" style="width:100%">Settings</button></div>
+ <button class="btn ghost" id="lo" style="width:100%">Log out</button>`;
  document.querySelectorAll('#goals .chip').forEach(c=>c.onclick=()=>c.setAttribute('aria-pressed',c.getAttribute('aria-pressed')!=='true'));
  $('#sv').onclick=()=>{p.name=$('#nm').value.trim();p.goals=[...document.querySelectorAll('#goals .chip[aria-pressed=true]')].map(c=>c.textContent);D.rem={on:$('#rm').checked,time:$('#rt').value||'20:00'};save();applyTheme();toast('Saved');shell()};
  $('#av').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f)pickAvatar(f)};
@@ -2341,8 +2411,8 @@ $('#main').innerHTML=`<h1>Profile</h1>
  $('#rs').onclick=saveRem;$('#rt').onchange=saveRem;$('#rm').onchange=saveRem;
  $('#lo').onclick=logout;loadPairCard();
  syncPartnerCode().then(ch=>{if(ch&&view==='me'&&!RO)me()});
- $('#nmChg').onclick=()=>changeNameSheet(p.name,async v=>{p.name=v;D.p.name=v;save();try{const cl=await sbInit();if(cl&&sbUser)await cl.from('bloom_profiles').upsert({id:sbUser.id,name:v})}catch(e){};shell();toast('Name updated')});
- if(document.getElementById('gc'))$('#gc').onclick=async()=>{const c=await genPartnerCode();if(c)me()};
+  $('#stg').onclick=()=>{view='settings';shell()};
+  if(document.getElementById('gc'))$('#gc').onclick=async()=>{const c=await genPartnerCode();if(c)me()};
  if(document.getElementById('cp'))$('#cp').onclick=async()=>{try{await navigator.clipboard.writeText(D.partner.code);toast('Code copied')}catch(e){toast(D.partner.code)}};
  if(document.getElementById('pg'))$('#pg').onclick=async()=>{await genPartnerCode();me()};
  if(document.getElementById('pv'))$('#pv').onclick=()=>stopShareSheet('');
