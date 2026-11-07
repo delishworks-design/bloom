@@ -25,14 +25,14 @@ to another device.
 | What | Where |
 |---|---|
 | Project | `vggaswbjsmyvfheofnnj` (`Selah`, Southeast Asia) |
- | Tables | `bloom_profiles`, `bloom_data`, `bloom_partners`, `bloom_redeem_attempts` |
- | Functions | `bloom_create_partner_code`, `bloom_redeem_partner_code`, `bloom_revoke_partner_codes`, `bloom_leave_pairing`, `bloom_owns_partner`, `bloom_is_partner` |
+ | Tables | `bloom_profiles`, `bloom_data`, `bloom_partners`, `bloom_redeem_attempts`, `bloom_shared` |
+ | Functions | `bloom_create_partner_code`, `bloom_make_shared`, `bloom_redeem_partner_code`, `bloom_revoke_partner_codes`, `bloom_leave_pairing`, `bloom_sync_shared`, `bloom_owns_partner`, `bloom_is_partner`, `bloom_unshare` |
 | Schema | [`supabase/migrations/20261021000000_bloom.sql`](supabase/migrations/20261021000000_bloom.sql) |
 
 Row Level Security is on for every table:
 
 - you can read and write only your own profile and data
-- a partner who has redeemed your code can **read** your profile and data, and nothing else
+- a partner who has redeemed your code reads only a filtered copy (bloom_shared), never your private data; see "Partner privacy" below
 - partner codes are read/written through `security definer` functions so a raw code can never be
   enumerated by the anon key
 
@@ -65,7 +65,9 @@ Shared with partners:
 
 - top level: `savedAt`, `p`, `logs`, `tasks`, `done`, `meals`, `plan`
 - `p` keys: `name`, `avatar`, `avatarCrop`, `bud`, `waterGoal`
-- log fields: `mood`, `flow`, `water`, `tags`, `sleep`, `exMin`
+- log fields: `mood`, `flow`, `water`, `tags`, `sleep`, `exMin`, `energy`
+
+Deleting the owner's `bloom_data` row also deletes the shared copy.
 
 Never shared: `journal`, `rem`, `partner`, `games`, `cons`, `seedClean`, all
 other `p` keys, and log fields such as `note`, `sidefx`, and `weight`.

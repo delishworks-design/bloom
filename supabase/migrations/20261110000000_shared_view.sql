@@ -22,7 +22,7 @@ begin
       if jsonb_typeof(r.value) = 'object' then
         select coalesce(jsonb_object_agg(key, value), '{}'::jsonb) into e
           from jsonb_each(r.value)
-         where key in ('mood','flow','water','tags','sleep','exMin');
+         where key in ('mood','flow','water','tags','sleep','exMin','energy');
         v_logs := v_logs || jsonb_build_object(r.key, e);
       end if;
     end loop;
@@ -53,6 +53,19 @@ drop trigger if exists bloom_sync_shared on public.bloom_data;
 create trigger bloom_sync_shared after insert or update of doc on public.bloom_data
 for each row execute function public.bloom_sync_shared();
 
+create or replace function public.bloom_unshare()
+returns trigger
+language plpgsql security definer set search_path = public
+as $$
+begin
+  delete from public.bloom_shared where user_id = old.user_id;
+  return null;
+end $$;
+
+drop trigger if exists bloom_unshare on public.bloom_data;
+create trigger bloom_unshare after delete on public.bloom_data
+for each row execute function public.bloom_unshare();
+
 insert into public.bloom_shared (user_id, doc, updated_at)
 select user_id, public.bloom_make_shared(doc), now() from public.bloom_data
 on conflict (user_id) do update set doc = excluded.doc, updated_at = now();
@@ -66,3 +79,4 @@ revoke all on public.bloom_shared from public, anon, authenticated;
 grant select on public.bloom_shared to authenticated;
 revoke execute on function public.bloom_make_shared(jsonb) from public, anon, authenticated;
 revoke execute on function public.bloom_sync_shared() from public, anon, authenticated;
+revoke execute on function public.bloom_unshare() from public, anon, authenticated;
