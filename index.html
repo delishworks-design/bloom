@@ -192,6 +192,9 @@ textarea{resize:none !important;overflow:hidden !important;min-height:78px}
 textarea.grow{overflow-y:auto !important}
 input:focus,select:focus,textarea:focus{border-color:#B8456B !important;background:#fff !important;outline:none !important}
 label{display:block;font-size:.86rem;color:#7C6B71 !important;margin-top:16px !important;margin-bottom:6px !important;line-height:1.2 !important;font-weight:700 !important;letter-spacing:.01em}
+.log-t{display:flex;align-items:center;gap:7px}
+.log-ic{display:inline-flex;color:#8A6F66;flex:0 0 auto}
+.chip .log-ic{margin-right:5px}
 .ck{display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px dashed #EADFD2;line-height:1.3;flex:1 1 auto;min-width:0}
 .ck input{width:22px;height:22px;margin:0;accent-color:#B8456B;flex:0 0 auto}
 .ckt{flex:1 1 auto;min-width:0;overflow-wrap:anywhere;word-break:break-word;color:#3A2E33;font-size:1rem}
@@ -616,7 +619,30 @@ const IC={play:s=>SVG('<path d="M8.5 5.5v13l11-6.5z"/>',s),
  meal:s=>SVG('<path d="M7 3v6a2 2 0 0 0 4 0V3"/><path d="M9 11v10"/><path d="M17 3c-1.6 2-2.2 4-2.2 5.8 0 1.5.9 2.4 2.2 2.4s2.2-.9 2.2-2.4C19.2 7 18.6 5 17 3z"/><path d="M17 11v10"/>',s),
  mood:s=>SVG('<circle cx="12" cy="12" r="8.5"/><path d="M8.6 14.4c.8 1.5 2 2.3 3.4 2.3s2.6-.8 3.4-2.3"/><path d="M9.2 9.8h.01M14.8 9.8h.01"/>',s),
  glass:s=>SVG('<path d="M7 3h10l-1.2 15.2A2 2 0 0 1 13.8 20h-3.6a2 2 0 0 1-2-1.8L7 3z"/><path d="M7.6 9.5h8.8"/>',s),
- moon:s=>SVG('<path d="M20.5 14.8A8.3 8.3 0 0 1 9.2 3.5a8.3 8.3 0 1 0 11.3 11.3z"/>',s)};
+  moon:s=>SVG('<path d="M20.5 14.8A8.3 8.3 0 0 1 9.2 3.5a8.3 8.3 0 1 0 11.3 11.3z"/>',s),
+  bolt:s=>SVG('<path d="M13 2 5 13h6l-1 9 8-11h-6l1-9z"/>',s),
+  wave:s=>SVG('<path d="M3 12c2.5 0 2.5-4 5-4s2.5 4 5 4 2.5-4 5-4 2.5 4 3 4"/>',s),
+  clock:s=>SVG('<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',s),
+  plusc:s=>SVG('<circle cx="12" cy="12" r="8.5"/><path d="M12 8v8M8 12h8"/>',s),
+  pencil:s=>SVG('<path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19l-4 1z"/>',s),
+  note:s=>SVG('<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/>',s),
+  body:s=>SVG('<circle cx="12" cy="5" r="2.2"/><path d="M12 8v5M8 21c0-3 1-5 4-5s4 2 4 5M6 11c2-1 4-1.5 6-1.5S16 10 18 11"/>',s),
+  checklist:s=>SVG('<rect x="4" y="3.5" width="16" height="17" rx="2"/><path d="M8 8l1.2 1.2L11.5 7M13.5 8.5H17M8 14l1.2 1.2L11.5 13M13.5 14.5H17"/>',s),
+  calendar:s=>SVG('<rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/><circle cx="8.5" cy="14.5" r=".3"/><circle cx="12" cy="14.5" r=".3"/><circle cx="15.5" cy="14.5" r=".3"/>',s),
+  razor:s=>SVG('<path d="M6 3l11 11-4 4L2 7l4-4z"/><path d="M8 8l3 3"/>',s),
+  hairfall:s=>SVG('<path d="M8 3c0 5 3 6 3 9a1.5 1.5 0 0 1-3 0c0-3 3-4 3-9z"/><path d="M13 4c1 4 4 3 5 7"/>',s),
+  cloud:s=>SVG('<path d="M7 18a4 4 0 0 1-.5-8A6 6 0 0 1 18 8a4.5 4.5 0 0 1-1 10H7z"/>',s),
+  zigzag:s=>SVG('<path d="M3 16l4-6 3 5 4-7 4 6 3-3"/>',s),
+  pin:s=>SVG('<path d="M12 21s-6-5.5-6-10a6 6 0 1 1 12 0c0 4.5-6 10-6 10z"/><circle cx="12" cy="11" r="2.2"/>',s),
+  stomach:s=>SVG('<path d="M4 8c2-2 4 0 6 0s4-2 6 0 4 0 4 0M4 15c2-2 4 0 6 0s4-2 6 0 4 0 4 0"/>',s),
+  plate:s=>SVG('<circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="12" r="3.5"/>',s),
+  spiral:s=>SVG('<path d="M12 14a2 2 0 1 0-2-2 4 4 0 1 1 4 4 6 6 0 1 1-6-6"/>',s),
+  closedeye:s=>SVG('<path d="M3 12s3.5-5 9-5 9 5 9 5-3.5 5-9 5-9-5-9-5z"/><path d="M6 12h12"/>',s),
+  patch:s=>SVG('<rect x="5" y="7" width="14" height="10" rx="4"/><path d="M9 12h6"/>',s),
+  scale:s=>SVG('<path d="M7 8h10M7 8l2 11h6l2-11M9 8a3 3 0 0 1 6 0"/>',s),
+  foot:s=>SVG('<path d="M8 3c-1 4-1 6-1 9 0 4 1 6 3 7 3 1.5 6 .5 7-2 .7-1.6.7-3.6-.1-5.4C15.5 8 14 5.5 13 4z"/>',s),
+  spine:s=>SVG('<path d="M12 3v18"/><path d="M8 5h8M8 9h8M8 13h8M8 17h8"/>',s),
+  updown:s=>SVG('<path d="M8 4v16M8 4L5.5 6.5M8 4l2.5 2.5M16 20V4M16 20l-2.5-2.5M16 20l2.5-2.5"/>',s)};
 const GLASSPATH='<path d="M6 3h12l-1.35 16.3A2 2 0 0 1 14.65 21H9.35A2 2 0 0 1 7.35 19.3L6 3z"/>';
 const glassIcon=(full,size)=>{const s=size||26;
  return `<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="${full?'var(--teal)':'var(--mut)'}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${full?`<path d="M7.16 11.4h9.68l-.86 7.9A2 2 0 0 1 13.99 21h-3.98a2 2 0 0 1-2-1.7L7.16 11.4z" fill="var(--teal)" stroke="none"/>`:''}${GLASSPATH}${full?'':'<path d="M6.6 9.6h10.8"/>'}</svg>`};
@@ -1534,21 +1560,46 @@ function cyclePage(){const d=today(),l=L(d),ts=tasksFor(d),n=ts.filter(t=>isDone
 
 const ck=(t,d)=>`<label class="ck"><input type="checkbox" data-t="${t.id}" ${isDone(t.id,d)?'checked':''}><span class="ckt">${E(t.t)}</span></label>`;
 function bindCk(d,re){document.querySelectorAll('input[data-t]').forEach(i=>i.onchange=()=>{toggle(i.dataset.t,d);(re||cyclePage)()})}
-function dayLog(d){const l=L(d);const sc=(k,lab)=>`<label>${lab}</label><div class="row" role="group" aria-label="${lab}">${[1,2,3,4,5].map(i=>`<button class="chip" data-k="${k}" data-v="${i}" aria-pressed="${l[k]==i}">${i}</button>`).join('')}</div>`;
- sheet(`<h2>${fmt(d,{weekday:'long',month:'short',day:'numeric'})}</h2><label>Bleeding</label><div class="row" role="group" aria-label="Bleeding">${['none','spotting','light','medium','heavy'].map(f=>`<button class="chip" data-k="flow" data-v="${f}" aria-pressed="${(l.flow||'none')==f}">${f}</button>`).join('')}</div>
-${sc('mood','Mood (1 low  5 great)')}${sc('energy','Energy (1 low  5 high)')}${sc('stress','Stress (1 calm  5 high)')}${sc('sleepq','Sleep quality')}
-<label for="sl">Hours slept last night</label><input id="sl" type="number" min="0" max="24" step="0.5" value="${l.sleep||''}">
-<label>Symptoms</label><div class="row" id="tg">${TAGS.map(t=>`<button class="chip" aria-pressed="${(l.tags||[]).includes(t)}">${t}</button>`).join('')}</div>
-<label for="cu" style="margin-top:8px">Other symptom</label><input id="cu" maxlength="30" placeholder="Optional">
-<label for="nt">Note</label><textarea id="nt" rows="2">${E(l.note||'')}</textarea><div class="err" id="er"></div>
-<div class="row sp" style="margin-top:14px;gap:12px"><button class="btn ghost" id="cx" style="flex:1">Cancel</button><button class="btn" id="sv" style="flex:1">Save</button></div>`);
+ function dayLog(d){const l=L(d);const sc=(k,lab,ic)=>`<label class="log-t">${ic?`<span class="log-ic">${ic}</span>`:''}${lab}</label><div class="row" role="group" aria-label="${lab}">${[1,2,3,4,5].map(i=>`<button class="chip" data-k="${k}" data-v="${i}" aria-pressed="${l[k]==i}">${i}</button>`).join('')}</div>`;
+  const qq=(vals,k)=>vals.map(v=>`<button class="chip" data-k="${k}" data-v="${v}" aria-pressed="${String(l[k]||'')===v}">${v}</button>`).join('');
+  const qqi=(vals,k)=>vals.map(([v,ic])=>`<button class="chip" data-k="${k}" data-v="${v}" aria-pressed="${String(l[k]||'')===v}"><span class="log-ic">${ic(16)}</span>${v}</button>`).join('');
+  const st0=starts(),lp=st0.filter(x=>x<=d).slice(-1)[0],dslp=lp?Math.round((new Date(d+'T12:00')-new Date(lp+'T12:00'))/864e5):'';
+  const NTS=[['Excess hair',IC.razor],['Hair fall',IC.hairfall],['Oily skin',IC.drop],['Brain fog',IC.cloud],['Irritable',IC.zigzag],['Pelvic pain',IC.pin],['Nausea',IC.stomach],['Increased appetite',IC.plate],['Dizziness after eating',IC.spiral],['Sleepy after eating',IC.closedeye],['Dark skin patches',IC.patch],['Weight gain',IC.scale],['Swollen feet',IC.foot],['Back pain',IC.spine],['Mood swings',IC.updown]];
+  sheet(`<h2>${fmt(d,{weekday:'long',month:'short',day:'numeric'})}</h2><label class="log-t"><span class="log-ic">${IC.drop(18)}</span>Bleeding</label><div class="row" role="group" aria-label="Bleeding">${['none','spotting','light','medium','heavy'].map(f=>`<button class="chip" data-k="flow" data-v="${f}" aria-pressed="${(l.flow||'none')==f}">${f}</button>`).join('')}</div>
+  ${sc('mood','Mood (1 low  5 great)',IC.mood(18))}${sc('energy','Energy (1 low  5 high)',IC.bolt(18))}${sc('stress','Stress (1 calm  5 high)',IC.wave(18))}${sc('sleepq','Sleep quality',IC.moon(18))}
+  <label class="log-t" for="sl"><span class="log-ic">${IC.clock(18)}</span>Hours slept last night</label><input id="sl" type="number" min="0" max="24" step="0.5" value="${l.sleep||''}">
+  <label style="margin-top:8px">Woke up rested</label><div class="row" role="group" aria-label="Woke up rested">${qq(['Yes','No'],'rested')}</div>
+  <label style="margin-top:8px">Snoring</label><div class="row" role="group" aria-label="Snoring">${qq(['Yes','No'],'snoring')}</div>
+  <label class="log-t"><span class="log-ic">${IC.plusc(18)}</span>Symptoms</label><div class="row" id="tg">${TAGS.map(t=>`<button class="chip" aria-pressed="${(l.tags||[]).includes(t)}">${t}</button>`).join('')}${NTS.map(([t,ic])=>`<button class="chip" aria-pressed="${(l.tags||[]).includes(t)}"><span class="log-ic">${ic(16)}</span>${t}</button>`).join('')}</div>
+  <label class="log-t" for="cu" style="margin-top:8px"><span class="log-ic">${IC.pencil(18)}</span>Other symptom</label><input id="cu" maxlength="30" placeholder="Optional">
+  <label class="log-t" for="nt"><span class="log-ic">${IC.note(18)}</span>Note</label><textarea id="nt" rows="2" placeholder="Ano pinaka nakaapekto sa araw mo?">${E(l.note||'')}</textarea><div class="err" id="er"></div>
+  <label class="log-t"><span class="log-ic">${IC.meal(18)}</span>Food and Blood Sugar</label>
+  <label style="margin-top:8px">Cravings type</label><div class="row" role="group" aria-label="Cravings type">${qq(['Sweet','Salty','Carbs'],'craving')}</div>
+  <label style="margin-top:8px">Antok after kumain</label><div class="row" role="group" aria-label="Antok after kumain">${qq(['Yes','No'],'antok')}</div>
+  <label style="margin-top:8px">Water intake</label><div class="row" role="group" aria-label="Water intake">${qq([1,2,3,4,5,6,7,8],'water')}</div>
+  <label class="log-t"><span class="log-ic">${IC.body(18)}</span>Body</label>
+  <label for="wt">Weight (optional)</label><input id="wt" type="number" min="0" max="500" step="0.1" value="${l.weight||''}" placeholder="Optional">
+  ${sc('bloat','Bloating (1 low  5 high)')}
+  <label style="margin-top:8px">Waist bloated</label><div class="row" role="group" aria-label="Waist bloated">${qq(['Yes','No'],'waistBloat')}</div>
+  <label class="log-t"><span class="log-ic">${IC.checklist(18)}</span>Habits</label>
+  <label style="margin-top:8px">Exercise type</label><div class="row" role="group" aria-label="Exercise type">${qqi([['Walk',IC.foot],['Workout',IC.bolt],['Yoga',IC.flower],['Rest',IC.moon]],'exercise')}</div>
+  <label for="exMin">Exercise minutes</label><input id="exMin" type="number" min="0" max="1440" step="1" value="${l.exMin||''}" placeholder="Optional">
+  <label style="margin-top:8px">Medication taken</label><div class="row" role="group" aria-label="Medication taken">${qq(['Yes','No'],'medTaken')}</div>
+  <label style="margin-top:8px">Supplement taken</label><div class="row" role="group" aria-label="Supplement taken">${qq(['Yes','No'],'suppTaken')}</div>
+  <label for="sfx">Side effects</label><input id="sfx" maxlength="60" value="${E(l.sidefx||'')}" placeholder="Optional">
+  <label class="log-t"><span class="log-ic">${IC.calendar(18)}</span>Cycle Context</label>
+  <label for="dslp">Days since last period</label><input id="dslp" type="number" value="${dslp}" readonly>
+  <label style="margin-top:8px">Cervical mucus</label><div class="row" role="group" aria-label="Cervical mucus">${qq(['Dry','Sticky','Egg white'],'cm')}</div>
+  <label style="margin-top:8px">Ovulation test</label><div class="row" role="group" aria-label="Ovulation test">${qq(['Positive','Negative','Not tested'],'ovTest')}</div>
+  <div class="row sp" style="margin-top:14px;gap:12px"><button class="btn ghost" id="cx" style="flex:1">Cancel</button><button class="btn" id="sv" style="flex:1">Save</button></div>`);
  const draft=Object.assign({},l,{tags:[...(l.tags||[])]});
  document.querySelectorAll('#sheet [data-k]').forEach(b=>b.onclick=()=>{const k=b.dataset.k,v=isNaN(b.dataset.v)?b.dataset.v:+b.dataset.v;draft[k]=draft[k]===v&&k!='flow'?undefined:v;document.querySelectorAll(`#sheet [data-k="${k}"]`).forEach(x=>x.setAttribute('aria-pressed',String(draft[k]!==undefined&&String(draft[k])==x.dataset.v)))});
  document.querySelectorAll('#tg .chip').forEach(c=>c.onclick=()=>{const on=c.getAttribute('aria-pressed')!='true';c.setAttribute('aria-pressed',on)});
  $('#cx').onclick=()=>sheet();
  $('#sv').onclick=()=>{const s=$('#sl').value;if(s!==''&&(s<0||s>24))return $('#er').textContent='Sleep must be 024 hours.';
-  const tags=[...document.querySelectorAll('#tg .chip[aria-pressed=true]')].map(c=>c.textContent);const cu=$('#cu').value.trim();if(cu)tags.push(cu);
-  const out=Object.assign(draft,{tags,sleep:s===''?undefined:+s,note:$('#nt').value.trim()||undefined});if(out.flow=='none')delete out.flow;
+   const tags=[...document.querySelectorAll('#tg .chip[aria-pressed=true]')].map(c=>c.textContent);const cu=$('#cu').value.trim();if(cu)tags.push(cu);
+   const wt=$('#wt').value,exMin=$('#exMin').value;
+   const out=Object.assign(draft,{tags,sleep:s===''?undefined:+s,weight:wt===''?undefined:+wt,exMin:exMin===''?undefined:+exMin,sidefx:$('#sfx').value.trim()||undefined,note:$('#nt').value.trim()||undefined});if(out.flow=='none')delete out.flow;
   D.logs[d]=Object.assign({water:L(d).water},out);if(!Object.values(D.logs[d]).some(v=>v!==undefined&&!(Array.isArray(v)&&!v.length)))delete D.logs[d];save();sheet();toast('Saved');shell()}}
 function monthView(){const [y,mo]=calM.split('-').map(Number),first=new Date(y,mo-1,1),dim=new Date(y,mo,0).getDate(),off=first.getDay(),c=cycleStats(),s=starts();
  let cells=['S','M','T','W','T','F','S'].map(x=>`<div class="calh" aria-hidden="true">${x}</div>`).join('');
