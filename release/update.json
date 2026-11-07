@@ -1,7 +1,7 @@
 {
-    "versionCode": 48,
-    "versionName": "1.2.33",
-    "notes": "Log Symptoms polish: Every symptom chip has a thin line icon; Note prompt is now in English.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.33/bloom-1.2.33.apk",
+    "versionCode": 49,
+    "versionName": "1.2.34",
+    "notes": "Settings now has Check for updates. Reminders use a sound (beep.wav) on a dedicated channel.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.34/bloom-1.2.34.apk",
     "publishedAt": "2026-11-07"
 }
