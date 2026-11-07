@@ -1,7 +1,7 @@
 {
-    "versionCode": 46,
-    "versionName": "1.2.31",
-    "notes": "Fixed Learn article chunking: At a glance and Part headings now appear for single-paragraph articles too.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.31/bloom-1.2.31.apk",
+    "versionCode": 47,
+    "versionName": "1.2.32",
+    "notes": "Log Symptoms expanded: PCOS symptom chips, Food and Blood Sugar, Body, Habits, Cycle Context, and muted line icons.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.32/bloom-1.2.32.apk",
     "publishedAt": "2026-11-07"
 }
