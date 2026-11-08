@@ -463,7 +463,9 @@ body.splashPlay #splashWash{animation:splashWash 3.4s linear forwards}
 <div id="app"></div><div id="sheet"></div><div id="toast" role="status" aria-live="polite"></div>
 <script>
 const $=s=>document.querySelector(s);
+// @test-begin esc
 const E=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+// @test-end esc
 const mem={};const ST={get(k){try{const v=localStorage.getItem(k);return v==null?mem[k]??null:v}catch(e){return mem[k]??null}},set(k,v){mem[k]=v;try{localStorage.setItem(k,v)}catch(e){}},del(k){delete mem[k];try{localStorage.removeItem(k)}catch(e){}}};
 const J=(k,d)=>{try{return JSON.parse(ST.get(k))??d}catch(e){return d}};
 const iso=d=>{d=new Date(d);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
@@ -693,6 +695,8 @@ function updateSyncLine(){const el=document.getElementById('syncLine');if(el)el.
 function loadRev(mail){try{sbRev=Math.max(0,+ST.get('bloom_rev_'+mail)||0)}catch(e){sbRev=0}}
 function saveRev(){if(user)try{ST.set('bloom_rev_'+user,String(sbRev||0))}catch(e){}}
 function setDirtyFlag(v){if(user)try{ST.set('bloom_dirty_'+user,String(v))}catch(e){}}
+
+// @test-begin sync
 function chooseLoginDoc(keep,doc,dirty){
  if(!doc)return keep;
  if(dirty==='0')return Object.assign(blank(),doc);
@@ -700,7 +704,6 @@ function chooseLoginDoc(keep,doc,dirty){
  if(!cloudHas){const out=Object.assign(blank(),doc);out.logs=keep.logs||{};out.tasks=keep.tasks||[];out.done=keep.done||{};out.meals=keep.meals||{};out.journal=keep.journal||[];out.plan=keep.plan||{};return out}
  return mergeDocs(keep,doc);
 }
-function backupLocal(){const m=user||(sbUser&&sbUser.email&&sbUser.email.toLowerCase());if(!m||!D)return;try{ST.set('bloom_backup_'+m,JSON.stringify(D))}catch(e){}}
 function isPlainObject(v){return v!==null&&typeof v==='object'&&!Array.isArray(v)}
 // Deletions made on one device can come back after a merge (no tombstones yet).
 function mergeDocs(local,remote){
@@ -731,6 +734,9 @@ function mergeDocs(local,remote){
  if(isPlainObject(out))out.savedAt=Math.max(lt,rt);
  return out;
 }
+// @test-end sync
+function backupLocal(){const m=user||(sbUser&&sbUser.email&&sbUser.email.toLowerCase());if(!m||!D)return;try{ST.set('bloom_backup_'+m,JSON.stringify(D))}catch(e){}}
+// @test-end sync
 function whenSupabase(){
  if(window.supabase)return Promise.resolve();
  if(!sbReady)sbReady=new Promise(res=>{
@@ -1350,11 +1356,33 @@ function stripSeededTasks(){try{if(RO||!D||D.seedClean)return;D.seedClean=1;
  if(Array.isArray(D.tasks)&&D.tasks.length){const before=D.tasks.length;D.tasks=D.tasks.filter(t=>!SEED_TASKS.includes(t&&t.t));
   if(D.tasks.length!==before){const ids=new Set(D.tasks.map(t=>t.id));for(const d of Object.keys(D.done||{})){const m=D.done[d]||{};Object.keys(m).forEach(k=>{if(!ids.has(k))delete m[k]});if(!Object.keys(m).length)delete D.done[d]}}}
   save()}catch(e){}}
+// @test-begin sxmig
+// @test-begin backup
+function makeBackup(doc){return {app:'bloom',v:1,exportedAt:new Date().toISOString(),doc}}
+function validateBackup(obj){
+ const bad=m=>({ok:false,error:m});
+ if(!obj||typeof obj!=='object')return bad('Backup file must be a JSON object.');
+ if(obj.app!=='bloom')return bad('This is not a Bloom backup.');
+ if(obj.v!==1)return bad('Unsupported backup version.');
+ const d=obj.doc;if(!isPlainObject(d))return bad('Backup doc is missing or invalid.');
+ if(JSON.stringify(obj).length>5*1024*1024)return bad('Backup file is too large.');
+ const keys=['p','logs','tasks','done','meals','journal','plan','games','cons','rem','sxMigrated','seedClean','savedAt'];const out={};keys.forEach(k=>{if(k in d)out[k]=d[k]});
+ const objTypes=['logs','done','meals','plan','games','p'];for(const k of objTypes){if(k in out&&!isPlainObject(out[k]))return bad('Backup field '+k+' must be an object.')}
+ if('tasks' in out&&!Array.isArray(out.tasks))return bad('Backup field tasks must be an array.');
+ if('journal' in out&&!Array.isArray(out.journal))return bad('Backup field journal must be an array.');
+ if(out.tasks)out.tasks=out.tasks.slice(0,5000);if(out.journal)out.journal=out.journal.slice(0,5000);
+ if(isPlainObject(out.p)){const pk=['name','avatar','avatarCrop','bud','waterGoal','goals','done','role'];const np={};pk.forEach(k=>{if(k in out.p)np[k]=out.p[k]});out.p=np;if(out.p.avatar!=null&&!(typeof out.p.avatar==='string'&&out.p.avatar.startsWith('data:image/')&&out.p.avatar.length<400000))delete out.p.avatar}
+ return {ok:true,doc:out};
+}
+// @test-end backup
 function migrateCustomSymptoms(){if(RO||!D||D.sxMigrated)return;D.sxMigrated=1;const known=new Set([...TAGS,...['Excess hair','Hair fall','Oily skin','Brain fog','Irritable','Pelvic pain','Nausea','Increased appetite','Dizziness after eating','Sleepy after eating','Dark skin patches','Weight gain','Swollen feet','Back pain','Mood swings']]);let changed=false;Object.keys(D.logs||{}).forEach(d=>{const l=D.logs[d]||{};const tags=Array.isArray(l.tags)?l.tags:[];const unknown=tags.filter(t=>!known.has(t));if(!unknown.length)return;const keep=tags.filter(t=>known.has(t));tags.splice(0,tags.length,...keep);const prev=Array.isArray(l.customSx)?l.customSx:[];const next=prev.slice();unknown.map(t=>String(t).trim().slice(0,30)).filter(Boolean).forEach(t=>{if(!next.includes(t))next.push(t)});l.customSx=next.slice(0,6);changed=true});D.sxMigrated=1;save()}
+// @test-end sxmig
 // ---------- views
 function phaseRanges(len){const fol=Math.round(len*.45),ovu=Math.round(len*.58);
  return [['Menstrual',1,5,'#B8456B'],['Follicular',6,fol,'#2A8A87'],['Ovulation',fol+1,ovu,'#6E5FA8'],['Luteal',ovu+1,len,'#B9803A']]}
+// @test-begin roWho
 function roWho(){const n=(((D&&D.p&&D.p.name)||'')+'').trim().split(' ')[0];return n?n+"'s":'Their'}
+// @test-end roWho
 function ringPillText(dt,len,left,elapsed){
  if(elapsed>len)return 'Day '+elapsed+' since the last period';
  const who=RO?roWho():'Your',p=phaseInfo(dt,len);
@@ -2546,6 +2574,53 @@ async function setAccountType(role){
  try{ST.del('bloom_lastcode');ST.del('bloom_powner')}catch(e){}
  save();view='cycle';shell()
 }
+function exportBackup(){
+ if(RO)return;
+ sheet(`<h2>Export backup</h2><p class="meta" style="margin:0 0 12px">This file contains your private notes. Keep it safe.</p><div class="row" style="gap:10px;margin-top:16px"><button class="btn ghost" id="expNo" style="flex:1">Cancel</button><button class="btn" id="expGo" style="flex:1">Export</button></div>`);
+ $('#expNo').onclick=()=>sheet();
+ $('#expGo').onclick=async()=>{
+  const stamp=today();
+  const text=JSON.stringify(makeBackup(D),null,2);
+  const fileName='bloom-backup-'+stamp+'.json';
+  try{
+   if(navigator.canShare&&navigator.canShare({files:[new File([text],fileName,{type:'application/json'})]})){
+    try{await navigator.share({title:'Bloom backup',text:'Bloom backup',files:[new File([text],fileName,{type:'application/json'})]});sheet();toast('Backup shared');return}catch(e){if(e&&e.name==='AbortError'){sheet();return}}
+   }
+  }catch(e){}
+  try{
+   const blob=new Blob([text],{type:'application/json'});
+   const url=URL.createObjectURL(blob);
+   const a=document.createElement('a');a.href=url;a.download=fileName;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);sheet();toast('Backup downloaded');return;
+  }catch(e){}
+  try{await navigator.clipboard.writeText(text);sheet();toast('Copied backup to clipboard');return}catch(e){}
+  sheet(`<h2>Export backup</h2><p class="meta" style="margin:0 0 10px">This file contains your private notes. Keep it safe.</p><textarea rows="10" readonly>${E(text)}</textarea><button class="btn" id="expClose" style="margin-top:14px;width:100%">Close</button>`);
+  $('#expClose').onclick=()=>sheet();
+ };
+}
+function importBackup(){
+ if(RO)return;
+ sheet(`<h2>Import backup</h2><p class="meta" style="margin:0 0 12px">Paste a Bloom backup JSON or choose a file.</p><label for="impFile">Backup file</label><input id="impFile" type="file" accept=".json,application/json"><label for="impText" style="margin-top:10px;display:block">Or paste JSON</label><textarea id="impText" rows="7" placeholder="Paste backup JSON" style="width:100%"></textarea><p class="hint" id="impErr"></p><div class="row" style="gap:10px;margin-top:16px"><button class="btn ghost" id="impNo" style="flex:1">Cancel</button></div>`);
+ $('#impNo').onclick=()=>sheet();
+ $('#impFile').onchange=e=>{const f=e.target.files&&e.target.files[0];e.target.value='';if(!f)return;const r=new FileReader();r.onload=()=>{$('#impText').value=String(r.result)};r.readAsText(f)};
+ const finish=(doc)=>{
+  sheet(`<h2>Import backup</h2><p class="meta" style="margin:0 0 12px">Choose how to import it.</p><div class="row" style="gap:10px;margin-top:16px"><button class="btn" id="impMerge" style="flex:1">Merge with my current data</button></div><p class="meta" style="margin:8px 0 0">Merge can bring back items deleted on this device (known limitation).</p><div class="row" style="gap:10px;margin-top:10px"><button class="btn ghost" id="impReplace" style="flex:1">Replace my current data</button><button class="btn ghost" id="impCancel" style="flex:1">Cancel</button></div>`);
+  $('#impCancel').onclick=()=>sheet();
+  $('#impMerge').onclick=()=>{backupLocal();D=mergeDocs(D,doc);save();sheet();shell();toast('Backup imported')};
+  $('#impReplace').onclick=()=>{
+   sheet(`<h2>Replace my current data?</h2><p class="meta" style="margin:0 0 12px">This replaces everything on this phone with the backup. A safety copy is saved first.</p><div class="row" style="gap:10px;margin-top:16px"><button class="btn ghost" id="repNo" style="flex:1">Cancel</button><button class="btn pink" id="repGo" style="flex:1">Replace</button></div>`);
+   $('#repNo').onclick=()=>sheet();
+   $('#repGo').onclick=()=>{backupLocal();D=Object.assign(blank(),doc);save();sheet();shell();toast('Backup imported')};
+  };
+ };
+ $('#impText').oninput=()=>{
+  const t=$('#impText').value.trim(),er=$('#impErr');er.textContent='';
+  let obj;
+  try{obj=JSON.parse(t)}catch(e){er.textContent='That file is not valid JSON.';return}
+  const res=validateBackup(obj);
+  if(!res.ok){er.textContent=res.error;return}
+  finish(res.doc);
+ };
+}
 function deleteAccountSheet(){
   if(navigator.onLine===false){toast('Needs an internet connection');return}
   sheet(`<h2>Delete my account</h2><p class="meta" style="margin:0 0 12px">This permanently deletes your sign-in account AND all data. Your partner loses access. Type DELETE to continue.</p><label for="dc">Type DELETE to enable the button</label><input id="dc" autocapitalize="characters" autocomplete="off" spellcheck="false"><p class="hint" id="dcErr"></p><div class="row" style="gap:10px;margin-top:16px"><button class="btn ghost" id="dcNo" style="flex:1">Cancel</button><button class="btn pink" id="dcGo" style="flex:1" disabled>Delete everything</button></div>`);
@@ -2613,7 +2688,7 @@ function settingsPage(){
     ${RO?'<p class="meta" style="margin:10px 0 0">To use Bloom for yourself, exit the partner’s view.</p>':''}
    </div>
    <div class="card"><div class="card-h"><h3>Sync</h3></div><p class="meta" id="syncLine" style="margin:0 0 10px">${E(syncLineText())}</p><div class="row" style="gap:10px"><button class="btn ghost" id="syncNow" style="flex:1">Sync now</button><button class="btn ghost" id="syncCopy" style="flex:1">Copy diagnostics</button></div></div>
-   ${RO?'':'<div class="card"><div class="card-h"><h3>Your data</h3></div><p class="meta" style="margin:0 0 10px">Erase all your logs, meals, tasks and journal from this phone and the cloud. Your partner loses access. Your sign-in account itself is not deleted.</p><button class="btn pink" id="sDel" style="width:100%">Delete all my data</button><button class="btn ghost" id="sDelAcct" style="width:100%">Delete my account</button></div>'}
+    ${RO?'':'<div class="card"><div class="card-h"><h3>Your data</h3></div><p class="meta" style="margin:0 0 10px">Erase all your logs, meals, tasks and journal from this phone and the cloud. Your partner loses access. Your sign-in account itself is not deleted.</p><button class="btn pink" id="sDel" style="width:100%">Delete all my data</button><button class="btn ghost" id="sDelAcct" style="width:100%">Delete my account</button><button class="btn ghost" id="sExp" style="width:100%">Export backup</button><button class="btn ghost" id="sImp" style="width:100%">Import backup</button></div>'}
    <div class="card"><div class="card-h"><h3>App</h3><span class="meta" id="appVer">\u2014</span></div><button class="btn ghost" id="chkUp" style="width:100%">Check for updates</button></div>`;
  $('#bk').onclick=()=>{view='me';shell()};
  $('#sChg').onclick=()=>changeNameSheet(nm,async v=>{
@@ -2630,8 +2705,10 @@ function settingsPage(){
   toast('Name updated');shell();
  });
     $('#sPw').onclick=changePasswordSheet;
-    if(document.getElementById('sDel'))$('#sDel').onclick=deleteAllData;
-    if(document.getElementById('sDelAcct'))$('#sDelAcct').onclick=deleteAccountSheet;
+   if(document.getElementById('sDel'))$('#sDel').onclick=deleteAllData;
+   if(document.getElementById('sDelAcct'))$('#sDelAcct').onclick=deleteAccountSheet;
+   if(document.getElementById('sExp'))$('#sExp').onclick=exportBackup;
+   if(document.getElementById('sImp'))$('#sImp').onclick=importBackup;
     document.querySelectorAll('[data-role]').forEach(b=>b.onclick=()=>setAccountType(b.dataset.role));
    if(document.getElementById('syncNow'))$('#syncNow').onclick=()=>{sbPush();setTimeout(updateSyncLine,200)};
    if(document.getElementById('syncCopy'))$('#syncCopy').onclick=async()=>{const txt='sync: '+syncLineText()+'\nrev: '+sbRev+'\nfails: '+SYNC.fails+'\nlast: '+(SYNC.last?new Date(SYNC.last).toISOString():'none')+'\nlogs:\n'+errLog().map(e=>new Date(e.t).toISOString()+' ['+e.ctx+'] '+e.msg).join('\n');try{await navigator.clipboard.writeText(txt);toast('Copied')}catch(e){toast('Copy failed')}};
