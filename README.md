@@ -86,6 +86,26 @@ client ID and secret:
 Then add the app's URL to **Authentication → URL Configuration → Redirect URLs** in the Supabase
 dashboard. The **Continue with Google** button appears automatically once the provider is on.
 
+## Auth setup
+
+Password reset uses a 6-digit email code (no deep links).
+
+1. In the Supabase dashboard, go to **Authentication → Email Templates**.
+2. Open **Reset Password**.
+3. Set the subject to `Your Bloom reset code`.
+4. Set the body to:
+
+```html
+<h2>Reset your Bloom password</h2>
+<p>Your code:</p>
+<h1>{{ .Token }}</h1>
+<p>If you did not ask for this, ignore this email.</p>
+```
+
+5. The built-in email service is rate-limited and is only meant for testing. Configure custom SMTP under **Authentication → SMTP Settings** for production email.
+6. Shorten the email OTP expiry to about 15 minutes if the dashboard allows it.
+7. Keep confirmation emails enabled.
+
 ## Privacy
 
 Your notes are stored on this device. If you sign in, they are also stored in the Bloom cloud database (Supabase), protected by row-level security. A partner you pair with reads only a filtered copy. The app checks GitHub for updates. There are no ads, analytics or tracking. This is not a medical service and does not diagnose anything.

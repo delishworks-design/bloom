@@ -945,11 +945,13 @@ function roPage(){
   <div class="hi" style="text-align:center">Hello ${E(ownName())}!</div>
   </div>
  <div class="card"><div class="card-h"><h3>Following</h3></div><div class="row" style="gap:12px;align-items:center">${avatarHTML(56)}<div style="min-width:0"><b style="display:block">${E((D.p&&D.p.name)||'partner')}</b></div></div><button class="btn ghost" id="exv" style="width:100%;margin-top:14px">Exit ${E((D.p&&D.p.name)||'partner')}'s view</button></div>
-  <div class="card"><button class="btn ghost" id="stg" style="width:100%">Settings</button></div>
-  <button class="btn ghost" id="lo" style="width:100%">Sign out</button>
+   <div class="card"><button class="btn ghost" id="stg" style="width:100%">Settings</button></div>
+   <div class="card"><button class="btn ghost" id="delAcct" style="width:100%">Delete my account</button></div>
+   <button class="btn ghost" id="lo" style="width:100%">Sign out</button>
 <p class="meta" style="margin-top:8px;text-align:center">Signing out keeps this pairing. Their data stays untouched.</p>`;
   $('#exv').onclick=exitPartner;
   $('#stg').onclick=()=>{view='settings';shell()};
+  if(document.getElementById('delAcct'))$('#delAcct').onclick=deleteAccountSheet;
   $('#rpav').onchange=e=>{const f=e.target.files&&e.target.files[0];e.target.value='';if(f)roPickAvatar(f)};
   $('#lo').onclick=logout;}
 
@@ -1040,9 +1042,11 @@ function authView(mode){mode=mode||'in';try{fabSync()}catch(e){}document.body.cl
    <button class="btn" type="submit" id="go">${up?'Create account':'Log in'}</button>
   </form>
    <div class="auth-foot">
+   ${up?'':`<p style="text-align:center;margin:0 0 8px"><button type="button" class="link" id="fg">Forgot password?</button></p>`}
     <p class="switch">${up?'Already have an account?':'New here?'} <button type="button" class="link" id="sw">${up?'Log in':'Create an account'}</button></p>
    </div></div></div>`;
  $('#sw').onclick=()=>authView(up?'in':'up');
+ const fg=document.getElementById('fg');if(fg)fg.onclick=forgotPasswordSheet;
  const g=id=>document.getElementById(id);
  const setFieldErr=(id,msg)=>{const w=g('f-'+id),h=g('e-'+id);if(!w)return;w.classList.toggle('invalid',!!msg);h.textContent=msg||''};
  const formErr=msg=>{const e=g('err');e.textContent=msg||'';e.classList.toggle('on',!!msg)};
@@ -1076,6 +1080,43 @@ function authView(mode){mode=mode||'in';try{fabSync()}catch(e){}document.body.cl
   finally{busy=false;btn.disabled=false;btn.textContent=up?'Create account':'Log in'}
  };
  $('#authForm').addEventListener('submit',e=>{e.preventDefault();sub()});
+}
+function forgotPasswordSheet(){
+ let sends=0,cooldownUntil=0;
+ sheet(`<h2>Reset your password</h2><p class="meta" style="margin:0 0 12px" id="fpMsg">Enter your account email to get a 6-digit code.</p><label for="fpEmail">Email</label><input id="fpEmail" type="email" inputmode="email" autocomplete="email" maxlength="80" autocapitalize="none" spellcheck="false"><div class="err" id="fpErr"></div><div class="row" style="gap:10px;margin-top:16px"><button class="btn ghost" id="fpCancel" style="flex:1">Cancel</button><button class="btn" id="fpSend" style="flex:1">Send code</button></div>`);
+ $('#fpCancel').onclick=()=>sheet();
+ $('#fpSend').onclick=async()=>{
+  const email=$('#fpEmail').value.trim().toLowerCase(),er=$('#fpErr');
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){er.textContent='Enter a valid email address.';return}
+  if(sends>=5){er.textContent='Daily send limit reached.';return}
+  if(Date.now()<cooldownUntil){er.textContent='Wait a moment before sending again.';return}
+  er.textContent='';
+  try{
+   const cl=await sbInit();
+   if(!cl){er.textContent='Could not start the cloud service. Restart the app.';return}
+   await cl.auth.resetPasswordForEmail(email);
+   sends++;cooldownUntil=Date.now()+60000;
+   sheet(`<h2>Reset your password</h2><p class="meta" style="margin:0 0 12px">If that email has an account, we sent a code.</p><label for="fpCode">6-digit code</label><input id="fpCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" spellcheck="false"><label for="fpPw" style="margin-top:10px;display:block">New password</label><input id="fpPw" type="password" autocomplete="new-password"><label for="fpPw2" style="margin-top:10px;display:block">Confirm password</label><input id="fpPw2" type="password" autocomplete="new-password"><p class="hint" id="fpErr2"></p><div class="row" style="gap:10px;margin-top:16px"><button class="btn ghost" id="fpResend" style="flex:1">Resend code</button><button class="btn" id="fpReset" style="flex:1">Reset password</button></div>`);
+   $('#fpResend').onclick=async()=>{if(sends>=5){$('#fpErr2').textContent='Resend limit reached.';return}if(Date.now()<cooldownUntil){$('#fpErr2').textContent='Wait a moment before sending again.';return}try{await cl.auth.resetPasswordForEmail(email);sends++;cooldownUntil=Date.now()+60000;$('#fpErr2').textContent='Code sent. Check your email.'}catch(e){$('#fpErr2').textContent=errText(e&&e.message||e)}};
+   $('#fpReset').onclick=async()=>{
+    const code=$('#fpCode').value.trim(),a=$('#fpPw').value,b=$('#fpPw2').value,er2=$('#fpErr2');
+    if(!/^\d{6}$/.test(code)){er2.textContent='Enter the 6-digit code.';return}
+    if(a.length<6){er2.textContent='Use at least 6 characters.';return}
+    if(a!==b){er2.textContent='Passwords don\u2019t match.';return}
+    er2.textContent='';
+    try{
+     const {error}=await cl.auth.verifyOtp({email,token:code,type:'recovery'});
+     if(error){er2.textContent='That code is wrong or expired.';return}
+     const up=await cl.auth.updateUser({password:a});
+     if(up&&up.error){er2.textContent=errText(up.error.message||up.error);return}
+     const {data}=await cl.auth.getSession();
+     const sess=data&&data.session;
+     if(!sess){er2.textContent='Code accepted. Please log in again.';sheet();authView('in');return}
+     sheet();await sbAfterLogin(sess.user);
+    }catch(e){er2.textContent=errText(e&&e.message||e)}
+   };
+  }catch(e){er.textContent=errText(e&&e.message||e)}
+ };
 }
 function login(u){user=u;D=Object.assign(blank(),J(key(u),{}));loadRev(u);setSession(u);applyTheme();view='cycle';shell()}
 function logout(){RO=false;ROcloud=false;ROowner=null;roHash='';user=null;D=null;clearSession();setRoleFlag('');sbLastPush='';sbRev=0;
@@ -2362,6 +2403,9 @@ async function reminderSync(quiet){
   if(!quiet)toast('Could not set the reminder');
   return {native:true,error:String((e&&e.message)||e)}}}
 // ---------- data deletion
+function wipeLocalData(){
+  try{Object.keys(localStorage).filter(k=>k.indexOf('bloom_d_')===0||k.indexOf('bloom_backup_')===0||k.indexOf('bloom_dirty_')===0||k.indexOf('bloom_rev_')===0||k==='bloom_s'||k==='bloom_own'||k==='bloom_last_bg'||k==='bloom_upd_skip'||k==='bloom_pname'||k==='bloom_pavatar'||k==='bloom_pown'||k==='bloom_puid'||k==='bloom_powner'||k==='bloom_role'||k==='bloom_unpaired'||k==='bloom_lastcode'||k==='bloom_plocked'||k==='bloom_read'||k==='bloom_errlog').forEach(k=>localStorage.removeItem(k))}catch(e){}
+}
 function deleteAllData(){
  const yes=confirm('Delete all your Bloom data?\n\nEvery log, meal, task and journal entry will be erased from this phone and from the cloud. Your account stays, so you can start fresh. This cannot be undone.');
  if(!yes)return;
@@ -2389,9 +2433,9 @@ async function doDeleteAll(){
   // partner access goes next, so nobody keeps following an empty cycle
   try{if(cl&&sbUser)await cl.rpc('bloom_revoke_partner_codes')}catch(e){reportErr('partner.revoke',e)}
  try{await reminderCancel()}catch(e){}
- // local caches for every account on this device, plus the session
- try{Object.keys(localStorage).filter(k=>k.indexOf('bloom_d_')===0||k.indexOf('bloom_backup_')===0||k.indexOf('bloom_dirty_')===0||k.indexOf('bloom_rev_')===0||k==='bloom_s'||k==='bloom_own'||k==='bloom_last_bg'||k==='bloom_upd_skip'||k==='bloom_pname'||k==='bloom_pavatar'||k==='bloom_pown'||k==='bloom_puid'||k==='bloom_powner'||k==='bloom_role'||k==='bloom_unpaired'||k==='bloom_lastcode'||k==='bloom_plocked'||k==='bloom_read'||k==='bloom_errlog').forEach(k=>localStorage.removeItem(k))}catch(e){}
- try{sessionStorage.clear()}catch(e){}
+  // local caches for every account on this device, plus the session
+  wipeLocalData();
+  try{sessionStorage.clear()}catch(e){}
  try{if(cl)await cl.auth.signOut()}catch(e){}
  try{setRoleFlag('')}catch(e){}
   sbUser=null;user=null;D=null;sbLastPush='';sbRev=0;onbStep=0;
@@ -2502,6 +2546,32 @@ async function setAccountType(role){
  try{ST.del('bloom_lastcode');ST.del('bloom_powner')}catch(e){}
  save();view='cycle';shell()
 }
+function deleteAccountSheet(){
+  if(navigator.onLine===false){toast('Needs an internet connection');return}
+  sheet(`<h2>Delete my account</h2><p class="meta" style="margin:0 0 12px">This permanently deletes your sign-in account AND all data. Your partner loses access. Type DELETE to continue.</p><label for="dc">Type DELETE to enable the button</label><input id="dc" autocapitalize="characters" autocomplete="off" spellcheck="false"><p class="hint" id="dcErr"></p><div class="row" style="gap:10px;margin-top:16px"><button class="btn ghost" id="dcNo" style="flex:1">Cancel</button><button class="btn pink" id="dcGo" style="flex:1" disabled>Delete everything</button></div>`);
+  $('#dcNo').onclick=()=>sheet();
+  const go=$('#dcGo'),inp=$('#dc');
+  inp.oninput=()=>{go.disabled=inp.value.trim().toUpperCase()!=='DELETE'};
+  go.onclick=async()=>{
+   if(inp.value.trim().toUpperCase()!=='DELETE'){$('#dcErr').textContent='Type DELETE exactly, then press again.';return}
+   go.disabled=true;go.innerHTML='<span class="spinner" aria-hidden="true"></span>Deleting\u2026';
+   const cl=await sbInit();
+   if(!cl||!sbUser){toast('Needs an internet connection');sheet();return}
+   const {error}=await cl.rpc('bloom_delete_account');
+   if(error){toast(errText(error.message||error));sheet();return}
+   try{await reminderCancel()}catch(e){}
+   wipeLocalData();
+   try{sessionStorage.clear()}catch(e){}
+   try{if(sb)await sb.auth.signOut()}catch(e){}
+   try{setRoleFlag('')}catch(e){}
+   RO=false;ROcloud=false;ROowner=null;roHash='';sbUser=null;user=null;D=null;sbLastPush='';sbRev=0;onbStep=0;
+   if(cloudTimer){clearInterval(cloudTimer);cloudTimer=null}
+   if(sbPullTimer){clearInterval(sbPullTimer);sbPullTimer=null}
+   if(sbRetryTimer){clearTimeout(sbRetryTimer);sbRetryTimer=null}
+   view='cycle';tab='';calM=today().slice(0,7);
+   sheet();toast('Account deleted');authView('in');
+  };
+}
 function changePasswordSheet(){
  sheet(`<h2>Change password</h2><p class="meta" style="margin:0 0 12px">Use at least 6 characters.</p><label for="pw1">New password</label><input id="pw1" type="password" autocomplete="new-password"><label for="pw2" style="margin-top:10px;display:block">Confirm password</label><input id="pw2" type="password" autocomplete="new-password"><p class="hint" id="pwErr"></p><div class="row" style="gap:10px;margin-top:16px"><button class="btn ghost" id="pwCancel" style="flex:1">Cancel</button><button class="btn" id="pwSave" style="flex:1">Save</button></div>`);
  $('#pwCancel').onclick=()=>sheet();
@@ -2543,7 +2613,7 @@ function settingsPage(){
     ${RO?'<p class="meta" style="margin:10px 0 0">To use Bloom for yourself, exit the partner’s view.</p>':''}
    </div>
    <div class="card"><div class="card-h"><h3>Sync</h3></div><p class="meta" id="syncLine" style="margin:0 0 10px">${E(syncLineText())}</p><div class="row" style="gap:10px"><button class="btn ghost" id="syncNow" style="flex:1">Sync now</button><button class="btn ghost" id="syncCopy" style="flex:1">Copy diagnostics</button></div></div>
-   ${RO?'':'<div class="card"><div class="card-h"><h3>Your data</h3></div><p class="meta" style="margin:0 0 10px">Erase all your logs, meals, tasks and journal from this phone and the cloud. Your partner loses access. Your sign-in account itself is not deleted.</p><button class="btn pink" id="sDel" style="width:100%">Delete all my data</button></div>'}
+   ${RO?'':'<div class="card"><div class="card-h"><h3>Your data</h3></div><p class="meta" style="margin:0 0 10px">Erase all your logs, meals, tasks and journal from this phone and the cloud. Your partner loses access. Your sign-in account itself is not deleted.</p><button class="btn pink" id="sDel" style="width:100%">Delete all my data</button><button class="btn ghost" id="sDelAcct" style="width:100%">Delete my account</button></div>'}
    <div class="card"><div class="card-h"><h3>App</h3><span class="meta" id="appVer">\u2014</span></div><button class="btn ghost" id="chkUp" style="width:100%">Check for updates</button></div>`;
  $('#bk').onclick=()=>{view='me';shell()};
  $('#sChg').onclick=()=>changeNameSheet(nm,async v=>{
@@ -2561,6 +2631,7 @@ function settingsPage(){
  });
     $('#sPw').onclick=changePasswordSheet;
     if(document.getElementById('sDel'))$('#sDel').onclick=deleteAllData;
+    if(document.getElementById('sDelAcct'))$('#sDelAcct').onclick=deleteAccountSheet;
     document.querySelectorAll('[data-role]').forEach(b=>b.onclick=()=>setAccountType(b.dataset.role));
    if(document.getElementById('syncNow'))$('#syncNow').onclick=()=>{sbPush();setTimeout(updateSyncLine,200)};
    if(document.getElementById('syncCopy'))$('#syncCopy').onclick=async()=>{const txt='sync: '+syncLineText()+'\nrev: '+sbRev+'\nfails: '+SYNC.fails+'\nlast: '+(SYNC.last?new Date(SYNC.last).toISOString():'none')+'\nlogs:\n'+errLog().map(e=>new Date(e.t).toISOString()+' ['+e.ctx+'] '+e.msg).join('\n');try{await navigator.clipboard.writeText(txt);toast('Copied')}catch(e){toast('Copy failed')}};
