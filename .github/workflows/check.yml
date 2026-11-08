@@ -22,4 +22,4 @@ jobs:
           PY
           node --check /tmp/app.js
       - name: Run tests
-        run: node --test tests/
+        run: node --test tests/*.test.js

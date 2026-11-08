@@ -736,7 +736,38 @@ function mergeDocs(local,remote){
 }
 // @test-end sync
 function backupLocal(){const m=user||(sbUser&&sbUser.email&&sbUser.email.toLowerCase());if(!m||!D)return;try{ST.set('bloom_backup_'+m,JSON.stringify(D))}catch(e){}}
-// @test-end sync
+// @test-begin backup
+function makeBackup(doc){return {app:'bloom',v:1,exportedAt:new Date().toISOString(),doc}}
+function validateBackup(obj){
+ const bad=m=>({ok:false,error:m});
+ if(!obj||typeof obj!=='object')return bad('Backup file must be a JSON object.');
+ if(obj.app!=='bloom')return bad('This is not a Bloom backup.');
+ if(obj.v!==1)return bad('Unsupported backup version.');
+ const d=obj.doc;if(!isPlainObject(d))return bad('Backup doc is missing or invalid.');
+ if(JSON.stringify(obj).length>5*1024*1024)return bad('Backup file is too large.');
+ const keys=['p','logs','tasks','done','meals','journal','plan','games','cons','rem','sxMigrated','seedClean','savedAt'];const out={};keys.forEach(k=>{if(k in d)out[k]=d[k]});
+ const objTypes=['logs','done','meals','plan','games','p'];for(const k of objTypes){if(k in out&&!isPlainObject(out[k]))delete out[k]}
+ if('tasks' in out&&!Array.isArray(out.tasks))return bad('Backup field tasks must be an array.');
+ if('journal' in out&&!Array.isArray(out.journal))return bad('Backup field journal must be an array.');
+ const dateRe=/^\d{4}-\d{2}-\d{2}$/;
+ if(isPlainObject(out.logs)){const nl={};Object.keys(out.logs).forEach(k=>{if(dateRe.test(k)&&isPlainObject(out.logs[k]))nl[k]=out.logs[k]});out.logs=nl}
+ if(isPlainObject(out.meals)){const nm={};Object.keys(out.meals).forEach(k=>{if(dateRe.test(k)&&(Array.isArray(out.meals[k])||isPlainObject(out.meals[k])))nm[k]=out.meals[k]});out.meals=nm}
+ const idOk=x=>isPlainObject(x)&&(typeof x.id==='string'||typeof x.id==='number');
+ if(out.tasks)out.tasks=out.tasks.filter(idOk).slice(0,5000);
+ if(out.journal)out.journal=out.journal.filter(idOk).slice(0,5000);
+ if(isPlainObject(out.p)){const pk=['name','avatar','avatarCrop','bud','waterGoal','goals','done','role'];const np={};pk.forEach(k=>{if(k in out.p)np[k]=out.p[k]});out.p=np;if(out.p.avatar!=null&&!(typeof out.p.avatar==='string'&&out.p.avatar.startsWith('data:image/')&&out.p.avatar.length<400000))delete out.p.avatar}
+ if('cons' in out&&typeof out.cons!=='boolean')delete out.cons;
+ if('savedAt' in out&&!(typeof out.savedAt==='number'&&Number.isFinite(out.savedAt)))delete out.savedAt;
+ const capStr=v=>{
+  if(typeof v==='string')return v.slice(0,5000);
+  if(Array.isArray(v))return v.map(capStr);
+  if(isPlainObject(v)){const o={};Object.keys(v).forEach(k=>{o[k]=capStr(v[k])});return o}
+  return v;
+ };
+ ['logs','tasks','journal','meals','plan'].forEach(k=>{if(k in out)out[k]=capStr(out[k])});
+ return {ok:true,doc:out};
+}
+// @test-end backup
 function whenSupabase(){
  if(window.supabase)return Promise.resolve();
  if(!sbReady)sbReady=new Promise(res=>{
@@ -1357,24 +1388,6 @@ function stripSeededTasks(){try{if(RO||!D||D.seedClean)return;D.seedClean=1;
   if(D.tasks.length!==before){const ids=new Set(D.tasks.map(t=>t.id));for(const d of Object.keys(D.done||{})){const m=D.done[d]||{};Object.keys(m).forEach(k=>{if(!ids.has(k))delete m[k]});if(!Object.keys(m).length)delete D.done[d]}}}
   save()}catch(e){}}
 // @test-begin sxmig
-// @test-begin backup
-function makeBackup(doc){return {app:'bloom',v:1,exportedAt:new Date().toISOString(),doc}}
-function validateBackup(obj){
- const bad=m=>({ok:false,error:m});
- if(!obj||typeof obj!=='object')return bad('Backup file must be a JSON object.');
- if(obj.app!=='bloom')return bad('This is not a Bloom backup.');
- if(obj.v!==1)return bad('Unsupported backup version.');
- const d=obj.doc;if(!isPlainObject(d))return bad('Backup doc is missing or invalid.');
- if(JSON.stringify(obj).length>5*1024*1024)return bad('Backup file is too large.');
- const keys=['p','logs','tasks','done','meals','journal','plan','games','cons','rem','sxMigrated','seedClean','savedAt'];const out={};keys.forEach(k=>{if(k in d)out[k]=d[k]});
- const objTypes=['logs','done','meals','plan','games','p'];for(const k of objTypes){if(k in out&&!isPlainObject(out[k]))return bad('Backup field '+k+' must be an object.')}
- if('tasks' in out&&!Array.isArray(out.tasks))return bad('Backup field tasks must be an array.');
- if('journal' in out&&!Array.isArray(out.journal))return bad('Backup field journal must be an array.');
- if(out.tasks)out.tasks=out.tasks.slice(0,5000);if(out.journal)out.journal=out.journal.slice(0,5000);
- if(isPlainObject(out.p)){const pk=['name','avatar','avatarCrop','bud','waterGoal','goals','done','role'];const np={};pk.forEach(k=>{if(k in out.p)np[k]=out.p[k]});out.p=np;if(out.p.avatar!=null&&!(typeof out.p.avatar==='string'&&out.p.avatar.startsWith('data:image/')&&out.p.avatar.length<400000))delete out.p.avatar}
- return {ok:true,doc:out};
-}
-// @test-end backup
 function migrateCustomSymptoms(){if(RO||!D||D.sxMigrated)return;D.sxMigrated=1;const known=new Set([...TAGS,...['Excess hair','Hair fall','Oily skin','Brain fog','Irritable','Pelvic pain','Nausea','Increased appetite','Dizziness after eating','Sleepy after eating','Dark skin patches','Weight gain','Swollen feet','Back pain','Mood swings']]);let changed=false;Object.keys(D.logs||{}).forEach(d=>{const l=D.logs[d]||{};const tags=Array.isArray(l.tags)?l.tags:[];const unknown=tags.filter(t=>!known.has(t));if(!unknown.length)return;const keep=tags.filter(t=>known.has(t));tags.splice(0,tags.length,...keep);const prev=Array.isArray(l.customSx)?l.customSx:[];const next=prev.slice();unknown.map(t=>String(t).trim().slice(0,30)).filter(Boolean).forEach(t=>{if(!next.includes(t))next.push(t)});l.customSx=next.slice(0,6);changed=true});D.sxMigrated=1;save()}
 // @test-end sxmig
 // ---------- views

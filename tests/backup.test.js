@@ -16,7 +16,7 @@ test('validateBackup strips unknown keys and partner', () => {
     v: 1,
     doc: {
       p: { name: 'A', avatar: 'https://example.com/x.png', unknown: 'drop' },
-      logs: { d1: { mood: 3 } },
+      logs: { '2026-11-01': { mood: 3 } },
       partner: { code: 'ABC' },
       secret: 'drop'
     }
@@ -26,7 +26,29 @@ test('validateBackup strips unknown keys and partner', () => {
   assert.equal(res.doc.partner, undefined);
   assert.equal(res.doc.secret, undefined);
   assert.equal(res.doc.p.avatar, undefined);
-  assert.equal(res.doc.logs.d1.mood, 3);
+  assert.equal(res.doc.logs['2026-11-01'].mood, 3);
+});
+
+test('validateBackup hardening', () => {
+  const res = validateBackup({
+    app: 'bloom',
+    v: 1,
+    doc: {
+      savedAt: 'bad',
+      cons: 'yes',
+      logs: { '2026-11-01': 'bad', savedAt: { mood: 1 } },
+      tasks: [{ id: 'a', t: 'x'.repeat(10000) }, { noId: true }],
+      journal: [{ id: 'j1', t: 'note' }],
+      p: { name: 'A' }
+    }
+  });
+  assert.equal(res.ok, true);
+  assert.equal(res.doc.logs['2026-11-01'], undefined);
+  assert.equal(res.doc.logs.savedAt, undefined);
+  assert.equal(res.doc.tasks.length, 1);
+  assert.equal(res.doc.tasks[0].t.length, 5000);
+  assert.equal(res.doc.cons, undefined);
+  assert.equal(res.doc.savedAt, undefined);
 });
 
 test('validateBackup accepts valid backup and round trips', () => {

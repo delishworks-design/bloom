@@ -111,8 +111,10 @@ Password reset uses a 6-digit email code (no deep links).
 Run the local checks with:
 
 ```sh
-node --test tests/
+node --test tests/*.test.js
 ```
+
+See [docs/auth-setup.md](docs/auth-setup.md) for the email/password reset setup.
 
 ## Privacy
 
