@@ -1,7 +1,7 @@
 {
-    "versionCode": 57,
-    "versionName": "1.2.42",
-    "notes": "Adds Smart Insights with offline period prediction, current phase estimates, and local pattern detection.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.42/bloom-1.2.42.apk",
+    "versionCode": 58,
+    "versionName": "1.2.43",
+    "notes": "Premium redesign of Smart Insights with improved visual hierarchy, custom illustrations, and responsive layout.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.43/bloom-1.2.43.apk",
     "publishedAt": "2026-11-09"
 }
