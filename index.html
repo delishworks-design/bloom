@@ -2087,20 +2087,29 @@ function smartPatternsFromLogs(logs,startDates){
   }
  }
  const histRows=rows.map(r=>({log:r.log,hist:smartHistoricalPhaseFor(r.date,startDates)})).filter(r=>r.hist&&r.hist.completed);
- const symptomCounts={};
- histRows.forEach(({log})=>{spSymptomNames(log).forEach(t=>{symptomCounts[t]=(symptomCounts[t]||0)+1})});
- let lutealDays=0,nonLutealDays=0;
- histRows.forEach(({hist})=>{if(hist.phase==='Luteal')lutealDays++;else nonLutealDays++});
- const lutealRate=(presentLuteal)=>lutealDays?presentLuteal/lutealDays:0;
- const nonLutealRate=(presentNonLuteal)=>nonLutealDays?presentNonLuteal/nonLutealDays:0;
- Object.entries(symptomCounts).filter(([,n])=>n>=4).forEach(([symptom,presentCount])=>{
-  let presentLuteal=0,presentNonLuteal=0;
-  histRows.forEach(({log,hist})=>{
-   if(!spSymptomNames(log).includes(symptom))return;
-   if(hist.phase==='Luteal')presentLuteal++;else presentNonLuteal++;
+ const symptomCounts={},symptomSources={};
+ histRows.forEach(({log})=>{
+  spSymptomNames(log).forEach(t=>{
+   symptomCounts[t]=(symptomCounts[t]||0)+1;
+   const sources=symptomSources[t]=symptomSources[t]||{};
+   if(Array.isArray(log.tags)&&log.tags.some(x=>String(x).trim()===t))sources.tags=true;
+   if(Array.isArray(log.customSx)&&log.customSx.some(x=>String(x).trim()===t))sources.customSx=true;
   });
+ });
+ Object.entries(symptomCounts).filter(([,n])=>n>=4).forEach(([symptom,presentCount])=>{
+  const sources=symptomSources[symptom]||{};
+  let lutealDays=0,nonLutealDays=0,presentLuteal=0,presentNonLuteal=0;
+  histRows.forEach(({log,hist})=>{
+   const observed=(sources.tags&&Array.isArray(log.tags))||(sources.customSx&&Array.isArray(log.customSx));
+   if(!observed)return;
+   const present=spSymptomNames(log).includes(symptom);
+   if(hist.phase==='Luteal'){lutealDays++;if(present)presentLuteal++}
+   else{nonLutealDays++;if(present)presentNonLuteal++}
+  });
+  const lutealRate=(presentLuteal)=>lutealDays?presentLuteal/lutealDays:0;
+  const nonLutealRate=(presentNonLuteal)=>nonLutealDays?presentNonLuteal/nonLutealDays:0;
   if(lutealDays>=5&&nonLutealDays>=5&&lutealRate(presentLuteal)-nonLutealRate(presentNonLuteal)>=.2){
-   out.push({type:'symptom-phase',count:presentCount,text:`Based on your records, ${symptom} was recorded on ${presentLuteal} of ${lutealDays} luteal-phase days, compared with ${presentNonLuteal} of ${nonLutealDays} non-luteal-phase days, so it appeared more often in luteal-phase days. This is an estimated association from limited records, not a diagnosis or proven cause.`});
+   out.push({type:'symptom-phase',count:presentCount,text:`Based on your records, ${symptom} was recorded on ${presentLuteal} of ${lutealDays} luteal-phase days with symptom fields recorded, compared with ${presentNonLuteal} of ${nonLutealDays} non-luteal-phase days with symptom fields recorded, so it appeared more often in luteal-phase days. This is an estimated association from limited records, not a diagnosis or proven cause.`});
   }
  });
  return out.slice(0,4);

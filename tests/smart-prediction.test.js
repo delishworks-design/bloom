@@ -169,7 +169,63 @@ test('symptom patterns use completed historical cycle phases', () => {
   assert.equal(patterns.length, 1);
   assert.equal(patterns[0].type, 'symptom-phase');
   assert.equal(patterns[0].count, 6);
-  assert.match(patterns[0].text, /luteal-phase days, compared with 1 of 5/);
+  assert.match(patterns[0].text, /luteal-phase days with symptom fields recorded, compared with 1 of 5/);
+});
+
+test('missing and malformed symptom fields do not increase denominators', () => {
+  const logs = {
+    '2026-01-01': { tags: ['Bloating'] },
+    '2026-01-02': { tags: [] },
+    '2026-01-03': { tags: [] },
+    '2026-01-04': { tags: [] },
+    '2026-01-05': { tags: [] },
+    '2026-01-06': { tags: [] },
+    '2026-01-07': { water: 4 },
+    '2026-01-08': { tags: null, customSx: 'Bloating' },
+    '2026-01-17': { tags: ['Bloating'] },
+    '2026-01-18': { tags: ['Bloating'] },
+    '2026-01-19': { tags: ['Bloating'] },
+    '2026-01-20': { tags: ['Bloating'] },
+    '2026-01-21': { tags: ['Bloating'] },
+    '2026-01-22': { tags: [] },
+    '2026-01-23': { water: 4 }
+  };
+  const patterns = smartPatternsFromLogs(logs, ['2026-01-01', '2026-01-29']);
+
+  assert.equal(patterns.length, 1);
+  assert.equal(patterns[0].type, 'symptom-phase');
+  assert.equal(patterns[0].count, 6);
+  assert.match(patterns[0].text, /5 of 6 luteal-phase days with symptom fields recorded, compared with 1 of 6/);
+});
+
+test('water-only historical logs do not create a symptom pattern', () => {
+  const logs = {};
+  for (let d = 1; d <= 28; d += 1) {
+    logs['2026-01-' + String(d).padStart(2, '0')] = { water: 4 };
+  }
+
+  assert.equal(smartPatternsFromLogs(logs, ['2026-01-01', '2026-01-29']).length, 0);
+});
+
+test('custom symptom rates count only custom symptom observations', () => {
+  const logs = {
+    '2026-01-01': { customSx: ['Mood swings'] },
+    '2026-01-02': { customSx: [] },
+    '2026-01-03': { customSx: [] },
+    '2026-01-04': { customSx: [] },
+    '2026-01-05': { customSx: [] },
+    '2026-01-17': { customSx: ['Mood swings'] },
+    '2026-01-18': { customSx: ['Mood swings'] },
+    '2026-01-19': { customSx: ['Mood swings'] },
+    '2026-01-20': { customSx: ['Mood swings'] },
+    '2026-01-21': { customSx: ['Mood swings'] }
+  };
+  const patterns = smartPatternsFromLogs(logs, ['2026-01-01', '2026-01-29']);
+
+  assert.equal(patterns.length, 1);
+  assert.equal(patterns[0].type, 'symptom-phase');
+  assert.equal(patterns[0].count, 6);
+  assert.match(patterns[0].text, /5 of 5 luteal-phase days with symptom fields recorded, compared with 1 of 5/);
 });
 
 test('historical dates use their own cycle context', () => {
