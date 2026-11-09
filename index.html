@@ -2475,9 +2475,8 @@ async function reminderSync(quiet){
    await reminderCancel();
    if(!rem.on)return {native:true,off:true};
     try{await LN.createChannel({id:'bloom_reminders',name:'Bloom reminders',description:'Daily logging reminders',sound:'beep.wav',importance:4})}catch(e){}
-    if(rem.on&&LN.checkExactNotificationSetting){
-      try{const ex=await LN.checkExactNotificationSetting();if(ex&&ex.exact_alarm&&ex.exact_alarm!=='granted'){if(!quiet)toast('Exact alarms are off. Bloom may be delayed.');try{await LN.changeExactNotificationSetting()}catch(e){}}}catch(e){}
-    }
+    // Never open the system "Alarms & reminders" page automatically. Without that permission
+    // Android still delivers the daily reminder, only a few minutes late.
     const [h,mi]=String(rem.time||'20:00').split(':').map(Number);
     await LN.schedule({notifications:[{
      id:REM_ID,title:'Bloom',body:'A moment to log how you feel today.',
