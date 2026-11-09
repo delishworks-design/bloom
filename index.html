@@ -973,8 +973,11 @@ async function exitPartnerNow(){
  authView('in')}
 // partner's own profile: no pairing code, no cycle fields - just identity and exit
 function roPage(){
- const c=cycleStats(),len=c.avg||28;let sum='No cycle logged yet';
- if(c.last){const day=Math.round((new Date(today())-new Date(c.last))/864e5)+1,dt=((day-1)%len)+1;sum='Day '+dt+' \u00b7 '+phaseInfo(dt,len).k}
+ const c=cycleStats(),len=c.avg||28,cycle=dashboardCycle();let sum='No cycle logged yet';
+ if(cycle.state==='estimated')sum='Day '+cycle.cycleDay+' \u00b7 '+cycle.phase;
+ else if(cycle.state==='overdue')sum='Expected period date has passed';
+ else if(cycle.state==='due-today')sum='Period expected today';
+ else if(cycle.state!=='no-history')sum='More cycle history needed';
  const nd=Object.keys(D.logs||{}).length;if(nd)sum+=' \u00b7 '+nd+' day'+(nd>1?'s':'')+' logged';
  $('#main').innerHTML=`<h1>Profile</h1>
  <div class="card">
@@ -1213,8 +1216,13 @@ function cycleStats(){const s=starts(),len=[];for(let i=1;i<s.length;i++){len.pu
  if(!s.length)return{len,n:0};
  if(ok.length<2)return{len,n:ok.length,last:s[s.length-1]};
  const avg=Math.round(ok.reduce((a,b)=>a+b,0)/ok.length);return{len,n:ok.length,avg,min:Math.min(...ok),max:Math.max(...ok),last:s[s.length-1],irregular:Math.max(...ok)-Math.min(...ok)>7||avg>35}}
-function cycleLine(){const c=cycleStats();if(c.n<2)return'Log 3 period starts to estimate';
- const day=Math.round((new Date(today())-new Date(c.last))/864e5)+1;const nx=c.min===c.max?fmt(addD(c.last,c.min)):fmt(addD(c.last,c.min))+'\u2013'+fmt(addD(c.last,c.max));return`Day ${day} \u00b7 ${c.min===c.max?c.min+' days':c.min+'\u2013'+c.max+' days (avg '+c.avg+')'} \u00b7 next ${nx}`}
+function cycleLine(nowDate,startDates){const s=startDates||starts(),c=cycleStats(),current=dashboardCycle(s,nowDate||today());
+ if(current.predictedDate==null)return'Log 3 period starts to estimate';
+ if(current.state==='overdue')return `Expected period date ${fmt(current.predictedDate)} has passed`;
+ if(current.state==='due-today')return 'Period expected today';
+ if(current.state==='future-start')return 'Recorded period date is in the future';
+ if(current.state!=='estimated')return 'Log 3 period starts to estimate';
+ const nx=c.min===c.max?fmt(addD(c.last,c.min)):fmt(addD(c.last,c.min))+'\u2013'+fmt(addD(c.last,c.max));return`Day ${current.cycleDay} \u00b7 ${c.min===c.max?c.min+' days':c.min+'\u2013'+c.max+' days (avg '+c.avg+')'} \u00b7 next ${nx}`}
 function tasksFor(d){return D.tasks.filter(t=>!t.once||t.once===d).filter(t=>!t.days||t.days.includes(new Date(d+'T12:00').getDay()))}
 const isDone=(id,d)=>!!(D.done[d]||{})[id];
 function toggle(id,d){D.done[d]=D.done[d]||{};D.done[d][id]=!D.done[d][id];save()}
@@ -1460,12 +1468,18 @@ function ringPillText(dt,len,left,elapsed){
   return `<path d="M${p0.x} ${p0.y} A${R} ${R} 0 ${large} 1 ${p1.x} ${p1.y}" fill="none" stroke="${col}" stroke-width="${W}"/>`}).join('');
  const mp=polarPt(120,120,R,-90+360*((dt-.5)/len));
  return `<svg viewBox="0 0 240 240" role="img" aria-label="Cycle phases graph: ${phaseLabel(ph.k)}, day ${dt} of ${len}"><circle cx="120" cy="120" r="${R}" fill="none" stroke="#F1E6D7" stroke-width="${W}"/>${segs}<circle cx="${mp.x}" cy="${mp.y}" r="7.5" fill="#FFFBF5" stroke="${cur[3]}" stroke-width="3"/><text x="120" y="111" text-anchor="middle" class="pg-name">${phaseLabel(ph.k)}</text><text x="120" y="132" text-anchor="middle" class="pg-sub">Day ${dt} of ${len}</text></svg>`}
-function phaseSheet(c,dt){
+function phaseSheet(c,current){
  if(!c.last){
   sheet(`<h2>Four phases</h2><p class="meta" style="margin:0 0 4px">Log a period start to estimate all four phases.</p>${RO?'':'<button class="btn" id="phLog">Log period</button>'}`);
   if(!RO&&$('#phLog'))$('#phLog').onclick=()=>{sheet();periodSheet()};
   return}
- const len=c.avg||28;
+ const cycle=current||dashboardCycle();
+ if(cycle.state!=='estimated'){
+  const text=cycle.state==='overdue'?`Expected period date (${fmt(cycle.predictedDate,{month:'short',day:'numeric',year:'numeric'})}) has passed. Current phase is uncertain until a new period start is recorded.`:cycle.state==='due-today'?'Period expected today. Current phase is uncertain until a new period start is recorded.':cycle.state==='future-start'?'Recorded period date is in the future.':'More cycle history is needed before Bloom can estimate the current phase.';
+  sheet(`<h2>Four phases</h2><p class="meta" style="margin:0 0 4px">${E(text)}</p>${RO?'':'<button class="btn ghost" id="phLog" style="margin-top:4px">Log period</button>'}`);
+  if(!RO&&$('#phLog'))$('#phLog').onclick=()=>{sheet();periodSheet()};
+  return}
+ const dt=cycle.cycleDay,len=cycle.cycleLength;
  const rows=phaseRanges(len).map(([n,from,to,col])=>{
   const s0=addD(c.last,from-1),e0=addD(c.last,to-1),now=dt>=from&&dt<=to;
    return `<div class="phaserow${now?' now':''}" style="color:${col}"><span class="phase-dot"></span><b>${phaseLabel(n)}</b>${now?'<span class="nowtag">Now</span>':''}<span class="range">${fmt(s0,{month:'short',day:'numeric'})} \u2013 ${fmt(e0,{month:'short',day:'numeric'})}</span></div>`}).join('');
@@ -1481,17 +1495,17 @@ if(dt<=Math.round(len*.45))return{t:'Follicular phase',k:'Follicular',c:'var(--t
 function miniBars(k,n,col){const days=[...Array(n)].map((_,i)=>addD(today(),i-n+1)),vals=days.map(d=>L(d)[k]);
  if(!vals.some(v=>v!=null))return `<div class="spark empty">No data in the last ${n} days</div>`;
  return `<div class="spark"><svg viewBox="0 0 ${n*16} 44" preserveAspectRatio="none" role="img" aria-label="${k} over the last ${n} days">${vals.map((v,i)=>v==null?`<rect x="${i*16+2}" y="4" width="12" height="36" rx="3" fill="#F1E6D7"/>`:`<rect x="${i*16+2}" y="${(44-(v/5)*38).toFixed(1)}" width="12" height="${((v/5)*38).toFixed(1)}" rx="3" fill="${col}"/>`).join('')}</svg></div>`}
-function ringSVG(){const c=cycleStats(),len=c.avg||28,has=!!c.last;
+function ringSVG(c,current){
+ const cycle=current||dashboardCycle(),len=c.avg||cycle.cycleLength||28,dt=cycle.state==='estimated'?cycle.cycleDay:null;
  const T=RO?{track:'#DCE6EC',mark:'#2F6B7E',num:'#22313A',g:['#245A6B','#3E8195','#A8C6D4']}:{track:'#F1E6D7',mark:'#B8456B',num:'#2B1E1E',g:['#A83A5E','#C4567A','#E8A0B4']};
- const day=has?Math.round((new Date(today())-new Date(c.last))/864e5)+1:1,dt=((day-1)%len)+1;
- const R=88,C=2*Math.PI*R,frac=dt/len,step=len>20?2:1;let nums='';
- for(let i=0;i<len;i++){const d=i+1;if(has&&d===dt)continue;if((d-1)%step)continue;
+ const R=88,C=2*Math.PI*R,frac=dt?dt/len:0,step=len>20?2:1;let nums='';
+ for(let i=0;i<len;i++){const d=i+1;if(dt&&d===dt)continue;if((d-1)%step)continue;
   const a=(-90+360*(i/len))*Math.PI/180,nx=110+R*Math.cos(a),ny=110+R*Math.sin(a);
   nums+=`<text x="${nx.toFixed(1)}" y="${(ny+3.4).toFixed(1)}" text-anchor="middle" letter-spacing="0.5" style="fill:${T.num};font-size:9.4px;font-weight:700;font-family:'Playfair Display',serif">${d}</text>`}
  let mark='';
- if(has){const a=(-90+360*((dt-1)/len))*Math.PI/180,bx=110+R*Math.cos(a),by=110+R*Math.sin(a);
+ if(dt){const a=(-90+360*((dt-1)/len))*Math.PI/180,bx=110+R*Math.cos(a),by=110+R*Math.sin(a);
   mark=`<circle cx="${bx.toFixed(1)}" cy="${by.toFixed(1)}" r="15" fill="#FFFFFF" stroke="${T.mark}" stroke-width="2.2" style="filter:drop-shadow(0 5px 10px rgba(47,107,126,.25))"/><text x="${bx.toFixed(1)}" y="${(by+4.6).toFixed(1)}" text-anchor="middle" style="fill:${T.mark};font-size:13px;font-weight:700;font-family:'Playfair Display',serif">${dt}</text>`}
- return `<svg viewBox="0 0 220 220" style="width:100%;height:100%;display:block" role="img" aria-label="${has?'Cycle day '+dt:'No cycle logged yet'}"><defs><linearGradient id="bloomRingGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${T.g[0]}"/><stop offset="55%" stop-color="${T.g[1]}"/><stop offset="100%" stop-color="${T.g[2]}"/></linearGradient></defs><circle cx="110" cy="110" r="${R}" fill="none" stroke="${T.track}" stroke-width="12"/>${has?`<circle cx="110" cy="110" r="${R}" fill="none" stroke="url(#bloomRingGrad)" stroke-width="12" stroke-linecap="round" stroke-dasharray="${(C*frac).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 110 110)" style="transition:stroke-dasharray .7s ease"/>`:''}${nums}${mark}</svg>`}
+ return `<svg viewBox="0 0 220 220" style="width:100%;height:100%;display:block" role="img" aria-label="${dt?'Cycle day '+dt:'No current cycle phase estimated'}"><defs><linearGradient id="bloomRingGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${T.g[0]}"/><stop offset="55%" stop-color="${T.g[1]}"/><stop offset="100%" stop-color="${T.g[2]}"/></linearGradient></defs><circle cx="110" cy="110" r="${R}" fill="none" stroke="${T.track}" stroke-width="12"/>${dt?`<circle cx="110" cy="110" r="${R}" fill="none" stroke="url(#bloomRingGrad)" stroke-width="12" stroke-linecap="round" stroke-dasharray="${(C*frac).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 110 110)" style="transition:stroke-dasharray .7s ease"/>`:''}${nums}${mark}</svg>`}
 function periodSheet(){dateSheet('First day of bleeding',v=>{
   const elapsed=Math.max(1,Math.round((new Date(today())-new Date(v))/864e5)+1);
   const write=n=>{
@@ -1590,7 +1604,7 @@ Ovulation:[['Zinc','Eggs, shellfish and seeds support ovulation and skin.'],['Hy
 Luteal:[['Complex carbs','Kamote, oats and brown rice steady the craving crash.'],['Magnesium','Dark chocolate, nuts and greens help mood and sleep.'],['Salt','Watch salty food if bloating is bad; it holds water for days.']]
 };
 function shuffle(a){const x=a.slice();for(let i=x.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)),t=x[i];x[i]=x[j];x[j]=t}return x}
-function phaseNow(){const c=cycleStats();if(!c.last)return null;const len=c.avg||28,day=Math.round((new Date(today())-new Date(c.last))/864e5)+1;return phaseInfo(((day-1)%len)+1,len)}
+function phaseNow(){const cycle=dashboardCycle();return cycle.state==='estimated'?phaseInfo(cycle.cycleDay,cycle.cycleLength):null}
 let FUNQ=null,FUNQK='',FOODQ=null,FOODQK='';
 function funQueue(){const k=(phaseNow()||{k:'General'}).k;if(FUNQ&&FUNQK===k)return FUNQ;
  FUNQ=shuffle(PHASE_FUN[k]||[]).concat(shuffle(TRIVIA.concat(TRIVIA2)).map(t=>({tag:'Did you know?',text:t})),shuffle(TIPS.concat(TIPS2)).map(t=>({tag:'Tip',text:t[1]})));
@@ -1611,17 +1625,13 @@ function guidePick(out,key){
  while(uniq.length<12)uniq.push({t:'Small help, often',b:'One small thing done beats a perfect plan that never starts.'});
  const list=uniq.slice(0,12);guideCache[key]=list;return list}
 function partnerGuideData(){
- const c=cycleStats(),len=c.avg||28,has=!!c.last;
- const day=has?Math.round((new Date(today())-new Date(c.last))/864e5)+1:1,dt=((day-1)%len)+1;
- const ph=has?phaseInfo(dt,len):null,l=L(today());
+ const cycle=dashboardCycle(),ph=cycle.state==='estimated'?phaseInfo(cycle.cycleDay,cycle.cycleLength):null,l=L(today());
  const sym=Object.keys(P_SYMPTOM).filter(t=>(l.tags||[]).includes(t));
  const M=a=>a.map(x=>({t:x[0],b:x[1]}));
  const out=[...shuffle(M(sym.map(t=>[t,P_SYMPTOM[t]]))),...shuffle(M(P_GUIDE[ph?ph.k:'General']||P_GUIDE.General)),...shuffle(M(P_GUIDE.General)),...shuffle(M(P_MORE.concat(P_MORE2)))];
  return guidePick(out,'p:'+(ph?ph.k:'General'))}
 function selfGuideData(){
- const c=cycleStats(),len=c.avg||28,has=!!c.last;
- const day=has?Math.round((new Date(today())-new Date(c.last))/864e5)+1:1,dt=((day-1)%len)+1;
- const ph=has?phaseInfo(dt,len):null,l=L(today());
+ const cycle=dashboardCycle(),ph=cycle.state==='estimated'?phaseInfo(cycle.cycleDay,cycle.cycleLength):null,l=L(today());
  const sym=Object.keys(S_SYMPTOM).filter(t=>(l.tags||[]).includes(t));
  const M=a=>a.map(x=>({t:x[0],b:x[1]}));
  const out=[...shuffle(M(sym.map(t=>[t,S_SYMPTOM[t]]))),...shuffle(M(S_GUIDE[ph?ph.k:'General']||S_GUIDE.General)),...shuffle(M(S_GUIDE.General)),...shuffle(M(S_MORE.concat(S_MORE2)))];
@@ -1757,14 +1767,17 @@ function openQuickRing(fab,onAct){
 }
 function cyclePage(){const d=today(),l=L(d),ts=tasksFor(d),n=ts.filter(t=>isDone(t.id,d)).length;const h=new Date().getHours();
  const m=D.meals[d]||[];const wk=[...Array(7)].map((_,i)=>addD(d,-i)),wd=wk.reduce((a,x)=>a+tasksFor(x).filter(t=>isDone(t.id,x)).length,0),wt=wk.reduce((a,x)=>a+tasksFor(x).length,0);
- const c=cycleStats(),len=c.avg||28,day=c.last?Math.round((new Date(today())-new Date(c.last))/864e5)+1:1,dt=((day-1)%len)+1;
- let left=len-(dt-1);if(left<=0)left+=len;
-  const ph=c.last?phaseInfo(dt,len):{k:'\u2014',t:'No cycle yet',c:'var(--muted)'},first=(RO?((ST.get('bloom_pname')||'friend')+''):(D.p.name||'friend')).split(' ')[0],goal=D.p.waterGoal||8;
+ const c=cycleStats(),current=dashboardCycle(),len=c.avg||current.cycleLength||28,day=c.last?Math.round((new Date(today())-new Date(c.last))/864e5)+1:1,dt=current.state==='estimated'?current.cycleDay:null;
+ let left=dt?len-(dt-1):null;
+ const centerPill=dt?ringPillText(dt,len,left,day):current.state==='overdue'?'Expected period date has passed':current.state==='due-today'?'Period expected today':current.state==='future-start'?'Recorded period date is in the future':current.state==='no-history'?'No cycle yet':'More history needed';
+ const ringCap=dt?(c.n>=2?`of an average ${current.cycleLength}-day cycle`:'cycle day'):current.state==='overdue'?`${day} days since last period`:current.state==='no-history'?'Log a period to start':'More history needed';
+ const ringNumber=dt??(current.state==='overdue'?day:null);
+ const ph=dt?phaseInfo(dt,len):{k:'\u2014',t:current.state==='overdue'?'Expected period date passed':current.state==='due-today'?'Period expected today':current.state==='future-start'?'Recorded period date is in the future':current.state==='no-history'?'No cycle yet':'More history needed',c:'var(--muted)'},first=(RO?((ST.get('bloom_pname')||'friend')+''):(D.p.name||'friend')).split(' ')[0],goal=D.p.waterGoal||8;
   const sx=(l.tags||[]).concat(l.customSx||[]);
 
  $('#main').innerHTML=`
  <div class="greet"><h1 class="sr">Cycle</h1><div class="hi">${h<12?'Good morning':h<18?'Good afternoon':'Good evening'},</div><div class="hi nm">${E(first)}</div><div class="date">${fmt(d,{weekday:'long',month:'long',day:'numeric'})}</div></div>
- <div class="ringwrap"><div class="ringdisc"></div>${ringSVG()}<div class="ringcenter"><div class="ringlbl">${c.last?'Day':'Cycle'}</div><div class="ringday">${c.last?dt:'\u2014'}</div><div class="ringcap">${c.last?(c.n>=2?`of an average ${len}-day cycle`:'cycle day'):'Log a period to start'}</div><div class="ringpill">${E(c.last?(c.n>=2?ringPillText(dt,len,left,day):'Log to see estimates'):'No cycle yet')}</div></div></div>
+ <div class="ringwrap"><div class="ringdisc"></div>${ringSVG(c,current)}<div class="ringcenter"><div class="ringlbl">${current.state==='estimated'||current.state==='overdue'?'Day':current.state==='no-history'?'Cycle':'\u2014'}</div><div class="ringday">${ringNumber==null?'\u2014':ringNumber}</div><div class="ringcap">${ringCap}</div><div class="ringpill">${E(centerPill)}</div></div></div>
  
  ${RO?'':`<button class="logpill" id="lp"><span class="plus">${IC.plus(16)}</span>Log Period</button>`}
  <div class="stats3">
@@ -1792,7 +1805,7 @@ function cyclePage(){const d=today(),l=L(d),ts=tasksFor(d),n=ts.filter(t=>isDone
  <div class="card fun"><span class="lbl" id="funTag" style="margin:0 0 2px">Did you know?</span><p class="funtext" id="funText">${E(funNow().text)}</p></div>
  <div class="row" style="gap:10px"><button class="btn ghost" id="cal" style="flex:1">Month calendar</button>${RO?'':`<button class="btn ghost" id="logs" style="flex:1">Log symptoms</button>`}</div>`;
  if(!RO)bindCk(d);
- $('#phStat').onclick=()=>phaseSheet(c,dt);
+ $('#phStat').onclick=()=>phaseSheet(c,current);
  if(!RO)$('#lp').onclick=()=>periodSheet();
  $('#cal').onclick=()=>{view='month';shell()};
  if(!RO)$('#logs').onclick=()=>dayLog(d);
@@ -1997,6 +2010,9 @@ function smartCurrentCycle(prediction,nowDate){
 }
 function smartCurrentCycleFromHistory(startDates,nowDate){
  return smartCurrentCycle(smartPredictionHistory(startDates,nowDate),nowDate);
+}
+function dashboardCycle(startDates,nowDate){
+ return smartCurrentCycleFromHistory(startDates||starts(),nowDate||today());
 }
 function smartHistoricalPhaseFor(date,startDates){
  if(typeof date!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(date))return null;

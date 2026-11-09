@@ -48,7 +48,7 @@ function load() {
     sxmig: ['migrateCustomSymptoms'],
     backup: ['makeBackup', 'validateBackup'],
     phases: ['phaseInfo'],
-    smart: ['smartPredictionHistory', 'smartCurrentCycle', 'smartCurrentCycleFromHistory', 'smartHistoricalPhaseFor', 'smartPatternsFromLogs']
+    smart: ['smartPredictionHistory', 'smartCurrentCycle', 'smartCurrentCycleFromHistory', 'smartHistoricalPhaseFor', 'smartPatternsFromLogs', 'dashboardCycle']
   };
   for (const name of ['phases', 'esc', 'sync', 'roWho', 'sxmig', 'backup', 'smart']) {
     const code = extract(html, name);
