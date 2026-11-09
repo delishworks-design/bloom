@@ -302,7 +302,7 @@ details{border-bottom:1px solid #EADFD2;padding:14px 0}summary{cursor:pointer;fo
 .smart-card{padding:0;gap:0;overflow:hidden}
 .smart-hero{padding:22px 20px 18px;display:flex;align-items:center;justify-content:space-between;gap:16px;background:#FFF6F1;border-bottom:1px solid var(--line)}
 .smart-hero-copy{min-width:0}
-.smart-eyebrow{font-size:.68rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--rose)}
+.smart-eyebrow{font-size:.68rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--rose)}
 .smart-title{font-family:'Playfair Display',serif;font-size:29px;line-height:1.08;font-weight:700;color:var(--ink);margin:4px 0 8px}
 .smart-subtitle{font-size:.88rem;line-height:1.45;color:var(--mut);max-width:280px}
 .smart-source-note{display:inline-flex;align-items:center;gap:7px;margin-top:10px;font-size:.74rem;font-weight:700;color:var(--mut)}
@@ -310,7 +310,7 @@ details{border-bottom:1px solid #EADFD2;padding:14px 0}summary{cursor:pointer;fo
 .smart-hero-art{flex:0 0 auto;width:64px;height:64px;color:var(--rose)}
 .smart-hero-art svg,.smart-empty-art svg,.smart-icon svg,.smart-pattern-icon svg{width:100%;height:100%;display:block}
 .smart-section{padding:18px 20px;border-top:1px solid var(--line)}
-.smart-kicker{font-size:.68rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);margin-bottom:5px}
+.smart-kicker{font-size:.72rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);margin-bottom:5px}
 .smart-prediction-head{display:flex;gap:13px;align-items:center}
 .smart-icon{width:46px;height:46px;border-radius:16px;background:var(--pinkS);color:var(--rose);display:grid;place-items:center;padding:10px;flex:0 0 auto}
 .smart-date{font-family:'Playfair Display',serif;font-size:30px;line-height:1.05;font-weight:700;color:var(--ink);overflow-wrap:anywhere}
@@ -341,7 +341,7 @@ details{border-bottom:1px solid #EADFD2;padding:14px 0}summary{cursor:pointer;fo
 .smart-cycle-day{font-size:.95rem;font-weight:800;color:var(--rose);line-height:1.3;margin-top:3px}
 .smart-copy{font-size:.86rem;line-height:1.5;color:var(--mut);margin-top:8px}
 .smart-empty{display:flex;gap:13px;align-items:flex-start}
-.smart-empty-art{width:48px;height:48px;border-radius:50%;border:1.5px dashed rgba(184,69,107,.45);color:var(--mut);display:grid;place-items:center;padding:9px;flex:0 0 auto;background:#FFF8F4}
+.smart-empty-art{width:48px;height:48px;border-radius:14px;border:1.5px solid rgba(184,69,107,.28);color:var(--mut);display:grid;place-items:center;padding:9px;flex:0 0 auto;background:#FFF8F4}
 .smart-empty .smart-copy{margin-top:5px}
 .smart-pattern{display:flex;gap:12px;align-items:flex-start;padding:13px 0;border-bottom:1px dashed var(--line)}
 .smart-pattern:last-of-type{padding-bottom:0;border-bottom:0}
@@ -2195,12 +2195,12 @@ function smartCurrentCycleNow(){
  return smartCurrentCycle(smartPrediction(),today());
 }
 function smartArt(kind){
- const attrs=`width="44" height="44" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"`;
+ const attrs=`width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"`;
  const paths={
-  insight:`<circle cx="20" cy="24" r="10"/><circle cx="20" cy="24" r="3" fill="currentColor" stroke="none"/><path d="M34 8l1.4 2.9L38.4 12l-3 1.1L34 16l-1.4-2.9-3-1.1 3-1.1L34 8Z"/><path d="M9 38c6-4 12-6 19-5"/>`,
-  calendar:`<rect x="9" y="11" width="26" height="25" rx="6"/><path d="M15 9v6M29 9v6M9 20h26"/><path d="M16 29h6M16 33h4"/>`,
-  empty:`<circle cx="22" cy="22" r="14" stroke-dasharray="3 4"/><path d="M22 16v6M22 28v.1"/>`,
-  data:`<path d="M8 33 16 25l6 4 9-11 4 5"/><path d="M36 13v12M36 29v.1"/>`
+  insight:`<path d="M24 11c4 0 7 3 7 7 0 3-2 5-4 6 3 1 5 4 5 7 0 4-3 7-7 7s-7-3-7-7c0-3 2-5 5-7-3-1-5-3-5-6 0-4 3-7 7-7Z" fill="currentColor" stroke="none" opacity=".18"/><path d="M24 11c4 0 7 3 7 7 0 3-2 5-4 6 3 1 5 4 5 7 0 4-3 7-7 7s-7-3-7-7c0-3 2-5 5-7-3-1-5-3-5-6 0-4 3-7 7-7Z" stroke-width="1.8"/><circle cx="24" cy="24" r="3" fill="currentColor" stroke="none"/>`,
+  calendar:`<rect x="10" y="12" width="28" height="27" rx="6"/><path d="M10 20h28M17 10v5M31 10v5"/><path d="M17 27h6M17 31h4"/>`,
+  empty:`<path d="M12 30c0-7 5-12 12-12s12 5 12 12" stroke-width="2"/><path d="M18 15l3 3 7-7" stroke-width="2.4"/>`,
+  data:`<path d="M9 34 17 26l6 4 9-11 4 5" stroke-width="2.4"/><path d="M37 14v12M37 30v.1"/>`
  };
  return `<svg ${attrs}>${paths[kind]||paths.empty}</svg>`;
 }
@@ -2223,10 +2223,10 @@ function smartTimelineHTML(p){
 }
 function smartPatternIcon(type){
  const paths={
-  'sleep-energy':'<path d="M15 5a9 9 0 1 0 10 11A11 11 0 0 1 15 5Z"/><path d="M31 8l1 2 2 .3-1.4 1.4.3 2-1.9-1-1.9 1 .3-2-1.4-1.4 2-.3 1-2Z"/>',
-  'mood-sleep':'<circle cx="12" cy="12" r="8"/><path d="M9.5 10.2h.1M14.5 10.2h.1M9.5 13.7c1.6 1.2 3.4 1.2 5 0"/><path d="M30 8a7 7 0 1 0 8 9 9 9 0 0 1-8-9Z"/>',
-  'activity-energy':'<path d="M5 20c4-4 8-6 12-6 5 0 8 2 12 6"/><path d="M9 9.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5ZM33 9.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5Z"/><path d="M21 18c0 3-3 3-5 4"/>',
-  'symptom-phase':'<circle cx="10" cy="10" r="3"/><circle cx="27" cy="12" r="3"/><circle cx="19" cy="27" r="4"/><path d="M10 13v3M27 15v4M19 31v3"/>'
+  'sleep-energy':'<path d="M14 9a8 8 0 1 0 9 9 10 10 0 0 1-9-9Z" fill="currentColor" stroke="none"/><path d="M30 10l1 2 2 .3-1.5 1.4.3 2-1.8-1-1.8 1 .3-2-1.5-1.4 2-.3 1-2Z" fill="currentColor" stroke="none"/>',
+  'mood-sleep':'<circle cx="12" cy="12" r="7" fill="currentColor" stroke="none" opacity=".22"/><path d="M9.5 10.2h.1M14.5 10.2h.1M9.5 13.7c1.6 1.2 3.4 1.2 5 0"/><path d="M30 8a6 6 0 1 0 7 8 8 8 0 0 1-7-8Z" fill="currentColor" stroke="none"/>',
+  'activity-energy':'<path d="M6 22c4-4 8-6 12-6 5 0 8 2 12 6" stroke-width="2.6"/><circle cx="9" cy="11" r="2.6" fill="currentColor" stroke="none"/><circle cx="33" cy="11" r="2.6" fill="currentColor" stroke="none"/><path d="M21 18c0 3-3 3-5 4" stroke-width="2.6"/>',
+  'symptom-phase':'<circle cx="10" cy="10" r="3" fill="currentColor" stroke="none"/><circle cx="27" cy="12" r="3" fill="currentColor" stroke="none"/><circle cx="19" cy="27" r="4" fill="currentColor" stroke="none"/><path d="M10 13v3M27 15v4M19 31v3"/>'
  };
  return `<svg width="20" height="20" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${paths[type]||paths['symptom-phase']}</svg>`;
 }
@@ -2236,9 +2236,9 @@ function smartEmptyState(kind,title,body){
 function smartPredictionHTML(p){
  const span=p&&p.startCount?`Based on ${p.startCount} logged period start${p.startCount===1?'':'s'} and ${p.validCount} valid completed interval${p.validCount===1?'':'s'}.`:'';
  if(!p)return `<div class="smart-empty"><div class="smart-empty-art">${smartArt('empty')}</div><div><div class="smart-state-title">Prediction unavailable</div><p class="smart-copy">Your recorded cycle history is not available right now.</p></div></div>`;
- if(p.state==='no-history')return smartEmptyState('calendar','No estimate yet','Log a period start when your next cycle begins so Bloom has actual history to work from.');
- if(p.state==='single-start')return smartEmptyState('calendar','One recorded start','One period start is a useful first marker, but it cannot show a reliable cycle average yet. Record another period to compare intervals.');
- if(p.state==='limited-history')return smartEmptyState('calendar','Limited history','Bloom needs at least two valid completed cycle intervals before estimating the next period. Log another period start to build that history.');
+ if(p.state==='no-history')return smartEmptyState('calendar','No estimate yet','Record your next period to build cycle history.');
+ if(p.state==='single-start')return smartEmptyState('calendar','One recorded start','Log another period to compare intervals.');
+ if(p.state==='limited-history')return smartEmptyState('calendar','Limited history','Bloom needs at least two valid completed cycle intervals before estimating the next period.');
  const dateTitle=p.min===p.max?smartDateText(p.expected):`${smartDateText(p.rangeStart)} – ${smartDateText(p.rangeEnd)}`;
  const confidenceNote=p.confidence ? `${p.confidence}.` : '';
  const overdueNote=p.overdue?`Your expected period date (${smartDateText(p.expected)}) has passed. This does not start a new cycle or assign a phase. If this is a concern, consider speaking with a clinician.`:p.reason;
@@ -2265,14 +2265,14 @@ function smartCurrentCycleHTML(current,pred){
  if(current&&current.state==='estimated'){
   return `<div class="smart-cycle-layout"><div class="smart-cycle-visual">${smartCycleSVG(current)}</div><div class="smart-cycle-copy"><div class="smart-state-title">${E(current.phaseLabel)}</div><div class="smart-cycle-day">Day ${current.cycleDay} of ${current.cycleLength}</div><p class="smart-copy">This phase is estimated from your recorded period starts. It is not a diagnosis or a confirmed ovulation time.</p><span class="smart-confidence">${E(current.confidence)}</span></div></div>`;
  }
- if(!current)return smartEmptyState('empty','Current phase unavailable','Your recorded cycle history is not available right now.');
+ if(!current)return smartEmptyState('empty','Not available yet','More cycle history is needed.');
  if(current.state==='overdue')return smartEmptyState('calendar','Expected date passed',`Your expected period date (${smartDateText(pred.expected)}) has passed. Bloom does not restart the cycle or assign a new phase until a new period start is recorded.`);
  if(current.state==='due-today')return smartEmptyState('calendar','Period expected today',`Your expected period date is ${smartDateText(pred.expected)}. This remains an estimate based on your recorded history.`);
  if(current.state==='future-start')return smartEmptyState('empty','Recorded start is ahead','The latest recorded period date is in the future, so Bloom cannot estimate a current phase yet.');
- return smartEmptyState('empty','More records needed','Current phase is not estimated yet. Record more complete cycle history so Bloom can show a phase backed by your records.');
+ return smartEmptyState('empty','Not available yet','More cycle history is needed.');
 }
 function smartPatternsHTML(patterns){
- if(!patterns||!patterns.length)return smartEmptyState('data','No pattern surfaced yet','Log sleep, mood, energy, activity, and symptoms more often. Bloom will still keep the chart and prediction history you already have.');
+ if(!patterns||!patterns.length)return smartEmptyState('data','No patterns yet','Keep logging your daily observations.');
  const titles={'sleep-energy':'Sleep and energy','mood-sleep':'Mood and sleep','activity-energy':'Activity and energy','symptom-phase':'Symptoms across recorded phases'};
  return `<div>${patterns.map(p=>`<article class="smart-pattern"><div class="smart-pattern-icon">${smartPatternIcon(p.type)}</div><div class="smart-pattern-copy"><div class="smart-pattern-title">${E(titles[p.type]||'Personal pattern')}</div><p class="smart-pattern-text">${E(p.text)}</p>${p.count?`<div class="smart-pattern-count">Based on ${p.count} observations</div>`:''}</div></article>`).join('')}<p class="meta">These are associations observed in your records, not proof that one factor causes another.</p></div>`;
 }
@@ -2281,14 +2281,13 @@ function smartInsightsHTML(pred,current,patterns,viewerName){
  return `<header class="smart-hero">
   <div class="smart-hero-copy">
    <div class="smart-eyebrow">Smart insights</div>
-   <h2 class="smart-title">A clearer view of your cycle</h2>
-   <p class="smart-subtitle">${person} recorded cycle, sleep, activity, and symptom patterns—only what was logged.</p>
-   <span class="smart-source-note"><span class="smart-source-dot" aria-hidden="true"></span>Based on records</span>
+   <h2 class="smart-title">Smart Insights</h2>
+   <p class="smart-subtitle">Your cycle, at a glance.</p>
   </div>
   <div class="smart-hero-art">${smartArt('insight')}</div>
  </header>
- <section class="smart-section" aria-labelledby="smart-prediction-title"><h3 class="smart-kicker" id="smart-prediction-title">Next period prediction</h3>${smartPredictionHTML(pred)}</section>
- <section class="smart-section" aria-labelledby="smart-cycle-title"><h3 class="smart-kicker" id="smart-cycle-title">Current cycle phase</h3>${smartCurrentCycleHTML(current,pred)}</section>
+ <section class="smart-section" aria-labelledby="smart-prediction-title"><h3 class="smart-kicker" id="smart-prediction-title">Next period</h3>${smartPredictionHTML(pred)}</section>
+ <section class="smart-section" aria-labelledby="smart-cycle-title"><h3 class="smart-kicker" id="smart-cycle-title">Cycle phase</h3>${smartCurrentCycleHTML(current,pred)}</section>
  <section class="smart-section" aria-labelledby="smart-patterns-title"><h3 class="smart-kicker" id="smart-patterns-title">Personal patterns</h3>${smartPatternsHTML(patterns)}</section>
  <section class="smart-section smart-transparency" aria-labelledby="smart-transparency-title"><div class="smart-icon">${smartArt('data')}</div><div><h3 class="smart-state-title" id="smart-transparency-title">How to read these insights</h3><p class="smart-copy">These are local estimates from recorded information. Consistent tracking may reveal more patterns. Bloom does not diagnose medical conditions.</p></div></section>`;
 }

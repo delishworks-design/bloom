@@ -46,9 +46,8 @@ test('predicted Smart Insights renders a prominent range and timeline', () => {
   const current = { state: 'due-today', phase: null, phaseLabel: null, cycleDay: null, cycleLength: null, confidence: 'Limited history', predictedDate: '2026-04-23' };
   const html = smartInsightsHTML(predictedState(), current, [], 'Alex');
 
-  assert.match(html, /A clearer view of your cycle/);
-  assert.match(html, /Alex’/);
-  assert.match(html, /Next period prediction/);
+  assert.match(html, /Smart Insights/);
+  assert.match(html, /Next period/);
   assert.match(html, /Apr 20, 2026 – Apr 30, 2026/);
   assert.match(html, /smart-timeline/);
   assert.match(html, /Estimated cycle/);
@@ -75,8 +74,8 @@ test('empty Smart Insights states never invent facts', () => {
   const html = smartInsightsHTML(pred, current, []);
 
   assert.match(html, /One recorded start/);
-  assert.match(html, /More records needed/);
-  assert.match(html, /No pattern surfaced yet/);
+  assert.match(html, /Not available yet/);
+  assert.match(html, /No patterns yet/);
   assert.ok(!/\bundefined\b|\bNaN\b|<img|<script|http:\/\/|https:\/\//i.test(html));
 });
 
