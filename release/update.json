@@ -1,7 +1,7 @@
 {
-    "versionCode": 54,
-    "versionName": "1.2.39",
-    "notes": "In-app updates, backup/restore, partner privacy, safe sync, and easier Learn articles.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.39/bloom-1.2.39.apk",
-    "publishedAt": "2026-11-08"
+    "versionCode": 55,
+    "versionName": "1.2.40",
+    "notes": "New 'Check your email' signup step with resend, recovery for unconfirmed logins, and smoother backup import/export.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.40/bloom-1.2.40.apk",
+    "publishedAt": "2026-11-09"
 }
