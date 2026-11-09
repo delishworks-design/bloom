@@ -1,7 +1,7 @@
 {
-    "versionCode": 56,
-    "versionName": "1.2.41",
-    "notes": "Reminder no longer opens Alarms & reminders by itself; Delete my account moved into Settings for partner accounts.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.41/bloom-1.2.41.apk",
+    "versionCode": 57,
+    "versionName": "1.2.42",
+    "notes": "Adds Smart Insights with offline period prediction, current phase estimates, and local pattern detection.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.42/bloom-1.2.42.apk",
     "publishedAt": "2026-11-09"
 }
