@@ -22,11 +22,15 @@ The app is **offline-first**: everything is written to `localStorage` immediatel
 with no network at all. When you sign in, the same data is mirrored to Supabase so it follows you
 to another device.
 
+Sign-up uses an email address and password, and new accounts must confirm their email before
+signing in. You can delete your account and all synced data from Settings; a linked partner loses
+access.
+
 | What | Where |
 |---|---|
 | Project | `vggaswbjsmyvfheofnnj` (`Selah`, Southeast Asia) |
  | Tables | `bloom_profiles`, `bloom_data`, `bloom_partners`, `bloom_redeem_attempts`, `bloom_shared` |
- | Functions | `bloom_create_partner_code`, `bloom_make_shared`, `bloom_redeem_partner_code`, `bloom_revoke_partner_codes`, `bloom_leave_pairing`, `bloom_sync_shared`, `bloom_owns_partner`, `bloom_is_partner`, `bloom_unshare` |
+ | Functions | `bloom_create_partner_code`, `bloom_make_shared`, `bloom_redeem_partner_code`, `bloom_revoke_partner_codes`, `bloom_leave_pairing`, `bloom_sync_shared`, `bloom_owns_partner`, `bloom_is_partner`, `bloom_unshare`, `bloom_delete_account` |
 | Schema | [`supabase/migrations/20261021000000_bloom.sql`](supabase/migrations/20261021000000_bloom.sql) |
 
 Row Level Security is on for every table:
@@ -74,17 +78,13 @@ other `p` keys, and log fields such as `note`, `sidefx`, and `weight`.
 
 Phase 2 is applied: partners can no longer read bloom_data directly; only the owner can. Partners read bloom_shared only.
 
-## Gmail / Google sign-in
+## Google sign-in
 
-Not enabled on the project yet — it needs one OAuth client from Google Cloud. Once you have a
-client ID and secret:
+Not implemented yet. Bloom uses email and password only — there is no Google
+button and no Google OAuth flow in the app.
 
-```sh
-./scripts/setup-google-auth.sh <client-id> <client-secret>
-```
-
-Then add the app's URL to **Authentication → URL Configuration → Redirect URLs** in the Supabase
-dashboard. The **Continue with Google** button appears automatically once the provider is on.
+Adding Google sign-in later would need a native Google Sign-In plugin, because
+Google blocks OAuth in embedded WebViews, plus a rebuilt APK.
 
 ## Auth setup
 
@@ -103,8 +103,9 @@ Password reset uses a 6-digit email code (no deep links).
 ```
 
 5. The built-in email service is rate-limited and is only meant for testing. Configure custom SMTP under **Authentication → SMTP Settings** for production email.
-6. Shorten the email OTP expiry to about 15 minutes if the dashboard allows it.
-7. Keep confirmation emails enabled.
+6. Set the email OTP expiry to 15 minutes (the code is 6 digits).
+7. Email confirmation is enabled: new accounts must confirm their address before signing in.
+8. Account deletion is available in Settings and removes the sign-in account and all synced data.
 
 ## Development
 
@@ -118,7 +119,7 @@ See [docs/auth-setup.md](docs/auth-setup.md) for the email/password reset setup.
 
 ## Privacy
 
-Your notes are stored on this device. If you sign in, they are also stored in the Bloom cloud database (Supabase), protected by row-level security. A partner you pair with reads only a filtered copy. The app checks GitHub for updates. There are no ads, analytics or tracking. This is not a medical service and does not diagnose anything.
+Your notes are stored on this device. If you sign in, they are also stored in the Bloom cloud database (Supabase), protected by row-level security. A partner you pair with reads only a filtered copy. You can delete your account and its synced data from Settings at any time. The app checks GitHub for updates. There are no ads, analytics or tracking. This is not a medical service and does not diagnose anything.
 
 ## Fonts
 
