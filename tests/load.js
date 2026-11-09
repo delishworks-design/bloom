@@ -46,9 +46,11 @@ function load() {
     sync: ['isPlainObject', 'mergeDocs', 'chooseLoginDoc'],
     roWho: ['roWho'],
     sxmig: ['migrateCustomSymptoms'],
-    backup: ['makeBackup', 'validateBackup']
+    backup: ['makeBackup', 'validateBackup'],
+    phases: ['phaseInfo'],
+    smart: ['smartPredictionHistory', 'smartCurrentCycle', 'smartCurrentCycleFromHistory', 'smartHistoricalPhaseFor', 'smartPatternsFromLogs']
   };
-  for (const name of ['esc', 'sync', 'roWho', 'sxmig', 'backup']) {
+  for (const name of ['phases', 'esc', 'sync', 'roWho', 'sxmig', 'backup', 'smart']) {
     const code = extract(html, name);
     const names = exportsByName[name];
     vm.runInNewContext(code + `\nObject.assign(globalThis, {${names.join(', ')}})`, sandbox, { filename: name + '.js' });
