@@ -2590,6 +2590,22 @@ async function setAccountType(role){
 function exportBackup(){
  if(RO)return;
  sheet(`<h2>Export backup</h2><p class="meta" style="margin:0 0 12px">This file contains your private notes. Keep it safe.</p><div class="row" style="gap:10px;margin-top:16px"><button class="btn ghost" id="expNo" style="flex:1">Cancel</button><button class="btn" id="expGo" style="flex:1">Export</button></div>`);
+ const fallback=(text,fileName)=>{
+  sheet(`<h2>Export backup</h2><p class="meta" style="margin:0 0 10px">This file contains your private notes. Keep it safe.</p><textarea rows="10" readonly>${E(text)}</textarea><div class="row" style="gap:10px;margin-top:14px"><button class="btn ghost" id="expCopy" style="flex:1">Copy</button><button class="btn ghost" id="expDl" style="flex:1">Download file</button></div><button class="btn" id="expClose" style="margin-top:10px;width:100%">Close</button>`);
+  $('#expCopy').onclick=async()=>{
+   try{await navigator.clipboard.writeText(text);toast('Copied')}
+   catch(e){toast('Copy failed, select the text and copy it manually')}
+  };
+  $('#expDl').onclick=()=>{
+   try{
+    const blob=new Blob([text],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download=fileName;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);
+    toast('Download started, check your Downloads folder');
+   }catch(e){toast('Could not download the file')}
+  };
+  $('#expClose').onclick=()=>sheet();
+ };
  $('#expNo').onclick=()=>sheet();
  $('#expGo').onclick=async()=>{
   const stamp=today();
@@ -2600,38 +2616,50 @@ function exportBackup(){
     try{await navigator.share({title:'Bloom backup',text:'Bloom backup',files:[new File([text],fileName,{type:'application/json'})]});sheet();toast('Backup shared');return}catch(e){if(e&&e.name==='AbortError'){sheet();return}}
    }
   }catch(e){}
-  try{
-   const blob=new Blob([text],{type:'application/json'});
-   const url=URL.createObjectURL(blob);
-   const a=document.createElement('a');a.href=url;a.download=fileName;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);sheet();toast('Backup downloaded');return;
-  }catch(e){}
-  try{await navigator.clipboard.writeText(text);sheet();toast('Copied backup to clipboard');return}catch(e){}
-  sheet(`<h2>Export backup</h2><p class="meta" style="margin:0 0 10px">This file contains your private notes. Keep it safe.</p><textarea rows="10" readonly>${E(text)}</textarea><button class="btn" id="expClose" style="margin-top:14px;width:100%">Close</button>`);
-  $('#expClose').onclick=()=>sheet();
+  fallback(text,fileName);
  };
 }
 function importBackup(){
  if(RO)return;
  sheet(`<h2>Import backup</h2><p class="meta" style="margin:0 0 12px">Paste a Bloom backup JSON or choose a file.</p><label for="impFile">Backup file</label><input id="impFile" type="file" accept=".json,application/json"><label for="impText" style="margin-top:10px;display:block">Or paste JSON</label><textarea id="impText" rows="7" placeholder="Paste backup JSON" style="width:100%"></textarea><p class="hint" id="impErr"></p><div class="row" style="gap:10px;margin-top:16px"><button class="btn ghost" id="impNo" style="flex:1">Cancel</button></div>`);
  $('#impNo').onclick=()=>sheet();
- $('#impFile').onchange=e=>{const f=e.target.files&&e.target.files[0];e.target.value='';if(!f)return;const r=new FileReader();r.onload=()=>{$('#impText').value=String(r.result)};r.readAsText(f)};
+ $('#impFile').onchange=e=>{const f=e.target.files&&e.target.files[0];e.target.value='';if(!f)return;if(f.size>5*1024*1024){$('#impErr').textContent='That file is too large (over 5 MB).';return}const r=new FileReader();r.onload=()=>{$('#impText').value=String(r.result);processImportText()};r.onerror=()=>{$('#impErr').textContent='Could not read that file.'};r.readAsText(f)};
  const finish=(doc)=>{
   sheet(`<h2>Import backup</h2><p class="meta" style="margin:0 0 12px">Choose how to import it.</p><div class="row" style="gap:10px;margin-top:16px"><button class="btn" id="impMerge" style="flex:1">Merge with my current data</button></div><p class="meta" style="margin:8px 0 0">Merge can bring back items deleted on this device (known limitation).</p><div class="row" style="gap:10px;margin-top:10px"><button class="btn ghost" id="impReplace" style="flex:1">Replace my current data</button><button class="btn ghost" id="impCancel" style="flex:1">Cancel</button></div>`);
   $('#impCancel').onclick=()=>sheet();
   $('#impMerge').onclick=()=>{backupLocal();D=mergeDocs(D,doc);save();sheet();shell();toast('Backup imported')};
   $('#impReplace').onclick=()=>{
-   sheet(`<h2>Replace my current data?</h2><p class="meta" style="margin:0 0 12px">This replaces everything on this phone with the backup. A safety copy is saved first.</p><div class="row" style="gap:10px;margin-top:16px"><button class="btn ghost" id="repNo" style="flex:1">Cancel</button><button class="btn pink" id="repGo" style="flex:1">Replace</button></div>`);
+   sheet(`<h2>Replace my current data?</h2><p class="meta" style="margin:0 0 12px">This replaces everything on this phone with the backup. A safety copy is saved first; you can restore it from Settings, Your data.</p><div class="row" style="gap:10px;margin-top:16px"><button class="btn ghost" id="repNo" style="flex:1">Cancel</button><button class="btn pink" id="repGo" style="flex:1">Replace</button></div>`);
    $('#repNo').onclick=()=>sheet();
    $('#repGo').onclick=()=>{backupLocal();D=Object.assign(blank(),doc);save();sheet();shell();toast('Backup imported')};
   };
  };
- $('#impText').oninput=()=>{
+ const processImportText=()=>{
   const t=$('#impText').value.trim(),er=$('#impErr');er.textContent='';
   let obj;
   try{obj=JSON.parse(t)}catch(e){er.textContent='That file is not valid JSON.';return}
   const res=validateBackup(obj);
   if(!res.ok){er.textContent=res.error;return}
   finish(res.doc);
+ };
+ $('#impText').oninput=processImportText;
+}
+function restoreSafetyCopy(){
+ const m=user||(sbUser&&sbUser.email&&sbUser.email.toLowerCase());
+ if(!m)return;
+ const bk=()=>{try{return JSON.parse(ST.get('bloom_backup_'+m))}catch(e){return null}};
+ const snap=bk();
+ if(!isPlainObject(snap)){toast('No safety copy found');return}
+ const when=(typeof snap.savedAt==='number'&&isFinite(snap.savedAt))?new Date(snap.savedAt).toLocaleDateString():'an earlier time';
+ sheet(`<h2>Restore last safety copy</h2><p class="meta" style="margin:0 0 12px">Saved ${E(when)}.</p><p class="meta" style="margin:0 0 12px">This replaces your current data with the saved copy.</p><div class="row" style="gap:10px;margin-top:16px"><button class="btn ghost" id="rsNo" style="flex:1">Cancel</button><button class="btn pink" id="rsGo" style="flex:1">Restore</button></div>`);
+ $('#rsNo').onclick=()=>sheet();
+ $('#rsGo').onclick=()=>{
+  let doc=null;try{doc=JSON.parse(ST.get('bloom_backup_'+m))}catch(e){}
+  if(!isPlainObject(doc)){toast('No safety copy found');return}
+  const res=validateBackup(makeBackup(doc));
+  if(!res.ok){toast(res.error);return}
+  D=Object.assign(blank(),res.doc);
+  save();sheet();shell();toast('Restored');
  };
 }
 function deleteAccountSheet(){
@@ -2680,6 +2708,10 @@ function changePasswordSheet(){
 function settingsPage(){
  const cur=currentAccountType();
  const nm=RO?(ST.get('bloom_pname')||''):((D&&D.p&&D.p.name)||'');
+ const bkMail=user||(sbUser&&sbUser.email&&sbUser.email.toLowerCase());
+ let bkOk=false;
+ if(!RO&&bkMail){try{bkOk=isPlainObject(JSON.parse(ST.get('bloom_backup_'+bkMail)))}catch(e){bkOk=false}}
+ const bkRestore=bkOk?'<button class="btn ghost" id="sRestore" style="width:100%">Restore last safety copy</button>':'';
  $('#main').innerHTML=`<button class="btn ghost sm" id="bk" style="margin-bottom:10px">‹ Back</button><h1>Settings</h1>
  <div class="card">
   <div class="card-h"><h3>Name</h3></div>
@@ -2701,7 +2733,7 @@ function settingsPage(){
     ${RO?'<p class="meta" style="margin:10px 0 0">To use Bloom for yourself, exit the partner’s view.</p>':''}
    </div>
    <div class="card"><div class="card-h"><h3>Sync</h3></div><p class="meta" id="syncLine" style="margin:0 0 10px">${E(syncLineText())}</p><div class="row" style="gap:10px"><button class="btn ghost" id="syncNow" style="flex:1">Sync now</button><button class="btn ghost" id="syncCopy" style="flex:1">Copy diagnostics</button></div></div>
-    ${RO?'':'<div class="card"><div class="card-h"><h3>Your data</h3></div><p class="meta" style="margin:0 0 10px">Erase all your logs, meals, tasks and journal from this phone and the cloud. Your partner loses access. Your sign-in account itself is not deleted.</p><button class="btn pink" id="sDel" style="width:100%">Delete all my data</button><button class="btn ghost" id="sDelAcct" style="width:100%">Delete my account</button><button class="btn ghost" id="sExp" style="width:100%">Export backup</button><button class="btn ghost" id="sImp" style="width:100%">Import backup</button></div>'}
+    ${RO?'':'<div class="card"><div class="card-h"><h3>Your data</h3></div><p class="meta" style="margin:0 0 10px">Erase all your logs, meals, tasks and journal from this phone and the cloud. Your partner loses access. Your sign-in account itself is not deleted.</p><button class="btn pink" id="sDel" style="width:100%">Delete all my data</button><button class="btn ghost" id="sDelAcct" style="width:100%">Delete my account</button><button class="btn ghost" id="sExp" style="width:100%">Export backup</button><button class="btn ghost" id="sImp" style="width:100%">Import backup</button>'+bkRestore+'</div>'}
    <div class="card"><div class="card-h"><h3>App</h3><span class="meta" id="appVer">\u2014</span></div><button class="btn ghost" id="chkUp" style="width:100%">Check for updates</button></div>`;
  $('#bk').onclick=()=>{view='me';shell()};
  $('#sChg').onclick=()=>changeNameSheet(nm,async v=>{
@@ -2722,6 +2754,7 @@ function settingsPage(){
    if(document.getElementById('sDelAcct'))$('#sDelAcct').onclick=deleteAccountSheet;
    if(document.getElementById('sExp'))$('#sExp').onclick=exportBackup;
    if(document.getElementById('sImp'))$('#sImp').onclick=importBackup;
+   if(document.getElementById('sRestore'))$('#sRestore').onclick=restoreSafetyCopy;
     document.querySelectorAll('[data-role]').forEach(b=>b.onclick=()=>setAccountType(b.dataset.role));
    if(document.getElementById('syncNow'))$('#syncNow').onclick=()=>{sbPush();setTimeout(updateSyncLine,200)};
    if(document.getElementById('syncCopy'))$('#syncCopy').onclick=async()=>{const txt='sync: '+syncLineText()+'\nrev: '+sbRev+'\nfails: '+SYNC.fails+'\nlast: '+(SYNC.last?new Date(SYNC.last).toISOString():'none')+'\nlogs:\n'+errLog().map(e=>new Date(e.t).toISOString()+' ['+e.ctx+'] '+e.msg).join('\n');try{await navigator.clipboard.writeText(txt);toast('Copied')}catch(e){toast('Copy failed')}};
