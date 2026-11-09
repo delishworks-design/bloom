@@ -1,7 +1,7 @@
 {
-    "versionCode": 55,
-    "versionName": "1.2.40",
-    "notes": "New 'Check your email' signup step with resend, recovery for unconfirmed logins, and smoother backup import/export.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.40/bloom-1.2.40.apk",
+    "versionCode": 56,
+    "versionName": "1.2.41",
+    "notes": "Reminder no longer opens Alarms & reminders by itself; Delete my account moved into Settings for partner accounts.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.41/bloom-1.2.41.apk",
     "publishedAt": "2026-11-09"
 }
