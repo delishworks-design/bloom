@@ -228,6 +228,35 @@ test('custom symptom rates count only custom symptom observations', () => {
   assert.match(patterns[0].text, /5 of 5 luteal-phase days with symptom fields recorded, compared with 1 of 5/);
 });
 
+test('overlapping symptom sources require every relevant source to be recorded', () => {
+  const logs = {
+    '2026-01-01': { tags: ['Bloating'], customSx: ['Bloating'] },
+    '2026-01-02': { tags: [], customSx: [] },
+    '2026-01-03': { tags: [], customSx: [] },
+    '2026-01-04': { tags: [], customSx: [] },
+    '2026-01-05': { tags: [], customSx: [] },
+    '2026-01-06': { tags: [], customSx: [] },
+    '2026-01-07': { tags: ['Bloating'] },
+    '2026-01-08': { customSx: ['Bloating'] },
+    '2026-01-17': { tags: ['Bloating'], customSx: ['Bloating'] },
+    '2026-01-18': { tags: ['Bloating'], customSx: ['Bloating'] },
+    '2026-01-19': { tags: ['Bloating'], customSx: ['Bloating'] },
+    '2026-01-20': { tags: ['Bloating'], customSx: ['Bloating'] },
+    '2026-01-21': { tags: ['Bloating'], customSx: ['Bloating'] },
+    '2026-01-22': { tags: [], customSx: [] },
+    '2026-01-23': { tags: ['Bloating'] },
+    '2026-01-24': { tags: [] },
+    '2026-01-25': { customSx: ['Bloating'] },
+    '2026-01-26': { customSx: [] }
+  };
+  const patterns = smartPatternsFromLogs(logs, ['2026-01-01', '2026-01-29']);
+
+  assert.equal(patterns.length, 1);
+  assert.equal(patterns[0].type, 'symptom-phase');
+  assert.equal(patterns[0].count, 10);
+  assert.match(patterns[0].text, /5 of 6 luteal-phase days with symptom fields recorded, compared with 1 of 6/);
+});
+
 test('historical dates use their own cycle context', () => {
   assert.equal(smartHistoricalPhaseFor('2026-01-10', starts).phase, 'Follicular');
   assert.equal(smartHistoricalPhaseFor('2026-01-21', starts).phase, 'Luteal');

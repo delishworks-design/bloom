@@ -2100,7 +2100,7 @@ function smartPatternsFromLogs(logs,startDates){
   const sources=symptomSources[symptom]||{};
   let lutealDays=0,nonLutealDays=0,presentLuteal=0,presentNonLuteal=0;
   histRows.forEach(({log,hist})=>{
-   const observed=(sources.tags&&Array.isArray(log.tags))||(sources.customSx&&Array.isArray(log.customSx));
+   const observed=(sources.tags||sources.customSx)&&(!sources.tags||Array.isArray(log.tags))&&(!sources.customSx||Array.isArray(log.customSx));
    if(!observed)return;
    const present=spSymptomNames(log).includes(symptom);
    if(hist.phase==='Luteal'){lutealDays++;if(present)presentLuteal++}
