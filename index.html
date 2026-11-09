@@ -983,12 +983,10 @@ function roPage(){
   </div>
  <div class="card"><div class="card-h"><h3>Following</h3></div><div class="row" style="gap:12px;align-items:center">${avatarHTML(56)}<div style="min-width:0"><b style="display:block">${E((D.p&&D.p.name)||'partner')}</b></div></div><button class="btn ghost" id="exv" style="width:100%;margin-top:14px">Exit ${E((D.p&&D.p.name)||'partner')}'s view</button></div>
    <div class="card"><button class="btn ghost" id="stg" style="width:100%">Settings</button></div>
-   <div class="card"><button class="btn ghost" id="delAcct" style="width:100%">Delete my account</button></div>
    <button class="btn ghost" id="lo" style="width:100%">Sign out</button>
 <p class="meta" style="margin-top:8px;text-align:center">Signing out keeps this pairing. Their data stays untouched.</p>`;
   $('#exv').onclick=exitPartner;
   $('#stg').onclick=()=>{view='settings';shell()};
-  if(document.getElementById('delAcct'))$('#delAcct').onclick=deleteAccountSheet;
   $('#rpav').onchange=e=>{const f=e.target.files&&e.target.files[0];e.target.value='';if(f)roPickAvatar(f)};
   $('#lo').onclick=logout;}
 
@@ -2778,7 +2776,7 @@ function settingsPage(){
     ${RO?'<p class="meta" style="margin:10px 0 0">To use Bloom for yourself, exit the partner’s view.</p>':''}
    </div>
    <div class="card"><div class="card-h"><h3>Sync</h3></div><p class="meta" id="syncLine" style="margin:0 0 10px">${E(syncLineText())}</p><div class="row" style="gap:10px"><button class="btn ghost" id="syncNow" style="flex:1">Sync now</button><button class="btn ghost" id="syncCopy" style="flex:1">Copy diagnostics</button></div></div>
-    ${RO?'':'<div class="card"><div class="card-h"><h3>Your data</h3></div><p class="meta" style="margin:0 0 10px">Erase all your logs, meals, tasks and journal from this phone and the cloud. Your partner loses access. Your sign-in account itself is not deleted.</p><button class="btn pink" id="sDel" style="width:100%">Delete all my data</button><button class="btn ghost" id="sDelAcct" style="width:100%">Delete my account</button><button class="btn ghost" id="sExp" style="width:100%">Export backup</button><button class="btn ghost" id="sImp" style="width:100%">Import backup</button>'+bkRestore+'</div>'}
+    ${RO?'<div class="card"><div class="card-h"><h3>Your data</h3></div><p class="meta" style="margin:0 0 10px">Delete your sign-in account and your profile copy. The person you follow keeps everything.</p><button class="btn pink" id="sDelAcct" style="width:100%">Delete my account</button></div>':'<div class="card"><div class="card-h"><h3>Your data</h3></div><p class="meta" style="margin:0 0 10px">Erase all your logs, meals, tasks and journal from this phone and the cloud. Your partner loses access. Your sign-in account itself is not deleted.</p><button class="btn pink" id="sDel" style="width:100%">Delete all my data</button><button class="btn ghost" id="sDelAcct" style="width:100%">Delete my account</button><button class="btn ghost" id="sExp" style="width:100%">Export backup</button><button class="btn ghost" id="sImp" style="width:100%">Import backup</button>'+bkRestore+'</div>'}
    <div class="card"><div class="card-h"><h3>App</h3><span class="meta" id="appVer">\u2014</span></div><button class="btn ghost" id="chkUp" style="width:100%">Check for updates</button></div>`;
  $('#bk').onclick=()=>{view='me';shell()};
  $('#sChg').onclick=()=>changeNameSheet(nm,async v=>{
