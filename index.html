@@ -885,7 +885,7 @@ async function sbSignIn(email,pw){await sbInit();if(!sb)return 'offline';
 async function sbSignUp(email,pw){await sbInit();if(!sb)return 'offline';
  const {error}=await sb.auth.signUp({email:email.trim(),password:pw});
  if(error)return error.message;const {data}=await sb.auth.getSession();
- if(data.session)await sbAfterLogin(data.session.user);else toast('Check your email to confirm');return null}
+ if(data.session)await sbAfterLogin(data.session.user);else return 'confirm_pending';return null}
 // ---------- storage
 const key=u=>'bloom_d_'+u;
 const blank=()=>({p:{},logs:{},tasks:[],done:{},meals:{},journal:[],plan:{},games:{},cons:true,rem:{on:false,time:'20:00'}});
@@ -1058,6 +1058,7 @@ async function redeemCode(code,onErr){
  if(!Object.keys(D.logs||{}).length)toast('No logs shared yet');
  return true
 }
+let authPrefill='';
 function authView(mode){mode=mode||'in';try{fabSync()}catch(e){}document.body.classList.remove('ro');
  const up=mode=='up';
  const pwBlock=(id,label,ac)=>`<div class="field" id="f-${id}">
@@ -1085,6 +1086,7 @@ function authView(mode){mode=mode||'in';try{fabSync()}catch(e){}document.body.cl
  $('#sw').onclick=()=>authView(up?'in':'up');
  const fg=document.getElementById('fg');if(fg)fg.onclick=forgotPasswordSheet;
  const g=id=>document.getElementById(id);
+ if(authPrefill){const u0=g('u');if(u0)u0.value=authPrefill;authPrefill=''}
  const setFieldErr=(id,msg)=>{const w=g('f-'+id),h=g('e-'+id);if(!w)return;w.classList.toggle('invalid',!!msg);h.textContent=msg||''};
  const formErr=msg=>{const e=g('err');e.textContent=msg||'';e.classList.toggle('on',!!msg)};
  document.querySelectorAll('.reveal').forEach(b=>{
@@ -1112,11 +1114,55 @@ function authView(mode){mode=mode||'in';try{fabSync()}catch(e){}document.body.cl
    const client=await sbInit();
    if(!client){formErr(!window.supabase?'Still starting up \u2014 try again in a moment.':'Could not start the cloud service. Restart the app.');return}
    const e=up?await sbSignUp(u,pw):await sbSignIn(u,pw);
-   if(e)formErr(errText(e));
+   if(e==='confirm_pending'){showCheckEmail(u);return}
+   else if(e&&/Email not confirmed/i.test(String(e))){showCheckEmail(u);return}
+   else if(e)formErr(errText(e));
   }catch(err){formErr(errText(err))}
   finally{busy=false;btn.disabled=false;btn.textContent=up?'Create account':'Log in'}
  };
  $('#authForm').addEventListener('submit',e=>{e.preventDefault();sub()});
+}
+function showCheckEmail(email){
+ const mail=String(email||'');authPrefill=mail;
+ let sends=0,coolUntil=0;
+ $('#app').innerHTML=`<div class="auth"><div class="card">
+  <div class="auth-head"><div class="brand">Bloom</div>
+   <h2>Check your email</h2>
+   <p class="lede">We sent a confirmation link to <b>${E(mail)}</b>. Open it, then come back here and log in. If you don\u2019t see it, check your spam folder.</p></div>
+  <div class="err" id="ceErr" role="alert"></div>
+  <button class="btn" id="ceGo" style="width:100%">I\u2019ve confirmed, log in</button>
+  <button class="btn ghost" id="ceResend" style="width:100%;margin-top:10px">Resend email</button>
+  <p class="note" style="margin:14px 0 0">Already have an account? Log in, or use Forgot password.</p>
+  <p class="switch" style="text-align:center;margin:8px 0 0"><button type="button" class="link" id="ceDiff">Use a different email</button></p>
+ </div></div>`;
+ $('#ceGo').onclick=()=>authView('in');
+ $('#ceDiff').onclick=()=>authView('up');
+ const rb=$('#ceResend'),er=$('#ceErr');
+ const tick=()=>{
+  const ms=coolUntil-Date.now();
+  if(ms>0){rb.disabled=true;rb.textContent='Resend available in '+Math.ceil(ms/1000)+'s'}
+  else if(sends>=5){rb.disabled=true;rb.textContent='Resend limit reached'}
+  else{rb.disabled=false;rb.textContent='Resend email'}
+ };
+ tick();
+ const iv=setInterval(tick,1000);
+ rb.onclick=async()=>{
+  if(sends>=5){er.textContent='Resend limit reached.';return}
+  if(Date.now()<coolUntil){er.textContent='Wait a moment before sending again.';return}
+  er.textContent='';rb.disabled=true;rb.textContent='Sending\u2026';
+  try{
+   const cl=await sbInit();
+   if(!cl){er.textContent='Could not start the cloud service.';return}
+   const {error}=await cl.auth.resend({type:'signup',email:mail});
+   if(error){er.textContent=errText(error.message||error);return}
+   sends++;coolUntil=Date.now()+60000;
+   er.textContent='Email sent. Check your inbox and spam.';
+  }catch(e){er.textContent=errText(e&&e.message||e)}
+  finally{
+   if(sends>=5)clearInterval(iv);
+   tick();
+  }
+ };
 }
 function forgotPasswordSheet(){
  let sends=0,cooldownUntil=0;
