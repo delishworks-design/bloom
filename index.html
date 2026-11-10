@@ -1977,17 +1977,6 @@ ${wk?`<div class="divider"></div>`+wk.map((r,i)=>`<div class="kv"><span>Day ${i+
  if(!RO)$('#gw').onclick=()=>{D.p.bud=+$('#bd').value||0;const b=D.p.bud||999;const pk=t=>{const p=MEALS.filter(x=>x.t==t&&x.c<=b);return p.length?p:MEALS.filter(x=>x.t==t)};
   D.plan.week=[...Array(7)].map((_,i)=>['b','l','d','s'].map(t=>{const p=pk(t);return p[(i+Math.floor(Math.random()*p.length))%p.length]}));save();pMeals()}}
 function pJournal(){if(RO)return;const J=D.journal||[];
- const entryCard=(j)=>`<div class="card" style="gap:8px">
-  ${j.pinned?'<div class="meta" style="color:var(--rose);font-weight:700">Pinned</div>':''}
-  <div class="meta">${fmt(j.d,{weekday:'short',month:'short',day:'numeric',year:'numeric'})}${j.tags&&j.tags.length?' \u00b7 '+j.tags.map(E).join(', '):''}</div>
-  ${j.title?`<h3 style="margin:0;font-size:1.05rem">${E(j.title)}</h3>`:''}
-  <p style="white-space:pre-wrap;margin:0;line-height:1.6">${E(j.t)}</p>
-  <div class="row" style="gap:8px;margin-top:6px">
-   <button class="btn ghost sm" data-e="${j.id}">Edit</button>
-   <button class="btn ghost sm" data-pin="${j.id}">${j.pinned?'Unpin':'Pin'}</button>
-   <button class="btn ghost sm" data-x="${j.id}">Delete</button>
-  </div>
- </div>`;
  const prompts=['What\u2019s been weighing on your heart?','What do you wish someone understood about you?','Is there something you need to let out?','What do you need right now?','Write about something you haven\u2019t said out loud.'];
  const promptHtml=prompts.map((p,i)=>`<button class="chip" data-pr="${i}" style="text-align:left;white-space:normal">${E(p)}</button>`).join('');
  $('#pb').innerHTML=`<div class="card" style="gap:10px">
