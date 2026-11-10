@@ -1,7 +1,7 @@
 {
-    "versionCode": 55,
-    "versionName": "1.2.40",
-    "notes": "Sign in with Google, in-app updates, backup/restore, partner privacy, safe sync, and easier Learn articles.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.40/bloom-1.2.40.apk",
+    "versionCode": 64,
+    "versionName": "1.2.49",
+    "notes": "Continue with Google sign-in (web and Android), plus previous fixes and improvements.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.49/bloom-1.2.49.apk",
     "publishedAt": "2026-11-10"
 }
