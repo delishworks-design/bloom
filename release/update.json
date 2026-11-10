@@ -1,7 +1,7 @@
 {
-    "versionCode": 60,
-    "versionName": "1.2.45",
-    "notes": "Pass 1 Tabler Outline icon system for navigation, dashboard, and common controls; standardized stroke width.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.45/bloom-1.2.45.apk",
-    "publishedAt": "2026-11-09"
+    "versionCode": 61,
+    "versionName": "1.2.46",
+    "notes": "Fix missing and inconsistent icons; Tabler Outline icon set completed.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.46/bloom-1.2.46.apk",
+    "publishedAt": "2026-11-10"
 }
