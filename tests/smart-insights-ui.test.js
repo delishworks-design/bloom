@@ -41,19 +41,18 @@ function predictedState(overdue = false) {
   };
 }
 
-test('predicted Smart Insights renders a prominent range and timeline', () => {
+test('Smart Insights no longer duplicates the Cycle page (no next-period or phase cards)', () => {
   const { smartInsightsHTML } = renderContext();
   const current = { state: 'due-today', phase: null, phaseLabel: null, cycleDay: null, cycleLength: null, confidence: 'Limited history', predictedDate: '2026-04-23' };
   const html = smartInsightsHTML(predictedState(), current, [], 'Alex');
 
   assert.match(html, /Smart Insights/);
-  assert.match(html, /Next period/);
-  assert.match(html, /Apr 20, 2026 – Apr 30, 2026/);
-  assert.match(html, /smart-timeline/);
-  assert.match(html, /Estimated cycle/);
-  assert.match(html, /Limited history/);
+  assert.match(html, /Personal patterns/);
   assert.match(html, /How to read these insights/);
   assert.match(html, /Bloom does not diagnose medical conditions\./);
+  assert.ok(!/Next period/.test(html));
+  assert.ok(!/Cycle phase/.test(html));
+  assert.ok(!/smart-timeline/.test(html));
 });
 
 test('empty Smart Insights states never invent facts', () => {
@@ -73,25 +72,11 @@ test('empty Smart Insights states never invent facts', () => {
   const current = { state: 'single-start', phase: null, phaseLabel: null, cycleDay: null, cycleLength: null, confidence: 'Insufficient data' };
   const html = smartInsightsHTML(pred, current, []);
 
-  assert.match(html, /One recorded start/);
-  assert.match(html, /Not available yet/);
   assert.match(html, /No patterns yet/);
   assert.ok(!/\bundefined\b|\bNaN\b|<img|<script|http:\/\/|https:\/\//i.test(html));
 });
 
-test('overdue Smart Insights shows the passed date without a new cycle', () => {
-  const { smartInsightsHTML } = renderContext();
-  const pred = predictedState(true);
-  const current = { state: 'overdue', phase: null, phaseLabel: null, cycleDay: null, cycleLength: 28, confidence: 'Limited history', predictedDate: pred.expected };
-  const html = smartInsightsHTML(pred, current, []);
-
-  assert.match(html, /Expected date passed/);
-  assert.match(html, /Apr 23, 2026/);
-  assert.match(html, /Expected date passed/);
-  assert.ok(!/Day 1/.test(html));
-});
-
-test('current estimated phase renders a circular visualization and pattern items', () => {
+test('pattern items render with their observation count', () => {
   const { smartInsightsHTML } = renderContext();
   const current = {
     state: 'estimated',
@@ -109,9 +94,6 @@ test('current estimated phase renders a circular visualization and pattern items
   }];
   const html = smartInsightsHTML(predictedState(), current, patterns, 'Alex');
 
-  assert.match(html, /Day 12 of 28/);
-  assert.match(html, /Follicular phase/);
-  assert.match(html, /role="img" aria-label="Current cycle phase/);
   assert.match(html, /Sleep and energy/);
   assert.match(html, /Based on 3 observations/);
 });

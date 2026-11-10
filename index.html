@@ -2351,12 +2351,10 @@ function smartInsightsHTML(pred,current,patterns,viewerName){
   <div class="smart-hero-copy">
    <div class="smart-eyebrow">Smart insights</div>
    <h2 class="smart-title">Smart Insights</h2>
-   <p class="smart-subtitle">Your cycle, at a glance.</p>
+   <p class="smart-subtitle">Patterns from your daily logs.</p>
   </div>
   <div class="smart-hero-art">${smartArt('insight')}</div>
  </header>
- <section class="smart-section" aria-labelledby="smart-prediction-title"><h3 class="smart-kicker" id="smart-prediction-title">Next period</h3>${smartPredictionHTML(pred)}</section>
- <section class="smart-section" aria-labelledby="smart-cycle-title"><h3 class="smart-kicker" id="smart-cycle-title">Cycle phase</h3>${smartCurrentCycleHTML(current,pred)}</section>
  <section class="smart-section" aria-labelledby="smart-patterns-title"><h3 class="smart-kicker" id="smart-patterns-title">Personal patterns</h3>${smartPatternsHTML(patterns)}</section>
  <section class="smart-section smart-transparency" aria-labelledby="smart-transparency-title"><div class="smart-icon">${smartArt('info')}</div><div><h3 class="smart-state-title" id="smart-transparency-title">How to read these insights</h3><p class="smart-copy">These are local estimates from recorded information. Consistent tracking may reveal more patterns. Bloom does not diagnose medical conditions.</p></div></section>`;
 }
