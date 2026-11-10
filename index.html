@@ -1976,10 +1976,7 @@ ${wk?`<div class="divider"></div>`+wk.map((r,i)=>`<div class="kv"><span>Day ${i+
  if(foodTimer)clearInterval(foodTimer);foodTimer=setInterval(()=>{foodPos=(foodPos+1)%foodQueue().length;paintFood()},10000);
  if(!RO)$('#gw').onclick=()=>{D.p.bud=+$('#bd').value||0;const b=D.p.bud||999;const pk=t=>{const p=MEALS.filter(x=>x.t==t&&x.c<=b);return p.length?p:MEALS.filter(x=>x.t==t)};
   D.plan.week=[...Array(7)].map((_,i)=>['b','l','d','s'].map(t=>{const p=pk(t);return p[(i+Math.floor(Math.random()*p.length))%p.length]}));save();pMeals()}}
-function pJournal(){if(RO)return;const J=D.journal||[];const q=(window.journalSearch||'').trim().toLowerCase();
- const filtered=J.filter(j=>{if(!q)return true;const title=(j.title||'').toLowerCase(),body=(j.t||'').toLowerCase();return title.includes(q)||body.includes(q)});
- const pinned=filtered.filter(j=>j.pinned).sort((a,b)=>(b.d||'').localeCompare(a.d||''));
- const rest=filtered.filter(j=>!j.pinned).sort((a,b)=>(b.d||'').localeCompare(a.d||''));
+function pJournal(){if(RO)return;const J=D.journal||[];
  const entryCard=(j)=>`<div class="card" style="gap:8px">
   ${j.pinned?'<div class="meta" style="color:var(--rose);font-weight:700">Pinned</div>':''}
   <div class="meta">${fmt(j.d,{weekday:'short',month:'short',day:'numeric',year:'numeric'})}${j.tags&&j.tags.length?' \u00b7 '+j.tags.map(E).join(', '):''}</div>
@@ -1996,7 +1993,7 @@ function pJournal(){if(RO)return;const J=D.journal||[];const q=(window.journalSe
  $('#pb').innerHTML=`<div class="card" style="gap:10px">
   <h2 style="margin:0;font-size:1.35rem">Journal</h2>
   <p class="meta" style="margin:0">Your space, your pace.</p>
-  <label for="jt" class="lbl" style="margin-top:8px">Title (optional)</label>
+  <label for="jtTitle" class="lbl" style="margin-top:8px">Title (optional)</label>
   <input id="jtTitle" maxlength="80" placeholder="Optional title">
   <label for="jt" class="lbl">Entry</label>
   <textarea id="jt" rows="4" placeholder="Write something..."></textarea>
@@ -2012,19 +2009,43 @@ function pJournal(){if(RO)return;const J=D.journal||[];const q=(window.journalSe
   <label for="jsrch" class="lbl" style="margin:0">Search</label>
   <input id="jsrch" type="search" placeholder="Search title or content" value="${E(window.journalSearch||'')}">
  </div>
- ${pinned.length?`<div class="lbl" style="margin:8px 0 4px">Pinned</div>`+pinned.map(entryCard).join(''):''}
- ${rest.length?`<div class="lbl" style="margin:8px 0 4px">${pinned.length?'Entries':'Entries'}</div>`+rest.map(entryCard).join(''):`<p class="meta" style="text-align:center;padding:18px">No entries yet. Write something above.</p>`}`;
+ <div id="jEntries"></div>`;
  growAll($('#pb'));
  const srch=document.getElementById('jsrch');
- if(srch)srch.oninput=e=>{window.journalSearch=e.target.value;pJournal()};
+ if(srch){srch.oninput=e=>{window.journalSearch=e.target.value;renderJournalEntries()}}
  document.querySelectorAll('[data-pr]').forEach(b=>b.onclick=()=>{
   const p=prompts[+b.dataset.pr];const ta=document.getElementById('jt');if(ta){ta.value=(ta.value?ta.value+'\n\n':'')+p+'\n';ta.focus();growAll($('#pb'))}});
  $('#js').onclick=()=>{
   const t=$('#jt').value.trim();if(!t)return $('#er').textContent='Write something first.';
   const title=$('#jtTitle').value.trim();const tags=$('#jtTags').value.split(',').map(s=>s.trim()).filter(Boolean).slice(0,8);
-  D.journal=D.journal||[];D.journal.push({id:uid(),d:today(),t,title:title||undefined,tags:tags.length?tags:undefined});save();window.journalSearch='';pJournal()};
- document.querySelectorAll('[data-x]').forEach(b=>b.onclick=()=>{if(confirm('Delete this entry?')){D.journal=(D.journal||[]).filter(j=>j.id!=b.dataset.x);save();pJournal()}});
- document.querySelectorAll('[data-pin]').forEach(b=>b.onclick=()=>{const j=(D.journal||[]).find(x=>x.id==b.dataset.pin);if(j){j.pinned=!j.pinned;save();pJournal()}});
+  D.journal=D.journal||[];D.journal.push({id:uid(),d:today(),t,title:title||undefined,tags:tags.length?tags:undefined});save();window.journalSearch='';if(srch)srch.value='';pJournal()};
+ bindJournalEntries();
+ renderJournalEntries()}
+function renderJournalEntries(){const J=D.journal||[];const q=(window.journalSearch||'').trim().toLowerCase();
+ const filtered=J.filter(j=>{if(!q)return true;const title=(j.title||'').toLowerCase(),body=(j.t||'').toLowerCase();return title.includes(q)||body.includes(q)});
+ const pinned=filtered.filter(j=>j.pinned).sort((a,b)=>(b.d||'').localeCompare(a.d||''));
+ const rest=filtered.filter(j=>!j.pinned).sort((a,b)=>(b.d||'').localeCompare(a.d||''));
+ const entryCard=(j)=>`<div class="card" style="gap:8px">
+  ${j.pinned?'<div class="meta" style="color:var(--rose);font-weight:700">Pinned</div>':''}
+  <div class="meta">${fmt(j.d,{weekday:'short',month:'short',day:'numeric',year:'numeric'})}${j.tags&&j.tags.length?' \u00b7 '+j.tags.map(E).join(', '):''}</div>
+  ${j.title?`<h3 style="margin:0;font-size:1.05rem">${E(j.title)}</h3>`:''}
+  <p style="white-space:pre-wrap;margin:0;line-height:1.6">${E(j.t)}</p>
+  <div class="row" style="gap:8px;margin-top:6px">
+   <button class="btn ghost sm" data-e="${j.id}">Edit</button>
+   <button class="btn ghost sm" data-pin="${j.id}">${j.pinned?'Unpin':'Pin'}</button>
+   <button class="btn ghost sm" data-x="${j.id}">Delete</button>
+  </div>
+ </div>`;
+ const el=document.getElementById('jEntries');if(!el)return;
+ const hasEntries=J.length>0;
+ if(!hasEntries){el.innerHTML='<p class="meta" style="text-align:center;padding:18px">No entries yet. Write something above.</p>';bindJournalEntries();return}
+ if(!filtered.length){el.innerHTML='<p class="meta" style="text-align:center;padding:18px">No matching entries found.</p>';bindJournalEntries();return}
+ el.innerHTML=(pinned.length?`<div class="lbl" style="margin:8px 0 4px">Pinned</div>`+pinned.map(entryCard).join(''):'')+
+  (rest.length?`<div class="lbl" style="margin:8px 0 4px">Entries</div>`+rest.map(entryCard).join(''):'');
+ bindJournalEntries()}
+function bindJournalEntries(){
+ document.querySelectorAll('[data-x]').forEach(b=>b.onclick=()=>{if(confirm('Delete this entry?')){D.journal=(D.journal||[]).filter(j=>j.id!=b.dataset.x);save();renderJournalEntries()}});
+ document.querySelectorAll('[data-pin]').forEach(b=>b.onclick=()=>{const j=(D.journal||[]).find(x=>x.id==b.dataset.pin);if(j){j.pinned=!j.pinned;save();renderJournalEntries()}});
  document.querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>{
   const j=(D.journal||[]).find(x=>x.id==b.dataset.e);
   sheet(`<h2>Edit entry</h2>
@@ -2038,7 +2059,7 @@ function pJournal(){if(RO)return;const J=D.journal||[];const q=(window.journalSe
    const v=$('#et').value.trim();if(!v)return;
    j.t=v;j.title=$('#etTitle').value.trim()||undefined;
    const tags=$('#etTags').value.split(',').map(s=>s.trim()).filter(Boolean).slice(0,8);
-   j.tags=tags.length?tags:undefined;save();sheet();pJournal()}})}
+   j.tags=tags.length?tags:undefined;save();sheet();renderJournalEntries()}})}
 // ---------- avatar
 function avatarHTML(size){const s=size||38,ini=(D.p.name||user||'G').trim().charAt(0).toUpperCase();
  if(!D.p.avatar)return `<span class="avatar-fb" style="width:${s}px;height:${s}px;font-size:${Math.round(s*0.42)}px">${E(ini)}</span>`;
