@@ -2263,12 +2263,13 @@ function smartCurrentCycleNow(){
  return smartCurrentCycle(smartPrediction(),today());
 }
 function smartArt(kind){
- const attrs=`width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"`;
+ const attrs=`width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"`;
  const paths={
-  insight:`<path d="M24 11c4 0 7 3 7 7 0 3-2 5-4 6 3 1 5 4 5 7 0 4-3 7-7 7s-7-3-7-7c0-3 2-5 5-7-3-1-5-3-5-6 0-4 3-7 7-7Z" fill="currentColor" stroke="none" opacity=".18"/><path d="M24 11c4 0 7 3 7 7 0 3-2 5-4 6 3 1 5 4 5 7 0 4-3 7-7 7s-7-3-7-7c0-3 2-5 5-7-3-1-5-3-5-6 0-4 3-7 7-7Z" stroke-width="1.8"/><circle cx="24" cy="24" r="3" fill="currentColor" stroke="none"/>`,
-  calendar:`<rect x="10" y="12" width="28" height="27" rx="6"/><path d="M10 20h28M17 10v5M31 10v5"/><path d="M17 27h6M17 31h4"/>`,
-  empty:`<path d="M12 30c0-7 5-12 12-12s12 5 12 12" stroke-width="2"/><path d="M18 15l3 3 7-7" stroke-width="2.4"/>`,
-  data:`<path d="M9 34 17 26l6 4 9-11 4 5" stroke-width="2.4"/><path d="M37 14v12M37 30v.1"/>`
+  insight:`<path d="M16 18a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm0 -12a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm-7 12a6 6 0 0 1 6 -6a6 6 0 0 1 -6 -6a6 6 0 0 1 -6 6a6 6 0 0 1 6 6z" />`,
+  calendar:`<path d="M4 5m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z" /><path d="M16 3l0 4" /><path d="M8 3l0 4" /><path d="M4 11l16 0" /><path d="M8 15h2v2h-2z" />`,
+  empty:`<path d="M6 20v-2a6 6 0 1 1 12 0v2a1 1 0 0 1 -1 1h-10a1 1 0 0 1 -1 -1z" /><path d="M6 4v2a6 6 0 1 0 12 0v-2a1 1 0 0 0 -1 -1h-10a1 1 0 0 0 -1 1z" />`,
+  data:`<path d="M4 19l16 0" /><path d="M4 15l4 -6l4 2l4 -5l4 4" />`,
+  info:`<path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /><path d="M12 9h.01" /><path d="M11 12h1v4h1" />`
  };
  return `<svg ${attrs}>${paths[kind]||paths.empty}</svg>`;
 }
@@ -2291,12 +2292,12 @@ function smartTimelineHTML(p){
 }
 function smartPatternIcon(type){
  const paths={
-  'sleep-energy':'<path d="M14 9a8 8 0 1 0 9 9 10 10 0 0 1-9-9Z" fill="currentColor" stroke="none"/><path d="M30 10l1 2 2 .3-1.5 1.4.3 2-1.8-1-1.8 1 .3-2-1.5-1.4 2-.3 1-2Z" fill="currentColor" stroke="none"/>',
-  'mood-sleep':'<circle cx="12" cy="12" r="7" fill="currentColor" stroke="none" opacity=".22"/><path d="M9.5 10.2h.1M14.5 10.2h.1M9.5 13.7c1.6 1.2 3.4 1.2 5 0"/><path d="M30 8a6 6 0 1 0 7 8 8 8 0 0 1-7-8Z" fill="currentColor" stroke="none"/>',
-  'activity-energy':'<path d="M6 22c4-4 8-6 12-6 5 0 8 2 12 6" stroke-width="2.6"/><circle cx="9" cy="11" r="2.6" fill="currentColor" stroke="none"/><circle cx="33" cy="11" r="2.6" fill="currentColor" stroke="none"/><path d="M21 18c0 3-3 3-5 4" stroke-width="2.6"/>',
-  'symptom-phase':'<circle cx="10" cy="10" r="3" fill="currentColor" stroke="none"/><circle cx="27" cy="12" r="3" fill="currentColor" stroke="none"/><circle cx="19" cy="27" r="4" fill="currentColor" stroke="none"/><path d="M10 13v3M27 15v4M19 31v3"/>'
+  'sleep-energy':'<path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" /><path d="M17 4a2 2 0 0 0 2 2a2 2 0 0 0 -2 2a2 2 0 0 0 -2 -2a2 2 0 0 0 2 -2" /><path d="M19 11h2m-1 -1v2" />',
+  'mood-sleep':'<path d="M4 12h6l-6 8h6" /><path d="M14 4h6l-6 8h6" />',
+  'activity-energy':'<path d="M13 4m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /><path d="M4 17l5 1l.75 -1.5" /><path d="M15 21l0 -4l-4 -3l1 -6" /><path d="M7 12l0 -3l5 -1l3 3l3 1" />',
+  'symptom-phase':'<path d="M3 3v18h18" /><path d="M9 9m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /><path d="M19 7m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /><path d="M14 15m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /><path d="M10.16 10.62l2.34 2.88" /><path d="M15.088 13.328l2.837 -4.586" />'
  };
- return `<svg width="20" height="20" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${paths[type]||paths['symptom-phase']}</svg>`;
+ return `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${paths[type]||paths['symptom-phase']}</svg>`;
 }
 function smartEmptyState(kind,title,body){
  return `<div class="smart-empty"><div class="smart-empty-art">${smartArt(kind)}</div><div><div class="smart-state-title">${E(title)}</div><p class="smart-copy">${E(body)}</p></div></div>`;
@@ -2357,7 +2358,7 @@ function smartInsightsHTML(pred,current,patterns,viewerName){
  <section class="smart-section" aria-labelledby="smart-prediction-title"><h3 class="smart-kicker" id="smart-prediction-title">Next period</h3>${smartPredictionHTML(pred)}</section>
  <section class="smart-section" aria-labelledby="smart-cycle-title"><h3 class="smart-kicker" id="smart-cycle-title">Cycle phase</h3>${smartCurrentCycleHTML(current,pred)}</section>
  <section class="smart-section" aria-labelledby="smart-patterns-title"><h3 class="smart-kicker" id="smart-patterns-title">Personal patterns</h3>${smartPatternsHTML(patterns)}</section>
- <section class="smart-section smart-transparency" aria-labelledby="smart-transparency-title"><div class="smart-icon">${smartArt('data')}</div><div><h3 class="smart-state-title" id="smart-transparency-title">How to read these insights</h3><p class="smart-copy">These are local estimates from recorded information. Consistent tracking may reveal more patterns. Bloom does not diagnose medical conditions.</p></div></section>`;
+ <section class="smart-section smart-transparency" aria-labelledby="smart-transparency-title"><div class="smart-icon">${smartArt('info')}</div><div><h3 class="smart-state-title" id="smart-transparency-title">How to read these insights</h3><p class="smart-copy">These are local estimates from recorded information. Consistent tracking may reveal more patterns. Bloom does not diagnose medical conditions.</p></div></section>`;
 }
 // @test-end smart
 function insights(){const n=range,days=[...Array(n)].map((_,i)=>addD(today(),i-n+1)),c=cycleStats();const tg={};days.forEach(d=>(L(d).tags||[]).concat(L(d).customSx||[]).forEach(t=>tg[t]=(tg[t]||0)+1));const tk=Object.entries(tg).sort((a,b)=>b[1]-a[1]).slice(0,6),mx=tk[0]?.[1]||1;
