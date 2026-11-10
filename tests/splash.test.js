@@ -115,7 +115,9 @@ test('resume does not trigger while splash is already playing', () => {
   assert.equal(sandbox.splashPlaying, true);
 });
 
-test('repeated splashPlay calls do not overlap after completion', () => {
+test('repeated splashPlay calls do not overlap after completion', (t) => {
+  t.mock.timers.enable({ apis: ['Date'] });
+  try {
   const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
   const code = extract(html, 'splash');
   const { sandbox } = makeEnv(null);
@@ -124,7 +126,11 @@ test('repeated splashPlay calls do not overlap after completion', () => {
   sandbox.splashHide();
   assert.equal(sandbox.splashDone, true);
   const firstT0 = sandbox.splashT0;
+  t.mock.timers.tick(1000);
   sandbox.splashPlay();
   assert.notEqual(sandbox.splashT0, firstT0);
   assert.equal(sandbox.splashDone, false);
+  } finally {
+    t.mock.timers.reset();
+  }
 });
