@@ -1,7 +1,7 @@
 {
-    "versionCode": 63,
-    "versionName": "1.2.48",
-    "notes": "Remove duplicate Smart Insights cards; delete unused helper functions.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.48/bloom-1.2.48.apk",
+    "versionCode": 55,
+    "versionName": "1.2.40",
+    "notes": "Sign in with Google, in-app updates, backup/restore, partner privacy, safe sync, and easier Learn articles.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.40/bloom-1.2.40.apk",
     "publishedAt": "2026-11-10"
 }
