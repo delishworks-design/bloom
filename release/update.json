@@ -1,7 +1,7 @@
 {
-    "versionCode": 59,
-    "versionName": "1.2.44",
-    "notes": "Journal redesign with search, pins, tags, gentle prompts; Smart Insights premium redesign; cycle dashboard accuracy fixes; splash lifecycle reliability; Learn daily reading simplification.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.44/bloom-1.2.44.apk",
+    "versionCode": 60,
+    "versionName": "1.2.45",
+    "notes": "Pass 1 Tabler Outline icon system for navigation, dashboard, and common controls; standardized stroke width.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.45/bloom-1.2.45.apk",
     "publishedAt": "2026-11-09"
 }
