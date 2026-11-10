@@ -2273,23 +2273,6 @@ function smartArt(kind){
  };
  return `<svg ${attrs}>${paths[kind]||paths.empty}</svg>`;
 }
-function smartCalendarSVG(p){
- const month=new Date(`${p.rangeStart||p.expected}T12:00`).toLocaleDateString(undefined,{month:'short'});
- return `<svg width="44" height="44" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><rect x="8" y="11" width="28" height="26" rx="6"/><path d="M8 20h28M15 8v6M29 8v6"/><text x="22" y="31" text-anchor="middle" stroke="none" fill="currentColor" font-family="Playfair Display, serif" font-size="11" font-weight="700">${E(month)}</text></svg>`;
-}
-function smartDateText(date){
- return fmt(date,{month:'short',day:'numeric',year:'numeric'});
-}
-function smartTimelineHTML(p){
- const dateFmt=d=>E(smartDateText(d));
- const left=dateFmt(p.last), right=dateFmt(p.min===p.max?p.expected:p.rangeEnd);
- const rangeEnd=p.min!==p.max ? `<span>${dateFmt(p.rangeStart)}</span>` : '<span></span>';
- return `<div class="smart-timeline">
-  <div class="smart-timeline-labels"><span>Last period</span><span>${p.min===p.max?'Expected':'Expected end'}</span></div>
-  <div class="smart-timeline-line" role="img" aria-label="${E('Timeline from '+smartDateText(p.last)+' to '+smartDateText(p.min===p.max?p.expected:p.rangeEnd))}"><span class="smart-point"></span><span class="track"></span><span class="smart-point end${p.overdue?' muted':''}"></span></div>
-  <div class="smart-timeline-dates"><span>${left}</span>${rangeEnd}<span>${right}</span></div>
- </div>`;
-}
 function smartPatternIcon(type){
  const paths={
   'sleep-energy':'<path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" /><path d="M17 4a2 2 0 0 0 2 2a2 2 0 0 0 -2 2a2 2 0 0 0 -2 -2a2 2 0 0 0 2 -2" /><path d="M19 11h2m-1 -1v2" />',
@@ -2301,44 +2284,6 @@ function smartPatternIcon(type){
 }
 function smartEmptyState(kind,title,body){
  return `<div class="smart-empty"><div class="smart-empty-art">${smartArt(kind)}</div><div><div class="smart-state-title">${E(title)}</div><p class="smart-copy">${E(body)}</p></div></div>`;
-}
-function smartPredictionHTML(p){
- const span=p&&p.startCount?`Based on ${p.startCount} logged period start${p.startCount===1?'':'s'} and ${p.validCount} valid completed interval${p.validCount===1?'':'s'}.`:'';
- if(!p)return `<div class="smart-empty"><div class="smart-empty-art">${smartArt('empty')}</div><div><div class="smart-state-title">Prediction unavailable</div><p class="smart-copy">Your recorded cycle history is not available right now.</p></div></div>`;
- if(p.state==='no-history')return smartEmptyState('calendar','No estimate yet','Record your next period to build cycle history.');
- if(p.state==='single-start')return smartEmptyState('calendar','One recorded start','Log another period to compare intervals.');
- if(p.state==='limited-history')return smartEmptyState('calendar','Limited history','Bloom needs at least two valid completed cycle intervals before estimating the next period.');
- const dateTitle=p.min===p.max?smartDateText(p.expected):`${smartDateText(p.rangeStart)} – ${smartDateText(p.rangeEnd)}`;
- const confidenceNote=p.confidence ? `${p.confidence}.` : '';
- const overdueNote=p.overdue?`Your expected period date (${smartDateText(p.expected)}) has passed. This does not start a new cycle or assign a phase. If this is a concern, consider speaking with a clinician.`:p.reason;
- return `<div class="smart-prediction-head"><div class="smart-icon">${smartCalendarSVG(p)}</div><div><div class="smart-kicker">${p.min===p.max?'Expected date':'Expected range'}</div><div class="smart-date">${E(dateTitle)}</div></div></div>
- ${smartTimelineHTML(p)}
- <div class="smart-metrics">
-  <div class="smart-metric"><span>Estimated cycle</span><b>${p.avg} days</b></div>
-  <div class="smart-metric"><span>Recorded history</span><b>${p.validCount} intervals</b></div>
- </div>
- <span class="smart-confidence">${E(p.confidence)}</span>
- <p class="smart-lede">${E(span)} ${E(overdueNote)} ${E(confidenceNote)}</p>`;
-}
-function smartCycleSVG(current){
- const len=current.cycleLength,day=current.cycleDay,phases=phaseRanges(len);
- const arc=(from,to)=>{
-  const a0=-90+360*((from-1)/len),a1=-90+360*(to/len),p0=polarPt(60,60,45,a0),p1=polarPt(60,60,45,a1);
-  return `M${p0.x} ${p0.y} A45 45 0 ${a1-a0>180?1:0} 1 ${p1.x} ${p1.y}`;
- };
- const segments=phases.map(([name,from,to,color])=>`<path class="smart-cycle-segment" d="${arc(from,to)}" stroke="${color}" stroke-width="9" fill="none" stroke-linecap="round"/>`).join('');
- const mp=polarPt(60,60,45,-90+360*((day-.5)/len));
- return `<svg viewBox="0 0 120 120" role="img" aria-label="${E('Current cycle phase '+current.phaseLabel+', day '+day+' of '+len)}"><circle cx="60" cy="60" r="45" fill="#FFF7F4" stroke="#EADFD2" stroke-width="1.5"/>${segments}<circle cx="${mp.x}" cy="${mp.y}" r="6.5" fill="#fff" stroke="#B8456B" stroke-width="3"/><text class="smart-cycle-day" x="60" y="57" text-anchor="middle">Day ${day}</text><text class="smart-cycle-phase" x="60" y="73" text-anchor="middle">${E(current.phaseLabel)}</text></svg>`;
-}
-function smartCurrentCycleHTML(current,pred){
- if(current&&current.state==='estimated'){
-  return `<div class="smart-cycle-layout"><div class="smart-cycle-visual">${smartCycleSVG(current)}</div><div class="smart-cycle-copy"><div class="smart-state-title">${E(current.phaseLabel)}</div><div class="smart-cycle-day">Day ${current.cycleDay} of ${current.cycleLength}</div><p class="smart-copy">This phase is estimated from your recorded period starts. It is not a diagnosis or a confirmed ovulation time.</p><span class="smart-confidence">${E(current.confidence)}</span></div></div>`;
- }
- if(!current)return smartEmptyState('empty','Not available yet','More cycle history is needed.');
- if(current.state==='overdue')return smartEmptyState('calendar','Expected date passed',`Your expected period date (${smartDateText(pred.expected)}) has passed. Bloom does not restart the cycle or assign a new phase until a new period start is recorded.`);
- if(current.state==='due-today')return smartEmptyState('calendar','Period expected today',`Your expected period date is ${smartDateText(pred.expected)}. This remains an estimate based on your recorded history.`);
- if(current.state==='future-start')return smartEmptyState('empty','Recorded start is ahead','The latest recorded period date is in the future, so Bloom cannot estimate a current phase yet.');
- return smartEmptyState('empty','Not available yet','More cycle history is needed.');
 }
 function smartPatternsHTML(patterns){
  if(!patterns||!patterns.length)return smartEmptyState('data','No patterns yet','Keep logging your daily observations.');
