@@ -148,13 +148,13 @@ test('smartWeekTemplate pluralizes days, lowercases symptoms, avoids filler and 
 test('template is goal-led with natural sentences and no duplicate action topics', () => {
   const mod = ctx();
   const cases = [
-    ['Better sleep', { week: [{ label: 'Sleep', now: 6.4, prev: 7.6 }, { label: 'Energy', now: 2.6, prev: 3.4 }, { label: 'Stress', now: 3.8, prev: 2.4 }] }, 'No other changes worth highlighting this week.'],
-    ['Steadier energy', { week: [{ label: 'Sleep', now: 6.4, prev: 7.6 }, { label: 'Energy', now: 2.6, prev: 3.4 }, { label: 'Stress', now: 3.8, prev: 2.4 }] }, 'No other changes worth highlighting this week.'],
-    ['Manage stress', { week: [{ label: 'Sleep', now: 6.4, prev: 7.6 }, { label: 'Energy', now: 2.6, prev: 3.4 }, { label: 'Stress', now: 3.8, prev: 2.4 }] }, 'No other changes worth highlighting this week.'],
-    ['Understand my cycle', { week: [{ label: 'Sleep', now: 6.4, prev: 7.6 }, { label: 'Energy', now: 2.6, prev: 3.4 }, { label: 'Stress', now: 3.8, prev: 2.4 }] }, 'Stress increased this week.'],
-    ['Move more', { week: [{ label: 'Energy', now: 3.2, prev: 2.8 }], focus: { headline: 'Active on 2 of 7 days', metric: '2 active days', trend: '2 vs 4 the week before' } }, 'Energy increased this week.'],
-    ['Eat regularly', { week: [{ label: 'Energy', now: 3.2, prev: 2.8 }], focus: { headline: 'All three meals planned on 3 of 7 days', metric: '3 of 7 complete', trend: '3 vs 5 the week before' } }, 'Energy increased this week.'],
-    ['Prepare for doctor visits', { week: [{ label: 'Energy', now: 3.2, prev: 2.8 }], focus: { headline: 'Summary ready for your next visit', metric: '3 cycles logged', trend: '28 day average' } }, 'Energy increased this week.'],
+    ['Better sleep', { week: [{ label: 'Sleep', now: 6.4, prev: 7.6 }, { label: 'Energy', now: 2.6, prev: 3.4 }, { label: 'Stress', now: 3.8, prev: 2.4 }] }, 'Sleep averaged 6.4 h this week, decreased from 7.6.'],
+    ['Steadier energy', { week: [{ label: 'Sleep', now: 6.4, prev: 7.6 }, { label: 'Energy', now: 2.6, prev: 3.4 }, { label: 'Stress', now: 3.8, prev: 2.4 }] }, 'Energy averaged 2.6 this week, down from 3.4.'],
+    ['Manage stress', { week: [{ label: 'Sleep', now: 6.4, prev: 7.6 }, { label: 'Energy', now: 2.6, prev: 3.4 }, { label: 'Stress', now: 3.8, prev: 2.4 }] }, 'Stress averaged 3.8 this week, increased from 2.4.'],
+    ['Understand my cycle', { week: [{ label: 'Sleep', now: 6.4, prev: 7.6 }, { label: 'Energy', now: 2.6, prev: 3.4 }, { label: 'Stress', now: 3.8, prev: 2.4 }] }, 'Day 18 in Luteal phase, period in 10 days.'],
+    ['Move more', { week: [{ label: 'Energy', now: 3.2, prev: 2.8 }], focus: { headline: 'Active on 2 of 7 days', metric: '2 active days', trend: '2 vs 4 the week before' } }, 'Active on 2 of 7 days, down from 4.'],
+    ['Eat regularly', { week: [{ label: 'Energy', now: 3.2, prev: 2.8 }], focus: { headline: 'All three meals planned on 3 of 7 days', metric: '3 of 7 complete', trend: '3 vs 5 the week before' } }, 'All three meals planned on 3 of 7 days, down from 5.'],
+    ['Prepare for doctor visits', { week: [{ label: 'Energy', now: 3.2, prev: 2.8 }], focus: { headline: 'Summary ready for your next visit', metric: '3 cycles logged', trend: '28 day average' } }, 'Summary ready for your next visit.'],
   ];
   for (const [goal, extra, expectedStart] of cases) {
     const facts = baseFacts(Object.assign({ goals: [goal] }, extra));
@@ -248,4 +248,22 @@ test('deterministic copy variation is stable and bounded', () => {
   assert.ok(hist['headline:sleep'].length <= 14);
   const serialized = JSON.stringify(hist);
   assert.ok(!/SECRET|note|symptom/i.test(serialized));
+});
+
+test('coming up wording is correct and non-duplicated', () => {
+  const mod = ctx();
+  const cu = { daysToPeriod: 4, phases: [{ phase: 'Follicular', phaseLabel: 'Follicular phase', startsIn: 1, mood: 3, energy: 3, stress: 2, symptoms: ['Cramps'] }, { phase: 'Ovulation', phaseLabel: 'Ovulation phase', startsIn: 2, mood: 3, energy: 3, stress: 2, symptoms: [] }] };
+  const html = mod.smartComingUpHTML(cu);
+  assert.match(html, /in 1 day/);
+  assert.match(html, /in 2 days/);
+  assert.ok(!/starts in 0 day|starts today/i.test(html));
+  assert.ok((html.match(/Follicular phase/g) || []).length === 1);
+});
+
+test('coming up handles today and no phases', () => {
+  const mod = ctx();
+  const todayCu = { daysToPeriod: 2, phases: [{ phase: 'Menstrual', phaseLabel: 'Menstrual phase', startsIn: 0, mood: 3, energy: 2, stress: 3, symptoms: ['Cramps'] }] };
+  const html = mod.smartComingUpHTML(todayCu);
+  assert.ok(!/Menstrual phase starts/i.test(html));
+  assert.equal(mod.smartComingUpHTML({ phases: [] }), '');
 });

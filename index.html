@@ -2785,13 +2785,14 @@ function smartWeekTemplate(facts){
  else if(biggest){headline=`${biggest.label} ${dirWordVar(biggest.now,biggest.prev,todayStr,biggest.label+'-week')} this week`}
  else headline='Your week summary';
  const parts=[];
+ const s1=sentenceFor(pg); if(s1) parts.push(s1);
  const next=coming.find(p=>+p.startsIn>=1);
  const hasComing=Array.isArray(coming)&&coming.length>0;
- if(!hasComing && facts.daysToPeriod!=null){
-  parts.push(`Period in ${facts.daysToPeriod} ${facts.daysToPeriod===1?'day':'days'}.`);
- }
  if(!parts.length && !goalBig && biggestNonPrimary){
   parts.push(`${biggestNonPrimary.label} ${dirWordVar(biggestNonPrimary.now,biggestNonPrimary.prev,todayStr,biggestNonPrimary.label+'-week')} this week.`);
+ }
+ if(!parts.length && !hasComing && facts.daysToPeriod!=null){
+  parts.push(`Period in ${facts.daysToPeriod} ${facts.daysToPeriod===1?'day':'days'}.`);
  }
  if(!parts.length){
   parts.push('No other changes worth highlighting this week.');
@@ -2932,8 +2933,13 @@ function smartCTALabel(goal){
  return map[goal]||'Log today';
 }
 function smartEvidenceRegistry(){
- const ids=new Set();
- return {claim(id){if(!id||ids.has(id))return false;ids.add(id);return true},has(id){return ids.has(id)}};
+ const owners=new Map();
+ return {
+  claim(id,section){if(!id||owners.has(id))return false;owners.set(id,section||'unknown');return true},
+  has(id){return owners.has(id)},
+  owner(id){return owners.has(id)?owners.get(id):null},
+  entries(){return Array.from(owners.entries())}
+ };
 }
 function smartGoalPrimaryMetric(goal){
  return {'Better sleep':'Sleep','Steadier energy':'Energy','Manage stress':'Stress'}[goal]||null;
@@ -2946,11 +2952,14 @@ function smartInsightsHTML(pred,current,patterns,viewerName,aiMap,extras){
  const claimedMetrics=new Set();
  const primaryMetric=smartGoalPrimaryMetric(goal);
  if(extras.weekCard&&!extras.ro&&primaryMetric&&(extras.week||[]).some(w=>w.label===primaryMetric)){
-  registry.claim('metric:'+primaryMetric+':window:7d');
+  registry.claim('metric:'+primaryMetric+':window:7d','Your week');
   claimedMetrics.add(primaryMetric);
  }
  const weekForCompare=(extras.week||[]).filter(w=>!claimedMetrics.has(w.label));
- const weekCmpHtml=smartWeekCompareHTML(weekForCompare),comingHtml=smartComingUpHTML(extras.comingUp||null);
+ const periodClaimed=!!(extras.weekCard&&!extras.ro&&typeof extras.weekCard.headline==='string'&&extras.weekCard.headline.indexOf('Period')===0);
+ if(periodClaimed) registry.claim('period:current-cycle','Your week');
+ const comingHtml=periodClaimed?'':smartComingUpHTML(extras.comingUp||null);
+ const weekCmpHtml=smartWeekCompareHTML(weekForCompare);
  const focusToShow=extras.focus&&primaryMetric&&claimedMetrics.has(primaryMetric)&&extras.focus.headline&&String(extras.focus.headline).indexOf(primaryMetric)===0
   ? Object.assign({},extras.focus,{headline:null,metric:null,trend:null})
   : extras.focus;
@@ -2967,7 +2976,7 @@ function smartInsightsHTML(pred,current,patterns,viewerName,aiMap,extras){
  ${weekCard}
  ${extras.ro?'':smartFocusHTML(goal,goals,noGoals,focusToShow||null)}
  ${sections}
- <section class="smart-section" aria-labelledby="smart-patterns-title"><h3 class="smart-kicker" id="smart-patterns-title">Patterns</h3>${smartPatternsHTML(patterns)}</section>
+ <section class="smart-section" aria-labelledby="smart-patterns-title"><h3 class="smart-kicker" id="smart-patterns-title">Patterns</h3>${smartPatternsHTML((patterns||[]).filter(p=>{const m={'sleep-energy':'Sleep','stress-sleep':'Stress','activity-energy':'Energy','mood-sleep':'Mood'}[p&&p.type];return !m||!claimedMetrics.has(m)}))}</section>
  ${smartKnowledgeFor(goal)?`<section class="smart-section" aria-labelledby="smart-know-title"><h3 class="smart-kicker" id="smart-know-title">Good to know</h3><p class="smart-copy">${E(smartKnowledgeFor(goal))}</p></section>`:''}
  ${extras.ro?'':`<section class="smart-section smart-cta" aria-labelledby="smart-cta-title"><h3 class="smart-kicker" id="smart-cta-title">Your next step</h3><p class="smart-pattern-takeaway">${E(smartCTALabel(goal))}</p><button class="btn" id="smart-cta" data-action="${E(smartCTAFor(goal))}" style="width:100%;margin-top:8px">${E(smartCTALabel(goal))}</button></section>`}
  `;
