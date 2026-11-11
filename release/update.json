@@ -1,7 +1,7 @@
 {
-    "versionCode": 66,
-    "versionName": "1.2.51",
-    "notes": "Fix: Continue with Google now works in the Android app.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.51/bloom-1.2.51.apk",
+    "versionCode": 67,
+    "versionName": "1.2.52",
+    "notes": "UI fixes: the cycle ring pill no longer overlaps the ring, cleaner Settings buttons, and status bar polish.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.52/bloom-1.2.52.apk",
     "publishedAt": "2026-11-11"
 }
