@@ -234,19 +234,72 @@ test('the only app disclaimer lives in Settings', () => {
   assert.ok(html.includes('<h3>App</h3>'));
 });
 
-test('clearLegacySmartAIStorage removes only obsolete AI keys', () => {
+test('clearLegacySmartAIStorage removes only obsolete AI keys and is safe on exceptions', () => {
   const mod = renderContext();
   mod.ST.set('bloom_ai_consent', '1');
   mod.ST.set('bloom_ai_cache', '{}');
   mod.ST.set('bloom_ai_token', 'tok');
   mod.ST.set('bloom_keep', 'value');
+  mod.localStorage.setItem('bloom_ai_consent', '1');
+  mod.localStorage.setItem('bloom_ai_cache', '{}');
+  mod.localStorage.setItem('bloom_ai_token', 'tok');
+  mod.localStorage.setItem('bloom_keep', 'ls-value');
   mod.clearLegacySmartAIStorage();
   assert.equal(mod.ST.get('bloom_ai_consent'), null);
   assert.equal(mod.ST.get('bloom_ai_cache'), null);
   assert.equal(mod.ST.get('bloom_ai_token'), null);
   assert.equal(mod.ST.get('bloom_keep'), 'value');
-  // idempotent
+  assert.equal(mod.localStorage.getItem('bloom_ai_consent'), null);
+  assert.equal(mod.localStorage.getItem('bloom_ai_cache'), null);
+  assert.equal(mod.localStorage.getItem('bloom_ai_token'), null);
+  assert.equal(mod.localStorage.getItem('bloom_keep'), 'ls-value');
   assert.doesNotThrow(() => mod.clearLegacySmartAIStorage());
+  const throwing = renderContext();
+  throwing.localStorage.removeItem = () => { throw new Error('blocked'); };
+  throwing.ST.del = () => { throw new Error('blocked'); };
+  assert.doesNotThrow(() => throwing.clearLegacySmartAIStorage());
+});
+
+test('logout executes cleanup and preserves unrelated preferences', () => {
+  const mod = renderContext();
+  mod.ST.set('bloom_ai_consent', '1'); mod.ST.set('bloom_ai_cache', '{}'); mod.ST.set('bloom_ai_token', 'tok');
+  mod.localStorage.setItem('bloom_ai_consent', '1'); mod.localStorage.setItem('bloom_ai_cache', '{}'); mod.localStorage.setItem('bloom_ai_token', 'tok');
+  mod.ST.set('bloom_own', '1'); mod.ST.set('bloom_theme', 'dark'); mod.localStorage.setItem('bloom_theme', 'dark');
+  mod.RO = true; mod.user = { id: 'u' }; mod.view = 'log';
+  mod.logout();
+  assert.equal(mod.ST.get('bloom_ai_consent'), null);
+  assert.equal(mod.ST.get('bloom_ai_cache'), null);
+  assert.equal(mod.ST.get('bloom_ai_token'), null);
+  assert.equal(mod.localStorage.getItem('bloom_ai_consent'), null);
+  assert.equal(mod.localStorage.getItem('bloom_ai_cache'), null);
+  assert.equal(mod.localStorage.getItem('bloom_ai_token'), null);
+  assert.equal(mod.ST.get('bloom_own'), null);
+  assert.equal(mod.ST.get('bloom_theme'), 'dark');
+  assert.equal(mod.localStorage.getItem('bloom_theme'), 'dark');
+});
+
+test('full local deletion executes cleanup and preserves theme while removing local Bloom data', () => {
+  const mod = renderContext();
+  mod.ST.set('bloom_ai_consent', '1'); mod.ST.set('bloom_ai_cache', '{}'); mod.ST.set('bloom_ai_token', 'tok');
+  mod.localStorage.setItem('bloom_ai_consent', '1'); mod.localStorage.setItem('bloom_ai_cache', '{}'); mod.localStorage.setItem('bloom_ai_token', 'tok');
+  mod.localStorage.setItem('bloom_d_abc', '{}'); mod.localStorage.setItem('bloom_own', 'x'); mod.localStorage.setItem('bloom_theme', 'dark');
+  mod.wipeLocalData();
+  assert.equal(mod.localStorage.getItem('bloom_ai_consent'), null);
+  assert.equal(mod.localStorage.getItem('bloom_ai_cache'), null);
+  assert.equal(mod.localStorage.getItem('bloom_ai_token'), null);
+  assert.equal(mod.localStorage.getItem('bloom_d_abc'), null);
+  assert.equal(mod.localStorage.getItem('bloom_own'), null);
+  assert.equal(mod.localStorage.getItem('bloom_theme'), 'dark');
+});
+
+test('logout and full deletion tolerate cleanup/storage exceptions', () => {
+  const mod = renderContext();
+  mod.localStorage.removeItem = () => { throw new Error('nope'); };
+  mod.ST.del = () => { throw new Error('nope'); };
+  assert.doesNotThrow(() => mod.logout());
+  const mod2 = renderContext();
+  mod2.localStorage.removeItem = () => { throw new Error('nope'); };
+  assert.doesNotThrow(() => mod2.wipeLocalData());
 });
 
 test('all seven goal CTA mappings are real and meaningful', () => {
@@ -264,11 +317,7 @@ test('all seven goal CTA mappings are real and meaningful', () => {
   assert.equal(smartCTAFor('Prepare for doctor visits'), 'export');
 });
 
-test('logout and full deletion invoke legacy AI cleanup', () => {
-  assert.ok(/function logout\(\)[\s\S]*?clearLegacySmartAIStorage\(\)/.test(html));
-  assert.ok(/function wipeLocalData\(\)\{[^}]*clearLegacySmartAIStorage\(\)/.test(html));
-  assert.ok(html.includes("wipeLocalData();"));
-});
+
 
 test('Smart Insights deduplicates primary sleep evidence across sections', () => {
   const { smartInsightsHTML } = renderContext();
@@ -293,3 +342,64 @@ test('Smart Insights deduplicates primary sleep evidence across sections', () =>
   assert.ok(sleepMetricOccurrences <= 1, 'sleep metric should not repeat');
   assert.match(out, /Your focus/);
 });
+
+
+
+test('evidence registry tracks ownership and prevents duplicate claims across sections', () => {
+  const { smartEvidenceRegistry } = renderContext();
+  const reg = smartEvidenceRegistry();
+  assert.equal(reg.claim('metric:Sleep:window:7d','Your week','metric-week'), true);
+  assert.equal(reg.claim('metric:Sleep:window:7d','Week comparison','metric-week'), false);
+  assert.equal(reg.has('metric:Sleep:window:7d'), true);
+  assert.equal(reg.owner('metric:Sleep:window:7d'), 'Your week');
+  const e = reg.get('metric:Sleep:window:7d');
+  assert.equal(e.type, 'metric-week');
+  assert.equal(e.presented, true);
+  assert.equal(reg.claim('metric:Energy:window:7d','Week comparison','metric-week'), true);
+  assert.equal(reg.entries().length, 2);
+});
+
+test('registry resets between renders and render order does not duplicate findings', () => {
+  const { smartInsightsHTML } = renderContext();
+  const base = (orderGoal) => ({
+    selectedGoal: orderGoal,
+    focusGoals: ['Better sleep', 'Understand my cycle'],
+    noGoals: false,
+    focus: { goal: orderGoal, headline: 'Sleep 6.4 h last week', metric: '6.4 h (3 under 7h)', trend: 'sleep 6.4 vs 7.6 h', action: 'Try a consistent wind-down time.' },
+    week: [{ key: 'sleep', label: 'Sleep', now: 6.4, prev: 7.6, arrow: '↓' }, { key: 'energy', label: 'Energy', now: 3.2, prev: 2.8, arrow: '↑' }],
+    comingUp: { daysToPeriod: 10, phases: [{ phase: 'Luteal', phaseLabel: 'Luteal phase', startsIn: 3, mood: 3.2, energy: 2.8, stress: 3.5, symptoms: ['Headache'] }] },
+    weekCard: { headline: 'Sleep decreased this week', summary: 'Sleep averaged 6.4 h this week, decreased from 7.6.', actions: ['Try an earlier bedtime', 'Plan a short walk'] },
+    weekFacts: { goals: ['Better sleep'], week: [{ label: 'Sleep', now: 6.4, prev: 7.6 }, { label: 'Energy', now: 3.2, prev: 2.8 }], comingUp: [{ phaseLabel: 'Luteal phase', startsIn: 3, mood: 3.2, energy: 2.8, stress: 3.5, symptoms: ['Headache'] }], focus: { headline: 'Sleep 6.4 h last week', metric: '6.4 h (3 under 7h)', trend: 'sleep 6.4 vs 7.6 h' }, daysToPeriod: 10, phaseLabel: 'Luteal phase', cycleDay: 18 },
+    ro: false
+  });
+  const a = smartInsightsHTML(predictedState(), currentState(), [], 'Alex', null, base('Better sleep'));
+  const b = smartInsightsHTML(predictedState(), currentState(), [], 'Alex', null, base('Understand my cycle'));
+  // sleep metric appears in Your week summary but should not repeat in comparison section
+  assert.equal((a.match(/Sleep<\/span><span class="smart-week-val">6\.4/g)||[]).length, 0);
+  assert.equal((b.match(/Sleep<\/span><span class="smart-week-val">6\.4/g)||[]).length, 0);
+  // energy remains in comparison (distinct evidence)
+  assert.match(a, /Energy/);
+  // fresh render: calling again yields same structure (no accumulation)
+  const c = smartInsightsHTML(predictedState(), currentState(), [], 'Alex', null, base('Better sleep'));
+  assert.equal((c.match(/Sleep<\/span><span class="smart-week-val">6\.4/g)||[]).length, 0);
+});
+
+test('period evidence in summary suppresses duplicate period in Coming up but keeps distinct upcoming phase', () => {
+  const { smartInsightsHTML } = renderContext();
+  const out = smartInsightsHTML(predictedState(), currentState(), [], 'Alex', null, {
+    selectedGoal: 'Understand my cycle',
+    focusGoals: ['Understand my cycle'],
+    noGoals: false,
+    focus: { goal: 'Understand my cycle', headline: 'Day 18 of ~28 · Luteal phase', metric: 'Period expected in 4 days', trend: null, action: 'Follicular phase starts in 2 days.' },
+    week: [],
+    comingUp: { daysToPeriod: 4, phases: [{ phase: 'Follicular', phaseLabel: 'Follicular phase', startsIn: 2, mood: 3, energy: 3, stress: 2, symptoms: [] }] },
+    weekCard: { headline: 'Day 18 of cycle', summary: 'Day 18 in Luteal phase, period in 4 days.', actions: ['Note symptoms as they show up', 'Plan a short walk'] },
+    weekFacts: { goals: ['Understand my cycle'], week: [], comingUp: [{ phaseLabel: 'Follicular phase', startsIn: 2, mood: 3, energy: 3, stress: 2, symptoms: [] }], focus: { headline: 'Day 18 of ~28 · Luteal phase', metric: 'Period expected in 4 days', trend: '' }, daysToPeriod: 4, phaseLabel: 'Luteal phase', cycleDay: 18 },
+    ro: false
+  });
+  assert.match(out, /Follicular phase/);
+  // period expected should appear once total? summary has "period in 4 days" and coming up tail would say "Period expected in 4 days." - dedup should remove tail
+  assert.equal((out.match(/Period expected in 4 days\./g)||[]).length, 0);
+  assert.match(out, /period in 4 days/);
+});
+

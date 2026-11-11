@@ -1301,9 +1301,15 @@ function forgotPasswordSheet(){
  };
 }
 function login(u){user=u;D=Object.assign(blank(),J(key(u),{}));loadRev(u);setSession(u);applyTheme();view='cycle';shell()}
+// @test-begin auth
 function logout(){RO=false;ROcloud=false;ROowner=null;roHash='';user=null;D=null;clearSession();setRoleFlag('');sbLastPush='';sbRev=0;
  view='cycle';tab='';onbStep=0;calM=today().slice(0,7);
  try{ST.del('bloom_own')}catch(e){}try{clearLegacySmartAIStorage()}catch(e){}try{reminderCancel()}catch(e){}if(sb){sb.auth.signOut().catch(()=>{});sbUser=null}if(cloudTimer){clearInterval(cloudTimer);cloudTimer=null}hideUpdateBanner();authView('in')}
+function wipeLocalData(){
+  try{clearLegacySmartAIStorage()}catch(e){}
+  try{Object.keys(localStorage).filter(k=>k.indexOf('bloom_d_')===0||k.indexOf('bloom_backup_')===0||k.indexOf('bloom_dirty_')===0||k.indexOf('bloom_rev_')===0||k==='bloom_s'||k==='bloom_own'||k==='bloom_last_bg'||k==='bloom_upd_skip'||k==='bloom_pname'||k==='bloom_pavatar'||k==='bloom_pown'||k==='bloom_puid'||k==='bloom_powner'||k==='bloom_role'||k==='bloom_unpaired'||k==='bloom_lastcode'||k==='bloom_plocked'||k==='bloom_read'||k==='bloom_errlog').forEach(k=>localStorage.removeItem(k))}catch(e){}
+}
+// @test-end auth
 function applyTheme(){document.documentElement.removeAttribute('data-theme')}
 // ---------- helpers
 const L=d=>D.logs[d]||{};
@@ -2786,7 +2792,6 @@ function smartWeekTemplate(facts){
  else headline='Your week summary';
  const parts=[];
  const s1=sentenceFor(pg); if(s1) parts.push(s1);
- const next=coming.find(p=>+p.startsIn>=1);
  const hasComing=Array.isArray(coming)&&coming.length>0;
  if(!parts.length && !goalBig && biggestNonPrimary){
   parts.push(`${biggestNonPrimary.label} ${dirWordVar(biggestNonPrimary.now,biggestNonPrimary.prev,todayStr,biggestNonPrimary.label+'-week')} this week.`);
@@ -2845,18 +2850,33 @@ function smartWeekCompareHTML(week){
  }).join('');
  return `<section class="smart-section" aria-labelledby="smart-weekcmp-title"><h3 class="smart-kicker" id="smart-weekcmp-title">This week vs last</h3>${rows}</section>`;
 }
-function smartComingUpHTML(cu){
+function smartComingUpHTML(cu,opts){
  if(!cu||!cu.phases||!cu.phases.length)return '';
- const blocks=cu.phases.map(p=>{
-  const when=p.startsIn===0?'today':`in ${p.startsIn} ${p.startsIn===1?'day':'days'}`;
+ opts=opts||{};
+ const reg=opts.registry||null;
+ const blocks=cu.phases.filter(p=>p&&Number.isFinite(+p.startsIn)&&+p.startsIn>=0).map(p=>{
+  const sid=+p.startsIn;
+  const id='phase-upcoming:'+String(p.phaseLabel||p.phase||'')+':in-'+sid;
+  if(reg&&reg.has(id))return '';
+  if(reg)reg.claim(id,'Coming up',id.indexOf('period:')===0?'period':'phase-upcoming');
+  const when=sid===0?'today':`in ${sid} ${sid===1?'day':'days'}`;
   const bits=[];
   if(p.mood!=null)bits.push(`mood ${p.mood}/5`);
   if(p.energy!=null)bits.push(`energy ${p.energy}/5`);
   if(p.stress!=null)bits.push(`stress ${p.stress}/5`);
-  if(p.symptoms.length)bits.push(`most logged: ${p.symptoms.join(', ')}`);
+  if(p.symptoms&&p.symptoms.length)bits.push(`most logged: ${p.symptoms.join(', ')}`);
   return `<div class="smart-upcoming"><div class="smart-pattern-title">${E(p.phaseLabel)} ${E(when)}</div>${bits.length?`<p class="smart-pattern-text">Usually ${E(bits.join(' · '))}</p>`:''}</div>`;
- }).join('');
- const tail=cu.daysToPeriod!=null?`<p class="smart-copy">Period expected in ${cu.daysToPeriod} ${cu.daysToPeriod===1?'day':'days'}.</p>`:'';
+ }).filter(Boolean).join('');
+ const periodId='period:expected';
+ let tail='';
+ if(cu.daysToPeriod!=null&&Number.isFinite(+cu.daysToPeriod)&&+cu.daysToPeriod>=0){
+  if(!(reg&&reg.has(periodId))){
+   if(reg)reg.claim(periodId,'Coming up','period');
+   const d=+cu.daysToPeriod;
+   tail=`<p class="smart-copy">Period expected in ${d} ${d===1?'day':'days'}.</p>`;
+  }
+ }
+ if(!blocks&&!tail)return '';
  return `<section class="smart-section" aria-labelledby="smart-upcoming-title"><h3 class="smart-kicker" id="smart-upcoming-title">Coming up</h3>${blocks}${tail}</section>`;
 }
 function smartFocusHTML(goal,goals,noGoals,focus){
@@ -2933,38 +2953,112 @@ function smartCTALabel(goal){
  return map[goal]||'Log today';
 }
 function smartEvidenceRegistry(){
- const owners=new Map();
+ const entries=new Map();
  return {
-  claim(id,section){if(!id||owners.has(id))return false;owners.set(id,section||'unknown');return true},
-  has(id){return owners.has(id)},
-  owner(id){return owners.has(id)?owners.get(id):null},
-  entries(){return Array.from(owners.entries())}
+  claim(id,section,type){
+   if(!id||entries.has(id))return false;
+   entries.set(id,{id:String(id),type:String(type||'evidence'),owner:String(section||'unknown'),presented:true});
+   return true;
+  },
+  has(id){return entries.has(id)},
+  owner(id){return entries.has(id)?entries.get(id).owner:null},
+  get(id){return entries.has(id)?entries.get(id):null},
+  entries(){return Array.from(entries.values())}
  };
 }
 function smartGoalPrimaryMetric(goal){
  return {'Better sleep':'Sleep','Steadier energy':'Energy','Manage stress':'Stress'}[goal]||null;
+}
+function smartPatternEvidenceId(p){
+ if(!p||!p.type)return null;
+ if(p.type==='symptom-phase') return 'symptom-phase:'+String(p.id||'').slice('symptom-phase-'.length||0)+':completed';
+ if(p.type==='sleep-energy'||p.type==='mood-sleep'||p.type==='activity-energy'||p.type==='stress-sleep') return 'association:'+p.type+':'+String(p.id||'all');
+ return 'pattern:'+String(p.type)+':'+String(p.id||'all');
+}
+function smartWeekFactsEvidenceIds(facts){
+ const ids=[];
+ if(!facts)return ids;
+ const goals=facts.goals||[],pg=goals[0]||'Understand my cycle';
+ const week=facts.week||[];
+ const findWeek=label=>(week||[]).find(w=>w.label===label)||null;
+ const goalLabel=g=>g==='Better sleep'?'Sleep':g==='Steadier energy'?'Energy':g==='Manage stress'?'Stress':g==='Move more'?'Activity':g==='Eat regularly'?'Meals':g==='Prepare for doctor visits'?'Visit summary':null;
+ const gl=goalLabel(pg);
+ if(gl&&findWeek(gl)){const w=findWeek(gl);if(w&&Math.abs((+w.now)-(+w.prev))>=0.3)ids.push('metric:'+gl+':window:7d')}
+ if(pg==='Move more'&&facts.focus&&facts.focus.trend){const m=String(facts.focus.trend).match(/^(\d+(?:\.\d+)?)\s+vs\s+(\d+(?:\.\d+)?)/);if(m&&(+m[1])!==( +m[2]))ids.push('focus:activity-days:window:14d')}
+ if(pg==='Eat regularly'&&facts.focus&&facts.focus.trend){const m=String(facts.focus.trend).match(/^(\d+(?:\.\d+)?)\s+vs\s+(\d+(?:\.\d+)?)/);if(m&&(+m[1])!==( +m[2]))ids.push('focus:meal-plan:window:14d')}
+ if(pg==='Prepare for doctor visits'&&facts.focus&&facts.focus.headline)ids.push('focus:visit-summary:window:90d');
+ if(pg==='Understand my cycle'){
+  if(facts.cycleDay!=null&&facts.phaseLabel)ids.push('cycle:day-phase:current');
+  if(facts.daysToPeriod!=null&&Number.isFinite(+facts.daysToPeriod)&&+facts.daysToPeriod>=0)ids.push('period:expected');
+ }
+ // fallback used when no primary goal metric in summary: biggest non-primary or generic; handled separately
+ return ids;
 }
 function smartInsightsHTML(pred,current,patterns,viewerName,aiMap,extras){
  extras=extras||{};
  const week=extras.week||[],goals=extras.focusGoals||['Understand my cycle'],noGoals=!!extras.noGoals,goal=extras.selectedGoal||goals[0];
  const dateText=d=>{if(!d)return '';try{return typeof fmt==='function'?fmt(d,{month:'short',day:'numeric'}):d}catch(e){return d}};
  const registry=smartEvidenceRegistry();
- const claimedMetrics=new Set();
  const primaryMetric=smartGoalPrimaryMetric(goal);
- if(extras.weekCard&&!extras.ro&&primaryMetric&&(extras.week||[]).some(w=>w.label===primaryMetric)){
-  registry.claim('metric:'+primaryMetric+':window:7d','Your week');
-  claimedMetrics.add(primaryMetric);
+
+ // Claim evidence owned by Your week (if rendered)
+ if(extras.weekCard&&!extras.ro&&extras.weekFacts){
+  smartWeekFactsEvidenceIds(extras.weekFacts).forEach(id=>registry.claim(id,'Your week'));
+  // if summary fell back to biggest non-primary metric, claim it
+  const facts=extras.weekFacts;
+  const pg=(facts.goals||[])[0]||'Understand my cycle';
+  const gl={'Better sleep':'Sleep','Steadier energy':'Energy','Manage stress':'Stress','Move more':'Activity','Eat regularly':'Meals','Prepare for doctor visits':'Visit summary'}[pg]||null;
+  const weekList=facts.week||[];
+  const goalBig=(gl&&weekList.find(w=>w.label===gl&&Math.abs((+w.now)-(+w.prev))>=0.3))?weekList.find(w=>w.label===gl):null;
+  const s1=(function(){try{return smartWeekTemplate(facts)}catch(e){return null}})();
+  // fallback biggest non-primary appears in summary when no s1 and not goalBig; detect by text
+  if(s1&&s1.summary){
+   weekList.forEach(w=>{
+    if(w.label===gl)return;
+    const d=Math.abs((+w.now)-(+w.prev));
+    if(d<0.3)return;
+    const needle=w.label+' ';
+    if(s1.summary.indexOf(needle)!==-1 && !goalBig) registry.claim('metric:'+w.label+':window:7d','Your week','metric-week');
+   });
+  }
  }
- const weekForCompare=(extras.week||[]).filter(w=>!claimedMetrics.has(w.label));
- const periodClaimed=!!(extras.weekCard&&!extras.ro&&typeof extras.weekCard.headline==='string'&&extras.weekCard.headline.indexOf('Period')===0);
- if(periodClaimed) registry.claim('period:current-cycle','Your week');
- const comingHtml=periodClaimed?'':smartComingUpHTML(extras.comingUp||null);
+ // claim primary metric for focus suppression even if weekFacts missing but weekCard exists
+ if(extras.weekCard&&!extras.ro&&primaryMetric&&(extras.week||[]).some(w=>w.label===primaryMetric)){
+  registry.claim('metric:'+primaryMetric+':window:7d','Your week','metric-week');
+ }
+
+ // Week comparison: omit metrics already claimed as same evidence
+ const weekForCompare=(extras.week||[]).filter(w=>{
+  const id='metric:'+w.label+':window:7d';
+  if(registry.has(id))return false;
+  registry.claim(id,'Week comparison','metric-week');
+  return true;
+ });
  const weekCmpHtml=smartWeekCompareHTML(weekForCompare);
- const focusToShow=extras.focus&&primaryMetric&&claimedMetrics.has(primaryMetric)&&extras.focus.headline&&String(extras.focus.headline).indexOf(primaryMetric)===0
-  ? Object.assign({},extras.focus,{headline:null,metric:null,trend:null})
-  : extras.focus;
+
+ // Coming up: consult registry (period/phase ids)
+ const comingHtml=smartComingUpHTML(extras.comingUp||null,{registry});
+
+ // Focus: suppress duplicated metric evidence but keep action
+ const focusClaimId=primaryMetric?'metric:'+primaryMetric+':window:7d':(goal==='Move more'?'focus:activity-days:window:14d':goal==='Eat regularly'?'focus:meal-plan:window:14d':goal==='Prepare for doctor visits'?'focus:visit-summary:window:90d':goal==='Understand my cycle'?'cycle:day-phase:current':null);
+ let focusToShow=extras.focus||null;
+ if(focusToShow&&focusClaimId&&registry.has(focusClaimId)){
+  // if same evidence shown, keep action but drop headline/metric/trend
+  focusToShow=Object.assign({},focusToShow,{headline:null,metric:null,trend:null});
+ }
+
  const sections=smartSectionOrder(goal).map(k=>k==='week'?weekCmpHtml:comingHtml).filter(Boolean).join('');
  const weekCard=(extras.weekCard&&!extras.ro)?smartWeekHTML(extras.weekCard,extras.weekOpts||{}):'';
+
+ // Patterns: filter by registry evidence ids
+ const patsToShow=(patterns||[]).filter(p=>{
+  const id=smartPatternEvidenceId(p);
+  if(!id)return true;
+  if(registry.has(id))return false;
+  registry.claim(id,'Patterns',id.indexOf('association:')===0?'association':id.indexOf('symptom-phase:')===0?'symptom-phase':'pattern');
+  return true;
+ });
+
  return `<header class="smart-hero">
   <div class="smart-hero-copy">
    <h2 class="smart-title">Smart Insights</h2>
@@ -2976,7 +3070,7 @@ function smartInsightsHTML(pred,current,patterns,viewerName,aiMap,extras){
  ${weekCard}
  ${extras.ro?'':smartFocusHTML(goal,goals,noGoals,focusToShow||null)}
  ${sections}
- <section class="smart-section" aria-labelledby="smart-patterns-title"><h3 class="smart-kicker" id="smart-patterns-title">Patterns</h3>${smartPatternsHTML((patterns||[]).filter(p=>{const m={'sleep-energy':'Sleep','stress-sleep':'Stress','activity-energy':'Energy','mood-sleep':'Mood'}[p&&p.type];return !m||!claimedMetrics.has(m)}))}</section>
+ <section class="smart-section" aria-labelledby="smart-patterns-title"><h3 class="smart-kicker" id="smart-patterns-title">Patterns</h3>${smartPatternsHTML(patsToShow)}</section>
  ${smartKnowledgeFor(goal)?`<section class="smart-section" aria-labelledby="smart-know-title"><h3 class="smart-kicker" id="smart-know-title">Good to know</h3><p class="smart-copy">${E(smartKnowledgeFor(goal))}</p></section>`:''}
  ${extras.ro?'':`<section class="smart-section smart-cta" aria-labelledby="smart-cta-title"><h3 class="smart-kicker" id="smart-cta-title">Your next step</h3><p class="smart-pattern-takeaway">${E(smartCTALabel(goal))}</p><button class="btn" id="smart-cta" data-action="${E(smartCTAFor(goal))}" style="width:100%;margin-top:8px">${E(smartCTALabel(goal))}</button></section>`}
  `;
@@ -2998,10 +3092,10 @@ function smartWeekVariantIndex(key,count,dateStr){
  let idx=baseHash % c;
  try{
   if(typeof ST!=='undefined'&&ST&&typeof ST.get==='function'){
-   const raw=ST.get('bloom_week_variants');
-   const hist=raw?JSON.parse(raw):{};
-   const keyHist=Array.isArray(hist[key])?hist[key]:[];
-   const existing=keyHist.find(x=>x&&x.date===day);
+   let hist={};
+   try{ const raw=ST.get('bloom_week_variants'); hist=raw?JSON.parse(raw):{}; if(!hist||typeof hist!=='object'||Array.isArray(hist))hist={}; }catch(e){ hist={}; }
+   const keyHist=Array.isArray(hist[key])?hist[key].filter(x=>x&&typeof x==='object'):[];
+   const existing=keyHist.find(x=>x.date===day);
    if(existing&&Number.isInteger(existing.idx)&&existing.idx>=0&&existing.idx<c){idx=existing.idx}
    else{
     const recent=keyHist.slice(-14).map(x=>x&&x.idx);
@@ -3015,17 +3109,21 @@ function smartWeekVariantIndex(key,count,dateStr){
     hist[key]=keyHist;
     const keys=Object.keys(hist);
     if(keys.length>20){keys.slice(0,keys.length-20).forEach(k=>{delete hist[k]})}
-    ST.set('bloom_week_variants',JSON.stringify(hist));
+    try{ST.set('bloom_week_variants',JSON.stringify(hist))}catch(e){}
    }
   }
  }catch(e){}
  return idx;
 }
 function dirWordVar(now,prev,dateStr,finding){
- const base=(+now)>=(+prev)?'up':'down';
- const idx=smartWeekVariantIndex('direction:'+(finding||'metric')+':'+base,2,dateStr);
- if(base==='up')return idx===0?'up':'increased';
- return idx===0?'down':'decreased';
+ const n=Number(now),p=Number(prev);
+ if(!(Number.isFinite(n)&&Number.isFinite(p)))return n>=p?'up':'down';
+ if(n===p)return 'about the same';
+ const up=n>p;
+ const key=String(finding||'metric');
+ const words=up?['up','increased','higher']:['down','decreased','lower'];
+ const idx=smartWeekVariantIndex(key+'-'+(up?'up':'down'),words.length,dateStr);
+ return words[idx]||words[0];
 }
 // @test-end smart
 
@@ -3560,10 +3658,6 @@ async function reminderSync(quiet){
   if(!quiet)toast('Could not set the reminder');
   return {native:true,error:String((e&&e.message)||e)}}}
 // ---------- data deletion
-function wipeLocalData(){
-  try{clearLegacySmartAIStorage()}catch(e){}
-  try{Object.keys(localStorage).filter(k=>k.indexOf('bloom_d_')===0||k.indexOf('bloom_backup_')===0||k.indexOf('bloom_dirty_')===0||k.indexOf('bloom_rev_')===0||k==='bloom_s'||k==='bloom_own'||k==='bloom_last_bg'||k==='bloom_upd_skip'||k==='bloom_pname'||k==='bloom_pavatar'||k==='bloom_pown'||k==='bloom_puid'||k==='bloom_powner'||k==='bloom_role'||k==='bloom_unpaired'||k==='bloom_lastcode'||k==='bloom_plocked'||k==='bloom_read'||k==='bloom_errlog').forEach(k=>localStorage.removeItem(k))}catch(e){}
-}
 function deleteAllData(){
  const yes=confirm('Delete all your Bloom data?\n\nEvery log, meal, task and journal entry will be erased from this phone and from the cloud. Your account stays, so you can start fresh. This cannot be undone.');
  if(!yes)return;
