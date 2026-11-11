@@ -1,7 +1,7 @@
 {
-    "versionCode": 72,
-    "versionName": "1.2.57",
-    "notes": "Smart Insights fixes: more accurate weekly summaries, better deduplication, and period/cycle evidence corrections.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.57/bloom-1.2.57.apk",
+    "versionCode": 73,
+    "versionName": "1.2.58",
+    "notes": "Fixes: meal Remove button stays on the line, and the cycle ring guide text fits inside the ring.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.58/bloom-1.2.58.apk",
     "publishedAt": "2026-11-11"
 }
