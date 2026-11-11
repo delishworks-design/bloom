@@ -147,32 +147,46 @@ test('smartWeekTemplate pluralizes days, lowercases symptoms, avoids filler and 
   assert.ok(mod.smartWeekValidate(oOnly0, fOnly0));
 });
 
-test('template is goal-led and has no duplicate action topics', () => {
+test('template is goal-led with natural sentences and no duplicate action topics', () => {
   const mod = ctx();
   const cases = [
     ['Better sleep', { week: [{ label: 'Sleep', now: 6.4, prev: 7.6 }, { label: 'Energy', now: 2.6, prev: 3.4 }, { label: 'Stress', now: 3.8, prev: 2.4 }] }, 'Sleep averaged 6.4 h this week, down from 7.6.'],
     ['Steadier energy', { week: [{ label: 'Sleep', now: 6.4, prev: 7.6 }, { label: 'Energy', now: 2.6, prev: 3.4 }, { label: 'Stress', now: 3.8, prev: 2.4 }] }, 'Energy averaged 2.6 this week, down from 3.4.'],
     ['Manage stress', { week: [{ label: 'Sleep', now: 6.4, prev: 7.6 }, { label: 'Energy', now: 2.6, prev: 3.4 }, { label: 'Stress', now: 3.8, prev: 2.4 }] }, 'Stress averaged 3.8 this week, up from 2.4.'],
     ['Understand my cycle', { week: [{ label: 'Sleep', now: 6.4, prev: 7.6 }, { label: 'Energy', now: 2.6, prev: 3.4 }, { label: 'Stress', now: 3.8, prev: 2.4 }] }, 'Day 18 in Luteal phase, period in 10 days.'],
-    ['Move more', { week: [{ label: 'Energy', now: 3.2, prev: 2.8 }], focus: { headline: 'Active on 2 of 7 days', metric: '2 active days', trend: '2 vs 1 the week before' } }, '2 active days.'],
-    ['Eat regularly', { week: [{ label: 'Energy', now: 3.2, prev: 2.8 }], focus: { headline: 'Meals on 4 of 7 days', metric: '4 of 7 days', trend: '3 vs 4 the week before' } }, '4 of 7 days.'],
-    ['Prepare for doctor visits', { week: [{ label: 'Energy', now: 3.2, prev: 2.8 }], focus: { headline: 'Visit summary ready', metric: '3 cycles logged', trend: '28 day average' } }, '3 cycles logged.'],
+    ['Move more', { week: [{ label: 'Energy', now: 3.2, prev: 2.8 }], focus: { headline: 'Active on 2 of 7 days', metric: '2 active days', trend: '2 vs 4 the week before' } }, 'Active on 2 of 7 days, down from 4.'],
+    ['Eat regularly', { week: [{ label: 'Energy', now: 3.2, prev: 2.8 }], focus: { headline: 'All three meals planned on 3 of 7 days', metric: '3 of 7 complete', trend: '3 vs 5 the week before' } }, 'All three meals planned on 3 of 7 days, down from 5.'],
+    ['Prepare for doctor visits', { week: [{ label: 'Energy', now: 3.2, prev: 2.8 }], focus: { headline: 'Summary ready for your next visit', metric: '3 cycles logged', trend: '28 day average' } }, 'Summary ready for your next visit.'],
   ];
   for (const [goal, extra, expectedStart] of cases) {
     const facts = baseFacts(Object.assign({ goals: [goal] }, extra));
     const out = mod.smartWeekTemplate(facts);
     assert.ok(out.summary.startsWith(expectedStart), goal + ' starts with focus: ' + out.summary);
+    assert.ok(!/^\d+ of \d+ (days|complete)\./.test(out.summary), 'no bare fragment: ' + out.summary);
     assert.ok(mod.smartWeekValidate(out, facts));
   }
-  const fSleep = baseFacts({ goals: ['Better sleep'], week: [{ label: 'Sleep', now: 6.2, prev: 7.1 }] });
-  const oSleep = mod.smartWeekTemplate(fSleep);
-  const bedtime = oSleep.actions.filter(a => /bedtime/i.test(a)).length;
-  assert.ok(bedtime <= 1, 'no duplicate bedtime: ' + oSleep.actions.join('|'));
-  assert.ok(mod.smartWeekValidate(oSleep, fSleep));
-  const fStress = baseFacts({ goals: ['Manage stress'], week: [{ label: 'Stress', now: 3.8, prev: 2.4 }, { label: 'Sleep', now: 6.2, prev: 7.1 }] });
-  const oStress = mod.smartWeekTemplate(fStress);
-  assert.notEqual(oStress.actions[0], oStress.actions[1]);
-  assert.ok(mod.smartWeekValidate(oStress, fStress));
+  // headline rules
+  const fPeriodFar = baseFacts({ daysToPeriod: 6, goals: ['Better sleep'], week: [{ label: 'Sleep', now: 6.2, prev: 7.1 }] });
+  assert.equal(mod.smartWeekTemplate(fPeriodFar).headline, 'Sleep down this week');
+  const fPeriodNear = baseFacts({ daysToPeriod: 2, goals: ['Better sleep'], week: [{ label: 'Sleep', now: 6.2, prev: 7.1 }] });
+  assert.equal(mod.smartWeekTemplate(fPeriodNear).headline, 'Period in 2 days');
+  const fStress = baseFacts({ goals: ['Manage stress'], week: [{ label: 'Stress', now: 3.8, prev: 2.4 }] });
+  assert.equal(mod.smartWeekTemplate(fStress).headline, 'Stress up this week');
+  const fMove = baseFacts({ goals: ['Move more'], week: [{ label: 'Energy', now: 3.2, prev: 2.8 }], focus: { headline: 'Active on 2 of 7 days', metric: '2 active days', trend: '2 vs 4 the week before' } });
+  assert.equal(mod.smartWeekTemplate(fMove).headline, 'Active days down this week');
+  // first action by goal when its metric changed, second goal default, no duplicates
+  const oSleep = mod.smartWeekTemplate(fPeriodFar);
+  assert.equal(oSleep.actions[0], 'Try an earlier bedtime');
+  assert.equal(oSleep.actions[1], 'Plan a short walk');
+  assert.ok(oSleep.actions.filter(a => /bedtime/i.test(a)).length <= 1, 'no duplicate bedtime: ' + oSleep.actions.join('|'));
+  const oMove = mod.smartWeekTemplate(fMove);
+  assert.equal(oMove.actions[0], 'Plan a short walk');
+  assert.ok(oMove.actions[0] !== oMove.actions[1]);
+  const fStress2 = baseFacts({ goals: ['Manage stress'], week: [{ label: 'Stress', now: 3.8, prev: 2.4 }, { label: 'Sleep', now: 6.2, prev: 7.1 }] });
+  const oStress2 = mod.smartWeekTemplate(fStress2);
+  assert.equal(oStress2.actions[0], 'Protect one small routine');
+  assert.ok(oStress2.actions[0] !== oStress2.actions[1]);
+  assert.ok(mod.smartWeekValidate(oStress2, fStress2));
 });
 
 test('extractModelText parses response shapes and strips think blocks', () => {

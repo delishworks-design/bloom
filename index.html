@@ -2733,13 +2733,24 @@ function smartWeekTemplate(facts){
  const week=facts.week||[],coming=facts.comingUp||[];
  const findWeek=label=>(week||[]).find(w=>w.label===label)||null;
  const dirWord=(now,prev)=>(+now)>=(+prev)?'up':'down';
+ const fragmentGoal=g=>g==='Move more'||g==='Eat regularly'||g==='Prepare for doctor visits';
+ const goalLabel=g=>g==='Better sleep'?'Sleep':g==='Steadier energy'?'Energy':g==='Manage stress'?'Stress':g==='Move more'?'Activity':g==='Eat regularly'?'Meals':g==='Prepare for doctor visits'?'Visit summary':null;
  const sentenceFor=g=>{
   if(g==='Understand my cycle'){
    if(facts.cycleDay!=null&&facts.phaseLabel){let s=`Day ${facts.cycleDay} in ${facts.phaseLabel}`;if(facts.daysToPeriod!=null)s+=`, period in ${facts.daysToPeriod} ${facts.daysToPeriod===1?'day':'days'}`;return s+'.'}
-   return facts.focus&&facts.focus.metric?smartWeekClip(facts.focus.metric)+'.':(facts.focus&&facts.focus.headline?smartWeekClip(facts.focus.headline)+'.':'');
+   return facts.focus&&facts.focus.headline?smartWeekClip(facts.focus.headline)+'.':'';
   }
-  const label=g==='Better sleep'?'Sleep':g==='Steadier energy'?'Energy':g==='Manage stress'?'Stress':g==='Move more'?'Activity':null;
-  const w=label?findWeek(label==='Activity'?'Activity':label):null;
+  if(fragmentGoal(g)){
+   if(!facts.focus||!facts.focus.headline)return '';
+   let s=String(facts.focus.headline);
+   const tr=String(facts.focus.trend||'');
+   const m=tr.match(/^(\d+(?:\.\d+)?)\s+vs\s+(\d+(?:\.\d+)?)/);
+   if(m) s+=`, ${dirWord(m[1],m[2])} from ${m[2]}`;
+   if(s&&!/[.!]$/.test(s))s+='.';
+   return s;
+  }
+  const label=g==='Better sleep'?'Sleep':g==='Steadier energy'?'Energy':g==='Manage stress'?'Stress':null;
+  const w=label?findWeek(label):null;
   if(w){
    if(label==='Sleep') return `Sleep averaged ${w.now} h this week, ${dirWord(w.now,w.prev)} from ${w.prev}.`;
    return `${w.label} averaged ${w.now} this week, ${dirWord(w.now,w.prev)} from ${w.prev}.`;
@@ -2750,20 +2761,36 @@ function smartWeekTemplate(facts){
  };
  let biggest=null;
  week.forEach(w=>{const d=Math.abs((+w.now)-(+w.prev));if(d>=0.3&&(!biggest||d>Math.abs((+biggest.now)-(+biggest.prev))))biggest=w});
+ const goalWeek=g=>{const l=goalLabel(g);return l?findWeek(l):null};
+ const gw=goalWeek(pg);
+ const goalBig=(gw&&Math.abs((+gw.now)-(+gw.prev))>=0.3)?gw:null;
+ const goalCountChanged=g=>{
+  if(!facts.focus||!facts.focus.trend)return false;
+  const m=String(facts.focus.trend).match(/^(\d+(?:\.\d+)?)\s+vs\s+(\d+(?:\.\d+)?)/);
+  return !!(m && (+m[1])!==( +m[2]));
+ };
  let headline='';
- if(facts.daysToPeriod!=null&&facts.daysToPeriod<=7) headline=facts.daysToPeriod===0?'Period expected today':facts.daysToPeriod===1?'Period expected in 1 day':`Period in ${facts.daysToPeriod} days`;
- else if(biggest){const up=(+biggest.now)>=(+biggest.prev);headline=`${biggest.label} ${up?'up':'down'} this week`}
+ if(facts.daysToPeriod!=null&&facts.daysToPeriod<=2) headline=facts.daysToPeriod===0?'Period expected today':facts.daysToPeriod===1?'Period expected in 1 day':`Period in ${facts.daysToPeriod} days`;
+ else if(goalBig){headline=`${goalBig.label} ${dirWord(goalBig.now,goalBig.prev)} this week`}
+ else if(fragmentGoal(pg)&&goalCountChanged(pg)){
+  const tm=String((facts.focus||{}).trend||'').match(/^(\d+(?:\.\d+)?)\s+vs\s+(\d+(?:\.\d+)?)/);
+  const up=tm && +tm[1] > +tm[2];
+  if(pg==='Move more') headline=up?'Active days up this week':'Active days down this week';
+  else if(pg==='Eat regularly') headline=up?'Meal plan up this week':'Meal plan down this week';
+  else headline='Visit summary ready';
+ }
  else if(facts.phaseLabel&&facts.cycleDay!=null) headline=`Day ${facts.cycleDay} of cycle`;
+ else if(biggest){headline=`${biggest.label} ${dirWord(biggest.now,biggest.prev)} this week`}
  else headline='Your week summary';
  const parts=[];
  const s1=sentenceFor(pg); if(s1) parts.push(s1);
  if(biggest){
-  const sameGoal=(pg==='Better sleep'&&biggest.label==='Sleep')||(pg==='Steadier energy'&&biggest.label==='Energy')||(pg==='Manage stress'&&biggest.label==='Stress');
-  if(!sameGoal){const dir=dirWord(biggest.now,biggest.prev);parts.push(`${biggest.label} ${dir} to ${biggest.now} from ${biggest.prev} this week.`)}
+  const sameGoal=goalLabel(pg)===biggest.label;
+  if(!sameGoal){parts.push(`${biggest.label} ${dirWord(biggest.now,biggest.prev)} to ${biggest.now} from ${biggest.prev} this week.`)}
  }
  const next=coming.find(p=>+p.startsIn>=1);
  if(next){
-  const s=+next.startsIn; let c=`${next.phaseLabel} starts ${s===1?'in 1 day':`in ${s} days`}`;
+  const s2=+next.startsIn; let c=`${next.phaseLabel} starts ${s2===1?'in 1 day':`in ${s2} days`}`;
   if(next.symptoms&&next.symptoms.length)c+=` with ${String(next.symptoms[0]).toLowerCase()} often logged`;
   parts.push(c+'.');
  }
@@ -2772,11 +2799,28 @@ function smartWeekTemplate(facts){
  if(!summary) summary=facts.focus&&facts.focus.headline?smartWeekClip(facts.focus.headline)+'.':'This week has new notes.';
 
  const goalAction=g=>g==='Understand my cycle'?{t:'symptoms',a:'Note symptoms as they show up'}:g==='Steadier energy'?{t:'tasks',a:'Plan hard tasks for higher-energy hours'}:g==='Better sleep'?{t:'bedtime',a:'Keep a steady bedtime'}:g==='Move more'?{t:'walk',a:'Plan a short walk'}:g==='Eat regularly'?{t:'meals',a:'Plan the missing meal'}:g==='Manage stress'?{t:'routine',a:'Protect one small routine'}:g==='Prepare for doctor visits'?{t:'visit',a:'Review the summary before your visit'}:{t:'symptoms',a:'Note symptoms as they show up'};
+ const changedAction=g=>{
+  if(g==='Better sleep'&&goalBig&&goalBig.label==='Sleep'&&(+goalBig.now<+goalBig.prev)) return {t:'bedtime',a:'Try an earlier bedtime'};
+  if(g==='Steadier energy'&&goalBig&&goalBig.label==='Energy'&&(+goalBig.now<+goalBig.prev)) return {t:'tasks',a:'Plan a lighter day'};
+  if(g==='Manage stress'&&goalBig&&goalBig.label==='Stress'&&(+goalBig.now>+goalBig.prev)) return {t:'routine',a:'Protect one small routine'};
+  if(g==='Move more'&&goalCountChanged(g)){
+   const m=String(facts.focus.trend).match(/^(\d+(?:\.\d+)?)\s+vs\s+(\d+(?:\.\d+)?)/);
+   if(m && +m[1] < +m[2]) return {t:'walk',a:'Plan a short walk'};
+  }
+  if(g==='Eat regularly'&&goalCountChanged(g)){
+   const m=String(facts.focus.trend).match(/^(\d+(?:\.\d+)?)\s+vs\s+(\d+(?:\.\d+)?)/);
+   if(m && +m[1] < +m[2]) return {t:'meals',a:'Plan the missing meal'};
+  }
+  return null;
+ };
  const chosen=[]; const used=new Set();
  const pick=x=>{if(!x||used.has(x.t)||chosen.length>=2)return;chosen.push(x.a);used.add(x.t)};
- if(biggest&&biggest.label==='Sleep'&&(biggest.now<biggest.prev)) pick({t:'bedtime',a:'Try an earlier bedtime'});
- if(biggest&&biggest.label==='Stress'&&(biggest.now>biggest.prev)) pick({t:'routine',a:'Protect one small routine'});
- if(biggest&&biggest.label==='Energy'&&(biggest.now<biggest.prev)) pick({t:'tasks',a:'Plan a lighter day'});
+ pick(changedAction(pg));
+ if(chosen.length<2){
+  if(biggest&&biggest.label==='Sleep'&&(biggest.now<biggest.prev)) pick({t:'bedtime',a:'Try an earlier bedtime'});
+  if(biggest&&biggest.label==='Stress'&&(biggest.now>biggest.prev)) pick({t:'routine',a:'Protect one small routine'});
+  if(biggest&&biggest.label==='Energy'&&(biggest.now<biggest.prev)) pick({t:'tasks',a:'Plan a lighter day'});
+ }
  pick(goalAction(pg));
  ['Better sleep','Move more','Steadier energy','Manage stress','Eat regularly','Understand my cycle','Prepare for doctor visits'].forEach(g=>pick(goalAction(g)));
  const actions=chosen.slice(0,2);
