@@ -1,7 +1,7 @@
 {
-    "versionCode": 67,
-    "versionName": "1.2.52",
-    "notes": "UI fixes: the cycle ring pill no longer overlaps the ring, cleaner Settings buttons, and status bar polish.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.52/bloom-1.2.52.apk",
+    "versionCode": 68,
+    "versionName": "1.2.53",
+    "notes": "Cloud AI explanations for Smart Insights (opt-in, with daily limits). Includes the Android Google sign-in fix.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.53/bloom-1.2.53.apk",
     "publishedAt": "2026-11-11"
 }
