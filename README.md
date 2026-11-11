@@ -12,7 +12,8 @@ open index.html
 - **Cycle** — a ring of your cycle days, your current phase, mood/energy tracking, water meter,
   monthly calendar, and a weekly view
 - **Planner** — daily tasks, meals with a weekly plan and grocery list, and a private journal
-- **Insights** — mood, energy, sleep, symptom frequency, habit completion and cycle length
+- **Insights** — a focus card for your chosen goals, this week vs last week, what is coming up in
+your cycle, and a few plain patterns from your logs (not medical advice)
 - **Learn** — plain-language articles about PMOS/PCOS, plus food tips and everyday tips
 - **Partner view** — share a read-only view of your logs with a partner using a sync code
 

@@ -314,7 +314,7 @@ details{border-bottom:1px solid #EADFD2;padding:14px 0}summary{cursor:pointer;fo
 .smart-source-note{display:inline-flex;align-items:center;gap:7px;margin-top:10px;font-size:.74rem;font-weight:700;color:var(--mut)}
 .smart-source-dot{width:7px;height:7px;border-radius:50%;background:var(--teal);flex:0 0 auto}
 .smart-hero-art{flex:0 0 auto;width:64px;height:64px;color:var(--rose)}
-.smart-hero-art svg,.smart-empty-art svg,.smart-icon svg,.smart-pattern-icon svg{width:100%;height:100%;display:block}
+.smart-hero-art svg,.smart-icon svg,.smart-pattern-icon svg{width:100%;height:100%;display:block}
 .smart-section{padding:18px 20px;border-top:1px solid var(--line)}
 .smart-kicker{font-size:.72rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);margin-bottom:5px}
 .smart-prediction-head{display:flex;gap:13px;align-items:center}
@@ -346,34 +346,28 @@ details{border-bottom:1px solid #EADFD2;padding:14px 0}summary{cursor:pointer;fo
 .smart-state-title{font-family:'Playfair Display',serif;font-size:18px;line-height:1.2;color:var(--ink);font-weight:700}
 .smart-cycle-day{font-size:.95rem;font-weight:800;color:var(--rose);line-height:1.3;margin-top:3px}
 .smart-copy{font-size:.86rem;line-height:1.5;color:var(--mut);margin-top:8px}
-.smart-empty{display:flex;gap:13px;align-items:flex-start}
-.smart-empty-art{width:48px;height:48px;border-radius:14px;border:1.5px solid rgba(184,69,107,.28);color:var(--mut);display:grid;place-items:center;padding:9px;flex:0 0 auto;background:#FFF8F4}
-.smart-empty .smart-copy{margin-top:5px}
 .smart-pattern{display:flex;gap:12px;align-items:flex-start;padding:13px 0;border-bottom:1px dashed var(--line)}
 .smart-pattern:last-of-type{padding-bottom:0;border-bottom:0}
 .smart-pattern-icon{width:34px;height:34px;border-radius:12px;background:var(--tealS);color:var(--teal);display:grid;place-items:center;padding:8px;flex:0 0 auto}
 .smart-pattern-copy{min-width:0}
 .smart-pattern-title{font-size:.86rem;font-weight:800;color:var(--ink);line-height:1.3}
 .smart-pattern-text{font-size:.82rem;line-height:1.48;color:var(--mut);margin-top:4px}
-.smart-pattern-count{font-size:.7rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--teal);margin-top:6px}
-.smart-transparency{background:#FFF8F4;display:flex;gap:13px}
-.smart-transparency .smart-copy{margin-top:5px}
 .smart-pattern-takeaway{font-size:.8rem;line-height:1.45;color:var(--ink);margin-top:5px}
-.smart-badge{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;background:#F1E6D7;color:var(--ink);font-size:.62rem;font-weight:800;letter-spacing:.03em;text-transform:uppercase;vertical-align:middle}
-.smart-note{font-size:.76rem;line-height:1.4;color:var(--mut);margin:14px 2px 0}
-.smart-progress-list{margin:8px 0 0;padding-left:18px;font-size:.84rem;line-height:1.5;color:var(--mut)}
-.smart-progress-list li{margin-top:3px}
 .smart-cycle .smart-copy{margin-top:4px}
-.smart-pattern-ai{display:inline-block;margin-top:7px;font-size:.64rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--rose)}
-.smart-ai{background:#FFF8F4}
-.smart-ai-head{display:flex;gap:13px;align-items:flex-start}
-.smart-ai-head .smart-copy{margin-top:5px}
-.smart-ai-controls{margin-top:12px;display:flex;flex-direction:column;gap:10px}
+.smart-focus-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.smart-goal-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.smart-goal-chip{font-size:.72rem;padding:4px 9px}
+.smart-week-row{display:flex;align-items:baseline;gap:8px;margin-top:8px;font-size:.86rem}
+.smart-week-label{font-weight:800;color:var(--ink);min-width:56px}
+.smart-week-val{font-weight:800;color:var(--rose)}
+.smart-week-prev{color:var(--mut);font-size:.8rem}
+.smart-upcoming{margin-top:10px}
+.smart-ai-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-top:1px solid var(--line)}
+.smart-ai-label{font-size:.76rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--mut)}
+.smart-ai-toggle{align-self:center}
 .smart-ai-toggle{align-self:flex-start}
-.smart-ai-token summary{cursor:pointer;font-size:.78rem;font-weight:700;color:var(--mut)}
-.smart-ai-token input{margin-top:8px;width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:12px;font:inherit;background:#fff;color:var(--ink)}
 @media (max-width:430px){.smart-hero{padding:20px 18px 16px}.smart-section{padding:16px 18px}.smart-hero-art{width:54px;height:54px}.smart-date{font-size:27px}.smart-cycle-layout{flex-direction:column;align-items:center}.smart-cycle-copy{text-align:center}.smart-timeline-dates,.smart-timeline-labels{gap:7px}.smart-metrics{grid-template-columns:1fr 1fr}}
-@media (prefers-reduced-motion:reduce){.smart-card *,.smart-hero-art svg,.smart-icon svg,.smart-empty-art svg{animation:none !important;transition:none !important}}
+@media (prefers-reduced-motion:reduce){.smart-card *,.smart-hero-art svg,.smart-icon svg{animation:none !important;transition:none !important}}
 .faces{display:flex;gap:8px;justify-content:space-between;margin:8px 0}
 .facebtn{flex:1;background:#FFFBF5 !important;border:1.5px solid #EADFD2 !important;padding:8px 4px !important;border-radius:16px !important;opacity:.55;min-height:58px !important;display:grid !important;place-items:center !important}
 .facebtn.on{opacity:1 !important;transform:translateY(-2px);border-color:#B8456B !important;background:#F9DDE5 !important;box-shadow:0 2px 8px rgba(120,70,80,.08) !important}
@@ -2131,6 +2125,7 @@ function series(k,n){return[...Array(n)].map((_,i)=>{const d=addD(today(),i-n+1)
 function line(k,n,max,col){const s=series(k,n),W=320,H=110,x=i=>20+i*(W-36)/(n-1||1),y=v=>H-14-(v/max)*(H-24);let pts='',dots='';s.forEach((p,i)=>{if(p.v!=null){pts+=(pts&&s[i-1]?.v!=null?'L':'M')+x(i)+' '+y(p.v);dots+=`<circle cx="${x(i)}" cy="${y(p.v)}" r="3" fill="${col}"/>`}});
  return s.some(p=>p.v!=null)?`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${k} over last ${n} days" style="overflow:visible"><line x1="20" x2="${W-16}" y1="${H-14}" y2="${H-14}" stroke="var(--line)"/><text x="8" y="${y(max)+3}">${max}</text><text x="8" y="${y(1)+3}">1</text><path d="${pts}" fill="none" stroke="${col}" stroke-width="2"/>${dots}<text x="20" y="${H-1}">${fmt(s[0].d)}</text><text x="${W-16}" y="${H-1}" text-anchor="end">${fmt(s[n-1].d)}</text></svg>`:'<p class="meta">No entries</p>'}
 // @test-begin smart
+let smartFocusGoal=null;
 function spValidPeriods(startDates){
  return [...new Set((startDates||[]).filter(d=>typeof d==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(d)))].sort();
 }
@@ -2285,6 +2280,20 @@ function smartPatternsFromLogs(logs,startDates){
     out.push({type:'mood-sleep',id:'mood-sleep',category:'Mood & Sleep',title:'Mood and sleep',count:highMood.length,observationCount:highMood.length,comparisonCount:lowMood.length,confidenceLevel:confidenceFor(highMood.length,lowMood.length),limitations:'Compares recorded days only.',evidenceSummary:`Days rated 4-5 for mood averaged ${spAvgText(highMood)} hours of sleep across ${highMood.length} days, versus ${spAvgText(lowMood)} hours across ${lowMood.length} days rated 1-2.`,headline:'Better mood days = more sleep',detail:`Mood 4-5: sleep ${spAvgText(highMood)}h (${highMood.length} days) vs mood 1-2: ${spAvgText(lowMood)}h (${lowMood.length} days)`,tip:'Protect your usual bedtime on low-mood days.',text:`Days rated 4-5 for mood averaged ${spAvgText(highMood)} hours of sleep across ${highMood.length} days, versus ${spAvgText(lowMood)} hours across ${lowMood.length} days rated 1-2.`,score});
   }
  }
+ const highStress=[],lowStress=[];
+ rows.forEach(({log})=>{
+  const stress=spNum(log.stress),sleep=spNum(log.sleep);
+  if(stress==null||sleep==null)return;
+  if(stress>=4)highStress.push(sleep);
+  else if(stress<=2)lowStress.push(sleep);
+ });
+ if(highStress.length>=3&&lowStress.length>=3){
+  const highAvg=spAverage(highStress),lowAvg=spAverage(lowStress);
+  if(lowAvg-highAvg>=.5){
+   const score=Math.min(1,(lowAvg-highAvg)/4);
+    out.push({type:'stress-sleep',id:'stress-sleep',category:'Stress & Sleep',title:'Stress and sleep',count:highStress.length,observationCount:highStress.length,comparisonCount:lowStress.length,confidenceLevel:confidenceFor(highStress.length,lowStress.length),limitations:'Compares recorded days only.',evidenceSummary:`High-stress days averaged ${spAvgText(highStress)} hours of sleep across ${highStress.length} days, versus ${spAvgText(lowStress)} hours across ${lowStress.length} low-stress days.`,headline:'High-stress days = shorter sleep',detail:`Stress 4-5: sleep ${spAvgText(highStress)}h (${highStress.length} days) vs stress 1-2: ${spAvgText(lowStress)}h (${lowStress.length} days)`,tip:'Wind down earlier on high-stress days.',text:`High-stress days averaged ${spAvgText(highStress)} hours of sleep across ${highStress.length} days, versus ${spAvgText(lowStress)} hours across ${lowStress.length} low-stress days.`,score});
+  }
+ }
  const histRows=rows.map(r=>({log:r.log,hist:smartHistoricalPhaseFor(r.date,startDates)})).filter(r=>r.hist&&r.hist.completed);
  const symptomCounts={},symptomSources={};
  histRows.forEach(({log})=>{
@@ -2316,6 +2325,241 @@ function smartPatternsFromLogs(logs,startDates){
  out.sort((a,b)=>(b.score*(b.confidenceLevel==='Early'?0.8:1))-(a.score*(a.confidenceLevel==='Early'?0.8:1)));
  return out.slice(0,5);
 }
+function smartGoalsList(){
+ return typeof GOALS!=='undefined'?GOALS:['Understand my cycle','Steadier energy','Better sleep','Move more','Eat regularly','Manage stress','Prepare for doctor visits'];
+}
+function smartActiveGoals(profileGoals){
+ const all=smartGoalsList(),list=[];
+ (Array.isArray(profileGoals)?profileGoals:[]).forEach(g=>{if(typeof g==='string'&&all.includes(g)&&!list.includes(g))list.push(g)});
+ if(!list.length)return {goals:['Understand my cycle'],noGoals:true};
+ return {goals:list,noGoals:false};
+}
+function smartLogRows(logs){
+ const all=logs&&typeof logs==='object'?logs:{};
+ return Object.keys(all).filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d)&&all[d]&&typeof all[d]==='object').sort().map(d=>({date:d,log:all[d]}));
+}
+function smartWindow(rows,from,to){return rows.filter(r=>r.date>=from&&r.date<=to)}
+function smartVals(rows,key){const out=[];rows.forEach(r=>{const v=spNum(r.log[key]);if(v!=null)out.push(v)});return out}
+function smartRound1(v){return v==null?null:Math.round(v*10)/10}
+function smartMedian(vals){
+ if(!vals.length)return null;
+ const s=vals.slice().sort((a,b)=>a-b),m=Math.floor(s.length/2);
+ return s.length%2?s[m]:(s[m-1]+s[m])/2;
+}
+function smartStd(vals){
+ if(vals.length<2)return null;
+ const m=spAverage(vals);
+ return Math.sqrt(vals.reduce((a,v)=>a+(v-m)*(v-m),0)/vals.length);
+}
+function smartArrow(diff){
+ if(diff>=.3)return '↑';
+ if(diff<=-.3)return '↓';
+ return '→';
+}
+function smartWeekCompare(logs,todayStr){
+ if(typeof todayStr!=='string')return [];
+ const rows=smartLogRows(logs),from1=spAddDays(todayStr,-6),split=spAddDays(todayStr,-7),from2=spAddDays(todayStr,-13);
+ const now=smartWindow(rows,from1,todayStr),prev=smartWindow(rows,from2,split);
+ const metrics=[['mood','Mood'],['energy','Energy'],['sleep','Sleep'],['stress','Stress']],out=[];
+ metrics.forEach(([key,label])=>{
+  const a=smartVals(now,key),b=smartVals(prev,key);
+  if(a.length<3||b.length<3)return;
+  const nowAvg=spAverage(a),prevAvg=spAverage(b),diff=nowAvg-prevAvg;
+  const item={key,label,now:smartRound1(nowAvg),prev:smartRound1(prevAvg),arrow:smartArrow(diff)};
+  if(key==='stress'&&diff<=-.3)item.good=true;
+  out.push(item);
+ });
+ return out;
+}
+function smartPhaseStats(rows,startDates,phase){
+ const vals={mood:[],energy:[],stress:[]},symptoms={};
+ let logged=0;
+ rows.forEach(({date,log})=>{
+  const hist=smartHistoricalPhaseFor(date,startDates);
+  if(!hist||!hist.completed||hist.phase!==phase)return;
+  let any=false;
+  ['mood','energy','stress'].forEach(k=>{const v=spNum(log[k]);if(v!=null){vals[k].push(v);any=true}});
+  const sx=spSymptomNames(log);
+  if(sx.length){any=true;sx.forEach(t=>symptoms[t]=(symptoms[t]||0)+1)}
+  if(any)logged++;
+ });
+ const top=Object.entries(symptoms).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([t])=>t);
+ return {logged,mood:smartRound1(spAverage(vals.mood)),energy:smartRound1(spAverage(vals.energy)),stress:smartRound1(spAverage(vals.stress)),symptoms:top};
+}
+function smartComingUp(logs,startDates,current,pred){
+ if(!current||current.state!=='estimated'||!pred||!pred.avg||!pred.last)return null;
+ const rows=smartLogRows(logs);
+ const today=spAddDays(pred.last,current.cycleDay-1);
+ const daysToPeriod=pred.expected?spDayDiff(today,pred.expected):null;
+ const phases=[];
+ for(let i=0;i<7;i++){
+  const date=spAddDays(today,i),day=spDayDiff(pred.last,date)+1;
+  if(day<1)continue;
+  const wrapped=((day-1)%pred.avg)+1,info=phaseInfo(wrapped,pred.avg);
+  if(!phases.some(p=>p.phase===info.k))phases.push({phase:info.k,phaseLabel:info.t,startsIn:i});
+ }
+ const out=[];
+ phases.forEach(p=>{
+  const st=smartPhaseStats(rows,startDates,p.phase);
+  if(st.logged<3)return;
+  out.push(Object.assign({},p,st));
+ });
+ if(!out.length)return null;
+ return {daysToPeriod,phases:out};
+}
+function smartGoalFocus(goal,ctx){
+ ctx=ctx||{};
+ const logs=ctx.logs||{},starts=ctx.startDates||[],today=ctx.todayStr,meals=ctx.meals||{};
+ const rows=smartLogRows(logs),current=ctx.current||{},pred=ctx.pred||{};
+ const missing=what=>({goal,headline:`Log ${what} to see this`,metric:null,trend:null,action:null});
+ if(typeof today!=='string')return missing('a few daily entries');
+ const last=n=>smartWindow(rows,spAddDays(today,-(n-1)),today);
+ const prev=n=>smartWindow(rows,spAddDays(today,-(2*n-1)),spAddDays(today,-n));
+ const medianSleep=smartMedian(smartVals(rows,'sleep'));
+ const isActive=r=>{const m=spNum(r.log.exMin);return m!=null&&m>=20&&r.log.exercise!=='Rest'};
+
+ if(goal==='Understand my cycle'){
+  if(!current||current.state!=='estimated')return missing('period start dates');
+  const cu=smartComingUp(logs,starts,current,pred);
+  const intervals=spIntervals(starts).lengths;
+  let trend=null;
+  if(intervals.length>=3){
+   const lastLen=intervals[intervals.length-1],prevAvg=smartRound1(spAverage(intervals.slice(0,-1)));
+   trend=`Last cycle ${lastLen} days vs ${prevAvg} days before`;
+  }
+  const phaseName=current.phaseLabel||current.phase||'phase';
+  let action='Keep logging to see what your next phase usually brings.';
+  if(cu&&cu.phases.length){
+   const p=cu.phases[0],when=p.startsIn===0?'today':`in ${p.startsIn} ${p.startsIn===1?'day':'days'}`;
+   action=p.symptoms.length?`${p.phaseLabel} starts ${when}; ${p.symptoms[0]} is most logged then.`:`${p.phaseLabel} starts ${when}. Keep logging to see what it brings.`;
+  }
+  return {goal,headline:`Day ${current.cycleDay} of ~${current.cycleLength} · ${phaseName}`,metric:cu&&cu.daysToPeriod!=null?`Period expected in ${cu.daysToPeriod} days`:null,trend,action};
+ }
+
+ if(goal==='Steadier energy'){
+  const now=last(14),vals=smartVals(now,'energy');
+  if(vals.length<5)return missing('energy on more days');
+  const range=Math.max(...vals)-Math.min(...vals),sd=smartStd(vals);
+  const prevVals=smartVals(prev(14),'energy');
+  let trend=null;
+  if(prevVals.length>=5){
+   const d=sd-smartStd(prevVals);
+   trend=d<=-.15?'Steadier than the two weeks before':d>=.15?'More variable than the two weeks before':'About the same as the two weeks before';
+  }
+  const lows=now.filter(r=>{const e=spNum(r.log.energy);return e!=null&&e<=2});
+  let action='Keep logging to spot what tends to drain your energy.';
+  if(lows.length>=3){
+   const cover={short:0,luteal:0,noactivity:0,stress:0};
+   lows.forEach(r=>{
+    const sl=spNum(r.log.sleep);if(medianSleep!=null&&sl!=null&&sl<medianSleep)cover.short++;
+    const h=smartHistoricalPhaseFor(r.date,starts);if(h&&h.completed&&h.phase==='Luteal')cover.luteal++;
+    if(!isActive(r))cover.noactivity++;
+    const s=spNum(r.log.stress);if(s!=null&&s>=4)cover.stress++;
+   });
+   const best=Object.entries(cover).sort((a,b)=>b[1]-a[1])[0];
+   if(best&&best[1]>0){
+    const lines={short:'Most low-energy days follow short sleep.',luteal:'Most low-energy days fall in your luteal phase.',noactivity:'Most low-energy days had no activity logged.',stress:'Most low-energy days also had high stress.'};
+    action=lines[best[0]];
+   }
+  }
+  return {goal,headline:`Energy mostly ${Math.min(...vals)}–${Math.max(...vals)} of 5`,metric:`Range ${range} · spread ±${smartRound1(sd)}`,trend,action};
+ }
+
+ if(goal==='Better sleep'){
+  const now=last(7),before=prev(7);
+  const sN=smartVals(now,'sleep'),sP=smartVals(before,'sleep'),qN=smartVals(now,'sleepq'),qP=smartVals(before,'sleepq');
+  if(sN.length<3&&qN.length<3)return missing('sleep on more nights');
+  const parts=[],trendParts=[];
+  if(sN.length>=3){
+   const avg=smartRound1(spAverage(sN)),under=sN.filter(v=>v<7).length;
+   parts.push(`${avg} h (${under} under 7h)`);
+   if(sP.length>=3)trendParts.push(`sleep ${avg} vs ${smartRound1(spAverage(sP))} h`);
+  }
+  if(qN.length>=3){
+   const q=smartRound1(spAverage(qN));
+   parts.push(`quality ${q}/5`);
+   if(qP.length>=3)trendParts.push(`quality ${q} vs ${smartRound1(spAverage(qP))}`);
+  }
+  let action=null;
+  const rough=now.filter(r=>{const q=spNum(r.log.sleepq),s=spNum(r.log.sleep);return q!=null&&q<=2&&s!=null&&s>=7});
+  if(rough.length>=2){
+   action=`Hours are fine but quality is low on ${rough.length} days`;
+  }else{
+   const pat=smartPatternsFromLogs(logs,starts).find(p=>p.type==='sleep-energy');
+   if(pat)action=pat.detail.replace(/^So far: /,'');
+   else action='Try a consistent wind-down time.';
+  }
+  const headline=sN.length>=3?`Sleep ${smartRound1(spAverage(sN))} h last week`:`Sleep quality ${smartRound1(spAverage(qN))}/5 last week`;
+  return {goal,headline,metric:parts.join(' · '),trend:trendParts.length?trendParts.join(' · '):null,action};
+ }
+
+ if(goal==='Move more'){
+  const now=last(7),before=prev(7);
+  const anyActivity=smartWindow(rows,spAddDays(today,-13),today).some(r=>spNum(r.log.exMin)!=null||typeof r.log.exercise==='string');
+  if(!anyActivity)return missing('activity on more days');
+  const nowN=now.filter(isActive).length,prevN=before.filter(isActive).length;
+  const pat=smartPatternsFromLogs(logs,starts).find(p=>p.type==='activity-energy');
+  return {goal,headline:`Active on ${nowN} of 7 days`,metric:`${nowN} active days`,trend:`${nowN} vs ${prevN} the week before`,action:pat?pat.detail.replace(/^So far: /,''):'A short walk on two days this week is a start.'};
+ }
+
+ if(goal==='Eat regularly'){
+  const days=[];for(let i=0;i<7;i++)days.push(spAddDays(today,-i));
+  const mealsOn=d=>Array.isArray(meals[d])?meals[d].filter(m=>m&&m.t):[];
+  const hasAny=d=>mealsOn(d).length>0;
+  if(days.filter(hasAny).length<3)return {goal,headline:'Add meals to your plan to see this',metric:null,trend:null,action:null};
+  const hasAll=d=>{const t=new Set(mealsOn(d).map(m=>m.t));return t.has('b')&&t.has('l')&&t.has('d')};
+  const full=days.filter(hasAll).length;
+  const prevDays=[];for(let i=7;i<14;i++)prevDays.push(spAddDays(today,-i));
+  const prevFull=prevDays.filter(hasAll).length;
+  const labels={b:'Breakfast',l:'Lunch',d:'Dinner'};
+  let best=null;
+  ['b','l','d'].forEach(t=>{
+   const miss=days.filter(d=>!mealsOn(d).some(m=>m.t===t)).length;
+   if(!best||miss>best.miss)best={t,miss};
+  });
+  return {goal,headline:`All three meals planned on ${full} of 7 days`,metric:`${full} of 7 complete`,trend:`${full} vs ${prevFull} the week before`,action:best?`${labels[best.t]} is missing from ${best.miss} of 7 days in your plan.`:null};
+ }
+
+ if(goal==='Manage stress'){
+  const now=last(7),before=prev(7);
+  const nv=smartVals(now,'stress'),pv=smartVals(before,'stress');
+  if(nv.length<3||pv.length<3)return missing('stress on more days');
+  const avg=smartRound1(spAverage(nv)),prevAvg=smartRound1(spAverage(pv));
+  const window14=smartWindow(rows,spAddDays(today,-13),today);
+  const high=window14.filter(r=>{const s=spNum(r.log.stress);return s!=null&&s>=4});
+  let action='Protect one small routine on high-stress days.';
+  if(high.length>=3){
+   let short=0,quality=0,luteal=0;
+   high.forEach(r=>{
+    const sl=spNum(r.log.sleep);if(medianSleep!=null&&sl!=null&&sl<medianSleep)short++;
+    const q=spNum(r.log.sleepq);if(q!=null&&q<=2)quality++;
+    const h=smartHistoricalPhaseFor(r.date,starts);if(h&&h.completed&&h.phase==='Luteal')luteal++;
+   });
+   const best=[['short',short],['quality',quality],['luteal',luteal]].sort((a,b)=>b[1]-a[1])[0];
+   if(best[1]>0){
+    const lead={short:'High-stress days often follow short sleep.',quality:'High-stress days often come with poor sleep quality.',luteal:'High-stress days often fall in your luteal phase.'}[best[0]];
+    action=`${lead} Protect one small routine on high-stress days.`;
+   }
+  }
+  return {goal,headline:`Stress ${avg}/5 last week`,metric:`${avg}/5 · ${high.length} high day${high.length===1?'':'s'}`,trend:`${avg} vs ${prevAvg} before`,action};
+ }
+
+ if(goal==='Prepare for doctor visits'){
+  const from=spAddDays(today,-89);
+  const window90=smartWindow(rows,from,today);
+  const starts90=spValidPeriods(starts).filter(d=>d>=from&&d<=today);
+  const sx={};
+  window90.forEach(r=>{spSymptomNames(r.log).forEach(t=>sx[t]=(sx[t]||0)+1)});
+  const top=Object.entries(sx).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([t])=>t);
+  if(!starts90.length&&!top.length)return missing('period starts or symptoms');
+  const intervals=spIntervals(starts).lengths;
+  const metricParts=[`${starts90.length} period start${starts90.length===1?'':'s'} in 90 days`];
+  if(intervals.length)metricParts.push(`cycle avg ${Math.round(spAverage(intervals))}d (${Math.min(...intervals)}–${Math.max(...intervals)})`);
+  return {goal,headline:'Summary for your next visit',metric:metricParts.join(' · '),trend:top.length?`Top symptoms: ${top.join(', ')}`:null,action:'Use Export summary below to bring this to your visit.'};
+ }
+ return null;
+}
+
 function smartPhaseInsight(logs,startDates,current){
  if(!current||current.state!=='estimated'||!current.phase)return null;
  const allLogs=logs&&typeof logs==='object'?logs:{};
@@ -2370,8 +2614,11 @@ function smartProgress(logs){
  }
  return {hints,averages,days:dates.length};
 }
-function smartInsightsExtras(logs,startDates,current){
- return {phaseInsight:smartPhaseInsight(logs,startDates,current),progress:smartProgress(logs)};
+function smartInsightsExtras(logs,startDates,current,pred,todayStr,meals,profileGoals,selectedGoal){
+ const active=smartActiveGoals(profileGoals);
+ const goal=active.goals.includes(selectedGoal)?selectedGoal:active.goals[0];
+ const ctx={logs,startDates,current,pred,todayStr,meals};
+ return {week:smartWeekCompare(logs,todayStr),comingUp:smartComingUp(logs,startDates,current,pred),focus:active.noGoals?null:smartGoalFocus(goal,ctx),focusGoals:active.goals,noGoals:active.noGoals,selectedGoal:goal,ctx};
 }
 function smartPatterns(){
  return smartPatternsFromLogs(D&&D.logs?D.logs:{},starts());
@@ -2397,30 +2644,66 @@ function smartPatternIcon(type){
  const paths={
   'sleep-energy':'<path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" /><path d="M17 4a2 2 0 0 0 2 2a2 2 0 0 0 -2 2a2 2 0 0 0 -2 -2a2 2 0 0 0 2 -2" /><path d="M19 11h2m-1 -1v2" />',
   'mood-sleep':'<path d="M4 12h6l-6 8h6" /><path d="M14 4h6l-6 8h6" />',
+  'stress-sleep':'<path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" /><path d="M17 4a2 2 0 0 0 2 2a2 2 0 0 0 -2 2a2 2 0 0 0 -2 -2a2 2 0 0 0 2 -2" />',
   'activity-energy':'<path d="M13 4m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /><path d="M4 17l5 1l.75 -1.5" /><path d="M15 21l0 -4l-4 -3l1 -6" /><path d="M7 12l0 -3l5 -1l3 3l3 1" />',
   'symptom-phase':'<path d="M3 3v18h18" /><path d="M9 9m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /><path d="M19 7m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /><path d="M14 15m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /><path d="M10.16 10.62l2.34 2.88" /><path d="M15.088 13.328l2.837 -4.586" />'
  };
  return `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${paths[type]||paths['symptom-phase']}</svg>`;
 }
-function smartEmptyState(kind,title,body){
- return `<div class="smart-empty"><div class="smart-empty-art">${smartArt(kind)}</div><div><div class="smart-state-title">${E(title)}</div><p class="smart-copy">${E(body)}</p></div></div>`;
-}
-function smartPatternsHTML(patterns,aiMap,progress){
- const titles={'sleep-energy':'Sleep and energy','mood-sleep':'Mood and sleep','activity-energy':'Activity and energy','symptom-phase':'Symptoms across recorded phases'};
- if(!patterns||!patterns.length){
-  const hints=progress&&Array.isArray(progress.hints)?progress.hints:[];
-  const avg=progress&&progress.averages?progress.averages:null;
-  const bits=avg?[avg.sleep!=null?`sleep ${spOne(avg.sleep)}h`:null,avg.mood!=null?`mood ${spOne(avg.mood)}/5`:null,avg.energy!=null?`energy ${spOne(avg.energy)}/5`:null].filter(Boolean):[];
-  return `<div class="smart-empty"><div class="smart-empty-art">${smartArt('data')}</div><div><div class="smart-state-title">A little more logging</div>${hints.length?`<ul class="smart-progress-list">${hints.map(h=>`<li>${E(h)}</li>`).join('')}</ul>`:'<p class="smart-copy">Keep logging your daily observations.</p>'}${bits.length?`<p class="smart-copy">Recent averages: ${E(bits.join(' · '))}</p>`:''}</div></div>`;
- }
- return `<div>${patterns.map(p=>{
+function smartPatternsHTML(patterns,aiMap){
+ const titles={'sleep-energy':'Sleep and energy','mood-sleep':'Mood and sleep','activity-energy':'Activity and energy','stress-sleep':'Stress and sleep','symptom-phase':'Symptoms across recorded phases'};
+ if(!patterns||!patterns.length)return '<p class="smart-copy">Log a few more days to see insights.</p>';
+ return `<div>${patterns.slice(0,3).map(p=>{
   const ai=aiMap&&p.id?aiMap[p.id]:null;
   const title=ai&&ai.title?ai.title:(p.headline||titles[p.type]||'Personal pattern');
   const body=ai&&ai.summary?ai.summary:(p.detail||p.text||'');
   const take=ai&&ai.takeaway?ai.takeaway:(p.tip||'');
-  const early=p.confidenceLevel==='Early';
-  return `<article class="smart-pattern"><div class="smart-pattern-icon">${smartPatternIcon(p.type)}</div><div class="smart-pattern-copy"><div class="smart-pattern-title">${E(title)}${early?' <span class="smart-badge">Early pattern</span>':''}</div><p class="smart-pattern-text">${E(body)}</p>${take?`<p class="smart-pattern-takeaway">${E(take)}</p>`:''}${p.count?`<div class="smart-pattern-count">Based on ${p.count} observations</div>`:''}${ai?`<div class="smart-pattern-ai">Cloud AI explanation</div>`:''}</div></article>`;
+  return `<article class="smart-pattern"><div class="smart-pattern-icon">${smartPatternIcon(p.type)}</div><div class="smart-pattern-copy"><div class="smart-pattern-title">${E(title)}</div><p class="smart-pattern-text">${E(body)}</p>${take?`<p class="smart-pattern-takeaway">${E(take)}</p>`:''}</div></article>`;
  }).join('')}</div>`;
+}
+function smartSectionOrder(goal){
+ return ['Better sleep','Steadier energy','Move more','Manage stress'].includes(goal)?['week','coming']:['coming','week'];
+}
+function smartWeekHTML(week){
+ if(!week||!week.length)return '';
+ const rows=week.map(w=>{
+  const u=w.key==='sleep'?' h':'';
+  return `<div class="smart-week-row"><span class="smart-week-label">${E(w.label)}</span><span class="smart-week-val">${E(String(w.now)+u)} ${w.arrow}</span><span class="smart-week-prev">from ${E(String(w.prev)+u)}</span></div>`;
+ }).join('');
+ return `<section class="smart-section" aria-labelledby="smart-week-title"><h3 class="smart-kicker" id="smart-week-title">This week vs last</h3>${rows}</section>`;
+}
+function smartComingUpHTML(cu){
+ if(!cu||!cu.phases||!cu.phases.length)return '';
+ const blocks=cu.phases.map(p=>{
+  const when=p.startsIn===0?'today':`in ${p.startsIn} ${p.startsIn===1?'day':'days'}`;
+  const bits=[];
+  if(p.mood!=null)bits.push(`mood ${p.mood}/5`);
+  if(p.energy!=null)bits.push(`energy ${p.energy}/5`);
+  if(p.stress!=null)bits.push(`stress ${p.stress}/5`);
+  if(p.symptoms.length)bits.push(`most logged: ${p.symptoms.join(', ')}`);
+  return `<div class="smart-upcoming"><div class="smart-pattern-title">${E(p.phaseLabel)} ${E(when)}</div>${bits.length?`<p class="smart-pattern-text">Usually ${E(bits.join(' · '))}</p>`:''}</div>`;
+ }).join('');
+ const tail=cu.daysToPeriod!=null?`<p class="smart-copy">Period expected in ${cu.daysToPeriod} ${cu.daysToPeriod===1?'day':'days'}.</p>`:'';
+ return `<section class="smart-section" aria-labelledby="smart-upcoming-title"><h3 class="smart-kicker" id="smart-upcoming-title">Coming up</h3>${blocks}${tail}</section>`;
+}
+function smartFocusHTML(goal,goals,noGoals,focus){
+ const chips=goals&&goals.length>1?`<div class="smart-goal-chips">${goals.map(g=>`<button type="button" class="chip smart-goal-chip" data-goal="${E(g)}" aria-pressed="${g===goal}">${E(g)}</button>`).join('')}</div>`:'';
+ const body=noGoals?'<p class="smart-copy">Pick your goals in Profile to personalize this.</p>':(focus?`<div class="smart-pattern-title">${E(focus.headline)}</div>${focus.metric?`<p class="smart-pattern-text">${E(focus.metric)}</p>`:''}${focus.trend?`<p class="smart-pattern-text">${E(focus.trend)}</p>`:''}${focus.action?`<p class="smart-pattern-takeaway">${E(focus.action)}</p>`:''}`:'<p class="smart-copy">Log a few more days to see insights.</p>');
+ return `<section class="smart-section smart-focus" id="smart-focus" aria-labelledby="smart-focus-title"><div class="smart-focus-head"><h3 class="smart-kicker" id="smart-focus-title">Your focus</h3>${chips}</div>${body}</section>`;
+}
+function wireSmartFocus(state){
+ const root=document.getElementById('smart-focus');
+ if(!root)return;
+ root.querySelectorAll('[data-goal]').forEach(btn=>{
+  btn.onclick=()=>{
+   const g=btn.dataset.goal,extras=state.extras||{};
+   if(!extras.focusGoals||!extras.focusGoals.includes(g))return;
+   extras.selectedGoal=g;extras.focus=smartGoalFocus(g,extras.ctx);smartFocusGoal=g;
+   const el=document.getElementById('smart-focus');
+   if(el)el.outerHTML=smartFocusHTML(g,extras.focusGoals,extras.noGoals,extras.focus);
+   wireSmartFocus(state);
+  };
+ });
 }
 function smartCycleSection(pred,current,dateText){
  pred=pred||{};
@@ -2442,9 +2725,10 @@ function smartCycleSection(pred,current,dateText){
 }
 function smartInsightsHTML(pred,current,patterns,viewerName,aiMap,extras){
  extras=extras||{};
- const progress=extras.progress||null,phaseInsight=extras.phaseInsight||null;
+ const week=extras.week||[],goals=extras.focusGoals||['Understand my cycle'],noGoals=!!extras.noGoals,goal=extras.selectedGoal||goals[0];
  const dateText=d=>{if(!d)return '';try{return typeof fmt==='function'?fmt(d,{month:'short',day:'numeric'}):d}catch(e){return d}};
- const phaseHtml=phaseInsight?`<section class="smart-section" aria-labelledby="smart-phase-title"><h3 class="smart-kicker" id="smart-phase-title">Cycle connection</h3><article class="smart-pattern"><div class="smart-pattern-copy"><div class="smart-pattern-title">${E(phaseInsight.headline)}</div><p class="smart-pattern-text">${E(phaseInsight.detail)}</p><p class="smart-pattern-takeaway">${E(phaseInsight.tip)}</p></div></article></section>`:'';
+ const weekHtml=smartWeekHTML(week),comingHtml=smartComingUpHTML(extras.comingUp||null);
+ const sections=smartSectionOrder(goal).map(k=>k==='week'?weekHtml:comingHtml).filter(Boolean).join('');
  return `<header class="smart-hero">
   <div class="smart-hero-copy">
    <h2 class="smart-title">Smart Insights</h2>
@@ -2453,9 +2737,9 @@ function smartInsightsHTML(pred,current,patterns,viewerName,aiMap,extras){
   <div class="smart-hero-art">${smartArt('insight')}</div>
  </header>
  ${smartCycleSection(pred,current,dateText)}
- <section class="smart-section" aria-labelledby="smart-patterns-title"><h3 class="smart-kicker" id="smart-patterns-title">Personal patterns</h3>${smartPatternsHTML(patterns,aiMap,progress)}</section>
- ${phaseHtml}
- <p class="smart-note">Patterns from your own logs. Not medical advice or a diagnosis.</p>`;
+ ${smartFocusHTML(goal,goals,noGoals,extras.focus||null)}
+ ${sections}
+ <section class="smart-section" aria-labelledby="smart-patterns-title"><h3 class="smart-kicker" id="smart-patterns-title">Patterns</h3>${smartPatternsHTML(patterns,aiMap)}</section>`;
 }
 // @test-end smart
 // @test-begin ai
@@ -2534,9 +2818,8 @@ async function smartAIEnhance(findings,deps){
  try{return await run}finally{delete AI_INFLIGHT[key]}
 }
 function smartAIConsentHTML(){
- const on=aiConsentEnabled(),tok=aiToken();
- if(!on)return `<section class="smart-section smart-ai" aria-labelledby="smart-ai-title"><div class="smart-ai-head"><div class="smart-icon">${smartArt('info')}</div><div><h3 class="smart-state-title" id="smart-ai-title">Cloud AI explanations</h3><p class="smart-copy">Let Cloud AI explain these observations in plainer language. Only summarized findings are sent to an external AI service, never journal entries or notes. You can turn this off at any time.</p></div></div><button class="chip smart-ai-toggle" id="ai-consent" aria-pressed="false">Turn on Cloud AI</button></section>`;
-  return `<section class="smart-section smart-ai" aria-labelledby="smart-ai-title"><div class="smart-ai-head"><div class="smart-icon">${smartArt('insight')}</div><div><h3 class="smart-state-title" id="smart-ai-title">Cloud AI explanations</h3><p class="smart-copy">Cloud AI is on. Summarized findings may be sent to an external AI service to explain them. Journal entries and notes are never included.</p></div></div><div class="smart-ai-controls"><button class="chip smart-ai-toggle" id="ai-consent" aria-pressed="true">Turn off Cloud AI</button></div></section>`;
+ const on=aiConsentEnabled();
+ return `<div class="smart-ai-row"><span class="smart-ai-label">Cloud AI</span><button class="chip smart-ai-toggle" id="ai-consent" aria-pressed="${on?'true':'false'}">${on?'Turn off':'Turn on'}</button></div>`;
 }
 function wireSmartAI(state){
  const btn=document.getElementById('ai-consent');
@@ -2546,8 +2829,9 @@ function smartAIRefresh(state){
  const el=document.getElementById('smart-card');
  if(!el||!state)return;
  const map=aiCacheGet(state.patterns)||null;
- el.innerHTML=smartInsightsHTML(state.pred,state.current,state.patterns,state.name,map,smartInsightsExtras(D.logs,starts(),state.current))+((state.ro||!sbUser)?'':smartAIConsentHTML());
+ el.innerHTML=smartInsightsHTML(state.pred,state.current,state.patterns,state.name,map,state.extras||null)+((state.ro||!sbUser)?'':smartAIConsentHTML());
  wireSmartAI(state);
+ wireSmartFocus(state);
  if(!state.ro&&sbUser&&aiConsentEnabled()&&state.patterns&&state.patterns.length&&!map){
   smartAIEnhance(state.patterns).then(r=>{if(r&&r.map&&document.getElementById('smart-card'))smartAIRefresh(state)}).catch(()=>{});
  }
@@ -2556,15 +2840,15 @@ function smartAIRefresh(state){
 function insights(){const n=range,days=[...Array(n)].map((_,i)=>addD(today(),i-n+1)),c=cycleStats();const tg={};days.forEach(d=>(L(d).tags||[]).concat(L(d).customSx||[]).forEach(t=>tg[t]=(tg[t]||0)+1));const tk=Object.entries(tg).sort((a,b)=>b[1]-a[1]).slice(0,6),mx=tk[0]?.[1]||1;
  const hab=days.map(d=>{const t=tasksFor(d);return t.length?t.filter(x=>isDone(x.id,d)).length/t.length:null}).filter(x=>x!=null);const ha=hab.length?Math.round(hab.reduce((a,b)=>a+b,0)/hab.length*100):null;
  const sl=days.map(d=>L(d).sleep).filter(Boolean);
- const smartStarts=starts(),smartPred=smartPredictionHistory(smartStarts,today()),smartCurrent=smartCurrentCycle(smartPred,today()),smartPats=smartPatternsFromLogs(D.logs,smartStarts),viewerName=(RO?(ST.get('bloom_pname')||'friend'):(D.p.name||'friend')).split(' ')[0];
+ const smartStarts=starts(),smartPred=smartPredictionHistory(smartStarts,today()),smartCurrent=smartCurrentCycle(smartPred,today()),smartPats=smartPatternsFromLogs(D.logs,smartStarts);const smartExtras=smartInsightsExtras(D.logs,smartStarts,smartCurrent,smartPred,today(),D.meals,D.p&&D.p.goals,smartFocusGoal);smartFocusGoal=smartExtras.selectedGoal;const viewerName=(RO?(ST.get('bloom_pname')||'friend'):(D.p.name||'friend')).split(' ')[0];
  $('#main').innerHTML=`<h1>Insights</h1><div class="row">${[7,14,30,90].map(v=>`<button class="chip" data-r="${v}" aria-pressed="${range==v}">${v} days</button>`).join('')}</div>
-<div class="card smart-card" id="smart-card">${smartInsightsHTML(smartPred,smartCurrent,smartPats,viewerName,aiConsentEnabled()?aiCacheGet(smartPats):null,smartInsightsExtras(D.logs,smartStarts,smartCurrent))}${(RO||!sbUser)?'':smartAIConsentHTML()}</div><div class="card"><div class="card-h"><h3>Mood</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Recorded</span></div>${line('mood',n,5,'var(--rose)')}</div><div class="card"><div class="card-h"><h3>Energy</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Recorded</span></div>${line('energy',n,5,'var(--teal)')}</div>
+<div class="card smart-card" id="smart-card">${smartInsightsHTML(smartPred,smartCurrent,smartPats,viewerName,aiConsentEnabled()?aiCacheGet(smartPats):null,smartExtras)}${(RO||!sbUser)?'':smartAIConsentHTML()}</div><div class="card"><div class="card-h"><h3>Mood</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Recorded</span></div>${line('mood',n,5,'var(--rose)')}</div><div class="card"><div class="card-h"><h3>Energy</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Recorded</span></div>${line('energy',n,5,'var(--teal)')}</div>
 <div class="card"><div class="card-h"><h3>Sleep</h3><span class="meta">${sl.length?(sl.reduce((a,b)=>a+b,0)/sl.length).toFixed(1)+' h avg  '+sl.length+' nights':'\u2014'}</span></div>${line('sleep',n,12,'var(--teal)')}</div>
 <div class="card"><div class="card-h"><h3>Symptoms</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Recorded</span></div>${tk.length?tk.map(([t,v])=>`<div class="row sp"><span>${E(t)}</span><span class="meta">${v} d</span></div><div class="bar"><i style="width:${v/mx*100}%"></i></div>`).join(''):'<p class="meta">None logged</p>'}</div>
 <div class="card"><div class="card-h"><h3>Habit completion</h3><span class="meta">${ha==null?'':ha+'%'}</span></div>${ha==null?'<p class="meta">No planned tasks</p>':`<div class="bar"><i style="width:${ha}%"></i></div>`}</div>
 <div class="card"><div class="card-h"><h3>Cycle length</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Calculated</span></div>${c.len.length?`<div class="row" style="align-items:end;height:90px">${c.len.slice(-10).map(v=>`<div style="flex:1;text-align:center"><div style="height:${Math.min(v,90)}px;background:var(--pink);border-radius:6px 6px 0 0"></div><span class="meta" style="font-size:.7rem">${v}</span></div>`).join('')}</div>`:'<p class="meta">Needs 2 logged starts</p>'}</div>
 <div class="card"><div class="card-h"><h3>Appointment summary</h3></div>${RO?'':'<button class="btn" id="ex" style="width:100%">Export summary</button>'}</div>`;
-  document.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{range=+b.dataset.r;insights()});if(!RO)$('#ex').onclick=()=>exportSum(days);const smartState={pred:smartPred,current:smartCurrent,patterns:smartPats,name:viewerName,ro:RO};wireSmartAI(smartState);if(!RO&&sbUser&&aiConsentEnabled()&&smartPats.length&&!aiCacheGet(smartPats)){smartAIEnhance(smartPats).then(r=>{if(r&&r.map)smartAIRefresh(smartState)}).catch(()=>{})}}
+  document.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{range=+b.dataset.r;insights()});if(!RO)$('#ex').onclick=()=>exportSum(days);const smartState={pred:smartPred,current:smartCurrent,patterns:smartPats,name:viewerName,ro:RO,extras:smartExtras};wireSmartAI(smartState);wireSmartFocus(smartState);if(!RO&&sbUser&&aiConsentEnabled()&&smartPats.length&&!aiCacheGet(smartPats)){smartAIEnhance(smartPats).then(r=>{if(r&&r.map)smartAIRefresh(smartState)}).catch(()=>{})}}
 async function saveFile(name,data){try{const dl=await claude.use('downloads');if(dl){await dl.save({filename:name,data});return}}catch(e){}try{await navigator.clipboard.writeText(data);toast('Copied to clipboard')}catch(e){sheet(`<h2>${E(name)}</h2><textarea rows="10" readonly>${E(data)}</textarea><button class="btn" id="c3">Close</button>`);$('#c3').onclick=()=>sheet()}}
 function exportSum(days){const c=cycleStats();let t=`Health summary for ${D.p.name||user}  ${days[0]} to ${days[days.length-1]}\nThis is self-recorded data, not a medical record.\n\nPeriod starts (recorded): ${starts().join(', ')||'none'}\n${c.n>=2?`Cycle length (calculated): ${c.min}${c.max} days, avg ${c.avg}\n`:''}\nDaily logs:\n`;days.forEach(d=>{const l=L(d);if(Object.keys(l).some(k=>k!='water'))t+=`${d}: ${[l.flow&&'bleeding '+l.flow,l.mood&&'mood '+l.mood+'/5',l.energy&&'energy '+l.energy+'/5',l.sleep&&'sleep '+l.sleep+'h',(l.tags||[]).concat(l.customSx||[]).join('/'),l.note].filter(Boolean).join('; ')}\n`});
  if(!RO){const q=(D.journal||[]).map(j=>j.t).join('\n- ');t+=`\nJournal notes / questions:\n- ${q||'none'}\n`}
@@ -3374,7 +3658,7 @@ function settingsPage(){
    </div>
    <div class="card"><div class="card-h"><h3>Sync</h3></div><p class="meta" id="syncLine" style="margin:0 0 10px">${E(syncLineText())}</p><div class="row" style="gap:10px"><button class="btn ghost" id="syncNow" style="flex:1">Sync now</button><button class="btn ghost" id="syncCopy" style="flex:1">Copy diagnostics</button></div></div>
     ${RO?'<div class="card"><div class="card-h"><h3>Your data</h3></div><p class="meta" style="margin:0 0 10px">Delete your sign-in account and your profile copy. The person you follow keeps everything.</p><button class="btn pink" id="sDelAcct" style="width:100%">Delete my account</button></div>':'<div class="card"><div class="card-h"><h3>Your data</h3></div><p class="meta" style="margin:0 0 10px">Erase all your logs, meals, tasks and journal from this phone and the cloud. Your partner loses access. Your sign-in account itself is not deleted.</p><button class="btn pink" id="sDel" style="width:100%">Delete all my data</button><button class="btn ghost" id="sDelAcct" style="width:100%">Delete my account</button><button class="btn ghost" id="sExp" style="width:100%">Export backup</button><button class="btn ghost" id="sImp" style="width:100%">Import backup</button>'+bkRestore+'</div>'}
-   <div class="card"><div class="card-h"><h3>App</h3><span class="meta" id="appVer">\u2014</span></div><button class="btn ghost" id="chkUp" style="width:100%">Check for updates</button></div>`;
+   <div class="card"><div class="card-h"><h3>App</h3><span class="meta" id="appVer">\u2014</span></div><button class="btn ghost" id="chkUp" style="width:100%">Check for updates</button><p class="meta" style="margin:10px 0 0">Bloom shows patterns from your logs. It is not medical advice.</p></div>`;
  $('#bk').onclick=()=>{view='me';shell()};
  $('#sChg').onclick=()=>changeNameSheet(nm,async v=>{
   if(RO){
