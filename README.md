@@ -80,11 +80,7 @@ Phase 2 is applied: partners can no longer read bloom_data directly; only the ow
 
 ## Google sign-in
 
-Not implemented yet. Bloom uses email and password only — there is no Google
-button and no Google OAuth flow in the app.
-
-Adding Google sign-in later would need a native Google Sign-In plugin, because
-Google blocks OAuth in embedded WebViews, plus a rebuilt APK.
+Web uses the OAuth redirect via Supabase `signInWithOAuth` (Google). The Android app uses native Google Sign-In via `@capgo/capacitor-social-login` and `signInWithIdToken` (to avoid blocked WebView OAuth and to return to the app). Email/password remains available.
 
 ## Auth setup
 

@@ -847,6 +847,7 @@ function whenSupabase(){
   setTimeout(()=>{clearInterval(iv);go()},8000);
  });
  return sbReady}
+const isNative=()=>{try{return !!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform())}catch(e){return false}};
 async function sbInit(){if(sb)return sb;
  await whenSupabase();
  try{const m=window.supabase;
@@ -950,6 +951,24 @@ async function sbAfterLogin(u){sbUser=u;
  startCloudSync();
  setTimeout(()=>{try{reminderSync(true)}catch(e){}},1200);
  toast('Signed in \u00b7 syncing')}
+async function nativeGoogleSignIn(client){
+  const formErr=msg=>{const e=document.getElementById('err');if(e){e.textContent=msg||'';e.classList.toggle('on',!!msg)}};
+  const SL = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SocialLogin;
+  if(!SL){ formErr('Google sign-in is not available in this app version. Please use email and password.'); return; }
+  try{
+    await SL.initialize({ google: { webClientId: '655563445723-tk9o8vuvludp7ov69m10eivgjr4voktp.apps.googleusercontent.com' } });
+    const res = await SL.login({ provider: 'google', options: { scopes: ['email','profile'] } });
+    const idToken = res && res.result && res.result.idToken;
+    if(!idToken){ formErr('Google did not return a token. Try again.'); return; }
+    const { data, error } = await client.auth.signInWithIdToken({ provider: 'google', token: idToken });
+    if(error){ formErr(errText(error.message||error)); return; }
+    if(data && data.session) await sbAfterLogin(data.session.user);
+  }catch(e){
+    const m = String((e&&e.message)||e||'');
+    if(/cancel/i.test(m)) return;   // user cancelled: show nothing
+    formErr(errText(m));
+  }
+}
 async function sbSignIn(email,pw){await sbInit();if(!sb)return 'offline';
  const {error}=await sb.auth.signInWithPassword({email:email.trim(),password:pw});
  if(error)return error.message;const {data}=await sb.auth.getSession();if(data.session)await sbAfterLogin(data.session.user);return null}
@@ -1163,7 +1182,7 @@ function authView(mode){mode=mode||'in';try{fabSync()}catch(e){}document.body.cl
  if(authPrefill){const u0=g('u');if(u0)u0.value=authPrefill;authPrefill=''}
  const setFieldErr=(id,msg)=>{const w=g('f-'+id),h=g('e-'+id);if(!w)return;w.classList.toggle('invalid',!!msg);h.textContent=msg||''};
  const formErr=msg=>{const e=g('err');e.textContent=msg||'';e.classList.toggle('on',!!msg)};
- const gg=g('ggo');if(gg)gg.onclick=async()=>{if(busy)return;formErr('');const btn=g('go');busy=true;btn.disabled=true;gg.disabled=true;gg.innerHTML='<span class="spinner" aria-hidden="true"></span><span>Continuing\u2026</span>';try{const client=await sbInit();if(!client){formErr(!window.supabase?'Still starting up \u2014 try again in a moment.':'Could not start the cloud service. Restart the app.');return}const {error}=await client.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+(location.pathname||'/')}});if(error)formErr(errText(error.message||error))}catch(err){formErr(errText(err&&err.message||err))}finally{busy=false;btn.disabled=false;btn.textContent=up?'Create account':'Log in';gg.disabled=false;gg.innerHTML='<svg viewBox="0 0 18 18" aria-hidden="true"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.71-1.57 2.68-3.88 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.83.86-3.04.86-2.34 0-4.33-1.58-5.04-3.71H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.96 10.71A5.41 5.41 0 0 1 3.68 9c0-.59.1-1.17.28-1.71V4.96H.96A9 9 0 0 0 0 9c0 1.45.35 2.82.96 4.04l3-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58A8.99 8.99 0 0 0 9 0 9 9 0 0 0 .96 4.96l3 2.33C4.67 5.16 6.66 3.58 9 3.58z"/></svg><span>Continue with Google</span>'}};
+ const gg=g('ggo');if(gg)gg.onclick=async()=>{if(busy)return;formErr('');const btn=g('go');busy=true;btn.disabled=true;gg.disabled=true;gg.innerHTML='<span class="spinner" aria-hidden="true"></span><span>Continuing\u2026</span>';try{const client=await sbInit();if(!client){formErr(!window.supabase?'Still starting up \u2014 try again in a moment.':'Could not start the cloud service. Restart the app.');return}if(isNative()){ await nativeGoogleSignIn(client); return; }const {error}=await client.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+(location.pathname||'/')}});if(error)formErr(errText(error.message||error))}catch(err){formErr(errText(err&&err.message||err))}finally{busy=false;btn.disabled=false;btn.textContent=up?'Create account':'Log in';gg.disabled=false;gg.innerHTML='<svg viewBox="0 0 18 18" aria-hidden="true"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.71-1.57 2.68-3.88 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.83.86-3.04.86-2.34 0-4.33-1.58-5.04-3.71H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.96 10.71A5.41 5.41 0 0 1 3.68 9c0-.59.1-1.17.28-1.71V4.96H.96A9 9 0 0 0 0 9c0 1.45.35 2.82.96 4.04l3-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58A8.99 8.99 0 0 0 9 0 9 9 0 0 0 .96 4.96l3 2.33C4.67 5.16 6.66 3.58 9 3.58z"/></svg><span>Continue with Google</span>'}};
  document.querySelectorAll('.reveal').forEach(b=>{
   b.onclick=()=>{const inp=g(b.dataset.for),show=inp.type==='password';inp.type=show?'text':'password';b.textContent=show?'Hide':'Show';b.setAttribute('aria-label',show?'Hide password':'Show password');inp.focus()};
  });
@@ -1349,7 +1368,7 @@ async function fetchManifest(){const bust='?t='+Date.now();
  const r=await fetch(UPDATE_MANIFEST+bust,{cache:'no-store'});if(!r.ok)throw new Error('manifest '+r.status);
  return await r.json()}
 // Baked-in build identity. Keep in sync with android/app/build.gradle (versionCode/versionName).
-const APP_VERSION={code:64,name:'1.2.49'};
+const APP_VERSION={code:65,name:'1.2.50'};
 const UPD_SKIP_KEY='bloom_upd_skip';
 const updater=()=>{const C=window.Capacitor;if(!C)return null;
  const P=C.Plugins&&C.Plugins.BloomUpdater;
