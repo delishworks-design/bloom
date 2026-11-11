@@ -115,7 +115,11 @@ See [docs/auth-setup.md](docs/auth-setup.md) for the email/password reset setup.
 
 ## Privacy
 
-Your notes are stored on this device. If you sign in, they are also stored in the Bloom cloud database (Supabase), protected by row-level security. A partner you pair with reads only a filtered copy. You can delete your account and its synced data from Settings at any time. The app checks GitHub for updates. There are no ads, analytics or tracking. This is not a medical service and does not diagnose anything.
+Your notes are stored on this device. If you sign in, they are also stored in the Bloom cloud database (Supabase), protected by row-level security. A partner you pair with reads only a filtered copy. You can delete your account and its synced data from Settings at any time. The app checks GitHub for updates. There are no ads, analytics or tracking. This is not a medical service and does not diagnose anything. Optional Cloud AI explanations are off by default. If you turn them on in Insights, short summaries of your patterns (never journal text or notes) are sent through the Bloom cloud to an AI service (Cloudflare Workers AI) to be reworded, with a daily limit.
+
+## Cloud AI setup
+
+The Cloud AI endpoint is a Supabase Edge Function at `supabase/functions/smart-insights`. It needs the secrets `CF_ACCOUNT_ID` and `CF_API_TOKEN` (optional: `AI_MODEL`, `AI_DAILY_LIMIT`, `AI_GLOBAL_LIMIT`) and the `*_ai_usage.sql` migration. The free Cloudflare allowance is 10,000 neurons per day for the whole account, so the function caps total requests per day.
 
 ## Fonts
 
