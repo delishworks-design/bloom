@@ -1360,17 +1360,12 @@ function sheetPick(title,items,onPick,ph){sheet(`<h2>${E(title)}</h2>${ph?`<inpu
   list.innerHTML=f.map((it,i)=>`<button class="pickrow" data-i="${i}"><span>${E(it.t)}</span>${it.sub?`<span class="sub">${E(it.sub)}</span>`:''}</button>`).join('');
   wire(f)}}
 // ---------- in-app updater
-const UPDATE_MANIFEST_REMOTE='https://delishworks-design.github.io/bloom/update.json';
-const UPDATE_MANIFEST_BUNDLED='release/update.json';
+const UPDATE_MANIFEST='https://raw.githubusercontent.com/delishworks-design/bloom/main/release/update.json';
+const UPDATE_MANIFEST_API='https://api.github.com/repos/delishworks-design/bloom/contents/release/update.json';
 async function fetchManifest(){const bust='?t='+Date.now();
- // Prefer the remote (GitHub Pages) manifest, with a short timeout.
- try{const ctrl=new AbortController();const to=setTimeout(()=>ctrl.abort(),4000);
-  const r=await fetch(UPDATE_MANIFEST_REMOTE+bust,{cache:'no-store',signal:ctrl.signal});
-  clearTimeout(to);
-  if(r.ok)return await r.json()}catch(e){}
- // Offline / remote failed: fall back to the copy bundled in the app.
- const r=await fetch(UPDATE_MANIFEST_BUNDLED+bust,{cache:'no-store'});
- if(!r.ok)throw new Error('manifest '+r.status);
+ try{const r=await fetch(UPDATE_MANIFEST_API+bust,{cache:'no-store',headers:{Accept:'application/vnd.github+json'}});
+  if(r.ok){const j=await r.json();if(j&&j.content)return JSON.parse(atob(j.content.replace(/\n/g,'')))}}catch(e){}
+ const r=await fetch(UPDATE_MANIFEST+bust,{cache:'no-store'});if(!r.ok)throw new Error('manifest '+r.status);
  return await r.json()}
 // Baked-in build identity. Keep in sync with android/app/build.gradle (versionCode/versionName).
 const APP_VERSION={code:65,name:'1.2.50'};
