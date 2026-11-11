@@ -957,7 +957,7 @@ async function nativeGoogleSignIn(client){
   if(!SL){ formErr('Google sign-in is not available in this app version. Please use email and password.'); return; }
   try{
     await SL.initialize({ google: { webClientId: '655563445723-tk9o8vuvludp7ov69m10eivgjr4voktp.apps.googleusercontent.com' } });
-    const res = await SL.login({ provider: 'google', options: { scopes: ['email','profile'] } });
+    const res = await SL.login({ provider: 'google', options: {} });
     const idToken = res && res.result && res.result.idToken;
     if(!idToken){ formErr('Google did not return a token. Try again.'); return; }
     const { data, error } = await client.auth.signInWithIdToken({ provider: 'google', token: idToken });
@@ -1368,7 +1368,7 @@ async function fetchManifest(){const bust='?t='+Date.now();
  const r=await fetch(UPDATE_MANIFEST+bust,{cache:'no-store'});if(!r.ok)throw new Error('manifest '+r.status);
  return await r.json()}
 // Baked-in build identity. Keep in sync with android/app/build.gradle (versionCode/versionName).
-const APP_VERSION={code:65,name:'1.2.50'};
+const APP_VERSION={code:66,name:'1.2.51'};
 const UPD_SKIP_KEY='bloom_upd_skip';
 const updater=()=>{const C=window.Capacitor;if(!C)return null;
  const P=C.Plugins&&C.Plugins.BloomUpdater;
