@@ -3037,6 +3037,9 @@ function smartInsightsHTML(pred,current,patterns,viewerName,aiMap,extras){
  let focusToShow=extras.focus||null;
  const focusRendered=!!(focusToShow&&!extras.ro&&!noGoals);
  const focusHasValidPeriod=focusRendered&&goal==='Understand my cycle'&&focusToShow.metric!=null&&String(focusToShow.metric).trim()!==''&&extras.comingUp&&Number.isFinite(+extras.comingUp.daysToPeriod)&&+extras.comingUp.daysToPeriod>0;
+ if(goal==='Understand my cycle'&&focusRendered&&focusToShow.metric!=null&&String(focusToShow.metric).trim()!==''&&!focusHasValidPeriod){
+  focusToShow=Object.assign({},focusToShow,{metric:null});
+ }
  if(focusHasValidPeriod){
   if(registry.owner('period:expected')==='Your week'){
    focusToShow=Object.assign({},focusToShow,{metric:null});

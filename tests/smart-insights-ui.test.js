@@ -857,3 +857,73 @@ test('Period ownership: registry is render-scoped and does not leak between rend
   assert.ok(!/Next period/.test(out3));
 });
 
+
+
+
+test('Focus period metric sanitation: invalid structured period evidence clears only Focus metric', () => {
+  const { smartInsightsHTML } = renderContext();
+  const pred = predictedState(false);
+  const current = { state: 'estimated', phase: 'Luteal', phaseLabel: 'Luteal phase', cycleDay: 18, cycleLength: 28, confidence: 'Limited history', predictedDate: '2026-04-23' };
+  const base = (comingUp) => smartInsightsHTML(pred, current, [], 'Alex', null, {
+    selectedGoal: 'Understand my cycle', focusGoals: ['Understand my cycle'], noGoals: false,
+    focus: { goal: 'Understand my cycle', headline: 'Day 18 of ~28 · Luteal phase', metric: 'Period expected in 4 days', trend: 'Last cycle 28 days vs 28 days before', action: 'Keep logging.' },
+    week: [], ro: false, weekCard: null, weekFacts: null, comingUp
+  });
+  const cases = [
+    ['missing comingUp', undefined],
+    ['missing daysToPeriod', { phases: [] }],
+    ['daysToPeriod 0', { daysToPeriod: 0, phases: [] }],
+    ['negative daysToPeriod', { daysToPeriod: -1, phases: [] }],
+    ['NaN daysToPeriod', { daysToPeriod: NaN, phases: [] }],
+    ['Infinity daysToPeriod', { daysToPeriod: Infinity, phases: [] }],
+  ];
+  for (const [name, cu] of cases) {
+    const out = base(cu);
+    const focusSection = (out.match(/<section class="smart-section smart-focus"[\s\S]*?<\/section>/) || [''])[0];
+    assert.ok(focusSection, name + ': focus rendered');
+    assert.ok(!/Period expected in 4 days/.test(focusSection), name + ': stale focus period metric must be absent');
+    assert.match(focusSection, /Day 18 of ~28 · Luteal phase/, name + ': headline preserved');
+    assert.match(focusSection, /Keep logging\./, name + ': action preserved');
+  }
+});
+
+test('Focus period metric sanitation: valid ownership and non-cycle goals preserved', () => {
+  const { smartInsightsHTML } = renderContext();
+  const pred = predictedState(false);
+  const current = { state: 'estimated', phase: 'Luteal', phaseLabel: 'Luteal phase', cycleDay: 18, cycleLength: 28, confidence: 'Limited history', predictedDate: '2026-04-23' };
+  const comingUp = { daysToPeriod: 4, phases: [{ phase: 'Follicular', phaseLabel: 'Follicular phase', startsIn: 2, mood: 3, energy: 3, stress: 2, symptoms: [] }] };
+
+  // valid + Your week owns period: suppress only Focus metric, period appears once (Your week)
+  const outOwned = smartInsightsHTML(pred, current, [], 'Alex', null, {
+    selectedGoal: 'Understand my cycle', focusGoals: ['Understand my cycle'], noGoals: false,
+    focus: { goal: 'Understand my cycle', headline: 'Day 18 of ~28 · Luteal phase', metric: 'Period expected in 4 days', trend: null, action: 'Keep logging.' },
+    week: [], ro: false,
+    weekCard: { headline: 'Your week', summary: 'Period in 4 days.', actions: ['Note symptoms as they show up', 'Plan a short walk'] },
+    weekFacts: { goals: ['Understand my cycle'], week: [], comingUp: [], focus: { headline: 'Day 18 of ~28 · Luteal phase', metric: 'Period expected in 4 days', trend: '' }, daysToPeriod: 4 },
+    comingUp
+  });
+  const focusOwned = (outOwned.match(/<section class="smart-section smart-focus"[\s\S]*?<\/section>/) || [''])[0];
+  assert.ok(!/Period expected in 4 days/.test(focusOwned), 'Focus metric suppressed when Your week owns period');
+  assert.match(focusOwned, /Day 18 of ~28 · Luteal phase/);
+  assert.match(focusOwned, /Keep logging\./);
+  assert.equal((outOwned.match(/Period in 4 days|Period expected in 4 days/g) || []).length, 1, 'period estimate in no more than one section');
+
+  // valid + Your week does not own period: Focus claims and may display metric, no duplicate
+  const outFocus = smartInsightsHTML(pred, current, [], 'Alex', null, {
+    selectedGoal: 'Understand my cycle', focusGoals: ['Understand my cycle'], noGoals: false,
+    focus: { goal: 'Understand my cycle', headline: 'Day 18 of ~28 · Luteal phase', metric: 'Period expected in 4 days', trend: null, action: 'Keep logging.' },
+    week: [], ro: false, weekCard: null, weekFacts: null, comingUp
+  });
+  const focusClaim = (outFocus.match(/<section class="smart-section smart-focus"[\s\S]*?<\/section>/) || [''])[0];
+  assert.match(focusClaim, /Period expected in 4 days/);
+  assert.ok(!/Next period/.test(outFocus));
+  assert.equal((outFocus.match(/Period expected in 4 days\./g) || []).length, 0);
+  assert.equal((outFocus.match(/Period expected in 4 days/g) || []).length, 1, 'period estimate in no more than one section');
+
+  // non-cycle goal unchanged
+  const outSleep = smartInsightsHTML(pred, current, [], 'Alex', null, extras({}));
+  const focusSleep = (outSleep.match(/<section class="smart-section smart-focus"[\s\S]*?<\/section>/) || [''])[0];
+  assert.match(focusSleep, /Sleep 6\.8 h last week/);
+  assert.match(focusSleep, /6\.8 h \(3 under 7h\)/);
+});
+
