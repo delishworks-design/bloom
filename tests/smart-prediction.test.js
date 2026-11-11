@@ -384,6 +384,65 @@ test('progress hints explain missing pairs and averages appear after three days'
   assert.equal(three.hints[0], 'Log sleep and energy on 2 more days to see this pattern.');
 });
 
+test('early sleep patterns label their detail as so far', () => {
+  const logs = {
+    '2026-01-01': { sleep: 5, energy: 2 },
+    '2026-01-02': { sleep: 5, energy: 2 },
+    '2026-01-03': { sleep: 5, energy: 3 },
+    '2026-01-04': { sleep: 8, energy: 5 },
+    '2026-01-05': { sleep: 8, energy: 4 },
+    '2026-01-06': { sleep: 8, energy: 5 }
+  };
+
+  const patterns = smartPatternsFromLogs(logs, starts);
+  assert.equal(patterns[0].confidenceLevel, 'Early');
+  assert.ok(patterns[0].detail.startsWith('So far: '));
+});
+
+test('mood and sleep needs three days per group again', () => {
+  const logs = {
+    '2026-01-01': { mood: 2, sleep: 5 },
+    '2026-01-02': { mood: 2, sleep: 5 },
+    '2026-01-03': { mood: 5, sleep: 8 },
+    '2026-01-04': { mood: 5, sleep: 8 }
+  };
+
+  assert.equal(smartPatternsFromLogs(logs, starts).length, 0);
+});
+
+test('a large symptom gap outranks a weak energy pattern', () => {
+  const logs = {
+    '2026-01-08': { sleep: 9, energy: 4, tags: [] },
+    '2026-01-09': { sleep: 9, energy: 4, tags: [] },
+    '2026-01-10': { sleep: 9, energy: 4, tags: [] },
+    '2026-01-20': { sleep: 7, energy: 3, tags: ['Bloating'] },
+    '2026-01-21': { sleep: 7, energy: 3, tags: ['Bloating'] },
+    '2026-01-22': { sleep: 7, energy: 3, tags: ['Bloating'] }
+  };
+
+  const patterns = smartPatternsFromLogs(logs, ['2026-01-01', '2026-01-29']);
+  const types = patterns.map(p => p.type);
+  assert.ok(types.includes('symptom-phase'));
+  assert.ok(types.includes('sleep-energy'));
+  assert.equal(types[0], 'symptom-phase');
+  assert.ok(types.indexOf('symptom-phase') < types.length - 1);
+});
+
+test('pattern objects no longer expose a raw diff', () => {
+  const logs = {
+    '2026-01-08': { sleep: 9, energy: 4, tags: [] },
+    '2026-01-09': { sleep: 9, energy: 4, tags: [] },
+    '2026-01-10': { sleep: 9, energy: 4, tags: [] },
+    '2026-01-20': { sleep: 7, energy: 3, tags: ['Bloating'] },
+    '2026-01-21': { sleep: 7, energy: 3, tags: ['Bloating'] },
+    '2026-01-22': { sleep: 7, energy: 3, tags: ['Bloating'] }
+  };
+
+  const patterns = smartPatternsFromLogs(logs, ['2026-01-01', '2026-01-29']);
+  assert.ok(patterns.length > 0);
+  patterns.forEach(p => assert.ok(!Object.prototype.hasOwnProperty.call(p, 'diff'), p.type));
+});
+
 test('existing application integration points and legacy helpers remain intact', () => {
   const legacy = load();
   assert.equal(legacy.phaseInfo(10, 28).k, 'Follicular');

@@ -199,3 +199,14 @@ test('headline, detail and tip are HTML escaped', () => {
   assert.match(html, /&lt;b&gt;detail/);
   assert.match(html, /&lt;i&gt;tip/);
 });
+
+test('cycle section explains future and missing history plainly', () => {
+  const { smartInsightsHTML } = renderContext();
+  const future = { state: 'future-start', phase: null, phaseLabel: null, cycleDay: null, cycleLength: 28, confidence: 'Limited history' };
+  const single = { state: 'single-start', phase: null, phaseLabel: null, cycleDay: null, cycleLength: null, confidence: 'Insufficient data' };
+  const other = { state: 'insufficient', phase: null, phaseLabel: null, cycleDay: null, cycleLength: null, confidence: 'Insufficient data' };
+
+  assert.match(smartInsightsHTML(predictedState(), future, []), /last logged period start is in the future\. Please check the date\./);
+  assert.match(smartInsightsHTML({ state: 'single-start' }, single, []), /Log at least 3 period start dates to see cycle estimates\./);
+  assert.match(smartInsightsHTML({}, other, []), /Cycle estimate isn&#39;t available yet\./);
+});

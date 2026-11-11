@@ -2248,8 +2248,8 @@ function smartPatternsFromLogs(logs,startDates){
    const lowAvg=spAverage(lowSleep),enoughAvg=spAverage(enoughSleep);
    if(enoughAvg-lowAvg>=.5){
     const lower=lowSleep.filter(v=>v<enoughAvg).length;
-    const diff=enoughAvg-lowAvg;
-    out.push({type:'sleep-energy',id:'sleep-energy',category:'Sleep & Energy',title:'Sleep and energy',count:lowSleep.length,observationCount:lowSleep.length,comparisonCount:enoughSleep.length,confidenceLevel:confidenceFor(lowSleep.length,enoughSleep.length),limitations:'Compares recorded days only.',evidenceSummary:`Days with under ${spOne(median)} hours of sleep had lower energy in ${lower} of ${lowSleep.length} observations, versus an average of ${spAvgText(enoughSleep)} of 5 on days with ${spOne(median)} or more hours.`,headline:'Short sleep days = lower energy',detail:`Under ${spOne(median)}h: energy ${spAvgText(lowSleep)}/5 (${lowSleep.length} days) vs ${spOne(median)}h+: ${spAvgText(enoughSleep)}/5 (${enoughSleep.length} days)`,tip:'Try an earlier bedtime on busy days.',text:`Days under ${spOne(median)}h of sleep averaged ${spAvgText(lowSleep)} of 5 energy across ${lowSleep.length} days, versus ${spAvgText(enoughSleep)} of 5 across ${enoughSleep.length} days at ${spOne(median)}h or more.`,diff});
+    const score=Math.min(1,(enoughAvg-lowAvg)/4);
+    out.push({type:'sleep-energy',id:'sleep-energy',category:'Sleep & Energy',title:'Sleep and energy',count:lowSleep.length,observationCount:lowSleep.length,comparisonCount:enoughSleep.length,confidenceLevel:confidenceFor(lowSleep.length,enoughSleep.length),limitations:'Compares recorded days only.',evidenceSummary:`Days with under ${spOne(median)} hours of sleep had lower energy in ${lower} of ${lowSleep.length} observations, versus an average of ${spAvgText(enoughSleep)} of 5 on days with ${spOne(median)} or more hours.`,headline:'Short sleep days = lower energy',detail:`Under ${spOne(median)}h: energy ${spAvgText(lowSleep)}/5 (${lowSleep.length} days) vs ${spOne(median)}h+: ${spAvgText(enoughSleep)}/5 (${enoughSleep.length} days)`,tip:'Try an earlier bedtime on busy days.',text:`Days under ${spOne(median)}h of sleep averaged ${spAvgText(lowSleep)} of 5 energy across ${lowSleep.length} days, versus ${spAvgText(enoughSleep)} of 5 across ${enoughSleep.length} days at ${spOne(median)}h or more.`,score});
    }
   }
  }
@@ -2267,8 +2267,8 @@ function smartPatternsFromLogs(logs,startDates){
   const activeAvg=spAverage(active),inactiveAvg=spAverage(inactive);
   if(activeAvg-inactiveAvg>=.5){
    const higher=active.filter(v=>v>inactiveAvg).length;
-   const diff=activeAvg-inactiveAvg;
-    out.push({type:'activity-energy',id:'activity-energy',category:'Activity & Energy',title:'Activity and energy',count:active.length,observationCount:active.length,comparisonCount:inactive.length,confidenceLevel:confidenceFor(active.length,inactive.length),limitations:'Compares recorded days only.',evidenceSummary:`Energy was higher on ${higher} of ${active.length} days with at least 20 minutes of activity, versus an average of ${spAvgText(inactive)} of 5 on less active days.`,headline:'Active days = higher energy',detail:`20+ min: energy ${spAvgText(active)}/5 (${active.length} days) vs under 20: ${spAvgText(inactive)}/5 (${inactive.length} days)`,tip:'A short walk on low-energy days may help.',text:`Days with at least 20 minutes of activity averaged ${spAvgText(active)} of 5 energy across ${active.length} days, versus ${spAvgText(inactive)} of 5 across ${inactive.length} less active days.`,diff});
+   const score=Math.min(1,(activeAvg-inactiveAvg)/4);
+    out.push({type:'activity-energy',id:'activity-energy',category:'Activity & Energy',title:'Activity and energy',count:active.length,observationCount:active.length,comparisonCount:inactive.length,confidenceLevel:confidenceFor(active.length,inactive.length),limitations:'Compares recorded days only.',evidenceSummary:`Energy was higher on ${higher} of ${active.length} days with at least 20 minutes of activity, versus an average of ${spAvgText(inactive)} of 5 on less active days.`,headline:'Active days = higher energy',detail:`20+ min: energy ${spAvgText(active)}/5 (${active.length} days) vs under 20: ${spAvgText(inactive)}/5 (${inactive.length} days)`,tip:'A short walk on low-energy days may help.',text:`Days with at least 20 minutes of activity averaged ${spAvgText(active)} of 5 energy across ${active.length} days, versus ${spAvgText(inactive)} of 5 across ${inactive.length} less active days.`,score});
   }
  }
  const lowMood=[],highMood=[];
@@ -2278,11 +2278,11 @@ function smartPatternsFromLogs(logs,startDates){
   if(mood<=2)lowMood.push(sleep);
   else if(mood>=4)highMood.push(sleep);
  });
- if(lowMood.length>=2&&highMood.length>=2){
+ if(lowMood.length>=3&&highMood.length>=3){
   const lowAvg=spAverage(lowMood),highAvg=spAverage(highMood);
   if(highAvg-lowAvg>=.5){
-   const diff=highAvg-lowAvg;
-    out.push({type:'mood-sleep',id:'mood-sleep',category:'Mood & Sleep',title:'Mood and sleep',count:highMood.length,observationCount:highMood.length,comparisonCount:lowMood.length,confidenceLevel:confidenceFor(highMood.length,lowMood.length),limitations:'Compares recorded days only.',evidenceSummary:`Days rated 4-5 for mood averaged ${spAvgText(highMood)} hours of sleep across ${highMood.length} days, versus ${spAvgText(lowMood)} hours across ${lowMood.length} days rated 1-2.`,headline:'Better mood days = more sleep',detail:`Mood 4-5: sleep ${spAvgText(highMood)}h (${highMood.length} days) vs mood 1-2: ${spAvgText(lowMood)}h (${lowMood.length} days)`,tip:'Protect your usual bedtime on low-mood days.',text:`Days rated 4-5 for mood averaged ${spAvgText(highMood)} hours of sleep across ${highMood.length} days, versus ${spAvgText(lowMood)} hours across ${lowMood.length} days rated 1-2.`,diff});
+   const score=Math.min(1,(highAvg-lowAvg)/4);
+    out.push({type:'mood-sleep',id:'mood-sleep',category:'Mood & Sleep',title:'Mood and sleep',count:highMood.length,observationCount:highMood.length,comparisonCount:lowMood.length,confidenceLevel:confidenceFor(highMood.length,lowMood.length),limitations:'Compares recorded days only.',evidenceSummary:`Days rated 4-5 for mood averaged ${spAvgText(highMood)} hours of sleep across ${highMood.length} days, versus ${spAvgText(lowMood)} hours across ${lowMood.length} days rated 1-2.`,headline:'Better mood days = more sleep',detail:`Mood 4-5: sleep ${spAvgText(highMood)}h (${highMood.length} days) vs mood 1-2: ${spAvgText(lowMood)}h (${lowMood.length} days)`,tip:'Protect your usual bedtime on low-mood days.',text:`Days rated 4-5 for mood averaged ${spAvgText(highMood)} hours of sleep across ${highMood.length} days, versus ${spAvgText(lowMood)} hours across ${lowMood.length} days rated 1-2.`,score});
   }
  }
  const histRows=rows.map(r=>({log:r.log,hist:smartHistoricalPhaseFor(r.date,startDates)})).filter(r=>r.hist&&r.hist.completed);
@@ -2308,11 +2308,12 @@ function smartPatternsFromLogs(logs,startDates){
   const lutealRate=lutealDays?presentLuteal/lutealDays:0;
   const nonLutealRate=nonLutealDays?presentNonLuteal/nonLutealDays:0;
   if(lutealDays>=3&&nonLutealDays>=3&&lutealRate-nonLutealRate>=.2){
-   const diff=lutealRate-nonLutealRate;
-    out.push({type:'symptom-phase',id:'symptom-phase-'+spFindingSlug(symptom),category:'Cycle Connections',title:symptom+' and cycle phase',count:presentCount,observationCount:presentCount,comparisonCount:nonLutealDays,confidenceLevel:confidenceFor(lutealDays,nonLutealDays),limitations:'Uses completed cycle history only.',evidenceSummary:`${symptom} was recorded on ${presentLuteal} of ${lutealDays} luteal-phase days with symptom fields recorded, versus ${presentNonLuteal} of ${nonLutealDays} non-luteal-phase days.`,headline:`${symptom} and your luteal phase`,detail:`${presentLuteal}/${lutealDays} luteal days vs ${presentNonLuteal}/${nonLutealDays} other days`,tip:`Keep logging ${symptom} alongside your cycle.`,text:`Based on your records, ${symptom} was recorded on ${presentLuteal} of ${lutealDays} luteal-phase days with symptom fields recorded, compared with ${presentNonLuteal} of ${nonLutealDays} non-luteal-phase days with symptom fields recorded.`,diff});
+   const score=Math.min(1,lutealRate-nonLutealRate);
+    out.push({type:'symptom-phase',id:'symptom-phase-'+spFindingSlug(symptom),category:'Cycle Connections',title:symptom+' and cycle phase',count:presentCount,observationCount:presentCount,comparisonCount:nonLutealDays,confidenceLevel:confidenceFor(lutealDays,nonLutealDays),limitations:'Uses completed cycle history only.',evidenceSummary:`${symptom} was recorded on ${presentLuteal} of ${lutealDays} luteal-phase days with symptom fields recorded, versus ${presentNonLuteal} of ${nonLutealDays} non-luteal-phase days.`,headline:`${symptom} and your luteal phase`,detail:`${presentLuteal}/${lutealDays} luteal days vs ${presentNonLuteal}/${nonLutealDays} other days`,tip:`Plan ahead for ${symptom} in your luteal phase.`,text:`Based on your records, ${symptom} was recorded on ${presentLuteal} of ${lutealDays} luteal-phase days with symptom fields recorded, compared with ${presentNonLuteal} of ${nonLutealDays} non-luteal-phase days with symptom fields recorded.`,score});
   }
  });
- out.sort((a,b)=>b.diff-a.diff);
+ out.forEach(p=>{if(p.confidenceLevel==='Early'&&!String(p.detail).startsWith('So far: '))p.detail='So far: '+p.detail});
+ out.sort((a,b)=>(b.score*(b.confidenceLevel==='Early'?0.8:1))-(a.score*(a.confidenceLevel==='Early'?0.8:1)));
  return out.slice(0,5);
 }
 function smartPhaseInsight(logs,startDates,current){
@@ -2434,7 +2435,9 @@ function smartCycleSection(pred,current,dateText){
  let msg;
  if(c.state==='overdue')msg=pred.expected?`Your period is later than expected (estimated ${dateText(pred.expected)}).`:'Your period is later than expected.';
  else if(c.state==='due-today')msg='Your period is expected around now.';
- else msg='Log at least 3 period start dates to see cycle estimates.';
+ else if(c.state==='future-start')msg='Your last logged period start is in the future. Please check the date.';
+ else if(c.state==='single-start'||c.state==='limited-history'||c.state==='no-history')msg='Log at least 3 period start dates to see cycle estimates.';
+ else msg="Cycle estimate isn't available yet.";
  return `<section class="smart-section smart-cycle" aria-labelledby="smart-cycle-title"><h3 class="smart-kicker" id="smart-cycle-title">Cycle</h3><p class="smart-copy">${E(msg)}</p></section>`;
 }
 function smartInsightsHTML(pred,current,patterns,viewerName,aiMap,extras){
