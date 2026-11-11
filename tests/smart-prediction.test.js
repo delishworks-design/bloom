@@ -9,7 +9,9 @@ const {
   smartCurrentCycle,
   smartCurrentCycleFromHistory,
   smartHistoricalPhaseFor,
-  smartPatternsFromLogs
+  smartPatternsFromLogs,
+  smartPhaseInsight,
+  smartProgress
 } = load();
 
 const starts = ['2026-01-01', '2026-01-29', '2026-02-26', '2026-03-26'];
@@ -99,8 +101,51 @@ test('sparse observations do not create a pattern', () => {
     '2026-01-01': { sleep: 5, energy: 2 },
     '2026-01-02': { sleep: 5, energy: 2 },
     '2026-01-03': { sleep: 8, energy: 5 },
-    '2026-01-04': { sleep: 8, energy: 5 },
+    '2026-01-04': { sleep: 8, energy: 5 }
+  };
+
+  assert.equal(smartPatternsFromLogs(logs, starts).length, 0);
+});
+
+test('five paired days can form a pattern with two per group', () => {
+  const logs = {
+    '2026-01-01': { sleep: 5, energy: 2 },
+    '2026-01-02': { sleep: 5, energy: 3 },
+    '2026-01-03': { sleep: 8, energy: 5 },
+    '2026-01-04': { sleep: 8, energy: 4 },
     '2026-01-05': { sleep: 8, energy: 5 }
+  };
+
+  const patterns = smartPatternsFromLogs(logs, starts);
+  assert.equal(patterns.length, 1);
+  assert.equal(patterns[0].count, 2);
+  assert.equal(patterns[0].comparisonCount, 3);
+});
+
+test('sleep split uses the user median instead of a fixed six hours', () => {
+  const logs = {
+    '2026-01-01': { sleep: 7, energy: 2 },
+    '2026-01-02': { sleep: 7, energy: 3 },
+    '2026-01-03': { sleep: 7, energy: 2 },
+    '2026-01-04': { sleep: 9, energy: 5 },
+    '2026-01-05': { sleep: 9, energy: 4 },
+    '2026-01-06': { sleep: 9, energy: 5 }
+  };
+
+  const patterns = smartPatternsFromLogs(logs, starts);
+  assert.equal(patterns.length, 1);
+  assert.equal(patterns[0].headline, 'Short sleep days = lower energy');
+  assert.match(patterns[0].detail, /Under 8h/);
+});
+
+test('sleep split is skipped when group sleep averages differ by under an hour', () => {
+  const logs = {
+    '2026-01-01': { sleep: 7, energy: 1 },
+    '2026-01-02': { sleep: 7, energy: 1 },
+    '2026-01-03': { sleep: 7, energy: 1 },
+    '2026-01-04': { sleep: 7.5, energy: 5 },
+    '2026-01-05': { sleep: 7.5, energy: 5 },
+    '2026-01-06': { sleep: 7.5, energy: 5 }
   };
 
   assert.equal(smartPatternsFromLogs(logs, starts).length, 0);
@@ -119,8 +164,10 @@ test('supported patterns expose their actual observation counts', () => {
   const patterns = smartPatternsFromLogs(logs, starts);
   assert.equal(patterns.length, 1);
   assert.equal(patterns[0].type, 'sleep-energy');
-  assert.match(patterns[0].text, /less than 6 hours/);
-  assert.match(patterns[0].text, /does not prove causation/);
+  assert.match(patterns[0].text, /under 6\.5h of sleep/);
+  assert.ok(!/prove causation|not proof/.test(patterns[0].text));
+  assert.equal(patterns[0].confidenceLevel, 'Early');
+  assert.ok(patterns[0].headline && patterns[0].detail && patterns[0].tip);
 });
 
 test('activity and mood patterns need sufficient observations', () => {
@@ -282,6 +329,59 @@ test('existing log records remain unchanged', () => {
   smartHistoricalPhaseFor('2026-01-01', starts);
 
   assert.equal(JSON.stringify(logs), before);
+});
+
+test('symptom patterns need only three days per phase group', () => {
+  const logs = {
+    '2026-01-08': { tags: [] },
+    '2026-01-09': { tags: [] },
+    '2026-01-10': { tags: [] },
+    '2026-01-18': { tags: ['Bloating'] },
+    '2026-01-19': { tags: ['Bloating'] },
+    '2026-01-20': { tags: ['Bloating'] }
+  };
+
+  const patterns = smartPatternsFromLogs(logs, ['2026-01-01', '2026-01-29']);
+  assert.equal(patterns.length, 1);
+  assert.equal(patterns[0].type, 'symptom-phase');
+  assert.match(patterns[0].detail, /3\/3 luteal days vs 0\/3 other days/);
+});
+
+test('phase insight compares the current phase with the overall average', () => {
+  const logs = {
+    '2026-01-08': { energy: 5 },
+    '2026-01-09': { energy: 5 },
+    '2026-01-10': { energy: 5 },
+    '2026-01-18': { energy: 1 },
+    '2026-01-19': { energy: 1 },
+    '2026-01-20': { energy: 1 }
+  };
+  const current = { state: 'estimated', phase: 'Luteal', phaseLabel: 'Luteal phase', cycleDay: 10, cycleLength: 28, confidence: 'Limited history' };
+
+  const insight = smartPhaseInsight(logs, starts, current);
+  assert.equal(insight.headline, 'Energy tends to dip in your luteal phase');
+  assert.match(insight.detail, /1\/5 on 3 luteal phase days vs 3\/5 overall/);
+  assert.ok(insight.tip);
+
+  assert.equal(smartPhaseInsight(logs, starts, { state: 'predicted', phase: 'Luteal' }), null);
+  assert.equal(smartPhaseInsight({ '2026-01-18': { energy: 3 } }, starts, current), null);
+});
+
+test('progress hints explain missing pairs and averages appear after three days', () => {
+  const empty = smartProgress({});
+  assert.equal(empty.hints.length, 3);
+  assert.equal(empty.hints[0], 'Log sleep and energy on 5 more days to see this pattern.');
+  assert.equal(Object.keys(empty.averages).length, 0);
+
+  const three = smartProgress({
+    '2026-01-01': { sleep: 7, mood: 3, energy: 4 },
+    '2026-01-02': { sleep: 7, mood: 3, energy: 4 },
+    '2026-01-03': { sleep: 7, mood: 3, energy: 4 }
+  });
+  assert.equal(three.averages.sleep, 7);
+  assert.equal(three.averages.mood, 3);
+  assert.equal(three.averages.energy, 4);
+  assert.equal(three.hints[0], 'Log sleep and energy on 2 more days to see this pattern.');
 });
 
 test('existing application integration points and legacy helpers remain intact', () => {

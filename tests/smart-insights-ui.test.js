@@ -41,22 +41,22 @@ function predictedState(overdue = false) {
   };
 }
 
-test('Smart Insights no longer duplicates the Cycle page (no next-period or phase cards)', () => {
+test('single header and one shared disclaimer', () => {
   const { smartInsightsHTML } = renderContext();
   const current = { state: 'due-today', phase: null, phaseLabel: null, cycleDay: null, cycleLength: null, confidence: 'Limited history', predictedDate: '2026-04-23' };
   const html = smartInsightsHTML(predictedState(), current, [], 'Alex');
 
-  assert.match(html, /Smart Insights/);
+  assert.equal((html.match(/Smart Insights/g) || []).length, 1);
+  assert.ok(!/smart-eyebrow/.test(html));
   assert.match(html, /Personal patterns/);
-  assert.match(html, /How to read these insights/);
-  assert.match(html, /Bloom does not diagnose medical conditions\./);
-  assert.ok(!/Next period/.test(html));
-  assert.ok(!/Cycle phase/.test(html));
-  assert.ok(!/smart-timeline/.test(html));
+  assert.equal((html.match(/Not medical advice or a diagnosis\./g) || []).length, 1);
+  assert.ok(!/How to read these insights/.test(html));
+  assert.ok(!/not proof|does not prove/.test(html));
+  assert.match(html, /Your period is expected around now\./);
 });
 
 test('empty Smart Insights states never invent facts', () => {
-  const { smartInsightsHTML } = renderContext();
+  const { smartInsightsHTML, smartProgress } = renderContext();
   const pred = {
     state: 'single-start',
     startCount: 1,
@@ -70,9 +70,12 @@ test('empty Smart Insights states never invent facts', () => {
     reason: 'One period start recorded.'
   };
   const current = { state: 'single-start', phase: null, phaseLabel: null, cycleDay: null, cycleLength: null, confidence: 'Insufficient data' };
-  const html = smartInsightsHTML(pred, current, []);
+  const html = smartInsightsHTML(pred, current, [], undefined, null, { progress: smartProgress({}) });
 
-  assert.match(html, /No patterns yet/);
+  assert.ok(!/No patterns yet/.test(html));
+  assert.match(html, /A little more logging/);
+  assert.match(html, /Log sleep and energy on 5 more days to see this pattern\./);
+  assert.match(html, /Log at least 3 period start dates to see cycle estimates\./);
   assert.ok(!/\bundefined\b|\bNaN\b|<img|<script|http:\/\/|https:\/\//i.test(html));
 });
 
@@ -120,4 +123,79 @@ test('Smart Insights markup is mobile-oriented and uses no external assets', () 
   assert.ok(html.includes('svg{width:100%;height:auto;display:block;max-width:100%}'));
   const smartBlock = html.slice(html.indexOf('function smartInsightsHTML('), html.indexOf('function insights('));
   assert.ok(!/<script|\bhttp:\/\//i.test(smartBlock));
+});
+
+test('cycle section shows day, phase, next period and confidence', () => {
+  const { smartInsightsHTML } = renderContext();
+  const current = { state: 'estimated', phase: 'Follicular', phaseLabel: 'Follicular phase', cycleDay: 12, cycleLength: 28, confidence: 'Limited history' };
+  const html = smartInsightsHTML(predictedState(), current, [], 'Alex');
+
+  assert.match(html, /Day 12 of ~28 · Follicular phase/);
+  assert.match(html, /Next period ~Apr 23 \(range Apr 20–Apr 30\)/);
+  assert.match(html, /Limited history/);
+});
+
+test('overdue and due-today use short plain messages', () => {
+  const { smartInsightsHTML } = renderContext();
+  const overdue = { state: 'overdue', phase: null, phaseLabel: null, cycleDay: null, cycleLength: 28, confidence: 'Limited history' };
+  const due = { state: 'due-today', phase: null, phaseLabel: null, cycleDay: null, cycleLength: 28, confidence: 'Limited history' };
+
+  assert.match(smartInsightsHTML(predictedState(true), overdue, []), /later than expected/);
+  assert.match(smartInsightsHTML(predictedState(), due, []), /expected around now/);
+});
+
+test('phase insight renders when supplied and early patterns get a badge', () => {
+  const { smartInsightsHTML } = renderContext();
+  const current = { state: 'estimated', phase: 'Luteal', phaseLabel: 'Luteal phase', cycleDay: 20, cycleLength: 28, confidence: 'Limited history' };
+  const patterns = [{
+    type: 'sleep-energy',
+    id: 'sleep-energy',
+    headline: 'Short sleep days = lower energy',
+    detail: 'Under 7h: energy 2.3/5 (4 days) vs 7h+: 3.8/5 (6 days)',
+    tip: 'Try an earlier bedtime on busy days.',
+    count: 4,
+    confidenceLevel: 'Early'
+  }];
+  const extras = {
+    phaseInsight: { headline: 'Energy tends to dip in your luteal phase', detail: 'Energy 1/5 on 3 luteal phase days vs 3/5 overall', tip: 'Plan lighter days.' }
+  };
+  const html = smartInsightsHTML(predictedState(), current, patterns, 'Alex', null, extras);
+
+  assert.match(html, /Cycle connection/);
+  assert.match(html, /Energy tends to dip in your luteal phase/);
+  assert.match(html, /Short sleep days = lower energy/);
+  assert.match(html, /Energy 2.3\/5|Under 7h/);
+  assert.match(html, /Early pattern/);
+  assert.match(html, /Based on 4 observations/);
+});
+
+test('AI overrides headline and summary while keeping the Cloud AI label', () => {
+  const { smartInsightsHTML } = renderContext();
+  const patterns = [{ type: 'sleep-energy', id: 'p1', headline: 'Local headline', detail: 'Local detail', tip: 'Local tip', count: 3 }];
+  const aiMap = { p1: { title: 'AI title', summary: 'AI summary', takeaway: 'AI takeaway' } };
+  const html = smartInsightsHTML(predictedState(), { state: 'due-today' }, patterns, 'Alex', aiMap);
+
+  assert.match(html, /AI title/);
+  assert.match(html, /AI summary/);
+  assert.match(html, /AI takeaway/);
+  assert.match(html, /Cloud AI explanation/);
+  assert.ok(!html.includes('Local headline'));
+});
+
+test('headline, detail and tip are HTML escaped', () => {
+  const { smartInsightsHTML } = renderContext();
+  const patterns = [{
+    type: 'symptom-phase',
+    id: 's',
+    headline: '<img src=x onerror=alert(1)>',
+    detail: '<b>detail</b>',
+    tip: '<i>tip</i>',
+    count: 3
+  }];
+  const html = smartInsightsHTML(predictedState(), { state: 'due-today' }, patterns);
+
+  assert.ok(!/<img src=x|<b>detail|<i>tip/.test(html));
+  assert.match(html, /&lt;img src=x/);
+  assert.match(html, /&lt;b&gt;detail/);
+  assert.match(html, /&lt;i&gt;tip/);
 });
