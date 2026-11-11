@@ -233,3 +233,33 @@ test('the only app disclaimer lives in Settings', () => {
   assert.equal((html.match(/Bloom shows patterns from your logs\. It is not medical advice\./g) || []).length, 1);
   assert.ok(html.includes('<h3>App</h3>'));
 });
+
+test('clearLegacySmartAIStorage removes only obsolete AI keys', () => {
+  const mod = renderContext();
+  mod.ST.set('bloom_ai_consent', '1');
+  mod.ST.set('bloom_ai_cache', '{}');
+  mod.ST.set('bloom_ai_token', 'tok');
+  mod.ST.set('bloom_keep', 'value');
+  mod.clearLegacySmartAIStorage();
+  assert.equal(mod.ST.get('bloom_ai_consent'), null);
+  assert.equal(mod.ST.get('bloom_ai_cache'), null);
+  assert.equal(mod.ST.get('bloom_ai_token'), null);
+  assert.equal(mod.ST.get('bloom_keep'), 'value');
+  // idempotent
+  assert.doesNotThrow(() => mod.clearLegacySmartAIStorage());
+});
+
+test('all seven goal CTA mappings are real and meaningful', () => {
+  const { smartCTAFor, smartCTALabel } = renderContext();
+  const goals = ['Understand my cycle','Steadier energy','Better sleep','Move more','Eat regularly','Manage stress','Prepare for doctor visits'];
+  goals.forEach(g => {
+    const action = smartCTAFor(g);
+    const label = smartCTALabel(g);
+    assert.ok(['log','meals','journal','export'].includes(action), g);
+    assert.ok(label.length > 5, g);
+    assert.ok(!/\d/.test(label), g);
+  });
+  assert.equal(smartCTAFor('Eat regularly'), 'meals');
+  assert.equal(smartCTAFor('Manage stress'), 'journal');
+  assert.equal(smartCTAFor('Prepare for doctor visits'), 'export');
+});

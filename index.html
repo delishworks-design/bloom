@@ -1303,7 +1303,7 @@ function forgotPasswordSheet(){
 function login(u){user=u;D=Object.assign(blank(),J(key(u),{}));loadRev(u);setSession(u);applyTheme();view='cycle';shell()}
 function logout(){RO=false;ROcloud=false;ROowner=null;roHash='';user=null;D=null;clearSession();setRoleFlag('');sbLastPush='';sbRev=0;
  view='cycle';tab='';onbStep=0;calM=today().slice(0,7);
- try{ST.del('bloom_own')}catch(e){}try{reminderCancel()}catch(e){}if(sb){sb.auth.signOut().catch(()=>{});sbUser=null}if(cloudTimer){clearInterval(cloudTimer);cloudTimer=null}hideUpdateBanner();authView('in')}
+ try{ST.del('bloom_own')}catch(e){}try{clearLegacySmartAIStorage()}catch(e){}try{reminderCancel()}catch(e){}if(sb){sb.auth.signOut().catch(()=>{});sbUser=null}if(cloudTimer){clearInterval(cloudTimer);cloudTimer=null}hideUpdateBanner();authView('in')}
 function applyTheme(){document.documentElement.removeAttribute('data-theme')}
 // ---------- helpers
 const L=d=>D.logs[d]||{};
@@ -2461,7 +2461,7 @@ function smartGoalFocus(goal,ctx){
    });
    const best=Object.entries(cover).sort((a,b)=>b[1]-a[1])[0];
    if(best&&best[1]*2>lows.length){
-    const lines={short:'Most low-energy days follow short sleep.',luteal:'Most low-energy days fall in your luteal phase.',noactivity:'Most low-energy days had no activity logged.',stress:'Most low-energy days also had high stress.'};
+    const lines={short:'Short sleep was also recorded on most low-energy days.',luteal:'Most low-energy days fall in your luteal phase.',noactivity:'Most low-energy days had no activity logged.',stress:'Most low-energy days also had high stress.'};
     action=lines[best[0]];
    }
   }
@@ -2540,7 +2540,7 @@ function smartGoalFocus(goal,ctx){
    });
    const best=[['short',short],['quality',quality],['luteal',luteal]].sort((a,b)=>b[1]-a[1])[0];
    if(best[1]*2>high.length){
-    const lead={short:'High-stress days often follow short sleep.',quality:'High-stress days often come with poor sleep quality.',luteal:'High-stress days often fall in your luteal phase.'}[best[0]];
+    const lead={short:'Short sleep was recorded on several high-stress days.',quality:'High-stress days often come with poor sleep quality.',luteal:'High-stress days often fall in your luteal phase.'}[best[0]];
     action=`${lead} Protect one small routine on high-stress days.`;
    }
   }
@@ -2932,7 +2932,7 @@ function smartInsightsHTML(pred,current,patterns,viewerName,aiMap,extras){
  extras=extras||{};
  const week=extras.week||[],goals=extras.focusGoals||['Understand my cycle'],noGoals=!!extras.noGoals,goal=extras.selectedGoal||goals[0];
  const dateText=d=>{if(!d)return '';try{return typeof fmt==='function'?fmt(d,{month:'short',day:'numeric'}):d}catch(e){return d}};
- const weekCmpHtml=smartWeekCompareHTML(week),comingHtml=smartComingUpHTML(extras.comingUp||null);
+ const cmpGoalMap={'Better sleep':'Sleep','Steadier energy':'Energy','Manage stress':'Stress'};const cmpSkip=cmpGoalMap[goal];const weekForCompare=cmpSkip?(week||[]).filter(w=>w.label!==cmpSkip):week;const weekCmpHtml=smartWeekCompareHTML(weekForCompare),comingHtml=smartComingUpHTML(extras.comingUp||null);
  const sections=smartSectionOrder(goal).map(k=>k==='week'?weekCmpHtml:comingHtml).filter(Boolean).join('');
  const weekCard=(extras.weekCard&&!extras.ro)?smartWeekHTML(extras.weekCard,extras.weekOpts||{}):'';
  return `<header class="smart-hero">
@@ -2950,6 +2950,14 @@ function smartInsightsHTML(pred,current,patterns,viewerName,aiMap,extras){
  ${smartKnowledgeFor(goal)?`<section class="smart-section" aria-labelledby="smart-know-title"><h3 class="smart-kicker" id="smart-know-title">Good to know</h3><p class="smart-copy">${E(smartKnowledgeFor(goal))}</p></section>`:''}
  ${extras.ro?'':`<section class="smart-section smart-cta" aria-labelledby="smart-cta-title"><h3 class="smart-kicker" id="smart-cta-title">Your next step</h3><p class="smart-pattern-takeaway">${E(smartCTALabel(goal))}</p><button class="btn" id="smart-cta" data-action="${E(smartCTAFor(goal))}" style="width:100%;margin-top:8px">${E(smartCTALabel(goal))}</button></section>`}
  `;
+}
+function clearLegacySmartAIStorage(){
+ try{
+  ['bloom_ai_consent','bloom_ai_cache','bloom_ai_token'].forEach(k=>{
+   try{localStorage.removeItem(k)}catch(e){}
+   try{if(typeof ST!=='undefined'&&ST&&typeof ST.del==='function')ST.del(k)}catch(e){}
+  });
+ }catch(e){}
 }
 // @test-end smart
 
@@ -3485,7 +3493,8 @@ async function reminderSync(quiet){
   return {native:true,error:String((e&&e.message)||e)}}}
 // ---------- data deletion
 function wipeLocalData(){
-  try{Object.keys(localStorage).filter(k=>k.indexOf('bloom_d_')===0||k.indexOf('bloom_backup_')===0||k.indexOf('bloom_dirty_')===0||k.indexOf('bloom_rev_')===0||k==='bloom_s'||k==='bloom_own'||k==='bloom_last_bg'||k==='bloom_upd_skip'||k==='bloom_pname'||k==='bloom_pavatar'||k==='bloom_pown'||k==='bloom_puid'||k==='bloom_powner'||k==='bloom_role'||k==='bloom_unpaired'||k==='bloom_lastcode'||k==='bloom_plocked'||k==='bloom_read'||k==='bloom_errlog'||k==='bloom_ai_consent'||k==='bloom_ai_cache'||k==='bloom_ai_token').forEach(k=>localStorage.removeItem(k))}catch(e){}
+  try{clearLegacySmartAIStorage()}catch(e){}
+  try{Object.keys(localStorage).filter(k=>k.indexOf('bloom_d_')===0||k.indexOf('bloom_backup_')===0||k.indexOf('bloom_dirty_')===0||k.indexOf('bloom_rev_')===0||k==='bloom_s'||k==='bloom_own'||k==='bloom_last_bg'||k==='bloom_upd_skip'||k==='bloom_pname'||k==='bloom_pavatar'||k==='bloom_pown'||k==='bloom_puid'||k==='bloom_powner'||k==='bloom_role'||k==='bloom_unpaired'||k==='bloom_lastcode'||k==='bloom_plocked'||k==='bloom_read'||k==='bloom_errlog').forEach(k=>localStorage.removeItem(k))}catch(e){}
 }
 function deleteAllData(){
  const yes=confirm('Delete all your Bloom data?\n\nEvery log, meal, task and journal entry will be erased from this phone and from the cloud. Your account stays, so you can start fresh. This cannot be undone.');

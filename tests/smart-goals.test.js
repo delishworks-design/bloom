@@ -172,7 +172,7 @@ test('smartGoalFocus finds the most common companion of low energy days', () => 
 
   assert.match(focus.headline, /Energy ranged 2–4 of 5 over 14 days/);
   assert.match(focus.metric, /Range 2/);
-  assert.match(focus.action, /Most low-energy days follow short sleep\./);
+  assert.match(focus.action, /Short sleep was also recorded on most low-energy days\./);
 });
 
 test('energy companion line needs more than half of low-energy days', () => {
