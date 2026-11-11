@@ -1,7 +1,7 @@
 {
-    "versionCode": 68,
-    "versionName": "1.2.53",
-    "notes": "Cloud AI explanations for Smart Insights (opt-in, with daily limits). Includes the Android Google sign-in fix.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.53/bloom-1.2.53.apk",
+    "versionCode": 69,
+    "versionName": "1.2.54",
+    "notes": "Smarter Smart Insights: fairer ranking across pattern types, provisional Early patterns, gentler tips and clearer cycle messages.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.54/bloom-1.2.54.apk",
     "publishedAt": "2026-11-11"
 }
