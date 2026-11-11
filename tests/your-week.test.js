@@ -150,13 +150,13 @@ test('smartWeekTemplate pluralizes days, lowercases symptoms, avoids filler and 
 test('template is goal-led with natural sentences and no duplicate action topics', () => {
   const mod = ctx();
   const cases = [
-    ['Better sleep', { week: [{ label: 'Sleep', now: 6.4, prev: 7.6 }, { label: 'Energy', now: 2.6, prev: 3.4 }, { label: 'Stress', now: 3.8, prev: 2.4 }] }, 'Sleep averaged 6.4 h this week, down from 7.6.'],
-    ['Steadier energy', { week: [{ label: 'Sleep', now: 6.4, prev: 7.6 }, { label: 'Energy', now: 2.6, prev: 3.4 }, { label: 'Stress', now: 3.8, prev: 2.4 }] }, 'Energy averaged 2.6 this week, down from 3.4.'],
-    ['Manage stress', { week: [{ label: 'Sleep', now: 6.4, prev: 7.6 }, { label: 'Energy', now: 2.6, prev: 3.4 }, { label: 'Stress', now: 3.8, prev: 2.4 }] }, 'Stress averaged 3.8 this week, up from 2.4.'],
-    ['Understand my cycle', { week: [{ label: 'Sleep', now: 6.4, prev: 7.6 }, { label: 'Energy', now: 2.6, prev: 3.4 }, { label: 'Stress', now: 3.8, prev: 2.4 }] }, 'Day 18 in Luteal phase, period in 10 days.'],
-    ['Move more', { week: [{ label: 'Energy', now: 3.2, prev: 2.8 }], focus: { headline: 'Active on 2 of 7 days', metric: '2 active days', trend: '2 vs 4 the week before' } }, 'Active on 2 of 7 days, down from 4.'],
-    ['Eat regularly', { week: [{ label: 'Energy', now: 3.2, prev: 2.8 }], focus: { headline: 'All three meals planned on 3 of 7 days', metric: '3 of 7 complete', trend: '3 vs 5 the week before' } }, 'All three meals planned on 3 of 7 days, down from 5.'],
-    ['Prepare for doctor visits', { week: [{ label: 'Energy', now: 3.2, prev: 2.8 }], focus: { headline: 'Summary ready for your next visit', metric: '3 cycles logged', trend: '28 day average' } }, 'Summary ready for your next visit.'],
+    ['Better sleep', { week: [{ label: 'Sleep', now: 6.4, prev: 7.6 }, { label: 'Energy', now: 2.6, prev: 3.4 }, { label: 'Stress', now: 3.8, prev: 2.4 }] }, 'Stress up this week.'],
+    ['Steadier energy', { week: [{ label: 'Sleep', now: 6.4, prev: 7.6 }, { label: 'Energy', now: 2.6, prev: 3.4 }, { label: 'Stress', now: 3.8, prev: 2.4 }] }, 'Stress up this week.'],
+    ['Manage stress', { week: [{ label: 'Sleep', now: 6.4, prev: 7.6 }, { label: 'Energy', now: 2.6, prev: 3.4 }, { label: 'Stress', now: 3.8, prev: 2.4 }] }, 'Sleep down this week.'],
+    ['Understand my cycle', { week: [{ label: 'Sleep', now: 6.4, prev: 7.6 }, { label: 'Energy', now: 2.6, prev: 3.4 }, { label: 'Stress', now: 3.8, prev: 2.4 }] }, 'Stress up this week.'],
+    ['Move more', { week: [{ label: 'Energy', now: 3.2, prev: 2.8 }], focus: { headline: 'Active on 2 of 7 days', metric: '2 active days', trend: '2 vs 4 the week before' } }, 'Energy up this week.'],
+    ['Eat regularly', { week: [{ label: 'Energy', now: 3.2, prev: 2.8 }], focus: { headline: 'All three meals planned on 3 of 7 days', metric: '3 of 7 complete', trend: '3 vs 5 the week before' } }, 'Energy up this week.'],
+    ['Prepare for doctor visits', { week: [{ label: 'Energy', now: 3.2, prev: 2.8 }], focus: { headline: 'Summary ready for your next visit', metric: '3 cycles logged', trend: '28 day average' } }, 'Energy up this week.'],
   ];
   for (const [goal, extra, expectedStart] of cases) {
     const facts = baseFacts(Object.assign({ goals: [goal] }, extra));
@@ -226,4 +226,28 @@ test('Your week card renders, escapes, and sits after cycle before focus', () =>
 
   const ro = mod.smartInsightsHTML({ state: 'single-start' }, { state: 'single-start' }, [], 'Alex', null, Object.assign({}, extras, { ro: true, focus: null }));
   assert.ok(!ro.includes('id="smart-week"'));
+});
+
+test('deterministic copy variation is stable and bounded', () => {
+  const mod = ctx();
+  mod.ST.del('bloom_week_variants');
+  mod.today = () => '2026-01-20';
+  const a = mod.smartWeekVariantIndex('headline:sleep', 3, '2026-01-20');
+  const b = mod.smartWeekVariantIndex('headline:sleep', 3, '2026-01-20');
+  assert.equal(a, b);
+  // different date may vary (not required to differ, but must be valid)
+  const c = mod.smartWeekVariantIndex('headline:sleep', 3, '2026-01-21');
+  assert.ok(c >= 0 && c < 3);
+  // bounded history
+  mod.ST.del('bloom_week_variants');
+  for (let i = 1; i <= 15; i++) {
+    const d = '2026-02-' + String(i).padStart(2, '0');
+    mod.smartWeekVariantIndex('headline:sleep', 3, d);
+  }
+  const raw = mod.ST.get('bloom_week_variants');
+  const hist = JSON.parse(raw);
+  assert.ok(Array.isArray(hist['headline:sleep']));
+  assert.ok(hist['headline:sleep'].length <= 14);
+  const serialized = JSON.stringify(hist);
+  assert.ok(!/SECRET|note|symptom/i.test(serialized));
 });

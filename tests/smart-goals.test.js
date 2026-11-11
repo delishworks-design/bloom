@@ -390,3 +390,20 @@ test('historical phase helper still anchors completed cycles for goal focus', ()
   assert.ok(phase);
   assert.equal(phase.completed, true);
 });
+
+test('Smart Insights association wording avoids unsupported temporal causation', () => {
+  const { smartGoalFocus } = load();
+  const TODAY = '2026-01-20';
+  const logs = {
+    '2026-01-14': { sleep: 5, energy: 2 },
+    '2026-01-15': { sleep: 5, energy: 2 },
+    '2026-01-16': { sleep: 5, energy: 2 },
+    '2026-01-17': { sleep: 8, energy: 4 },
+    '2026-01-18': { sleep: 8, energy: 4 },
+    '2026-01-19': { sleep: 8, energy: 4 }
+  };
+  const focus = smartGoalFocus('Steadier energy', { logs, startDates: [], current: { state: 'estimated', phase: 'Luteal', phaseLabel: 'Luteal phase', cycleDay: 10, cycleLength: 28, confidence: 'Limited history' }, pred: { state: 'predicted', last: '2026-01-01', expected: '2026-01-29', rangeStart: '2026-01-26', rangeEnd: '2026-02-01', avg: 28 }, todayStr: TODAY, meals: {} });
+  const text = JSON.stringify(focus);
+  assert.ok(!/causes|caused by|leads to|follows/i.test(text));
+  assert.match(text, /Short sleep was also recorded on most low-energy days/);
+});

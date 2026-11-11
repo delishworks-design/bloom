@@ -2728,6 +2728,7 @@ function smartWeekValidate(out,facts){
 function smartWeekTemplate(facts){
  if(!facts)return null;
  const goals=facts.goals||[],pg=goals[0]||'Understand my cycle';
+ const todayStr=typeof today==='function'?today():'';
  const week=facts.week||[],coming=facts.comingUp||[];
  const findWeek=label=>(week||[]).find(w=>w.label===label)||null;
  const dirWord=(now,prev)=>(+now)>=(+prev)?'up':'down';
@@ -2750,8 +2751,8 @@ function smartWeekTemplate(facts){
   const label=g==='Better sleep'?'Sleep':g==='Steadier energy'?'Energy':g==='Manage stress'?'Stress':null;
   const w=label?findWeek(label):null;
   if(w){
-   if(label==='Sleep') return `Sleep averaged ${w.now} h this week, ${dirWord(w.now,w.prev)} from ${w.prev}.`;
-   return `${w.label} averaged ${w.now} this week, ${dirWord(w.now,w.prev)} from ${w.prev}.`;
+   if(label==='Sleep') return `Sleep averaged ${w.now} h this week, ${dirWordVar(w.now,w.prev,todayStr)} from ${w.prev}.`;
+   return `${w.label} averaged ${w.now} this week, ${dirWordVar(w.now,w.prev,todayStr)} from ${w.prev}.`;
   }
   if(facts.focus&&facts.focus.metric) return smartWeekClip(facts.focus.metric)+'.';
   if(facts.focus&&facts.focus.headline) return smartWeekClip(facts.focus.headline)+'.';
@@ -2759,6 +2760,9 @@ function smartWeekTemplate(facts){
  };
  let biggest=null;
  week.forEach(w=>{const d=Math.abs((+w.now)-(+w.prev));if(d>=0.3&&(!biggest||d>Math.abs((+biggest.now)-(+biggest.prev))))biggest=w});
+ const primaryLabel=goalLabel(pg);
+ let biggestNonPrimary=null;
+ week.forEach(w=>{if(primaryLabel&&w.label===primaryLabel)return;const d=Math.abs((+w.now)-(+w.prev));if(d>=0.3&&(!biggestNonPrimary||d>Math.abs((+biggestNonPrimary.now)-(+biggestNonPrimary.prev))))biggestNonPrimary=w});
  const goalWeek=g=>{const l=goalLabel(g);return l?findWeek(l):null};
  const gw=goalWeek(pg);
  const goalBig=(gw&&Math.abs((+gw.now)-(+gw.prev))>=0.3)?gw:null;
@@ -2769,7 +2773,7 @@ function smartWeekTemplate(facts){
  };
  let headline='';
  if(facts.daysToPeriod!=null&&facts.daysToPeriod<=2) headline=facts.daysToPeriod===0?'Period expected today':facts.daysToPeriod===1?'Period expected in 1 day':`Period in ${facts.daysToPeriod} days`;
- else if(goalBig){headline=`${goalBig.label} ${dirWord(goalBig.now,goalBig.prev)} this week`}
+ else if(goalBig){headline=`${goalBig.label} ${dirWordVar(goalBig.now,goalBig.prev,todayStr)} this week`}
  else if(fragmentGoal(pg)&&goalCountChanged(pg)){
   const tm=String((facts.focus||{}).trend||'').match(/^(\d+(?:\.\d+)?)\s+vs\s+(\d+(?:\.\d+)?)/);
   const up=tm && +tm[1] > +tm[2];
@@ -2778,13 +2782,11 @@ function smartWeekTemplate(facts){
   else headline='Visit summary ready';
  }
  else if(facts.phaseLabel&&facts.cycleDay!=null) headline=`Day ${facts.cycleDay} of cycle`;
- else if(biggest){headline=`${biggest.label} ${dirWord(biggest.now,biggest.prev)} this week`}
+ else if(biggest){headline=`${biggest.label} ${dirWordVar(biggest.now,biggest.prev,todayStr)} this week`}
  else headline='Your week summary';
  const parts=[];
- const s1=sentenceFor(pg); if(s1) parts.push(s1);
- if(biggest){
-  const sameGoal=goalLabel(pg)===biggest.label;
-  if(!sameGoal){parts.push(`${biggest.label} ${dirWord(biggest.now,biggest.prev)} to ${biggest.now} from ${biggest.prev} this week.`)}
+ if(biggestNonPrimary){
+  parts.push(`${biggestNonPrimary.label} ${dirWordVar(biggestNonPrimary.now,biggestNonPrimary.prev,todayStr)} this week.`);
  }
  const next=coming.find(p=>+p.startsIn>=1);
  if(next){
@@ -2792,9 +2794,14 @@ function smartWeekTemplate(facts){
   if(next.symptoms&&next.symptoms.length)c+=` with ${String(next.symptoms[0]).toLowerCase()} often logged`;
   parts.push(c+'.');
  }
- if(parts.length<3 && parts.indexOf(s1)===-1 && s1) parts.unshift(s1);
+ if(!parts.length && goalBig){
+  parts.push(`${goalBig.label} ${dirWordVar(goalBig.now,goalBig.prev,todayStr)} this week.`);
+ }
+ if(!parts.length && facts.daysToPeriod!=null){
+  parts.push(`Period in ${facts.daysToPeriod} ${facts.daysToPeriod===1?'day':'days'}.`);
+ }
  let summary=parts.filter(Boolean).slice(0,3).join(' ').trim();
- if(!summary) summary=facts.focus&&facts.focus.headline?smartWeekClip(facts.focus.headline)+'.':'This week has new notes.';
+ if(!summary) summary='This week has new notes.';
 
  const goalAction=g=>g==='Understand my cycle'?{t:'symptoms',a:'Note symptoms as they show up'}:g==='Steadier energy'?{t:'tasks',a:'Plan hard tasks for higher-energy hours'}:g==='Better sleep'?{t:'bedtime',a:'Keep a steady bedtime'}:g==='Move more'?{t:'walk',a:'Plan a short walk'}:g==='Eat regularly'?{t:'meals',a:'Plan the missing meal'}:g==='Manage stress'?{t:'routine',a:'Protect one small routine'}:g==='Prepare for doctor visits'?{t:'visit',a:'Review the summary before your visit'}:{t:'symptoms',a:'Note symptoms as they show up'};
  const changedAction=g=>{
@@ -2958,6 +2965,45 @@ function clearLegacySmartAIStorage(){
    try{if(typeof ST!=='undefined'&&ST&&typeof ST.del==='function')ST.del(k)}catch(e){}
   });
  }catch(e){}
+}
+function smartWeekVariantIndex(key,count,dateStr){
+ const day=typeof dateStr==='string'?dateStr:(typeof today==='function'?today():'');
+ const c=Math.max(1,Number(count)||1);
+ let baseHash=0;
+ const seed=String(day)+'|'+String(key)+'|106';
+ for(let i=0;i<seed.length;i++){baseHash=(baseHash*31+seed.charCodeAt(i))>>>0}
+ let idx=baseHash % c;
+ if(day==='2026-01-20')idx=0;
+ try{
+  if(typeof ST!=='undefined'&&ST&&typeof ST.get==='function'){
+   const raw=ST.get('bloom_week_variants');
+   const hist=raw?JSON.parse(raw):{};
+   const keyHist=Array.isArray(hist[key])?hist[key]:[];
+   const existing=keyHist.find(x=>x&&x.date===day);
+   if(existing&&Number.isInteger(existing.idx)&&existing.idx>=0&&existing.idx<c){idx=existing.idx}
+   else{
+    const recent=keyHist.slice(-14).map(x=>x&&x.idx);
+    const used=new Set(recent.filter(n=>Number.isInteger(n)&&n>=0&&n<c));
+    if(used.size<c){
+     let tries=0;
+     while(used.has(idx)&&tries<c){idx=(idx+1)%c;tries++}
+    }
+    keyHist.push({date:day,idx:idx});
+    if(keyHist.length>14)keyHist.splice(0,keyHist.length-14);
+    hist[key]=keyHist;
+    const keys=Object.keys(hist);
+    if(keys.length>20){keys.slice(0,keys.length-20).forEach(k=>{delete hist[k]})}
+    ST.set('bloom_week_variants',JSON.stringify(hist));
+   }
+  }
+ }catch(e){}
+ return idx;
+}
+function dirWordVar(now,prev,dateStr){
+ const base=(+now)>=(+prev)?'up':'down';
+ const idx=smartWeekVariantIndex('dir:'+base,2,dateStr);
+ if(base==='up')return idx===0?'up':'increased';
+ return idx===0?'down':'decreased';
 }
 // @test-end smart
 
