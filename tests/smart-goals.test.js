@@ -8,6 +8,7 @@ const {
   smartActiveGoals,
   smartGoalFocus,
   smartPatternsFromLogs,
+  smartInsightsExtras,
   smartHistoricalPhaseFor
 } = load();
 
@@ -169,9 +170,70 @@ test('smartGoalFocus finds the most common companion of low energy days', () => 
   };
   const focus = smartGoalFocus('Steadier energy', ctx({ logs }));
 
-  assert.match(focus.headline, /Energy mostly 2–4 of 5/);
+  assert.match(focus.headline, /Energy ranged 2–4 of 5 over 14 days/);
   assert.match(focus.metric, /Range 2/);
   assert.match(focus.action, /Most low-energy days follow short sleep\./);
+});
+
+test('energy companion line needs more than half of low-energy days', () => {
+  const logs = {
+    '2026-01-14': { sleep: 5, energy: 2, exMin: 30 },
+    '2026-01-15': { sleep: 8, energy: 2, exMin: 30 },
+    '2026-01-16': { sleep: 8, energy: 2, exMin: 30 },
+    '2026-01-17': { sleep: 8, energy: 4 },
+    '2026-01-18': { sleep: 8, energy: 4 }
+  };
+  const focus = smartGoalFocus('Steadier energy', ctx({ logs }));
+
+  assert.equal(focus.action, 'Keep logging to spot what tends to drain your energy.');
+});
+
+test('stress companion line needs more than half of high-stress days', () => {
+  const logs = {
+    '2026-01-14': { stress: 4, sleep: 5 },
+    '2026-01-15': { stress: 4, sleep: 8 },
+    '2026-01-16': { stress: 4, sleep: 8 },
+    '2026-01-09': { stress: 2, sleep: 8 },
+    '2026-01-10': { stress: 2, sleep: 8 },
+    '2026-01-11': { stress: 2, sleep: 8 }
+  };
+  const focus = smartGoalFocus('Manage stress', ctx({ logs }));
+
+  assert.equal(focus.action, 'Protect one small routine on high-stress days.');
+});
+
+test('eat regularly stays quiet when the plan has every meal every day', () => {
+  const meals = {};
+  for (let i = 0; i < 7; i++) meals['2026-01-' + String(14 + i).padStart(2, '0')] = [{ t: 'b' }, { t: 'l' }, { t: 'd' }];
+  const focus = smartGoalFocus('Eat regularly', ctx({ meals }));
+
+  assert.equal(focus.action, null);
+  assert.ok(!/missing from 0/.test(JSON.stringify(focus)));
+});
+
+test('extras carry the read-only flag and skip the focus calculation', () => {
+  const extras = smartInsightsExtras({}, [], estimated(), prediction(), TODAY, {}, null, null, true);
+
+  assert.equal(extras.ro, true);
+  assert.equal(extras.focus, null);
+  assert.ok(Array.isArray(extras.week));
+});
+
+test('read-only mode filters the stress-sleep pattern only', () => {
+  const logs = {
+    '2026-01-01': { stress: 5, sleep: 6, energy: 2 },
+    '2026-01-02': { stress: 4, sleep: 6, energy: 2 },
+    '2026-01-03': { stress: 5, sleep: 6, energy: 2 },
+    '2026-01-04': { stress: 1, sleep: 8, energy: 4 },
+    '2026-01-05': { stress: 2, sleep: 8, energy: 4 },
+    '2026-01-06': { stress: 1, sleep: 8, energy: 4 }
+  };
+  const full = smartPatternsFromLogs(logs, []);
+  const shared = smartPatternsFromLogs(logs, [], { ro: true });
+
+  assert.ok(full.some(p => p.type === 'stress-sleep'));
+  assert.ok(!shared.some(p => p.type === 'stress-sleep'));
+  assert.ok(shared.some(p => p.type === 'sleep-energy'));
 });
 
 test('smartGoalFocus asks for more energy logs', () => {

@@ -2222,7 +2222,7 @@ function spSymptomNames(log){
 function spFindingSlug(v){
  return String(v||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
 }
-function smartPatternsFromLogs(logs,startDates){
+function smartPatternsFromLogs(logs,startDates,opts){
  const out=[],allLogs=logs&&typeof logs==='object'?logs:{};
  const dates=Object.keys(allLogs).filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d)&&allLogs[d]&&typeof allLogs[d]==='object').sort();
  const rows=dates.map(d=>({date:d,log:allLogs[d]}));
@@ -2287,7 +2287,7 @@ function smartPatternsFromLogs(logs,startDates){
   if(stress>=4)highStress.push(sleep);
   else if(stress<=2)lowStress.push(sleep);
  });
- if(highStress.length>=3&&lowStress.length>=3){
+ if(!(opts&&opts.ro)&&highStress.length>=3&&lowStress.length>=3){
   const highAvg=spAverage(highStress),lowAvg=spAverage(lowStress);
   if(lowAvg-highAvg>=.5){
    const score=Math.min(1,(lowAvg-highAvg)/4);
@@ -2457,12 +2457,12 @@ function smartGoalFocus(goal,ctx){
     const s=spNum(r.log.stress);if(s!=null&&s>=4)cover.stress++;
    });
    const best=Object.entries(cover).sort((a,b)=>b[1]-a[1])[0];
-   if(best&&best[1]>0){
+   if(best&&best[1]*2>lows.length){
     const lines={short:'Most low-energy days follow short sleep.',luteal:'Most low-energy days fall in your luteal phase.',noactivity:'Most low-energy days had no activity logged.',stress:'Most low-energy days also had high stress.'};
     action=lines[best[0]];
    }
   }
-  return {goal,headline:`Energy mostly ${Math.min(...vals)}–${Math.max(...vals)} of 5`,metric:`Range ${range} · spread ±${smartRound1(sd)}`,trend,action};
+  return {goal,headline:`Energy ranged ${Math.min(...vals)}–${Math.max(...vals)} of 5 over 14 days`,metric:`Range ${range} · spread ±${smartRound1(sd)}`,trend,action};
  }
 
  if(goal==='Better sleep'){
@@ -2517,7 +2517,7 @@ function smartGoalFocus(goal,ctx){
    const miss=days.filter(d=>!mealsOn(d).some(m=>m.t===t)).length;
    if(!best||miss>best.miss)best={t,miss};
   });
-  return {goal,headline:`All three meals planned on ${full} of 7 days`,metric:`${full} of 7 complete`,trend:`${full} vs ${prevFull} the week before`,action:best?`${labels[best.t]} is missing from ${best.miss} of 7 days in your plan.`:null};
+  return {goal,headline:`All three meals planned on ${full} of 7 days`,metric:`${full} of 7 complete`,trend:`${full} vs ${prevFull} the week before`,action:best&&best.miss>0?`${labels[best.t]} is missing from ${best.miss} of 7 days in your plan.`:null};
  }
 
  if(goal==='Manage stress'){
@@ -2536,7 +2536,7 @@ function smartGoalFocus(goal,ctx){
     const h=smartHistoricalPhaseFor(r.date,starts);if(h&&h.completed&&h.phase==='Luteal')luteal++;
    });
    const best=[['short',short],['quality',quality],['luteal',luteal]].sort((a,b)=>b[1]-a[1])[0];
-   if(best[1]>0){
+   if(best[1]*2>high.length){
     const lead={short:'High-stress days often follow short sleep.',quality:'High-stress days often come with poor sleep quality.',luteal:'High-stress days often fall in your luteal phase.'}[best[0]];
     action=`${lead} Protect one small routine on high-stress days.`;
    }
@@ -2614,11 +2614,11 @@ function smartProgress(logs){
  }
  return {hints,averages,days:dates.length};
 }
-function smartInsightsExtras(logs,startDates,current,pred,todayStr,meals,profileGoals,selectedGoal){
+function smartInsightsExtras(logs,startDates,current,pred,todayStr,meals,profileGoals,selectedGoal,ro){
  const active=smartActiveGoals(profileGoals);
  const goal=active.goals.includes(selectedGoal)?selectedGoal:active.goals[0];
  const ctx={logs,startDates,current,pred,todayStr,meals};
- return {week:smartWeekCompare(logs,todayStr),comingUp:smartComingUp(logs,startDates,current,pred),focus:active.noGoals?null:smartGoalFocus(goal,ctx),focusGoals:active.goals,noGoals:active.noGoals,selectedGoal:goal,ctx};
+ return {week:smartWeekCompare(logs,todayStr),comingUp:smartComingUp(logs,startDates,current,pred),focus:(ro||active.noGoals)?null:smartGoalFocus(goal,ctx),focusGoals:active.goals,noGoals:active.noGoals,selectedGoal:goal,ro:!!ro,ctx};
 }
 function smartPatterns(){
  return smartPatternsFromLogs(D&&D.logs?D.logs:{},starts());
@@ -2737,7 +2737,7 @@ function smartInsightsHTML(pred,current,patterns,viewerName,aiMap,extras){
   <div class="smart-hero-art">${smartArt('insight')}</div>
  </header>
  ${smartCycleSection(pred,current,dateText)}
- ${smartFocusHTML(goal,goals,noGoals,extras.focus||null)}
+ ${extras.ro?'':smartFocusHTML(goal,goals,noGoals,extras.focus||null)}
  ${sections}
  <section class="smart-section" aria-labelledby="smart-patterns-title"><h3 class="smart-kicker" id="smart-patterns-title">Patterns</h3>${smartPatternsHTML(patterns,aiMap)}</section>`;
 }
@@ -2840,7 +2840,7 @@ function smartAIRefresh(state){
 function insights(){const n=range,days=[...Array(n)].map((_,i)=>addD(today(),i-n+1)),c=cycleStats();const tg={};days.forEach(d=>(L(d).tags||[]).concat(L(d).customSx||[]).forEach(t=>tg[t]=(tg[t]||0)+1));const tk=Object.entries(tg).sort((a,b)=>b[1]-a[1]).slice(0,6),mx=tk[0]?.[1]||1;
  const hab=days.map(d=>{const t=tasksFor(d);return t.length?t.filter(x=>isDone(x.id,d)).length/t.length:null}).filter(x=>x!=null);const ha=hab.length?Math.round(hab.reduce((a,b)=>a+b,0)/hab.length*100):null;
  const sl=days.map(d=>L(d).sleep).filter(Boolean);
- const smartStarts=starts(),smartPred=smartPredictionHistory(smartStarts,today()),smartCurrent=smartCurrentCycle(smartPred,today()),smartPats=smartPatternsFromLogs(D.logs,smartStarts);const smartExtras=smartInsightsExtras(D.logs,smartStarts,smartCurrent,smartPred,today(),D.meals,D.p&&D.p.goals,smartFocusGoal);smartFocusGoal=smartExtras.selectedGoal;const viewerName=(RO?(ST.get('bloom_pname')||'friend'):(D.p.name||'friend')).split(' ')[0];
+ const smartStarts=starts(),smartPred=smartPredictionHistory(smartStarts,today()),smartCurrent=smartCurrentCycle(smartPred,today()),smartPats=smartPatternsFromLogs(D.logs,smartStarts,{ro:RO});const smartExtras=smartInsightsExtras(D.logs,smartStarts,smartCurrent,smartPred,today(),D.meals,RO?null:(D.p&&D.p.goals),smartFocusGoal,RO);smartFocusGoal=smartExtras.selectedGoal;const viewerName=(RO?(ST.get('bloom_pname')||'friend'):(D.p.name||'friend')).split(' ')[0];
  $('#main').innerHTML=`<h1>Insights</h1><div class="row">${[7,14,30,90].map(v=>`<button class="chip" data-r="${v}" aria-pressed="${range==v}">${v} days</button>`).join('')}</div>
 <div class="card smart-card" id="smart-card">${smartInsightsHTML(smartPred,smartCurrent,smartPats,viewerName,aiConsentEnabled()?aiCacheGet(smartPats):null,smartExtras)}${(RO||!sbUser)?'':smartAIConsentHTML()}</div><div class="card"><div class="card-h"><h3>Mood</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Recorded</span></div>${line('mood',n,5,'var(--rose)')}</div><div class="card"><div class="card-h"><h3>Energy</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Recorded</span></div>${line('energy',n,5,'var(--teal)')}</div>
 <div class="card"><div class="card-h"><h3>Sleep</h3><span class="meta">${sl.length?(sl.reduce((a,b)=>a+b,0)/sl.length).toFixed(1)+' h avg  '+sl.length+' nights':'\u2014'}</span></div>${line('sleep',n,12,'var(--teal)')}</div>

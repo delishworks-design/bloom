@@ -202,6 +202,17 @@ test('user symptom names are escaped in patterns and coming up', () => {
   assert.match(out, /&lt;img src=y/);
 });
 
+test('read-only mode hides the focus card but keeps the rest', () => {
+  const { smartInsightsHTML } = renderContext();
+  const out = smartInsightsHTML(predictedState(), currentState(), [], undefined, null,
+    extras({ ro: true, focus: null }));
+
+  assert.ok(!/Your focus/.test(out));
+  assert.ok(!/Pick your goals/.test(out));
+  assert.match(out, /This week vs last/);
+  assert.match(out, /Coming up/);
+});
+
 test('cycle states keep plain messages', () => {
   const { smartInsightsHTML } = renderContext();
   const single = smartInsightsHTML({ state: 'single-start' }, currentState({ state: 'single-start' }), []);
