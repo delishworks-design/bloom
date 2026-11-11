@@ -752,7 +752,7 @@ const LEARN=[['What is PCOS?','PCOS (often called PMOS in some regions) is a com
 const SB={url:'https://vggaswbjsmyvfheofnnj.supabase.co',key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZnZ2Fzd2Jqc215dmZoZW9mbm5qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE2MzU5MDgsImV4cCI6MjEwNzIxMTkwOH0.5iV_nWSia3LaKSjTqoQtb8e3ZcAvJd8K3Vhg8b9Dwx4'};
 let sb=null,sbUser=null,sbPushT=null,cloudTimer=null;
 let sbReady=null;
-let sbRev=0,sbPullTimer=null,sbRetryTimer=null,sbPendingRender=false;
+let sbRev=0,sbPullTimer=null,sbRetryTimer=null,sbPendingRender=false,pendRenderTimer=null;
 let errMem=[];
 const SYNC={state:'idle',last:0,fails:0};
 function errLog(){try{return JSON.parse(ST.get('bloom_errlog')||'[]')}catch(e){return []}}
@@ -810,6 +810,17 @@ function mergeDocs(local,remote){
  return out;
 }
 // @test-end sync
+// @test-begin ownmode
+function seedOwnDoc(ownDoc,cachedDoc,pname,pavatar){
+ const src=ownDoc||cachedDoc||{};
+ const d=Object.assign(blank(),JSON.parse(JSON.stringify(src)));
+ d.p=d.p||{};
+ const nm=(pname==null?'':String(pname)).trim();if(nm&&!d.p.name)d.p.name=nm;
+ if(pavatar&&pavatar.a&&!d.p.avatar){d.p.avatar=pavatar.a;d.p.avatarCrop=pavatar.c||{z:1,x:0,y:0}}
+ d.p.done=true;
+ return d;
+}
+// @test-end ownmode
 function backupLocal(){const m=user||(sbUser&&sbUser.email&&sbUser.email.toLowerCase());if(!m||!D)return;try{ST.set('bloom_backup_'+m,JSON.stringify(D))}catch(e){}}
 // @test-begin backup
 function makeBackup(doc){return {app:'bloom',v:1,exportedAt:new Date().toISOString(),doc}}
@@ -918,8 +929,8 @@ async function sbPull(){if(!sb||!sbUser||RO||document.hidden)return;
   if(safeToRender())shell();else sbPendingRender=true;
  }catch(e){reportErr('sync.pull',e)}}
 function safeToRender(){const sheetEl=document.getElementById('sheet');if(sheetEl&&sheetEl.innerHTML.trim())return false;const a=document.activeElement;return !(a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA'||a.tagName==='SELECT'))}
-function startCloudSync(){if(cloudTimer)clearInterval(cloudTimer);cloudTimer=setInterval(()=>{if(sbUser&&!document.hidden)sbPush()},15000);if(sbPullTimer)clearInterval(sbPullTimer);sbPullTimer=setInterval(sbPull,60000);setInterval(()=>{if(sbPendingRender&&safeToRender()){sbPendingRender=false;shell()}},5000)}
-async function sbAfterLogin(u){sbUser=u;
+function startCloudSync(){if(cloudTimer)clearInterval(cloudTimer);cloudTimer=setInterval(()=>{if(sbUser&&!document.hidden)sbPush()},15000);if(sbPullTimer)clearInterval(sbPullTimer);sbPullTimer=setInterval(sbPull,60000);if(pendRenderTimer)clearInterval(pendRenderTimer);pendRenderTimer=setInterval(()=>{if(sbPendingRender&&safeToRender()){sbPendingRender=false;shell()}},5000)}
+async function sbAfterLogin(u){ownMode=false;ownStash=null;sbUser=u;
  const mail=(u.email||'').toLowerCase();
  const cached=J(key(mail),null);
   const keep=Object.assign(blank(),JSON.parse(JSON.stringify(D||cached||blank())));
@@ -1002,7 +1013,7 @@ async function cloudPairing(){
   return{ok:true,pair:data&&data.length?{owner:data[0].owner_id,code:data[0].code}:null};
  }catch(e){return{ok:false}}}
 async function enterPartnerMode(owner,code,quiet){
- RO=true;ROcloud=true;ROowner=owner;
+ RO=true;ROcloud=true;ROowner=owner;ownMode=false;ownStash=null;
  if(cloudTimer){clearInterval(cloudTimer);cloudTimer=null}
  try{reminderCancel()}catch(e){}
  if(sbUser&&sbUser.email)user=sbUser.email.toLowerCase();
@@ -1023,14 +1034,46 @@ async function enterPartnerMode(owner,code,quiet){
  return true}
 async function partnerDropped(){
  const old=ROowner;
- RO=false;ROcloud=false;ROowner=null;roHash='';D=null;
+ RO=false;ROcloud=false;ROowner=null;roHash='';ownMode=false;ownStash=null;D=null;
  setRoleFlag('');unlockPartner();setUnpaired(true);clearSession();
   try{ST.del('bloom_lastcode');ST.del('bloom_powner');if(old)ST.del(key(old))}catch(e){}
   try{toast('Sharing was stopped')}catch(e){}
   if(sbUser){try{await sbAfterLogin(sbUser);return}catch(e){reportErr('login.after',e)}}
   authView('in')}
+// the partner's own planner and journal: same account, separate doc, synced to their own row
+async function enterOwnMode(){
+ if(ownMode)return;
+ if(!sbUser){toast('Sign in first');return}
+ ownStash={D:D,roHash:roHash,view:view,tab:tab};
+ if(roTimer){clearInterval(roTimer);roTimer=null}
+ ownMode=true;RO=false;ROcloud=false;
+ const mail=(user||'').toLowerCase();
+ let cloud=null,cloudRev=0;
+ try{const row=await sbFetchDocWithRev(sbUser.id);if(row){cloud=row.doc;cloudRev=row.rev}}catch(e){reportErr('own.load',e)}
+ const cached=J(key(mail),null);
+ const pname=(()=>{try{return ST.get('bloom_pname')||''}catch(e){return ''}})();
+ let pavatar=null;try{pavatar=JSON.parse(ST.get('bloom_pavatar')||'null')}catch(e){}
+ D=seedOwnDoc(cloud,cached,pname,pavatar);
+ if(cloud)sbRev=cloudRev;else loadRev(mail);
+ saveRev();setDirtyFlag(0);sbLastPush=JSON.stringify(D);
+ view='planner';tab='day';
+ startCloudSync();
+ shell();
+}
+function exitOwnMode(){
+ if(!ownMode){shell();return}
+ const mail=(user||'').toLowerCase();
+ try{ST.set(key(mail),JSON.stringify(D))}catch(e){}
+ try{saveRev()}catch(e){}
+ if(cloudTimer){clearInterval(cloudTimer);cloudTimer=null}if(sbPullTimer){clearInterval(sbPullTimer);sbPullTimer=null}
+  if(pendRenderTimer){clearInterval(pendRenderTimer);pendRenderTimer=null}sbPendingRender=false;
+ D=(ownStash&&ownStash.D)||D;roHash=(ownStash&&ownStash.roHash)||'';
+ const ov=(ownStash&&ownStash.view)||'cycle';ownStash=null;ownMode=false;RO=true;ROcloud=true;
+ view=ov==='planner'||ov==='journal'?'cycle':ov;tab='';
+ shell();
+}
 // ---------- pairing (read-only sharing)
-let RO=false,ROowner=null,ROcloud=false;
+let RO=false,ROowner=null,ROcloud=false,ownMode=false,ownStash=null;
 async function genPartnerCode(){
  const client=await sbInit();
  if(!client||!sbUser){toast('Pairing needs an internet connection');return null}
@@ -1061,7 +1104,7 @@ async function exitPartnerNow(){
  const wasRO=RO;
  // leaving on purpose removes the cloud link too, so a sign-out cannot restore it
   try{if(wasRO){const cl=await sbInit();if(cl&&sbUser)await cl.rpc('bloom_leave_pairing')}}catch(e){reportErr('partner.leave',e)}
-  RO=false;ROcloud=false;ROowner=null;roHash='';D=null;clearSession();
+  RO=false;ROcloud=false;ROowner=null;roHash='';ownMode=false;ownStash=null;D=null;clearSession();
   setRoleFlag('');unlockPartner();
   try{ST.del('bloom_lastcode');ST.del('bloom_powner')}catch(e){}
   if(wasRO)setUnpaired(true);
@@ -1081,10 +1124,12 @@ function roPage(){
   <div class="hi" style="text-align:center">Hello ${E(ownName())}!</div>
   </div>
  <div class="card"><div class="card-h"><h3>Following</h3></div><div class="row" style="gap:12px;align-items:center">${avatarHTML(56)}<div style="min-width:0"><b style="display:block">${E((D.p&&D.p.name)||'partner')}</b></div></div><button class="btn ghost" id="exv" style="width:100%;margin-top:14px">Exit ${E((D.p&&D.p.name)||'partner')}'s view</button></div>
+<div class="card"><div class="card-h"><h3>My Bloom</h3></div><p class="meta" style="margin:0 0 12px">Your own planner and journal, synced to your account. Only you can see this.</p><button class="btn" id="openOwn" style="width:100%">Open my planner &amp; journal</button></div>
    <div class="card"><button class="btn ghost" id="stg" style="width:100%">Settings</button></div>
    <button class="btn ghost" id="lo" style="width:100%">Sign out</button>
 <p class="meta" style="margin-top:8px;text-align:center">Signing out keeps this pairing. Their data stays untouched.</p>`;
   $('#exv').onclick=exitPartner;
+  $('#openOwn').onclick=enterOwnMode;
   $('#stg').onclick=()=>{view='settings';shell()};
   $('#rpav').onchange=e=>{const f=e.target.files&&e.target.files[0];e.target.value='';if(f)roPickAvatar(f)};
   $('#lo').onclick=logout;}
@@ -1302,7 +1347,7 @@ function forgotPasswordSheet(){
 }
 function login(u){user=u;D=Object.assign(blank(),J(key(u),{}));loadRev(u);setSession(u);applyTheme();view='cycle';shell()}
 // @test-begin auth
-function logout(){RO=false;ROcloud=false;ROowner=null;roHash='';user=null;D=null;clearSession();setRoleFlag('');sbLastPush='';sbRev=0;
+function logout(){RO=false;ROcloud=false;ROowner=null;roHash='';ownMode=false;ownStash=null;user=null;D=null;clearSession();setRoleFlag('');sbLastPush='';sbRev=0;
  view='cycle';tab='';onbStep=0;calM=today().slice(0,7);
  try{ST.del('bloom_own')}catch(e){}try{clearLegacySmartAIStorage()}catch(e){}try{reminderCancel()}catch(e){}if(sb){sb.auth.signOut().catch(()=>{});sbUser=null}if(cloudTimer){clearInterval(cloudTimer);cloudTimer=null}hideUpdateBanner();authView('in')}
 function wipeLocalData(){
@@ -1459,14 +1504,20 @@ function shell(){splashAppIsReady();
   document.body.classList.toggle('ro',!!RO);
   if(!RO){stripSeededTasks();migrateCustomSymptoms()}
   if(!D.p.done&&!RO){if(pLocked()){D.p.done=true;D.p=D.p||{};D.p.role='partner';save()}else return onboarding()}
- const N=[['cycle','Cycle',IC.ring],['planner','Planner',IC.list] ,['insights','Insights',IC.chart],['learn','Learn',IC.book]]
+  if(ownMode){
+   if(view==='journal'){view='planner';tab='journal'}
+   else if(view!=='planner'){view='planner';tab='day'}
+  }else if(pLocked()&&!RO&&view==='cycle')view='me';
+ const N=ownMode?[['planner','Planner',IC.list],['journal','Journal',IC.book]]:[['cycle','Cycle',IC.ring],['planner','Planner',IC.list] ,['insights','Insights',IC.chart],['learn','Learn',IC.book]]
    .filter(x=>!(pLocked()&&!RO&&x[0]==='cycle'));
- if(pLocked()&&!RO&&view==='cycle')view='me';
- $('#app').innerHTML=`<div class="blob blob-a"></div><div class="blob blob-b"></div><div class="blob blob-c"></div><div class="wrap"><header class="topbar"><div class="wordmark">Bloom<i>.</i></div>${RO?`<button class="profbtn" id="rome" aria-label="Your profile">${roAvatarHTML(44)}<span>${E(ownName())}</span></button>`:`<button class="profbtn" id="me" aria-label="Profile and settings">${avatarHTML(44)}<span>${E(D.p.name||user)}</span></button>`}</header><main id="main"></main></div><nav aria-label="Main">${N.map(([k,l,ic])=>`<button data-v="${k}" ${view==k?'aria-current="page"':''}>${ic(17)}<span>${l}</span></button>`).join('')}</nav>`;
+ const ariaCur=k=>ownMode?(view==='planner'&&((k==='journal')===(tab==='journal'))):view==k;
+ const headBtn=RO?`<button class="profbtn" id="rome" aria-label="Your profile">${roAvatarHTML(44)}<span>${E(ownName())}</span></button>`:ownMode?`<button class="profbtn" id="backFollow" aria-label="Back to followed view" style="padding:4px 16px">${'&#8249;'} <span>Followed view</span></button>`:`<button class="profbtn" id="me" aria-label="Profile and settings">${avatarHTML(44)}<span>${E(D.p.name||user)}</span></button>`;
+ $('#app').innerHTML=`<div class="blob blob-a"></div><div class="blob blob-b"></div><div class="blob blob-c"></div><div class="wrap"><header class="topbar"><div class="wordmark">Bloom<i>.</i></div>${headBtn}</header><main id="main"></main></div><nav aria-label="Main">${N.map(([k,l,ic])=>`<button data-v="${k}" ${ariaCur(k)?'aria-current="page"':''}>${ic(17)}<span>${l}</span></button>`).join('')}</nav>`;
  if(RO){
  const rm=document.getElementById('rome');if(rm)rm.onclick=()=>{view='me';shell()};
  roTimer=setInterval(roReload,4000)}
- document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{view=b.dataset.v;shell()});
+ const bf=document.getElementById('backFollow');if(bf)bf.onclick=()=>exitOwnMode();
+ document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{if(ownMode){tab=b.dataset.v==='journal'?'journal':'day';view='planner'}else view=b.dataset.v;shell()});
  // #me only exists outside partner (read-only) mode  that header shows the Exit button instead
  const meBtn=$('#me');if(meBtn)meBtn.onclick=()=>{view='me';shell()};
  if(view=='me')document.querySelector('nav [aria-current]')?.removeAttribute('aria-current');
@@ -1836,7 +1887,7 @@ function fabMount(){
 }
 function fabSync(){
  fabMount();
- const on=!!(document.getElementById('main')&&!RO&&D&&D.p&&D.p.done);
+ const on=!!(document.getElementById('main')&&!RO&&!ownMode&&D&&D.p&&D.p.done);
  fabEl.style.display=on?'':'none';
  if(on)fabPlace();
 }
