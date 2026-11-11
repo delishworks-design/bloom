@@ -649,3 +649,56 @@ test('Stress/sleep identity: actual focus outputs use specific IDs and do not in
   assert.match(outR2, /Short sleep days = lower energy/);
 });
 
+
+
+
+test('Focus period metric suppresses Cycle and Coming up duplicates; distinct phase remains; read-only does not claim hidden focus', () => {
+  const { smartInsightsHTML } = renderContext();
+  const pred = predictedState(false);
+  const current = { state: 'estimated', phase: 'Luteal', phaseLabel: 'Luteal phase', cycleDay: 18, cycleLength: 28, confidence: 'Limited history', predictedDate: '2026-04-23' };
+  // Focus period metric suppresses Cycle and Coming up duplicates
+  const out = smartInsightsHTML(pred, current, [], 'Alex', null, {
+    selectedGoal: 'Understand my cycle', focusGoals: ['Understand my cycle'], noGoals: false,
+    focus: { goal: 'Understand my cycle', headline: 'Day 18 of ~28 · Luteal phase', metric: 'Period expected in 4 days', trend: null, action: 'Keep logging.' },
+    week: [], ro: false, weekCard: null, weekFacts: null,
+    comingUp: { daysToPeriod: 4, phases: [{ phase: 'Follicular', phaseLabel: 'Follicular phase', startsIn: 2, mood: 3, energy: 3, stress: 2, symptoms: [] }] }
+  });
+  assert.match(out, /Period expected in 4 days/); // focus metric present
+  assert.ok(!/Next period/.test(out), 'Cycle should not repeat period estimate');
+  assert.equal((out.match(/Period expected in 4 days\./g)||[]).length, 0, 'Coming up period tail suppressed');
+  assert.match(out, /Follicular phase/, 'distinct upcoming phase remains');
+  assert.match(out, /Day 18 of ~28/, 'cycle-day/phase preserved');
+
+  // Focus without a period metric allows Cycle to render its estimate
+  const out2 = smartInsightsHTML(pred, current, [], 'Alex', null, {
+    selectedGoal: 'Understand my cycle', focusGoals: ['Understand my cycle'], noGoals: false,
+    focus: { goal: 'Understand my cycle', headline: 'Day 18 of ~28 · Luteal phase', metric: null, trend: null, action: 'Keep logging.' },
+    week: [], ro: false, weekCard: null, weekFacts: null,
+    comingUp: { daysToPeriod: 4, phases: [] }
+  });
+  assert.match(out2, /Next period/);
+  assert.equal((out2.match(/Period expected in 4 days\./g)||[]).length, 0);
+
+  // Focus without period metric and Cycle without estimate allows Coming up to render its period
+  const predNo = { state: 'limited-history', expected: null };
+  const curNo = { state: 'single-start', phase: null, phaseLabel: null, cycleDay: null, cycleLength: null, confidence: 'Limited history', predictedDate: null };
+  const out3 = smartInsightsHTML(predNo, curNo, [], 'Alex', null, {
+    selectedGoal: 'Understand my cycle', focusGoals: ['Understand my cycle'], noGoals: false,
+    focus: { goal: 'Understand my cycle', headline: 'Log period start dates to see this', metric: null, trend: null, action: null },
+    week: [], ro: false, weekCard: null, weekFacts: null,
+    comingUp: { daysToPeriod: 4, phases: [] }
+  });
+  assert.ok(!/Next period/.test(out3));
+  assert.match(out3, /Period expected in 4 days\./);
+
+  // Read-only mode does not claim hidden focus evidence
+  const out4 = smartInsightsHTML(pred, current, [], 'Alex', null, {
+    selectedGoal: 'Understand my cycle', focusGoals: ['Understand my cycle'], noGoals: false,
+    focus: { goal: 'Understand my cycle', headline: 'Day 18 of ~28 · Luteal phase', metric: 'Period expected in 4 days', trend: null, action: 'Keep logging.' },
+    week: [], ro: true, weekCard: null, weekFacts: null,
+    comingUp: { daysToPeriod: 4, phases: [] }
+  });
+  assert.ok(!/Your focus/.test(out4));
+  assert.match(out4, /Next period/, 'hidden focus must not suppress Cycle period');
+});
+

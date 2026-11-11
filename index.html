@@ -3033,11 +3033,17 @@ function smartInsightsHTML(pred,current,patterns,viewerName,aiMap,extras){
   }
  }
 
+ // Focus: prepare and claim period evidence before Cycle if actually rendered
+ let focusToShow=extras.focus||null;
+ const focusRendered=!!(focusToShow&&!extras.ro&&!noGoals);
+ if(focusRendered&&goal==='Understand my cycle'&&focusToShow.metric!=null&&String(focusToShow.metric).trim()!==''&&extras.comingUp&&Number.isFinite(+extras.comingUp.daysToPeriod)&&+extras.comingUp.daysToPeriod>0){
+  registry.claim('period:expected','Your focus','period');
+ }
+
  const cycleHtml=smartCycleSection(pred,current,dateText,registry);
 
  // Focus: claim/suppress evidence (priority before Week comparison/Patterns/Coming up)
- let focusToShow=extras.focus||null;
- if(focusToShow&&!extras.ro){
+ if(focusRendered){
   const focusClaimId=primaryMetric?'metric:'+primaryMetric+':window:7d':(goal==='Move more'?'focus:activity-days:window:14d':goal==='Eat regularly'?'focus:meal-plan:window:14d':goal==='Prepare for doctor visits'?'focus:visit-summary:window:90d':goal==='Understand my cycle'?'cycle:day-phase:current':null);
   if(focusClaimId){
    if(registry.has(focusClaimId)){
