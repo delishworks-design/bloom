@@ -1,7 +1,7 @@
 {
-    "versionCode": 65,
-    "versionName": "1.2.50",
-    "notes": "Continue with Google now works in the Android app, plus a fix for the web sign-in button.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.50/bloom-1.2.50.apk",
+    "versionCode": 66,
+    "versionName": "1.2.51",
+    "notes": "Fix: Continue with Google now works in the Android app.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.51/bloom-1.2.51.apk",
     "publishedAt": "2026-11-11"
 }
