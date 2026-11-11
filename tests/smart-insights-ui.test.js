@@ -158,9 +158,10 @@ test('patterns show headline, detail and tip without badges or counts', () => {
 
 test('only three patterns render', () => {
   const { smartInsightsHTML } = renderContext();
-  const patterns = ['a', 'b', 'c', 'd'].map((k, i) => ({
-    type: 'sleep-energy',
-    id: k,
+  const types = ['sleep-energy', 'mood-sleep', 'activity-energy', 'stress-sleep'];
+  const patterns = types.map((t, i) => ({
+    type: t,
+    id: t,
     headline: 'Headline ' + i,
     detail: 'Detail ' + i,
     tip: 'Tip ' + i
@@ -334,7 +335,8 @@ test('Smart Insights deduplicates primary sleep evidence across sections', () =>
       focus: { goal: 'Better sleep', headline: 'Sleep 6.8 h last week', metric: '6.8 h (3 under 7h)', trend: 'sleep 6.8 vs 7.2 h', action: 'Try a consistent wind-down time.' },
       week: [{ key: 'sleep', label: 'Sleep', now: 6.8, prev: 7.2, arrow: '↓' }, { key: 'energy', label: 'Energy', now: 3.4, prev: 2.9, arrow: '↑' }],
       comingUp: { daysToPeriod: 10, phases: [{ phase: 'Luteal', phaseLabel: 'Luteal phase', startsIn: 3, mood: 3.2, energy: 2.8, stress: 3.5, symptoms: ['Headache', 'Cramps'] }] },
-      weekCard: { headline: 'Sleep down this week', summary: 'No other changes worth highlighting this week.', actions: ['Try an earlier bedtime', 'Plan a short walk'] },
+      weekCard: { headline: 'Sleep down this week', summary: 'Sleep averaged 6.8 h this week, decreased from 7.2.', actions: ['Try an earlier bedtime', 'Plan a short walk'] },
+      weekFacts: { goals: ['Better sleep'], week: [{ label: 'Sleep', now: 6.8, prev: 7.2 }, { label: 'Energy', now: 3.4, prev: 2.9 }], comingUp: [], focus: { headline: 'Sleep 6.8 h last week', metric: '6.8 h (3 under 7h)', trend: 'sleep 6.8 vs 7.2 h' }, daysToPeriod: 10, phaseLabel: 'Luteal phase', cycleDay: 18 },
       ro: false
     }
   );
@@ -530,5 +532,120 @@ test('Fix3: Focus association evidence suppresses same association in Patterns; 
   });
   assert.equal((out3.match(/Short sleep days = lower energy/g)||[]).length, 0);
   assert.match(out3, /Better mood days = more sleep/);
+});
+
+
+
+
+test('Period deduplication: Your week suppresses Cycle and Coming up; distinct phase remains; registry resets', () => {
+  const { smartInsightsHTML } = renderContext();
+  const pred = predictedState(false);
+  const current = { state: 'estimated', phase: 'Luteal', phaseLabel: 'Luteal phase', cycleDay: 18, cycleLength: 28, confidence: 'Limited history', predictedDate: '2026-04-23' };
+  const extras = {
+    selectedGoal: 'Understand my cycle', focusGoals: ['Understand my cycle'], noGoals: false,
+    focus: { goal: 'Understand my cycle', headline: 'Day 18 of ~28 · Luteal phase', metric: 'Period expected in 4 days', trend: null, action: 'Keep logging.' },
+    week: [], ro: false,
+    comingUp: { daysToPeriod: 4, phases: [{ phase: 'Follicular', phaseLabel: 'Follicular phase', startsIn: 2, mood: 3, energy: 3, stress: 2, symptoms: [] }] },
+    weekCard: { headline: 'Day 18 of cycle', summary: 'Day 18 in Luteal phase, period in 4 days.', actions: ['Note symptoms as they show up', 'Plan a short walk'] },
+    weekFacts: { goals: ['Understand my cycle'], week: [], comingUp: [{ phaseLabel: 'Follicular phase', startsIn: 2, mood: 3, energy: 3, stress: 2, symptoms: [] }], focus: { headline: 'Day 18 of ~28 · Luteal phase', metric: 'Period expected in 4 days', trend: '' }, daysToPeriod: 4, phaseLabel: 'Luteal phase', cycleDay: 18 }
+  };
+  const out = smartInsightsHTML(pred, current, [], 'Alex', null, extras);
+  assert.match(out, /period in 4 days/); // Your week presents it
+  assert.ok(!/Next period/.test(out), 'Cycle should not repeat period estimate when Your week owns it');
+  assert.equal((out.match(/Period expected in 4 days\./g)||[]).length, 0, 'Coming up period tail suppressed');
+  assert.match(out, /Follicular phase/, 'distinct upcoming phase remains');
+
+  // Cycle suppresses Coming up when Your week does not present period
+  const out2 = smartInsightsHTML(pred, current, [], 'Alex', null, {
+    selectedGoal: 'Better sleep', focusGoals: ['Better sleep'], noGoals: false,
+    focus: { goal: 'Better sleep', headline: 'Sleep 6.4 h last week', metric: '6.4 h', trend: null, action: 'Try a consistent wind-down time.' },
+    week: [], ro: false, weekCard: null, weekFacts: null,
+    comingUp: { daysToPeriod: 4, phases: [{ phase: 'Follicular', phaseLabel: 'Follicular phase', startsIn: 2, mood: 3, energy: 3, stress: 2, symptoms: [] }] }
+  });
+  assert.match(out2, /Next period/);
+  assert.equal((out2.match(/Period expected in 4 days\./g)||[]).length, 0);
+  assert.match(out2, /Follicular phase/);
+
+  // Coming up displays period when neither earlier section renders it
+  const predNo = { state: 'limited-history', expected: null };
+  const curNo = { state: 'single-start', phase: null, phaseLabel: null, cycleDay: null, cycleLength: null, confidence: 'Limited history', predictedDate: null };
+  const out3 = smartInsightsHTML(predNo, curNo, [], 'Alex', null, {
+    selectedGoal: 'Better sleep', focusGoals: ['Better sleep'], noGoals: false, focus: null, week: [], ro: false, weekCard: null, weekFacts: null,
+    comingUp: { daysToPeriod: 4, phases: [] }
+  });
+  assert.ok(!/Next period/.test(out3));
+  assert.match(out3, /Period expected in 4 days\./);
+
+  // Registry resets on new render
+  const out4 = smartInsightsHTML(predNo, curNo, [], 'Alex', null, {
+    selectedGoal: 'Better sleep', focusGoals: ['Better sleep'], noGoals: false, focus: null, week: [], ro: false, weekCard: null, weekFacts: null,
+    comingUp: { daysToPeriod: 4, phases: [] }
+  });
+  assert.match(out4, /Period expected in 4 days\./);
+});
+
+test('Stress/sleep identity: actual focus outputs use specific IDs and do not incorrectly suppress different pattern evidence', () => {
+  const mod = renderContext();
+  const { smartGoalFocus, smartPatternsFromLogs, smartInsightsHTML } = mod;
+  const TODAY = '2026-01-20';
+
+  // Poor sleep quality on high-stress days (focus) vs sleep duration on high-stress vs low-stress days (pattern) - different evidence
+  const logsQuality = {
+    '2026-01-14': { stress: 4, sleep: 8, sleepq: 1 },
+    '2026-01-15': { stress: 5, sleep: 8, sleepq: 2 },
+    '2026-01-16': { stress: 4, sleep: 7.5, sleepq: 2 },
+    '2026-01-09': { stress: 2, sleep: 8, sleepq: 4 },
+    '2026-01-10': { stress: 2, sleep: 8, sleepq: 4 },
+    '2026-01-11': { stress: 2, sleep: 8, sleepq: 4 }
+  };
+  // construct logs that also produce stress-sleep duration pattern (high stress shorter sleep than low stress)
+  const logsBoth = {
+    '2026-01-14': { stress: 5, sleep: 5.5, sleepq: 1 },
+    '2026-01-15': { stress: 4, sleep: 5.8, sleepq: 2 },
+    '2026-01-16': { stress: 5, sleep: 6.0, sleepq: 2 },
+    '2026-01-09': { stress: 1, sleep: 7.8, sleepq: 4 },
+    '2026-01-10': { stress: 2, sleep: 7.5, sleepq: 4 },
+    '2026-01-11': { stress: 1, sleep: 8.0, sleepq: 4 }
+  };
+  const focusQ = smartGoalFocus('Manage stress', { logs: logsQuality, startDates: [], current: { state: 'no-history' }, pred: {}, todayStr: TODAY, meals: {} });
+  assert.equal(focusQ.evidenceId, 'association:stress-poor-sleep-quality:focus-14d');
+  const patsBoth = smartPatternsFromLogs(logsBoth, []);
+  const stressPat = patsBoth.find(p => p.type === 'stress-sleep');
+  assert.ok(stressPat, 'stress-sleep duration pattern exists');
+  // poor sleep quality focus must not suppress stress-sleep duration pattern
+  const out1 = smartInsightsHTML(predictedState(), currentState(), patsBoth, 'Alex', null, {
+    selectedGoal: 'Manage stress', focusGoals: ['Manage stress'], noGoals: false, focus: focusQ, week: [], comingUp: null, weekCard: null, weekFacts: null, ro: false
+  });
+  assert.match(out1, /Sleep averages were lower on days with higher recorded stress/);
+
+  // Short sleep companion in stress focus is different evidence than pattern's high-vs-low stress sleep duration comparison
+  const focusShort = smartGoalFocus('Manage stress', { logs: logsBoth, startDates: [], current: { state: 'no-history' }, pred: {}, todayStr: TODAY, meals: {} });
+  // focusShort may pick short or quality depending on counts; ensure short case
+  if (focusShort.evidenceId === 'association:stress-short-sleep:focus-14d') {
+    const out2 = smartInsightsHTML(predictedState(), currentState(), patsBoth, 'Alex', null, {
+      selectedGoal: 'Manage stress', focusGoals: ['Manage stress'], noGoals: false, focus: focusShort, week: [], comingUp: null, weekCard: null, weekFacts: null, ro: false
+    });
+    assert.match(out2, /Sleep averages were lower on days with higher recorded stress/, 'different stress/sleep evidence remains eligible');
+  }
+
+  // Sleep-energy duplicate still suppressed when genuinely identical (focus uses pattern detail with association:sleep-energy:all)
+  const logsSE = {
+    '2026-01-14': { sleep: 5.5, energy: 2 }, '2026-01-15': { sleep: 5.8, energy: 2 }, '2026-01-16': { sleep: 6.0, energy: 2 },
+    '2026-01-17': { sleep: 7.8, energy: 4 }, '2026-01-18': { sleep: 7.5, energy: 4 }, '2026-01-19': { sleep: 8.0, energy: 4 }
+  };
+  const focusSE = smartGoalFocus('Better sleep', { logs: logsSE, startDates: [], current: { state: 'no-history' }, pred: {}, todayStr: TODAY, meals: {} });
+  const patsSE = smartPatternsFromLogs(logsSE, []);
+  const sePat = patsSE.find(p => p.type === 'sleep-energy');
+  assert.ok(focusSE.evidenceId === 'association:sleep-energy:all' && sePat);
+  const outSE = smartInsightsHTML(predictedState(), currentState(), patsSE, 'Alex', null, {
+    selectedGoal: 'Better sleep', focusGoals: ['Better sleep'], noGoals: false, focus: focusSE, week: [], comingUp: null, weekCard: null, weekFacts: null, ro: false
+  });
+  assert.equal((outSE.match(/Short sleep days = lower energy/g)||[]).length, 0);
+
+  // Registry resets between renders
+  const outR1 = smartInsightsHTML(predictedState(), currentState(), patsSE, 'Alex', null, { selectedGoal: 'Better sleep', focusGoals: ['Better sleep'], noGoals: false, focus: null, week: [], comingUp: null, weekCard: null, weekFacts: null, ro: false });
+  const outR2 = smartInsightsHTML(predictedState(), currentState(), patsSE, 'Alex', null, { selectedGoal: 'Better sleep', focusGoals: ['Better sleep'], noGoals: false, focus: null, week: [], comingUp: null, weekCard: null, weekFacts: null, ro: false });
+  assert.match(outR1, /Short sleep days = lower energy/);
+  assert.match(outR2, /Short sleep days = lower energy/);
 });
 

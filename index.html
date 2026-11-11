@@ -2549,7 +2549,8 @@ function smartGoalFocus(goal,ctx){
    if(best[1]*2>high.length){
     const lead={short:'Short sleep was recorded on several high-stress days.',quality:'Poor sleep quality was recorded more often on days with higher stress.',luteal:'High stress was recorded on more days in the luteal phase.'}[best[0]];
     action=`${lead} Protect one small routine on high-stress days.`;
-    if(best[0]==='short'||best[0]==='quality') evidenceId='association:stress-sleep:all';
+    if(best[0]==='short') evidenceId='association:stress-short-sleep:focus-14d';
+    else if(best[0]==='quality') evidenceId='association:stress-poor-sleep-quality:focus-14d';
    }
   }
   return {goal,headline:`Stress ${avg}/5 last week`,metric:`${avg}/5 · ${high.length} high day${high.length===1?'':'s'}`,trend:`${avg} vs ${prevAvg} before`,action,evidenceId};
@@ -2910,8 +2911,10 @@ function smartCycleSection(pred,current,dateText,registry){
   const phaseName=c.phaseLabel||(c.phase?c.phase+' phase':'');
   const lines=[`Day ${c.cycleDay} of ~${c.cycleLength} · ${phaseName}`];
   if(pred.expected){
-   if(registry) registry.claim('period:expected','Cycle','period');
-   lines.push(`Next period ~${dateText(pred.expected)} (range ${dateText(pred.rangeStart)}–${dateText(pred.rangeEnd)})`);
+   if(!(registry&&registry.has('period:expected'))){
+    if(registry) registry.claim('period:expected','Cycle','period');
+    lines.push(`Next period ~${dateText(pred.expected)} (range ${dateText(pred.rangeStart)}–${dateText(pred.rangeEnd)})`);
+   }
   }
   if(c.confidence)lines.push(c.confidence);
   return `<section class="smart-section smart-cycle" aria-labelledby="smart-cycle-title"><h3 class="smart-kicker" id="smart-cycle-title">Cycle</h3>${lines.map(l=>`<p class="smart-copy">${E(l)}</p>`).join('')}</section>`;
