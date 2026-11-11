@@ -1,7 +1,7 @@
 {
-    "versionCode": 70,
-    "versionName": "1.2.55",
-    "notes": "Smart Insights now follows your profile goals, shows what is coming up in your cycle, and compares this week with last week.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.55/bloom-1.2.55.apk",
+    "versionCode": 71,
+    "versionName": "1.2.56",
+    "notes": "New Your week summary on Insights: a short recap with two things to do in the next 3 days.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.56/bloom-1.2.56.apk",
     "publishedAt": "2026-11-11"
 }
