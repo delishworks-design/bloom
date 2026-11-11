@@ -40,6 +40,7 @@ function load() {
   sandbox.RO = false;
   sandbox.save = function save() {};
   sandbox.ownName = function ownName() { return ''; };
+  sandbox.ST = { _m:{}, get(k){return Object.prototype.hasOwnProperty.call(this._m,k)?this._m[k]:null}, set(k,v){this._m[k]=String(v)}, del(k){delete this._m[k]} };
 
   const exportsByName = {
     esc: ['E'],
@@ -48,9 +49,10 @@ function load() {
     sxmig: ['migrateCustomSymptoms'],
     backup: ['makeBackup', 'validateBackup'],
     phases: ['phaseInfo'],
-    smart: ['smartPredictionHistory', 'smartCurrentCycle', 'smartCurrentCycleFromHistory', 'smartHistoricalPhaseFor', 'smartPatternsFromLogs', 'smartInsightsHTML', 'smartPatternsHTML', 'smartPhaseInsight', 'smartProgress', 'smartInsightsExtras', 'smartComingUp', 'smartWeekCompare', 'smartActiveGoals', 'smartGoalFocus', 'dashboardCycle']
+    ai: ['aiWeekSummary','aiWeekCacheGet','aiWeekCacheSet','aiWeekKey','aiConsentEnabled','aiSetConsent','validateAIWeekResponse','aiInflightReset','aiHash','smartAIRefresh','wireSmartAI','smartAIConsentHTML','extractModelText'],
+    smart: ['smartPredictionHistory', 'smartCurrentCycle', 'smartCurrentCycleFromHistory', 'smartHistoricalPhaseFor', 'smartPatternsFromLogs', 'smartInsightsHTML', 'smartPatternsHTML', 'smartPhaseInsight', 'smartProgress', 'smartInsightsExtras', 'smartComingUp', 'smartWeekCompare', 'smartActiveGoals', 'smartGoalFocus', 'smartWeekFacts', 'smartWeekTemplate', 'smartWeekValidate', 'smartWeekAllowedNumbers', 'smartWeekHTML', 'smartWeekCompareHTML', 'dashboardCycle']
   };
-  for (const name of ['phases', 'esc', 'sync', 'roWho', 'sxmig', 'backup', 'smart']) {
+  for (const name of ['phases', 'esc', 'sync', 'roWho', 'sxmig', 'backup', 'smart', 'ai']) {
     const code = extract(html, name);
     const names = exportsByName[name];
     vm.runInNewContext(code + `\nObject.assign(globalThis, {${names.join(', ')}})`, sandbox, { filename: name + '.js' });

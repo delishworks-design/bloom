@@ -362,6 +362,11 @@ details{border-bottom:1px solid #EADFD2;padding:14px 0}summary{cursor:pointer;fo
 .smart-week-val{font-weight:800;color:var(--rose)}
 .smart-week-prev{color:var(--mut);font-size:.8rem}
 .smart-upcoming{margin-top:10px}
+.smart-week-bullets{margin:6px 0 0;padding-left:18px}
+.smart-week-bullets li{font-size:.86rem;color:var(--ink);margin:4px 0;line-height:1.4}
+.smart-week-prompt{margin-top:10px}
+.smart-week-personal{background:none;border:0;padding:0;color:var(--teal);font-size:.82rem;font-weight:700;cursor:pointer}
+.smart-week-prompt .smart-copy{margin-top:4px}
 .smart-ai-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-top:1px solid var(--line)}
 .smart-ai-label{font-size:.76rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--mut)}
 .smart-ai-toggle{align-self:center}
@@ -2650,27 +2655,195 @@ function smartPatternIcon(type){
  };
  return `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${paths[type]||paths['symptom-phase']}</svg>`;
 }
-function smartPatternsHTML(patterns,aiMap){
+function smartPatternsHTML(patterns){
  const titles={'sleep-energy':'Sleep and energy','mood-sleep':'Mood and sleep','activity-energy':'Activity and energy','stress-sleep':'Stress and sleep','symptom-phase':'Symptoms across recorded phases'};
  if(!patterns||!patterns.length)return '<p class="smart-copy">Log a few more days to see insights.</p>';
  return `<div>${patterns.slice(0,3).map(p=>{
-  const ai=aiMap&&p.id?aiMap[p.id]:null;
-  const title=ai&&ai.title?ai.title:(p.headline||titles[p.type]||'Personal pattern');
-  const body=ai&&ai.summary?ai.summary:(p.detail||p.text||'');
-  const take=ai&&ai.takeaway?ai.takeaway:(p.tip||'');
+  const title=p.headline||titles[p.type]||'Personal pattern';
+  const body=p.detail||p.text||'';
+  const take=p.tip||'';
   return `<article class="smart-pattern"><div class="smart-pattern-icon">${smartPatternIcon(p.type)}</div><div class="smart-pattern-copy"><div class="smart-pattern-title">${E(title)}</div><p class="smart-pattern-text">${E(body)}</p>${take?`<p class="smart-pattern-takeaway">${E(take)}</p>`:''}</div></article>`;
  }).join('')}</div>`;
+}
+const SMART_BUILTIN_SX=new Set(['Acne','Hair changes','Bloating','Cramps','Fatigue','Cravings','Headache','Low mood','Anxious','Breast tenderness','Excess hair','Hair fall','Oily skin','Brain fog','Irritable','Pelvic pain','Nausea','Increased appetite','Dizziness after eating','Sleepy after eating','Dark skin patches','Weight gain','Swollen feet','Back pain','Mood swings']);
+function smartWeekClip(s){return String(s==null?'':s).slice(0,60)}
+function smartWeekFacts(ctx){
+ ctx=ctx||{};
+ if(ctx.ro)return null;
+ const logs=ctx.logs||{},starts=ctx.startDates||[],today=ctx.todayStr,meals=ctx.meals||{};
+ const active=smartActiveGoals(ctx.goals),goals=active.goals.slice(0,3).map(smartWeekClip);
+ const week=smartWeekCompare(logs,today);
+ const comingUp=smartComingUp(logs,starts,ctx.current||{},ctx.pred||{});
+ const focus=smartGoalFocus(goals[0],{logs,startDates:starts,current:ctx.current||{},pred:ctx.pred||{},todayStr:today,meals});
+ const hasWeek=week&&week.length>0;
+ const hasComing=comingUp&&comingUp.phases&&comingUp.phases.length>0;
+ const hasFocus=focus&&focus.headline&&!/^Log\b/.test(focus.headline);
+ if(!hasWeek&&!hasComing&&!hasFocus)return null;
+ const current=ctx.current||{};
+ const facts={goals:goals};
+ if(current.state==='estimated'){
+  facts.phase=smartWeekClip(current.phase||'');
+  facts.phaseLabel=smartWeekClip(current.phaseLabel||'');
+  facts.cycleDay=Number.isFinite(+current.cycleDay)?+current.cycleDay:null;
+ }
+ if(comingUp&&Number.isFinite(comingUp.daysToPeriod))facts.daysToPeriod=comingUp.daysToPeriod;
+ facts.week=(week||[]).slice(0,4).map(w=>({label:smartWeekClip(w.label),now:Number.isFinite(+w.now)?+w.now:null,prev:Number.isFinite(+w.prev)?+w.prev:null})).filter(w=>w.label&&w.now!=null&&w.prev!=null);
+ facts.comingUp=((comingUp&&comingUp.phases)||[]).slice(0,3).map(p=>({phaseLabel:smartWeekClip(p.phaseLabel),startsIn:Number.isFinite(+p.startsIn)?+p.startsIn:null,mood:p.mood==null||!Number.isFinite(+p.mood)?null:+p.mood,energy:p.energy==null||!Number.isFinite(+p.energy)?null:+p.energy,stress:p.stress==null||!Number.isFinite(+p.stress)?null:+p.stress,symptoms:Array.isArray(p.symptoms)?p.symptoms.filter(sx=>SMART_BUILTIN_SX.has(String(sx))).slice(0,3).map(smartWeekClip):[]}));
+ facts.focus=focus?{headline:smartWeekClip(focus.headline||''),metric:smartWeekClip(focus.metric||''),trend:smartWeekClip(focus.trend||'')}:null;
+ return facts;
+}
+const SMART_WEEK_BANNED=[/\bit looks like\b/i,/\boverall\b/i,/\bremember\b/i,/\bit'?s important\b/i,/\bgreat job\b/i,/\bkeep it up\b/i,/\bjourney\b/i,/\blisten to your body\b/i,/\bself-?care\b/i,/\bgentle reminder\b/i,/\bconsider\b/i,/\byou might want\b/i,/\bbased on your\b/i,/\byour data\b/i,/\byour logs\b/i,/\btracking\b/i,/\bAI\b/i,/\binsight\b/i,/\bpattern\b/i,/\bbalance\b/i,/\bwellness\b/i,/\bnavigate\b/i,/\bhang in there\b/i];
+const SMART_WEEK_MEDICAL=/\b(diagnos\w*|medicine|medication|dosage|prescri\w*|treat(?:ment|ments)?|cure[sd]?|pill|drug|supplement dose)\b/i;
+function smartWeekAllowedNumbers(facts){
+ const a=new Set();
+ const addNum=v=>{if(v==null||!Number.isFinite(+v))return;a.add(+v);a.add(Math.round(+v*10)/10);a.add(Math.round(+v));a.add(Math.floor(+v));a.add(Math.ceil(+v))};
+ (facts.week||[]).forEach(w=>{addNum(w.now);addNum(w.prev)});
+ (facts.comingUp||[]).forEach(p=>{['startsIn','mood','energy','stress'].forEach(k=>addNum(p[k]))});
+ addNum(facts.cycleDay);addNum(facts.daysToPeriod);
+ [3,7].forEach(n=>a.add(n));
+ if(facts.focus){['headline','metric','trend'].forEach(k=>{(String(facts.focus[k]||'').match(/\d+(?:\.\d+)?/g)||[]).forEach(n=>addNum(Number(n)))})}
+ return a;
+}
+function smartWeekValidate(out,facts){
+ if(!out||typeof out!=='object'||!facts)return null;
+ const headline=String(out.headline||'').trim();
+ const summary=String(out.summary||'').trim();
+ const actions=Array.isArray(out.actions)?out.actions.map(a=>String(a||'').trim()):null;
+ if(!headline||!summary||!actions||actions.length!==2)return null;
+ if(/[!?]/.test(headline))return null;
+ if(/[\u2014\u{1F300}-\u{1FAFF}]/u.test(headline+summary+actions.join(' ')))return null;
+ const words=summary.split(/\s+/).filter(Boolean);
+ if(words.length>55)return null;
+ const sents=summary.split(/(?<=[.!?])\s+/).filter(Boolean);
+ if(sents.length>3)return null;
+ if(headline.split(/\s+/).filter(Boolean).length>8)return null;
+ for(const a of actions){if(!/^[A-Z]/.test(a))return null; if(a.split(/\s+/).filter(Boolean).length>10)return null; if(/\d/.test(a))return null}
+ const joined=[headline,summary,actions.join(' ')].join(' ');
+ if(SMART_WEEK_BANNED.some(re=>re.test(joined)))return null;
+ if(SMART_WEEK_MEDICAL.test(joined))return null;
+ if(/[<>]/.test(joined))return null;
+ const allowed=smartWeekAllowedNumbers(facts);
+ const nums=(joined.match(/\d+(?:\.\d+)?/g)||[]).map(Number);
+ for(const n of nums){if(!allowed.has(n)&&!allowed.has(Math.round(n*10)/10))return null}
+ return {headline,summary,actions};
+}
+function smartWeekTemplate(facts){
+ if(!facts)return null;
+ const goals=facts.goals||[],pg=goals[0]||'Understand my cycle';
+ const week=facts.week||[],coming=facts.comingUp||[];
+ const findWeek=label=>(week||[]).find(w=>w.label===label)||null;
+ const dirWord=(now,prev)=>(+now)>=(+prev)?'up':'down';
+ const fragmentGoal=g=>g==='Move more'||g==='Eat regularly'||g==='Prepare for doctor visits';
+ const goalLabel=g=>g==='Better sleep'?'Sleep':g==='Steadier energy'?'Energy':g==='Manage stress'?'Stress':g==='Move more'?'Activity':g==='Eat regularly'?'Meals':g==='Prepare for doctor visits'?'Visit summary':null;
+ const sentenceFor=g=>{
+  if(g==='Understand my cycle'){
+   if(facts.cycleDay!=null&&facts.phaseLabel){let s=`Day ${facts.cycleDay} in ${facts.phaseLabel}`;if(facts.daysToPeriod!=null)s+=`, period in ${facts.daysToPeriod} ${facts.daysToPeriod===1?'day':'days'}`;return s+'.'}
+   return facts.focus&&facts.focus.headline?smartWeekClip(facts.focus.headline)+'.':'';
+  }
+  if(fragmentGoal(g)){
+   if(!facts.focus||!facts.focus.headline)return '';
+   let s=String(facts.focus.headline);
+   const tr=String(facts.focus.trend||'');
+   const m=tr.match(/^(\d+(?:\.\d+)?)\s+vs\s+(\d+(?:\.\d+)?)/);
+   if(m) s+=`, ${dirWord(m[1],m[2])} from ${m[2]}`;
+   if(s&&!/[.!]$/.test(s))s+='.';
+   return s;
+  }
+  const label=g==='Better sleep'?'Sleep':g==='Steadier energy'?'Energy':g==='Manage stress'?'Stress':null;
+  const w=label?findWeek(label):null;
+  if(w){
+   if(label==='Sleep') return `Sleep averaged ${w.now} h this week, ${dirWord(w.now,w.prev)} from ${w.prev}.`;
+   return `${w.label} averaged ${w.now} this week, ${dirWord(w.now,w.prev)} from ${w.prev}.`;
+  }
+  if(facts.focus&&facts.focus.metric) return smartWeekClip(facts.focus.metric)+'.';
+  if(facts.focus&&facts.focus.headline) return smartWeekClip(facts.focus.headline)+'.';
+  return '';
+ };
+ let biggest=null;
+ week.forEach(w=>{const d=Math.abs((+w.now)-(+w.prev));if(d>=0.3&&(!biggest||d>Math.abs((+biggest.now)-(+biggest.prev))))biggest=w});
+ const goalWeek=g=>{const l=goalLabel(g);return l?findWeek(l):null};
+ const gw=goalWeek(pg);
+ const goalBig=(gw&&Math.abs((+gw.now)-(+gw.prev))>=0.3)?gw:null;
+ const goalCountChanged=g=>{
+  if(!facts.focus||!facts.focus.trend)return false;
+  const m=String(facts.focus.trend).match(/^(\d+(?:\.\d+)?)\s+vs\s+(\d+(?:\.\d+)?)/);
+  return !!(m && (+m[1])!==( +m[2]));
+ };
+ let headline='';
+ if(facts.daysToPeriod!=null&&facts.daysToPeriod<=2) headline=facts.daysToPeriod===0?'Period expected today':facts.daysToPeriod===1?'Period expected in 1 day':`Period in ${facts.daysToPeriod} days`;
+ else if(goalBig){headline=`${goalBig.label} ${dirWord(goalBig.now,goalBig.prev)} this week`}
+ else if(fragmentGoal(pg)&&goalCountChanged(pg)){
+  const tm=String((facts.focus||{}).trend||'').match(/^(\d+(?:\.\d+)?)\s+vs\s+(\d+(?:\.\d+)?)/);
+  const up=tm && +tm[1] > +tm[2];
+  if(pg==='Move more') headline=up?'Active days up this week':'Active days down this week';
+  else if(pg==='Eat regularly') headline=up?'Meal plan up this week':'Meal plan down this week';
+  else headline='Visit summary ready';
+ }
+ else if(facts.phaseLabel&&facts.cycleDay!=null) headline=`Day ${facts.cycleDay} of cycle`;
+ else if(biggest){headline=`${biggest.label} ${dirWord(biggest.now,biggest.prev)} this week`}
+ else headline='Your week summary';
+ const parts=[];
+ const s1=sentenceFor(pg); if(s1) parts.push(s1);
+ if(biggest){
+  const sameGoal=goalLabel(pg)===biggest.label;
+  if(!sameGoal){parts.push(`${biggest.label} ${dirWord(biggest.now,biggest.prev)} to ${biggest.now} from ${biggest.prev} this week.`)}
+ }
+ const next=coming.find(p=>+p.startsIn>=1);
+ if(next){
+  const s2=+next.startsIn; let c=`${next.phaseLabel} starts ${s2===1?'in 1 day':`in ${s2} days`}`;
+  if(next.symptoms&&next.symptoms.length)c+=` with ${String(next.symptoms[0]).toLowerCase()} often logged`;
+  parts.push(c+'.');
+ }
+ if(parts.length<3 && parts.indexOf(s1)===-1 && s1) parts.unshift(s1);
+ let summary=parts.filter(Boolean).slice(0,3).join(' ').trim();
+ if(!summary) summary=facts.focus&&facts.focus.headline?smartWeekClip(facts.focus.headline)+'.':'This week has new notes.';
+
+ const goalAction=g=>g==='Understand my cycle'?{t:'symptoms',a:'Note symptoms as they show up'}:g==='Steadier energy'?{t:'tasks',a:'Plan hard tasks for higher-energy hours'}:g==='Better sleep'?{t:'bedtime',a:'Keep a steady bedtime'}:g==='Move more'?{t:'walk',a:'Plan a short walk'}:g==='Eat regularly'?{t:'meals',a:'Plan the missing meal'}:g==='Manage stress'?{t:'routine',a:'Protect one small routine'}:g==='Prepare for doctor visits'?{t:'visit',a:'Review the summary before your visit'}:{t:'symptoms',a:'Note symptoms as they show up'};
+ const changedAction=g=>{
+  if(g==='Better sleep'&&goalBig&&goalBig.label==='Sleep'&&(+goalBig.now<+goalBig.prev)) return {t:'bedtime',a:'Try an earlier bedtime'};
+  if(g==='Steadier energy'&&goalBig&&goalBig.label==='Energy'&&(+goalBig.now<+goalBig.prev)) return {t:'tasks',a:'Plan a lighter day'};
+  if(g==='Manage stress'&&goalBig&&goalBig.label==='Stress'&&(+goalBig.now>+goalBig.prev)) return {t:'routine',a:'Protect one small routine'};
+  if(g==='Move more'&&goalCountChanged(g)){
+   const m=String(facts.focus.trend).match(/^(\d+(?:\.\d+)?)\s+vs\s+(\d+(?:\.\d+)?)/);
+   if(m && +m[1] < +m[2]) return {t:'walk',a:'Plan a short walk'};
+  }
+  if(g==='Eat regularly'&&goalCountChanged(g)){
+   const m=String(facts.focus.trend).match(/^(\d+(?:\.\d+)?)\s+vs\s+(\d+(?:\.\d+)?)/);
+   if(m && +m[1] < +m[2]) return {t:'meals',a:'Plan the missing meal'};
+  }
+  return null;
+ };
+ const chosen=[]; const used=new Set();
+ const pick=x=>{if(!x||used.has(x.t)||chosen.length>=2)return;chosen.push(x.a);used.add(x.t)};
+ pick(changedAction(pg));
+ if(chosen.length<2){
+  if(biggest&&biggest.label==='Sleep'&&(biggest.now<biggest.prev)) pick({t:'bedtime',a:'Try an earlier bedtime'});
+  if(biggest&&biggest.label==='Stress'&&(biggest.now>biggest.prev)) pick({t:'routine',a:'Protect one small routine'});
+  if(biggest&&biggest.label==='Energy'&&(biggest.now<biggest.prev)) pick({t:'tasks',a:'Plan a lighter day'});
+ }
+ pick(goalAction(pg));
+ ['Better sleep','Move more','Steadier energy','Manage stress','Eat regularly','Understand my cycle','Prepare for doctor visits'].forEach(g=>pick(goalAction(g)));
+ const actions=chosen.slice(0,2);
+ const out={headline:headline.split(/\s+/).slice(0,8).join(' '),summary,actions};
+ return smartWeekValidate(out,facts)||null;
+}
+function smartWeekHTML(week,opts){
+ if(!week||!week.headline)return '';
+ const o=opts||{};
+ const bullets=(week.actions||[]).map(a=>`<li>${E(a)}</li>`).join('');
+ const prompt=(o.showPrompt&&!o.exhausted)?`<div class="smart-week-prompt"><button type="button" class="smart-week-personal" id="ai-week-personal">Make this more personal</button><p class="smart-copy">Sends summary numbers only, never your notes.</p></div>`:'';
+ return `<section class="smart-section" id="smart-week" aria-labelledby="smart-week-title"><div class="smart-kicker" id="smart-week-title">Your week</div><div class="smart-pattern-title">${E(week.headline)}</div><p class="smart-pattern-text">${E(week.summary)}</p><div class="smart-kicker" style="margin-top:10px">Next 3 days</div><ul class="smart-week-bullets">${bullets}</ul>${prompt}</section>`;
 }
 function smartSectionOrder(goal){
  return ['Better sleep','Steadier energy','Move more','Manage stress'].includes(goal)?['week','coming']:['coming','week'];
 }
-function smartWeekHTML(week){
+function smartWeekCompareHTML(week){
  if(!week||!week.length)return '';
  const rows=week.map(w=>{
   const u=w.key==='sleep'?' h':'';
   return `<div class="smart-week-row"><span class="smart-week-label">${E(w.label)}</span><span class="smart-week-val">${E(String(w.now)+u)} ${w.arrow}</span><span class="smart-week-prev">from ${E(String(w.prev)+u)}</span></div>`;
  }).join('');
- return `<section class="smart-section" aria-labelledby="smart-week-title"><h3 class="smart-kicker" id="smart-week-title">This week vs last</h3>${rows}</section>`;
+ return `<section class="smart-section" aria-labelledby="smart-weekcmp-title"><h3 class="smart-kicker" id="smart-weekcmp-title">This week vs last</h3>${rows}</section>`;
 }
 function smartComingUpHTML(cu){
  if(!cu||!cu.phases||!cu.phases.length)return '';
@@ -2727,8 +2900,9 @@ function smartInsightsHTML(pred,current,patterns,viewerName,aiMap,extras){
  extras=extras||{};
  const week=extras.week||[],goals=extras.focusGoals||['Understand my cycle'],noGoals=!!extras.noGoals,goal=extras.selectedGoal||goals[0];
  const dateText=d=>{if(!d)return '';try{return typeof fmt==='function'?fmt(d,{month:'short',day:'numeric'}):d}catch(e){return d}};
- const weekHtml=smartWeekHTML(week),comingHtml=smartComingUpHTML(extras.comingUp||null);
- const sections=smartSectionOrder(goal).map(k=>k==='week'?weekHtml:comingHtml).filter(Boolean).join('');
+ const weekCmpHtml=smartWeekCompareHTML(week),comingHtml=smartComingUpHTML(extras.comingUp||null);
+ const sections=smartSectionOrder(goal).map(k=>k==='week'?weekCmpHtml:comingHtml).filter(Boolean).join('');
+ const weekCard=(extras.weekCard&&!extras.ro)?smartWeekHTML(extras.weekCard,extras.weekOpts||{}):'';
  return `<header class="smart-hero">
   <div class="smart-hero-copy">
    <h2 class="smart-title">Smart Insights</h2>
@@ -2737,9 +2911,10 @@ function smartInsightsHTML(pred,current,patterns,viewerName,aiMap,extras){
   <div class="smart-hero-art">${smartArt('insight')}</div>
  </header>
  ${smartCycleSection(pred,current,dateText)}
+ ${weekCard}
  ${extras.ro?'':smartFocusHTML(goal,goals,noGoals,extras.focus||null)}
  ${sections}
- <section class="smart-section" aria-labelledby="smart-patterns-title"><h3 class="smart-kicker" id="smart-patterns-title">Patterns</h3>${smartPatternsHTML(patterns,aiMap)}</section>`;
+ <section class="smart-section" aria-labelledby="smart-patterns-title"><h3 class="smart-kicker" id="smart-patterns-title">Patterns</h3>${smartPatternsHTML(patterns)}</section>`;
 }
 // @test-end smart
 // @test-begin ai
@@ -2761,6 +2936,9 @@ function aiHash(str){let h1=2166136261,h2=3527539;for(let i=0;i<str.length;i++){
 function aiCacheKey(findings){return AI_CACHE_VERSION+aiHash(JSON.stringify(aiPayload(findings)))}
 function aiCacheGet(findings,store){const s=store||aiStore();try{const raw=s&&s.get(AI_CACHE_KEY);if(!raw)return null;const all=JSON.parse(raw);const hit=all&&all[aiCacheKey(findings)];return hit&&hit.map?hit.map:null}catch(e){return null}}
 function aiCacheSet(findings,map,store){const s=store||aiStore();if(!s)return;try{const raw=s.get(AI_CACHE_KEY);const all=raw?JSON.parse(raw):{};all[aiCacheKey(findings)]={map:map,ts:Date.now()};const keys=Object.keys(all);if(keys.length>12){keys.sort((a,b)=>(all[a].ts||0)-(all[b].ts||0)).slice(0,keys.length-12).forEach(k=>{delete all[k]})}s.set(AI_CACHE_KEY,JSON.stringify(all))}catch(e){}}
+function aiWeekKey(facts,dateStr){const day=typeof dateStr==='string'?dateStr:(typeof today==='function'?today():'');const goal=(facts&&facts.goals&&facts.goals[0])?String(facts.goals[0]):'';return 'week:'+day+':'+goal}
+function aiWeekCacheGet(facts,store,dateStr){const s=store||aiStore();try{const raw=s&&s.get(AI_CACHE_KEY);if(!raw)return null;const all=JSON.parse(raw);const hit=all&&all[aiWeekKey(facts,dateStr)];return hit&&hit.week?hit.week:null}catch(e){return null}}
+function aiWeekCacheSet(facts,week,store,dateStr){const s=store||aiStore();if(!s||!week)return;try{const raw=s.get(AI_CACHE_KEY);const all=raw?JSON.parse(raw):{};all[aiWeekKey(facts,dateStr)]={week:week,ts:Date.now()};const keys=Object.keys(all);if(keys.length>24){keys.sort((a,b)=>(all[a].ts||0)-(all[b].ts||0)).slice(0,keys.length-24).forEach(k=>{delete all[k]})}s.set(AI_CACHE_KEY,JSON.stringify(all))}catch(e){}}
 const AI_FORBIDDEN=/\b(diagnos\w*|cure[sd]?|treat(?:ment|ments)?|prescri\w*|medication\w*|proves?|proven|causes?\b|will happen)\b/i;
 function aiNumbers(t){return (String(t).match(/\d+/g)||[]).map(Number)}
 function aiAllowedNumbers(findings){const a=new Set();(findings||[]).forEach(f=>{a.add(Number(f.count)||0);a.add(Number(f.comparisonCount)||0)});for(let i=1;i<=31;i++)a.add(i);[60,90,365].forEach(n=>a.add(n));return a}
@@ -2782,6 +2960,31 @@ function validateAIResponse(json,findings){
   out[ref]={title:title,summary:summary,takeaway:takeaway,limitations:limitations,evidenceReference:ref};n++;
  }
  return n?out:null;
+}
+function extractModelText(result){
+ if(!result||typeof result!=='object')return null;
+ let text=result.response;
+ if(typeof text!=='string'){
+  const choice=Array.isArray(result.choices)?result.choices[0]:null;
+  const msg=choice&&typeof choice==='object'?(choice.message||choice):null;
+  if(msg&&typeof msg==='object'){
+   const c=msg.content;
+   if(typeof c==='string')text=c;
+   else if(Array.isArray(c))text=c.map(p=>p&&typeof p==='object'&&(p.type==='text'||p.text!=null)?String(p.text||''):'').join('');
+   else if(typeof msg.text==='string')text=msg.text;
+  }
+  if(typeof text!=='string'&&choice&&typeof choice==='object'&&typeof choice.text==='string')text=choice.text;
+ }
+ if(typeof text!=='string'&&typeof result.output_text==='string')text=result.output_text;
+ if(typeof text!=='string')return null;
+ return String(text).replace(/<think>[\s\S]*?<\/think>/gi,'').trim();
+}
+
+function validateAIWeekResponse(json,facts){
+ if(!json||typeof json!=='object'||!facts)return null;
+ const week=json.week||json;
+ if(typeof smartWeekValidate==='function')return smartWeekValidate(week,facts);
+ return null;
 }
 let AI_INFLIGHT={};
 function aiInflightReset(){AI_INFLIGHT={}}
@@ -2817,6 +3020,45 @@ async function smartAIEnhance(findings,deps){
  AI_INFLIGHT[key]=run;
  try{return await run}finally{delete AI_INFLIGHT[key]}
 }
+function aiWeekTryKey(facts,dateStr){const day=typeof dateStr==='string'?dateStr:(typeof today==='function'?today():'');const goal=(facts&&facts.goals&&facts.goals[0])?String(facts.goals[0]):'';return 'weektry:'+day+':'+goal}
+function aiWeekTryGet(facts,store,dateStr){const s=store||aiStore();try{return Math.max(0,parseInt((s&&s.get(aiWeekTryKey(facts,dateStr)))||'0',10)||0)}catch(e){return 0}}
+function aiWeekTrySet(facts,n,store,dateStr){const s=store||aiStore();if(!s)return;try{s.set(aiWeekTryKey(facts,dateStr),String(n))}catch(e){}}
+
+async function aiWeekSummary(facts,deps){
+ const d=deps||{},store=d.store||aiStore(),dateStr=d.today||d.dateStr||(typeof today==='function'?today():'');
+ if(!facts)return {state:'empty'};
+ const cached=d.ignoreCache?null:aiWeekCacheGet(facts,store,dateStr);
+ if(cached)return {state:'cached',week:cached};
+ if(!(d.force||aiConsentEnabled(store)))return {state:'disabled'};
+ const attempts=aiWeekTryGet(facts,store,dateStr);
+ if(attempts>=2&&!d.force)return {state:'exhausted'};
+ const key=aiWeekKey(facts,dateStr);
+ if(AI_INFLIGHT[key])return AI_INFLIGHT[key];
+ const f=d.fetch||(typeof fetch==='function'?fetch:null);
+ if(!f)return {state:'unavailable'};
+ const run=(async()=>{
+  const headers={'Content-Type':'application/json'};
+  const tok=d.token!=null?d.token:await aiSessionToken();
+  if(!tok)return {state:'unavailable'};
+  headers['Authorization']='Bearer '+tok;
+  if(typeof SB!=='undefined'&&SB&&SB.key)headers['apikey']=SB.key;
+  aiWeekTrySet(facts,attempts+1,store,dateStr);
+  const hasAbort=typeof AbortController!=='undefined';
+  const ctrl=hasAbort&&!d.signal?new AbortController():null;
+  const timer=ctrl&&typeof setTimeout==='function'?setTimeout(()=>ctrl.abort(),d.timeout||12000):null;
+  try{
+   const res=await f(AI_ENDPOINT,{method:'POST',headers:headers,body:JSON.stringify({mode:'week',facts:facts}),signal:d.signal||(ctrl?ctrl.signal:undefined)});
+   if(!res||!res.ok){if(res&&res.status===429)aiWeekTrySet(facts,2,store,dateStr);return {state:'unavailable',status:res?res.status:0}}
+   let json;try{json=await res.json()}catch(e){return {state:'invalid'}}
+   const week=validateAIWeekResponse(json,facts);
+   if(!week)return {state:'invalid'};
+   aiWeekCacheSet(facts,week,store,dateStr);
+   return {state:'ok',week:week};
+  }catch(e){return {state:'error'}}finally{if(timer)clearTimeout(timer)}
+ })();
+ AI_INFLIGHT[key]=run;
+ try{return await run}finally{delete AI_INFLIGHT[key]}
+}
 function smartAIConsentHTML(){
  const on=aiConsentEnabled();
  return `<div class="smart-ai-row"><span class="smart-ai-label">Cloud AI</span><button class="chip smart-ai-toggle" id="ai-consent" aria-pressed="${on?'true':'false'}">${on?'Turn off':'Turn on'}</button></div>`;
@@ -2824,31 +3066,35 @@ function smartAIConsentHTML(){
 function wireSmartAI(state){
  const btn=document.getElementById('ai-consent');
  if(btn)btn.onclick=()=>{aiSetConsent(!aiConsentEnabled());smartAIRefresh(state)};
+ const personal=document.getElementById('ai-week-personal');
+ if(personal)personal.onclick=()=>{aiSetConsent(true);smartAIRefresh(state)};
 }
 function smartAIRefresh(state){
  const el=document.getElementById('smart-card');
  if(!el||!state)return;
- const map=aiCacheGet(state.patterns)||null;
- el.innerHTML=smartInsightsHTML(state.pred,state.current,state.patterns,state.name,map,state.extras||null)+((state.ro||!sbUser)?'':smartAIConsentHTML());
+ el.innerHTML=smartInsightsHTML(state.pred,state.current,state.patterns,state.name,null,state.extras||null)+((state.ro||!sbUser)?'':smartAIConsentHTML());
  wireSmartAI(state);
  wireSmartFocus(state);
- if(!state.ro&&sbUser&&aiConsentEnabled()&&state.patterns&&state.patterns.length&&!map){
-  smartAIEnhance(state.patterns).then(r=>{if(r&&r.map&&document.getElementById('smart-card'))smartAIRefresh(state)}).catch(()=>{});
+ if(!state.ro&&sbUser&&aiConsentEnabled()&&state.extras&&state.extras.weekFacts){
+  const cached=aiWeekCacheGet(state.extras.weekFacts);
+  if(cached){state.extras.weekCard=cached;state.extras.weekOpts=Object.assign({},state.extras.weekOpts,{showPrompt:false,exhausted:false});el.innerHTML=smartInsightsHTML(state.pred,state.current,state.patterns,state.name,null,state.extras||null)+((state.ro||!sbUser)?'':smartAIConsentHTML());wireSmartAI(state);wireSmartFocus(state);return}
+  if(aiWeekTryGet(state.extras.weekFacts)>=2){state.extras.weekOpts=Object.assign({},state.extras.weekOpts,{exhausted:true});return}
+  aiWeekSummary(state.extras.weekFacts).then(r=>{if(r&&r.week&&document.getElementById('smart-card')){state.extras.weekCard=r.week;smartAIRefresh(state)}}).catch(()=>{});
  }
 }
 // @test-end ai
 function insights(){const n=range,days=[...Array(n)].map((_,i)=>addD(today(),i-n+1)),c=cycleStats();const tg={};days.forEach(d=>(L(d).tags||[]).concat(L(d).customSx||[]).forEach(t=>tg[t]=(tg[t]||0)+1));const tk=Object.entries(tg).sort((a,b)=>b[1]-a[1]).slice(0,6),mx=tk[0]?.[1]||1;
  const hab=days.map(d=>{const t=tasksFor(d);return t.length?t.filter(x=>isDone(x.id,d)).length/t.length:null}).filter(x=>x!=null);const ha=hab.length?Math.round(hab.reduce((a,b)=>a+b,0)/hab.length*100):null;
  const sl=days.map(d=>L(d).sleep).filter(Boolean);
- const smartStarts=starts(),smartPred=smartPredictionHistory(smartStarts,today()),smartCurrent=smartCurrentCycle(smartPred,today()),smartPats=smartPatternsFromLogs(D.logs,smartStarts,{ro:RO});const smartExtras=smartInsightsExtras(D.logs,smartStarts,smartCurrent,smartPred,today(),D.meals,RO?null:(D.p&&D.p.goals),smartFocusGoal,RO);smartFocusGoal=smartExtras.selectedGoal;const viewerName=(RO?(ST.get('bloom_pname')||'friend'):(D.p.name||'friend')).split(' ')[0];
+ const smartStarts=starts(),smartPred=smartPredictionHistory(smartStarts,today()),smartCurrent=smartCurrentCycle(smartPred,today()),smartPats=smartPatternsFromLogs(D.logs,smartStarts,{ro:RO});const smartExtras=smartInsightsExtras(D.logs,smartStarts,smartCurrent,smartPred,today(),D.meals,RO?null:(D.p&&D.p.goals),smartFocusGoal,RO);smartFocusGoal=smartExtras.selectedGoal;const viewerName=(RO?(ST.get('bloom_pname')||'friend'):(D.p.name||'friend')).split(' ')[0];if(!RO){const weekFacts=smartWeekFacts({logs:D.logs,startDates:smartStarts,current:smartCurrent,pred:smartPred,todayStr:today(),meals:D.meals,goals:D.p&&D.p.goals,ro:RO});if(weekFacts){smartExtras.weekFacts=weekFacts;const _wc=aiWeekCacheGet(weekFacts);smartExtras.weekCard=_wc||smartWeekTemplate(weekFacts);if(!smartExtras.weekCard)delete smartExtras.weekFacts;else smartExtras.weekOpts={showPrompt:!RO&&!!sbUser&&!aiConsentEnabled(),exhausted:!!(sbUser&&!_wc&&aiConsentEnabled()&&aiWeekTryGet(weekFacts)>=2)};}}
  $('#main').innerHTML=`<h1>Insights</h1><div class="row">${[7,14,30,90].map(v=>`<button class="chip" data-r="${v}" aria-pressed="${range==v}">${v} days</button>`).join('')}</div>
-<div class="card smart-card" id="smart-card">${smartInsightsHTML(smartPred,smartCurrent,smartPats,viewerName,aiConsentEnabled()?aiCacheGet(smartPats):null,smartExtras)}${(RO||!sbUser)?'':smartAIConsentHTML()}</div><div class="card"><div class="card-h"><h3>Mood</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Recorded</span></div>${line('mood',n,5,'var(--rose)')}</div><div class="card"><div class="card-h"><h3>Energy</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Recorded</span></div>${line('energy',n,5,'var(--teal)')}</div>
+<div class="card smart-card" id="smart-card">${smartInsightsHTML(smartPred,smartCurrent,smartPats,viewerName,null,smartExtras)}${(RO||!sbUser)?'':smartAIConsentHTML()}</div><div class="card"><div class="card-h"><h3>Mood</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Recorded</span></div>${line('mood',n,5,'var(--rose)')}</div><div class="card"><div class="card-h"><h3>Energy</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Recorded</span></div>${line('energy',n,5,'var(--teal)')}</div>
 <div class="card"><div class="card-h"><h3>Sleep</h3><span class="meta">${sl.length?(sl.reduce((a,b)=>a+b,0)/sl.length).toFixed(1)+' h avg  '+sl.length+' nights':'\u2014'}</span></div>${line('sleep',n,12,'var(--teal)')}</div>
 <div class="card"><div class="card-h"><h3>Symptoms</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Recorded</span></div>${tk.length?tk.map(([t,v])=>`<div class="row sp"><span>${E(t)}</span><span class="meta">${v} d</span></div><div class="bar"><i style="width:${v/mx*100}%"></i></div>`).join(''):'<p class="meta">None logged</p>'}</div>
 <div class="card"><div class="card-h"><h3>Habit completion</h3><span class="meta">${ha==null?'':ha+'%'}</span></div>${ha==null?'<p class="meta">No planned tasks</p>':`<div class="bar"><i style="width:${ha}%"></i></div>`}</div>
 <div class="card"><div class="card-h"><h3>Cycle length</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Calculated</span></div>${c.len.length?`<div class="row" style="align-items:end;height:90px">${c.len.slice(-10).map(v=>`<div style="flex:1;text-align:center"><div style="height:${Math.min(v,90)}px;background:var(--pink);border-radius:6px 6px 0 0"></div><span class="meta" style="font-size:.7rem">${v}</span></div>`).join('')}</div>`:'<p class="meta">Needs 2 logged starts</p>'}</div>
 <div class="card"><div class="card-h"><h3>Appointment summary</h3></div>${RO?'':'<button class="btn" id="ex" style="width:100%">Export summary</button>'}</div>`;
-  document.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{range=+b.dataset.r;insights()});if(!RO)$('#ex').onclick=()=>exportSum(days);const smartState={pred:smartPred,current:smartCurrent,patterns:smartPats,name:viewerName,ro:RO,extras:smartExtras};wireSmartAI(smartState);wireSmartFocus(smartState);if(!RO&&sbUser&&aiConsentEnabled()&&smartPats.length&&!aiCacheGet(smartPats)){smartAIEnhance(smartPats).then(r=>{if(r&&r.map)smartAIRefresh(smartState)}).catch(()=>{})}}
+  document.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{range=+b.dataset.r;insights()});if(!RO)$('#ex').onclick=()=>exportSum(days);const smartState={pred:smartPred,current:smartCurrent,patterns:smartPats,name:viewerName,ro:RO,extras:smartExtras};wireSmartAI(smartState);wireSmartFocus(smartState);if(!RO&&sbUser&&aiConsentEnabled()&&smartExtras.weekFacts&&!aiWeekCacheGet(smartExtras.weekFacts)&&aiWeekTryGet(smartExtras.weekFacts)<2){aiWeekSummary(smartExtras.weekFacts).then(r=>{if(r&&r.week){smartState.extras.weekCard=r.week;smartAIRefresh(smartState)}}).catch(()=>{})}}
 async function saveFile(name,data){try{const dl=await claude.use('downloads');if(dl){await dl.save({filename:name,data});return}}catch(e){}try{await navigator.clipboard.writeText(data);toast('Copied to clipboard')}catch(e){sheet(`<h2>${E(name)}</h2><textarea rows="10" readonly>${E(data)}</textarea><button class="btn" id="c3">Close</button>`);$('#c3').onclick=()=>sheet()}}
 function exportSum(days){const c=cycleStats();let t=`Health summary for ${D.p.name||user}  ${days[0]} to ${days[days.length-1]}\nThis is self-recorded data, not a medical record.\n\nPeriod starts (recorded): ${starts().join(', ')||'none'}\n${c.n>=2?`Cycle length (calculated): ${c.min}${c.max} days, avg ${c.avg}\n`:''}\nDaily logs:\n`;days.forEach(d=>{const l=L(d);if(Object.keys(l).some(k=>k!='water'))t+=`${d}: ${[l.flow&&'bleeding '+l.flow,l.mood&&'mood '+l.mood+'/5',l.energy&&'energy '+l.energy+'/5',l.sleep&&'sleep '+l.sleep+'h',(l.tags||[]).concat(l.customSx||[]).join('/'),l.note].filter(Boolean).join('; ')}\n`});
  if(!RO){const q=(D.journal||[]).map(j=>j.t).join('\n- ');t+=`\nJournal notes / questions:\n- ${q||'none'}\n`}
