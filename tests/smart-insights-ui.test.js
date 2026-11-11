@@ -172,16 +172,14 @@ test('only three patterns render', () => {
   assert.ok(!/Headline 3/.test(out));
 });
 
-test('AI overrides still replace headline and summary', () => {
+test('patterns render local headline and summary', () => {
   const { smartInsightsHTML } = renderContext();
   const patterns = [{ type: 'sleep-energy', id: 'p1', headline: 'Local headline', detail: 'Local detail', tip: 'Local tip' }];
-  const aiMap = { p1: { title: 'AI title', summary: 'AI summary', takeaway: 'AI takeaway' } };
-  const out = smartInsightsHTML(predictedState(), currentState(), patterns, 'Alex', aiMap);
+  const out = smartInsightsHTML(predictedState(), currentState(), patterns, 'Alex', null);
 
-  assert.match(out, /AI title/);
-  assert.match(out, /AI summary/);
-  assert.match(out, /AI takeaway/);
-  assert.ok(!out.includes('Local headline'));
+  assert.match(out, /Local headline/);
+  assert.match(out, /Local detail/);
+  assert.match(out, /Local tip/);
 });
 
 test('user symptom names are escaped in patterns and coming up', () => {
