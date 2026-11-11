@@ -883,6 +883,7 @@ test('Focus period metric sanitation: invalid structured period evidence clears 
     assert.ok(focusSection, name + ': focus rendered');
     assert.ok(!/Period expected in 4 days/.test(focusSection), name + ': stale focus period metric must be absent');
     assert.match(focusSection, /Day 18 of ~28 · Luteal phase/, name + ': headline preserved');
+    assert.match(focusSection, /Last cycle 28 days vs 28 days before/, name + ': trend preserved');
     assert.match(focusSection, /Keep logging\./, name + ': action preserved');
   }
 });
