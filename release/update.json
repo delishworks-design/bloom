@@ -1,7 +1,7 @@
 {
-    "versionCode": 69,
-    "versionName": "1.2.54",
-    "notes": "Smarter Smart Insights: fairer ranking across pattern types, provisional Early patterns, gentler tips and clearer cycle messages.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.54/bloom-1.2.54.apk",
+    "versionCode": 70,
+    "versionName": "1.2.55",
+    "notes": "Smart Insights now follows your profile goals, shows what is coming up in your cycle, and compares this week with last week.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.55/bloom-1.2.55.apk",
     "publishedAt": "2026-11-11"
 }
