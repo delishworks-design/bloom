@@ -93,7 +93,7 @@ test('smartWeekFacts strips private data and custom symptoms, caps sizes and str
 test('smartWeekValidate rejects banned phrases, punctuation, emoji, em dash, length and bad numbers', () => {
   const mod = ctx();
   const facts = baseFacts();
-  const ok = { headline: 'Energy up this week', summary: 'Energy 3.2 this week, up from 2.8. Day 18 in Luteal phase.', actions: ['Plan a lighter day', 'Keep logging this week'] };
+  const ok = { headline: 'Energy up this week', summary: 'Energy 3.2 this week, up from 2.8. Day 18 in Luteal phase.', actions: ['Plan a lighter day', 'Keep a steady bedtime'] };
   assert.ok(mod.smartWeekValidate(ok, facts));
 
   const banned = ['it looks like', 'overall', 'remember', "it's important", 'great job', 'keep it up', 'journey', 'listen to your body', 'self-care', 'gentle reminder', 'consider', 'you might want', 'based on your', 'your data', 'your logs', 'tracking', 'AI', 'insight', 'pattern', 'balance', 'wellness', 'navigate', 'hang in there'];
@@ -106,14 +106,16 @@ test('smartWeekValidate rejects banned phrases, punctuation, emoji, em dash, len
   assert.equal(mod.smartWeekValidate(Object.assign({}, ok, { headline: 'Energy up a lot this week again right now' }), facts), null, 'headline too long');
   assert.equal(mod.smartWeekValidate(Object.assign({}, ok, { summary: 'One 1. Two 2. Three 3. Four 4.' }), facts), null, 'too many sentences');
   assert.equal(mod.smartWeekValidate(Object.assign({}, ok, { summary: 'Energy 3.2 this week up from 2.8 in the last 7 days and day 18 in Luteal phase with period in 10 days and sleep 6.4 hours this week up from 7.6 and stress 3.5 this week up from 2.4 and mood 3.2.' }), facts), null, 'too many words');
-  assert.equal(mod.smartWeekValidate(Object.assign({}, ok, { actions: ['plan a lighter day', 'Keep logging this week'] }), facts), null, 'action not capitalized');
-  assert.equal(mod.smartWeekValidate(Object.assign({}, ok, { actions: ['Plan a very very very very very very very long day', 'Keep logging this week'] }), facts), null, 'action too long');
+  assert.equal(mod.smartWeekValidate(Object.assign({}, ok, { actions: ['plan a lighter day', 'Keep a steady bedtime'] }), facts), null, 'action not capitalized');
+  assert.equal(mod.smartWeekValidate(Object.assign({}, ok, { actions: ['Plan a very very very very very very very long day', 'Keep a steady bedtime'] }), facts), null, 'action too long');
   assert.equal(mod.smartWeekValidate(Object.assign({}, ok, { summary: 'Energy 3.2 this week, up from 2.8. Slept 99 hours.' }), facts), null, 'number not in facts');
   assert.equal(mod.smartWeekValidate(Object.assign({}, ok, { summary: 'Energy 3.2 this week <b>up</b> from 2.8.' }), facts), null, 'html');
   assert.equal(mod.smartWeekValidate(Object.assign({}, ok, { summary: 'Energy 3.2 this week, diagnosis up from 2.8.' }), facts), null, 'medical');
+  assert.equal(mod.smartWeekValidate(Object.assign({}, ok, { summary: 'Energy 8 this week, up from 2.8. Day 18 in Luteal phase.' }), { week: [{ label: 'Energy', now: 6.2, prev: 7.1 }], comingUp: [], goals: ['Better sleep'] }), null, 'invented number 8');
+  assert.equal(mod.smartWeekValidate(Object.assign({}, ok, { actions: ['Plan 1 lighter day', 'Keep a steady bedtime'] }), facts), null, 'digits in action');
 });
 
-test('smartWeekTemplate passes the validator for different goals', () => {
+test('smartWeekTemplate pluralizes days, lowercases symptoms, avoids filler and stays valid for every goal', () => {
   const mod = ctx();
   const goals = ['Better sleep', 'Steadier energy', 'Move more', 'Manage stress', 'Understand my cycle', 'Prepare for doctor visits', 'Eat regularly'];
   for (const g of goals) {
@@ -121,36 +123,68 @@ test('smartWeekTemplate passes the validator for different goals', () => {
     const out = mod.smartWeekTemplate(facts);
     assert.ok(out, 'template for ' + g);
     assert.ok(mod.smartWeekValidate(out, facts), 'valid for ' + g);
+    assert.ok(!/Keep logging this week|Check in tomorrow/.test(out.actions.join(' ')), 'no filler for ' + g);
+    assert.ok(out.actions.every(a => !/\d/.test(a)), 'no digits in actions for ' + g);
   }
+  const f0 = baseFacts({ daysToPeriod: 4, comingUp: [{ phaseLabel: 'Menstrual phase', startsIn: 0, mood: 3, energy: 2, stress: 3, symptoms: ['Cramps'] }] });
+  const o0 = mod.smartWeekTemplate(f0);
+  assert.match(o0.summary, /starts today/);
+  assert.match(o0.summary, /with cramps often logged/);
+  assert.ok(mod.smartWeekValidate(o0, f0));
+  const f1 = baseFacts({ daysToPeriod: 4, comingUp: [{ phaseLabel: 'Menstrual phase', startsIn: 1, mood: 3, energy: 2, stress: 3, symptoms: ['Cramps'] }] });
+  const o1 = mod.smartWeekTemplate(f1);
+  assert.match(o1.summary, /starts in 1 day/);
+  assert.ok(mod.smartWeekValidate(o1, f1));
+  const f2 = baseFacts({ daysToPeriod: 4, comingUp: [{ phaseLabel: 'Menstrual phase', startsIn: 2, mood: 3, energy: 2, stress: 3, symptoms: ['Cramps'] }] });
+  const o2 = mod.smartWeekTemplate(f2);
+  assert.match(o2.summary, /starts in 2 days/);
+  assert.ok(mod.smartWeekValidate(o2, f2));
 });
 
-test('week cache: second call uses cache and no fetch is made', async () => {
+test('aiWeekSummary respects attempt cap and rate limits', async () => {
   const mod = ctx();
   mod.aiSetConsent(true);
   mod.aiInflightReset();
   const facts = baseFacts();
-  const week = { headline: 'Energy up this week', summary: 'Energy 3.2 this week, up from 2.8. Day 18 in Luteal phase.', actions: ['Plan a lighter day', 'Keep logging this week'] };
-  mod.aiWeekCacheSet(facts, week, mod.ST, '2026-01-20');
+  const bad = async () => ({ ok: true, json: async () => ({ week: { headline: 'Bad!', summary: 'overall 99.', actions: ['go', 'do'] } }) });
+  const r1 = await mod.aiWeekSummary(facts, { store: mod.ST, today: '2026-01-20', token: 'tok', ignoreCache: true, fetch: bad });
+  assert.equal(r1.state, 'invalid');
+  mod.aiInflightReset();
+  const r2 = await mod.aiWeekSummary(facts, { store: mod.ST, today: '2026-01-20', token: 'tok', ignoreCache: true, fetch: bad });
+  assert.equal(r2.state, 'invalid');
   let calls = 0;
-  const r = await mod.aiWeekSummary(facts, { store: mod.ST, today: '2026-01-20', token: 'tok', fetch: async () => { calls++; return { ok: true, json: async () => ({}) }; } });
-  assert.equal(r.state, 'cached');
-  assert.deepEqual(r.week, week);
+  mod.aiInflightReset();
+  const r3 = await mod.aiWeekSummary(facts, { store: mod.ST, today: '2026-01-20', token: 'tok', ignoreCache: true, fetch: async () => { calls++; return bad(); } });
+  assert.equal(r3.state, 'exhausted');
   assert.equal(calls, 0);
-});
 
-test('aiWeekSummary falls back on 429, offline and invalid responses', async () => {
-  const mod = ctx();
-  mod.aiSetConsent(true);
-  mod.aiInflightReset();
-  const facts = baseFacts();
-  const r429 = await mod.aiWeekSummary(facts, { store: mod.ST, today: '2026-01-20', token: 'tok', force: true, ignoreCache: true, fetch: async () => ({ ok: false, status: 429 }) });
+  // 429 stops immediately
+  const mod2 = ctx(); mod2.aiSetConsent(true); mod2.aiInflightReset();
+  const f429 = baseFacts({ goals: ['Manage stress'] });
+  let c429 = 0;
+  const r429 = await mod2.aiWeekSummary(f429, { store: mod2.ST, today: '2026-01-20', token: 'tok', ignoreCache: true, fetch: async () => { c429++; return { ok: false, status: 429 }; } });
   assert.equal(r429.state, 'unavailable');
-  mod.aiInflightReset();
-  const roff = await mod.aiWeekSummary(facts, { store: mod.ST, today: '2026-01-20', token: 'tok', force: true, ignoreCache: true, fetch: async () => { throw new Error('offline'); } });
-  assert.equal(roff.state, 'error');
-  mod.aiInflightReset();
-  const rinv = await mod.aiWeekSummary(facts, { store: mod.ST, today: '2026-01-20', token: 'tok', force: true, ignoreCache: true, fetch: async () => ({ ok: true, json: async () => ({ week: { headline: 'Bad!', summary: 'overall 99.', actions: ['go', 'do'] } }) }) });
-  assert.equal(rinv.state, 'invalid');
+  mod2.aiInflightReset();
+  const r429b = await mod2.aiWeekSummary(f429, { store: mod2.ST, today: '2026-01-20', token: 'tok', ignoreCache: true, fetch: async () => { c429++; return { ok: false, status: 429 }; } });
+  assert.equal(r429b.state, 'exhausted');
+  assert.equal(c429, 1);
+
+  // success cached, no request with consent off
+  const mod3 = ctx(); mod3.aiSetConsent(true); mod3.aiInflightReset();
+  const fok = baseFacts({ goals: ['Move more'] });
+  const week = { headline: 'Energy up this week', summary: 'Energy 3.2 this week, up from 2.8. Day 18 in Luteal phase.', actions: ['Plan a lighter day', 'Keep a steady bedtime'] };
+  let cok = 0;
+  const okr = await mod3.aiWeekSummary(fok, { store: mod3.ST, today: '2026-01-20', token: 'tok', ignoreCache: true, fetch: async () => { cok++; return { ok: true, json: async () => ({ week }) }; } });
+  assert.equal(okr.state, 'ok');
+  mod3.aiInflightReset();
+  const okr2 = await mod3.aiWeekSummary(fok, { store: mod3.ST, today: '2026-01-20', token: 'tok', fetch: async () => { cok++; return { ok: true, json: async () => ({ week }) }; } });
+  assert.equal(okr2.state, 'cached');
+  assert.equal(cok, 1);
+  const mod4 = ctx(); mod4.aiInflightReset(); // consent off
+  let coff = 0;
+  const off = await mod4.aiWeekSummary(baseFacts({ goals: ['Eat regularly'] }), { store: mod4.ST, today: '2026-01-20', token: 'tok', fetch: async () => { coff++; return { ok: true, json: async () => ({ week }) }; } });
+  assert.equal(off.state, 'disabled');
+  assert.equal(coff, 0);
 });
 
 test('Your week card renders, escapes, shows prompt only when allowed, and sits after cycle before focus', () => {

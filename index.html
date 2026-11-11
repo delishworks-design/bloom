@@ -2696,11 +2696,12 @@ const SMART_WEEK_BANNED=[/\bit looks like\b/i,/\boverall\b/i,/\bremember\b/i,/\b
 const SMART_WEEK_MEDICAL=/\b(diagnos\w*|medicine|medication|dosage|prescri\w*|treat(?:ment|ments)?|cure[sd]?|pill|drug|supplement dose)\b/i;
 function smartWeekAllowedNumbers(facts){
  const a=new Set();
- (facts.week||[]).forEach(w=>{if(w.now!=null){a.add(Math.round(+w.now*10)/10);a.add(Math.round(+w.now));a.add(Math.floor(+w.now));a.add(Math.ceil(+w.now))}if(w.prev!=null){a.add(Math.round(+w.prev*10)/10);a.add(Math.round(+w.prev));a.add(Math.floor(+w.prev));a.add(Math.ceil(+w.prev))}});
- (facts.comingUp||[]).forEach(p=>{['startsIn','mood','energy','stress'].forEach(k=>{const v=p[k];if(v!=null&&Number.isFinite(+v)){a.add(+v);a.add(Math.round(+v*10)/10);a.add(Math.round(+v));a.add(Math.floor(+v));a.add(Math.ceil(+v))}})});
- if(facts.cycleDay!=null){a.add(+facts.cycleDay);a.add(Math.round(+facts.cycleDay))}
- if(facts.daysToPeriod!=null){a.add(+facts.daysToPeriod);a.add(Math.round(+facts.daysToPeriod))}
- for(let i=0;i<=31;i++)a.add(i);[7,14].forEach(n=>a.add(n));
+ const addNum=v=>{if(v==null||!Number.isFinite(+v))return;a.add(+v);a.add(Math.round(+v*10)/10);a.add(Math.round(+v));a.add(Math.floor(+v));a.add(Math.ceil(+v))};
+ (facts.week||[]).forEach(w=>{addNum(w.now);addNum(w.prev)});
+ (facts.comingUp||[]).forEach(p=>{['startsIn','mood','energy','stress'].forEach(k=>addNum(p[k]))});
+ addNum(facts.cycleDay);addNum(facts.daysToPeriod);
+ [3,7].forEach(n=>a.add(n));
+ if(facts.focus){['headline','metric','trend'].forEach(k=>{(String(facts.focus[k]||'').match(/\d+(?:\.\d+)?/g)||[]).forEach(n=>addNum(Number(n)))})}
  return a;
 }
 function smartWeekValidate(out,facts){
@@ -2716,7 +2717,7 @@ function smartWeekValidate(out,facts){
  const sents=summary.split(/(?<=[.!?])\s+/).filter(Boolean);
  if(sents.length>3)return null;
  if(headline.split(/\s+/).filter(Boolean).length>8)return null;
- for(const a of actions){if(!/^[A-Z]/.test(a))return null; if(a.split(/\s+/).filter(Boolean).length>10)return null}
+ for(const a of actions){if(!/^[A-Z]/.test(a))return null; if(a.split(/\s+/).filter(Boolean).length>10)return null; if(/\d/.test(a))return null}
  const joined=[headline,summary,actions.join(' ')].join(' ');
  if(SMART_WEEK_BANNED.some(re=>re.test(joined)))return null;
  if(SMART_WEEK_MEDICAL.test(joined))return null;
@@ -2730,6 +2731,7 @@ function smartWeekTemplate(facts){
  if(!facts)return null;
  const goals=facts.goals||[],pg=goals[0]||'Understand my cycle';
  const week=facts.week||[],coming=facts.comingUp||[];
+ const goalDefault=g=>g==='Understand my cycle'?'Note symptoms as they show up':g==='Steadier energy'?'Plan hard tasks for higher-energy hours':g==='Better sleep'?'Keep a steady bedtime':g==='Move more'?'Plan a short walk':g==='Eat regularly'?'Plan the missing meal':g==='Manage stress'?'Protect one small routine':g==='Prepare for doctor visits'?'Review the summary before your visit':'Note symptoms as they show up';
  let biggest=null;
  week.forEach(w=>{const d=Math.abs((+w.now)-(+w.prev));if(d>=0.3&&(!biggest||d>Math.abs((+biggest.now)-(+biggest.prev))))biggest=w});
  let headline='';
@@ -2741,18 +2743,23 @@ function smartWeekTemplate(facts){
  if(facts.phaseLabel&&facts.cycleDay!=null){let p=`Day ${facts.cycleDay} in ${facts.phaseLabel}`;if(facts.daysToPeriod!=null)p+=facts.daysToPeriod===1?', period in 1 day':`, period in ${facts.daysToPeriod} days`;parts.push(p+'.')}
  if(biggest){const dir=(+biggest.now)>=(+biggest.prev)?'up':'down';parts.push(`${biggest.label} ${dir} to ${biggest.now} from ${biggest.prev} this week.`)}
  else if(week[0]) parts.push(`${week[0].label} at ${week[0].now} vs ${week[0].prev} this week.`);
- if(coming[0]){let c=`${coming[0].phaseLabel} starts in ${coming[0].startsIn} days`;if(coming[0].symptoms&&coming[0].symptoms.length)c+=` with ${coming[0].symptoms[0]} often logged`;parts.push(c+'.')}
- else if(facts.focus&&facts.focus.metric) parts.push(smartWeekClip(facts.focus.metric)+'.');
+ if(coming[0]){
+  const s=+coming[0].startsIn;
+  let c=`${coming[0].phaseLabel} starts ${s===0?'today':s===1?'in 1 day':`in ${s} days`}`;
+  if(coming[0].symptoms&&coming[0].symptoms.length)c+=` with ${String(coming[0].symptoms[0]).toLowerCase()} often logged`;
+  parts.push(c+'.')
+ } else if(facts.focus&&facts.focus.metric) parts.push(smartWeekClip(facts.focus.metric)+'.');
  let summary=parts.slice(0,3).join(' ').trim();
- if(!summary) summary=facts.focus&&facts.focus.headline?smartWeekClip(facts.focus.headline)+'.':'Keep logging this week.';
+ if(!summary) summary=facts.focus&&facts.focus.headline?smartWeekClip(facts.focus.headline)+'.':'This week has new notes.';
  const actions=[];
  if(biggest&&biggest.label==='Sleep'&&(biggest.now<biggest.prev)) actions.push('Try an earlier bedtime');
  if(biggest&&biggest.label==='Stress'&&(biggest.now>biggest.prev)) actions.push('Protect one small routine');
  if(biggest&&biggest.label==='Energy'&&(biggest.now<biggest.prev)) actions.push('Plan a lighter day');
- if(pg==='Move more'&&actions.length<2) actions.push('Plan a short walk');
- if(pg==='Eat regularly'&&actions.length<2) actions.push('Plan the missing meal');
- if(actions.length<2) actions.push('Keep logging this week');
- if(actions.length<2) actions.push('Check in tomorrow');
+ if(biggest&&biggest.label==='Sleep'&&(biggest.now>=biggest.prev)&&actions.length<2) actions.push('Keep a steady bedtime');
+ const gd=goalDefault(pg);
+ if(actions.length<2&&!actions.includes(gd)) actions.push(gd);
+ const allGoals=['Understand my cycle','Steadier energy','Better sleep','Move more','Eat regularly','Manage stress','Prepare for doctor visits'];
+ for(const g of allGoals){if(actions.length>=2)break;const a=goalDefault(g);if(!actions.includes(a))actions.push(a)}
  const out={headline:headline.split(/\s+/).slice(0,8).join(' '),summary,actions:actions.slice(0,2)};
  return smartWeekValidate(out,facts)||null;
 }
@@ -2760,7 +2767,7 @@ function smartWeekHTML(week,opts){
  if(!week||!week.headline)return '';
  const o=opts||{};
  const bullets=(week.actions||[]).map(a=>`<li>${E(a)}</li>`).join('');
- const prompt=o.showPrompt?`<div class="smart-week-prompt"><button type="button" class="smart-week-personal" id="ai-week-personal">Make this more personal</button><p class="smart-copy">Sends summary numbers only, never your notes.</p></div>`:'';
+ const prompt=(o.showPrompt&&!o.exhausted)?`<div class="smart-week-prompt"><button type="button" class="smart-week-personal" id="ai-week-personal">Make this more personal</button><p class="smart-copy">Sends summary numbers only, never your notes.</p></div>`:'';
  return `<section class="smart-section" id="smart-week" aria-labelledby="smart-week-title"><div class="smart-kicker" id="smart-week-title">Your week</div><div class="smart-pattern-title">${E(week.headline)}</div><p class="smart-pattern-text">${E(week.summary)}</p><div class="smart-kicker" style="margin-top:10px">Next 3 days</div><ul class="smart-week-bullets">${bullets}</ul>${prompt}</section>`;
 }
 function smartSectionOrder(goal){
@@ -2930,12 +2937,18 @@ async function smartAIEnhance(findings,deps){
  AI_INFLIGHT[key]=run;
  try{return await run}finally{delete AI_INFLIGHT[key]}
 }
+function aiWeekTryKey(facts,dateStr){const day=typeof dateStr==='string'?dateStr:(typeof today==='function'?today():'');const goal=(facts&&facts.goals&&facts.goals[0])?String(facts.goals[0]):'';return 'weektry:'+day+':'+goal}
+function aiWeekTryGet(facts,store,dateStr){const s=store||aiStore();try{return Math.max(0,parseInt((s&&s.get(aiWeekTryKey(facts,dateStr)))||'0',10)||0)}catch(e){return 0}}
+function aiWeekTrySet(facts,n,store,dateStr){const s=store||aiStore();if(!s)return;try{s.set(aiWeekTryKey(facts,dateStr),String(n))}catch(e){}}
+
 async function aiWeekSummary(facts,deps){
  const d=deps||{},store=d.store||aiStore(),dateStr=d.today||d.dateStr||(typeof today==='function'?today():'');
  if(!facts)return {state:'empty'};
  const cached=d.ignoreCache?null:aiWeekCacheGet(facts,store,dateStr);
  if(cached)return {state:'cached',week:cached};
  if(!(d.force||aiConsentEnabled(store)))return {state:'disabled'};
+ const attempts=aiWeekTryGet(facts,store,dateStr);
+ if(attempts>=2&&!d.force)return {state:'exhausted'};
  const key=aiWeekKey(facts,dateStr);
  if(AI_INFLIGHT[key])return AI_INFLIGHT[key];
  const f=d.fetch||(typeof fetch==='function'?fetch:null);
@@ -2946,12 +2959,13 @@ async function aiWeekSummary(facts,deps){
   if(!tok)return {state:'unavailable'};
   headers['Authorization']='Bearer '+tok;
   if(typeof SB!=='undefined'&&SB&&SB.key)headers['apikey']=SB.key;
+  aiWeekTrySet(facts,attempts+1,store,dateStr);
   const hasAbort=typeof AbortController!=='undefined';
   const ctrl=hasAbort&&!d.signal?new AbortController():null;
   const timer=ctrl&&typeof setTimeout==='function'?setTimeout(()=>ctrl.abort(),d.timeout||12000):null;
   try{
    const res=await f(AI_ENDPOINT,{method:'POST',headers:headers,body:JSON.stringify({mode:'week',facts:facts}),signal:d.signal||(ctrl?ctrl.signal:undefined)});
-   if(!res||!res.ok)return {state:'unavailable',status:res?res.status:0};
+   if(!res||!res.ok){if(res&&res.status===429)aiWeekTrySet(facts,2,store,dateStr);return {state:'unavailable',status:res?res.status:0}}
    let json;try{json=await res.json()}catch(e){return {state:'invalid'}}
    const week=validateAIWeekResponse(json,facts);
    if(!week)return {state:'invalid'};
@@ -2980,7 +2994,8 @@ function smartAIRefresh(state){
  wireSmartFocus(state);
  if(!state.ro&&sbUser&&aiConsentEnabled()&&state.extras&&state.extras.weekFacts){
   const cached=aiWeekCacheGet(state.extras.weekFacts);
-  if(cached){state.extras.weekCard=cached;el.innerHTML=smartInsightsHTML(state.pred,state.current,state.patterns,state.name,null,state.extras||null)+((state.ro||!sbUser)?'':smartAIConsentHTML());wireSmartAI(state);wireSmartFocus(state);return}
+  if(cached){state.extras.weekCard=cached;state.extras.weekOpts=Object.assign({},state.extras.weekOpts,{showPrompt:false,exhausted:false});el.innerHTML=smartInsightsHTML(state.pred,state.current,state.patterns,state.name,null,state.extras||null)+((state.ro||!sbUser)?'':smartAIConsentHTML());wireSmartAI(state);wireSmartFocus(state);return}
+  if(aiWeekTryGet(state.extras.weekFacts)>=2){state.extras.weekOpts=Object.assign({},state.extras.weekOpts,{exhausted:true});return}
   aiWeekSummary(state.extras.weekFacts).then(r=>{if(r&&r.week&&document.getElementById('smart-card')){state.extras.weekCard=r.week;smartAIRefresh(state)}}).catch(()=>{});
  }
 }
@@ -2988,7 +3003,7 @@ function smartAIRefresh(state){
 function insights(){const n=range,days=[...Array(n)].map((_,i)=>addD(today(),i-n+1)),c=cycleStats();const tg={};days.forEach(d=>(L(d).tags||[]).concat(L(d).customSx||[]).forEach(t=>tg[t]=(tg[t]||0)+1));const tk=Object.entries(tg).sort((a,b)=>b[1]-a[1]).slice(0,6),mx=tk[0]?.[1]||1;
  const hab=days.map(d=>{const t=tasksFor(d);return t.length?t.filter(x=>isDone(x.id,d)).length/t.length:null}).filter(x=>x!=null);const ha=hab.length?Math.round(hab.reduce((a,b)=>a+b,0)/hab.length*100):null;
  const sl=days.map(d=>L(d).sleep).filter(Boolean);
- const smartStarts=starts(),smartPred=smartPredictionHistory(smartStarts,today()),smartCurrent=smartCurrentCycle(smartPred,today()),smartPats=smartPatternsFromLogs(D.logs,smartStarts,{ro:RO});const smartExtras=smartInsightsExtras(D.logs,smartStarts,smartCurrent,smartPred,today(),D.meals,RO?null:(D.p&&D.p.goals),smartFocusGoal,RO);smartFocusGoal=smartExtras.selectedGoal;const viewerName=(RO?(ST.get('bloom_pname')||'friend'):(D.p.name||'friend')).split(' ')[0];if(!RO){const weekFacts=smartWeekFacts({logs:D.logs,startDates:smartStarts,current:smartCurrent,pred:smartPred,todayStr:today(),meals:D.meals,goals:D.p&&D.p.goals,ro:RO});if(weekFacts){smartExtras.weekFacts=weekFacts;smartExtras.weekCard=aiWeekCacheGet(weekFacts)||smartWeekTemplate(weekFacts);if(!smartExtras.weekCard)delete smartExtras.weekFacts;else smartExtras.weekOpts={showPrompt:!RO&&!!sbUser&&!aiConsentEnabled()};}}
+ const smartStarts=starts(),smartPred=smartPredictionHistory(smartStarts,today()),smartCurrent=smartCurrentCycle(smartPred,today()),smartPats=smartPatternsFromLogs(D.logs,smartStarts,{ro:RO});const smartExtras=smartInsightsExtras(D.logs,smartStarts,smartCurrent,smartPred,today(),D.meals,RO?null:(D.p&&D.p.goals),smartFocusGoal,RO);smartFocusGoal=smartExtras.selectedGoal;const viewerName=(RO?(ST.get('bloom_pname')||'friend'):(D.p.name||'friend')).split(' ')[0];if(!RO){const weekFacts=smartWeekFacts({logs:D.logs,startDates:smartStarts,current:smartCurrent,pred:smartPred,todayStr:today(),meals:D.meals,goals:D.p&&D.p.goals,ro:RO});if(weekFacts){smartExtras.weekFacts=weekFacts;const _wc=aiWeekCacheGet(weekFacts);smartExtras.weekCard=_wc||smartWeekTemplate(weekFacts);if(!smartExtras.weekCard)delete smartExtras.weekFacts;else smartExtras.weekOpts={showPrompt:!RO&&!!sbUser&&!aiConsentEnabled(),exhausted:!!(sbUser&&!_wc&&aiConsentEnabled()&&aiWeekTryGet(weekFacts)>=2)};}}
  $('#main').innerHTML=`<h1>Insights</h1><div class="row">${[7,14,30,90].map(v=>`<button class="chip" data-r="${v}" aria-pressed="${range==v}">${v} days</button>`).join('')}</div>
 <div class="card smart-card" id="smart-card">${smartInsightsHTML(smartPred,smartCurrent,smartPats,viewerName,null,smartExtras)}${(RO||!sbUser)?'':smartAIConsentHTML()}</div><div class="card"><div class="card-h"><h3>Mood</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Recorded</span></div>${line('mood',n,5,'var(--rose)')}</div><div class="card"><div class="card-h"><h3>Energy</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Recorded</span></div>${line('energy',n,5,'var(--teal)')}</div>
 <div class="card"><div class="card-h"><h3>Sleep</h3><span class="meta">${sl.length?(sl.reduce((a,b)=>a+b,0)/sl.length).toFixed(1)+' h avg  '+sl.length+' nights':'\u2014'}</span></div>${line('sleep',n,12,'var(--teal)')}</div>
@@ -2996,7 +3011,7 @@ function insights(){const n=range,days=[...Array(n)].map((_,i)=>addD(today(),i-n
 <div class="card"><div class="card-h"><h3>Habit completion</h3><span class="meta">${ha==null?'':ha+'%'}</span></div>${ha==null?'<p class="meta">No planned tasks</p>':`<div class="bar"><i style="width:${ha}%"></i></div>`}</div>
 <div class="card"><div class="card-h"><h3>Cycle length</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Calculated</span></div>${c.len.length?`<div class="row" style="align-items:end;height:90px">${c.len.slice(-10).map(v=>`<div style="flex:1;text-align:center"><div style="height:${Math.min(v,90)}px;background:var(--pink);border-radius:6px 6px 0 0"></div><span class="meta" style="font-size:.7rem">${v}</span></div>`).join('')}</div>`:'<p class="meta">Needs 2 logged starts</p>'}</div>
 <div class="card"><div class="card-h"><h3>Appointment summary</h3></div>${RO?'':'<button class="btn" id="ex" style="width:100%">Export summary</button>'}</div>`;
-  document.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{range=+b.dataset.r;insights()});if(!RO)$('#ex').onclick=()=>exportSum(days);const smartState={pred:smartPred,current:smartCurrent,patterns:smartPats,name:viewerName,ro:RO,extras:smartExtras};wireSmartAI(smartState);wireSmartFocus(smartState);if(!RO&&sbUser&&aiConsentEnabled()&&smartExtras.weekFacts&&!aiWeekCacheGet(smartExtras.weekFacts)){aiWeekSummary(smartExtras.weekFacts).then(r=>{if(r&&r.week){smartState.extras.weekCard=r.week;smartAIRefresh(smartState)}}).catch(()=>{})}}
+  document.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{range=+b.dataset.r;insights()});if(!RO)$('#ex').onclick=()=>exportSum(days);const smartState={pred:smartPred,current:smartCurrent,patterns:smartPats,name:viewerName,ro:RO,extras:smartExtras};wireSmartAI(smartState);wireSmartFocus(smartState);if(!RO&&sbUser&&aiConsentEnabled()&&smartExtras.weekFacts&&!aiWeekCacheGet(smartExtras.weekFacts)&&aiWeekTryGet(smartExtras.weekFacts)<2){aiWeekSummary(smartExtras.weekFacts).then(r=>{if(r&&r.week){smartState.extras.weekCard=r.week;smartAIRefresh(smartState)}}).catch(()=>{})}}
 async function saveFile(name,data){try{const dl=await claude.use('downloads');if(dl){await dl.save({filename:name,data});return}}catch(e){}try{await navigator.clipboard.writeText(data);toast('Copied to clipboard')}catch(e){sheet(`<h2>${E(name)}</h2><textarea rows="10" readonly>${E(data)}</textarea><button class="btn" id="c3">Close</button>`);$('#c3').onclick=()=>sheet()}}
 function exportSum(days){const c=cycleStats();let t=`Health summary for ${D.p.name||user}  ${days[0]} to ${days[days.length-1]}\nThis is self-recorded data, not a medical record.\n\nPeriod starts (recorded): ${starts().join(', ')||'none'}\n${c.n>=2?`Cycle length (calculated): ${c.min}${c.max} days, avg ${c.avg}\n`:''}\nDaily logs:\n`;days.forEach(d=>{const l=L(d);if(Object.keys(l).some(k=>k!='water'))t+=`${d}: ${[l.flow&&'bleeding '+l.flow,l.mood&&'mood '+l.mood+'/5',l.energy&&'energy '+l.energy+'/5',l.sleep&&'sleep '+l.sleep+'h',(l.tags||[]).concat(l.customSx||[]).join('/'),l.note].filter(Boolean).join('; ')}\n`});
  if(!RO){const q=(D.journal||[]).map(j=>j.t).join('\n- ');t+=`\nJournal notes / questions:\n- ${q||'none'}\n`}
