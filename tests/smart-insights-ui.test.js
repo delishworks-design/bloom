@@ -702,3 +702,158 @@ test('Focus period metric suppresses Cycle and Coming up duplicates; distinct ph
   assert.match(out4, /Next period/, 'hidden focus must not suppress Cycle period');
 });
 
+
+
+
+test('Period ownership: Your week owns period, Focus suppresses only duplicate period metric (headline/action/phase preserved)', () => {
+  const { smartInsightsHTML } = renderContext();
+  const pred = predictedState(false);
+  const current = { state: 'estimated', phase: 'Luteal', phaseLabel: 'Luteal phase', cycleDay: 18, cycleLength: 28, confidence: 'Limited history', predictedDate: '2026-04-23' };
+  const out = smartInsightsHTML(pred, current, [], 'Alex', null, {
+    selectedGoal: 'Understand my cycle', focusGoals: ['Understand my cycle'], noGoals: false,
+    focus: { goal: 'Understand my cycle', headline: 'Day 18 of ~28 · Luteal phase', metric: 'Period expected in 4 days', trend: null, action: 'Keep logging.' },
+    week: [], ro: false,
+    weekCard: { headline: 'Your week', summary: 'Period in 4 days.', actions: ['Note symptoms as they show up', 'Plan a short walk'] },
+    weekFacts: { goals: ['Understand my cycle'], week: [], comingUp: [{ phaseLabel: 'Follicular phase', startsIn: 2, mood: 3, energy: 3, stress: 2, symptoms: [] }], focus: { headline: 'Day 18 of ~28 · Luteal phase', metric: 'Period expected in 4 days', trend: '' }, daysToPeriod: 4 },
+    comingUp: { daysToPeriod: 4, phases: [{ phase: 'Follicular', phaseLabel: 'Follicular phase', startsIn: 2, mood: 3, energy: 3, stress: 2, symptoms: [] }] }
+  });
+  assert.match(out, /Your week/);
+  assert.match(out, /Period in 4 days/);
+  const focusSection = (out.match(/<section class="smart-section smart-focus"[\s\S]*?<\/section>/) || [''])[0];
+  assert.ok(focusSection, 'focus section rendered');
+  assert.ok(!/Period expected in 4 days/.test(focusSection), 'Focus must not display duplicate period metric');
+  assert.ok(!/Next period/.test(out), 'Cycle must not display duplicate period estimate');
+  assert.equal((out.match(/Period expected in 4 days\./g) || []).length, 0, 'Coming up must not display duplicate period estimate');
+  assert.match(out, /Follicular phase/);
+  assert.match(focusSection, /Day 18 of ~28 · Luteal phase/, 'Focus keeps cycle-day/phase headline when Your week does not own cycle:day-phase:current');
+  assert.match(focusSection, /Keep logging\./, 'Focus action remains visible');
+});
+
+test('Period ownership: Your week owns period and cycle-day/phase, Focus suppresses duplicated headline and metric', () => {
+  const { smartInsightsHTML } = renderContext();
+  const pred = predictedState(false);
+  const current = { state: 'estimated', phase: 'Luteal', phaseLabel: 'Luteal phase', cycleDay: 18, cycleLength: 28, confidence: 'Limited history', predictedDate: '2026-04-23' };
+  const out = smartInsightsHTML(pred, current, [], 'Alex', null, {
+    selectedGoal: 'Understand my cycle', focusGoals: ['Understand my cycle'], noGoals: false,
+    focus: { goal: 'Understand my cycle', headline: 'Day 18 of ~28 · Luteal phase', metric: 'Period expected in 4 days', trend: null, action: 'Keep logging.' },
+    week: [], ro: false,
+    weekCard: { headline: 'Day 18 of cycle', summary: 'Day 18 in Luteal phase, period in 4 days.', actions: ['Note symptoms as they show up', 'Plan a short walk'] },
+    weekFacts: { goals: ['Understand my cycle'], week: [], comingUp: [], focus: { headline: 'Day 18 of ~28 · Luteal phase', metric: 'Period expected in 4 days', trend: '' }, daysToPeriod: 4, phaseLabel: 'Luteal phase', cycleDay: 18 },
+    comingUp: { daysToPeriod: 4, phases: [{ phase: 'Follicular', phaseLabel: 'Follicular phase', startsIn: 2, mood: 3, energy: 3, stress: 2, symptoms: [] }] }
+  });
+  assert.match(out, /Your week/);
+  const focusSection = (out.match(/<section class="smart-section smart-focus"[\s\S]*?<\/section>/) || [''])[0];
+  assert.ok(focusSection);
+  assert.ok(!/Period expected in 4 days/.test(focusSection));
+  assert.ok(!/Day 18 of ~28 · Luteal phase/.test(focusSection), 'Focus must not repeat already-owned cycle-day/phase headline');
+  assert.ok(!/Next period/.test(out));
+  assert.equal((out.match(/Period expected in 4 days\./g) || []).length, 0);
+  assert.match(out, /Follicular phase/);
+  assert.match(focusSection, /Keep logging\./, 'unrelated Focus action not deleted');
+});
+
+test('Period ownership: Focus owns period when Your week does not; Cycle/Coming up do not duplicate', () => {
+  const { smartInsightsHTML } = renderContext();
+  const pred = predictedState(false);
+  const current = { state: 'estimated', phase: 'Luteal', phaseLabel: 'Luteal phase', cycleDay: 18, cycleLength: 28, confidence: 'Limited history', predictedDate: '2026-04-23' };
+  const out = smartInsightsHTML(pred, current, [], 'Alex', null, {
+    selectedGoal: 'Understand my cycle', focusGoals: ['Understand my cycle'], noGoals: false,
+    focus: { goal: 'Understand my cycle', headline: 'Day 18 of ~28 · Luteal phase', metric: 'Period expected in 4 days', trend: null, action: 'Keep logging.' },
+    week: [], ro: false, weekCard: null, weekFacts: null,
+    comingUp: { daysToPeriod: 4, phases: [{ phase: 'Follicular', phaseLabel: 'Follicular phase', startsIn: 2, mood: 3, energy: 3, stress: 2, symptoms: [] }] }
+  });
+  const focusSection = (out.match(/<section class="smart-section smart-focus"[\s\S]*?<\/section>/) || [''])[0];
+  assert.ok(focusSection && /Period expected in 4 days/.test(focusSection), 'Focus displays its period estimate');
+  assert.ok(!/Next period/.test(out), 'Cycle must not duplicate');
+  assert.equal((out.match(/Period expected in 4 days\./g) || []).length, 0, 'Coming up must not duplicate');
+  assert.match(out, /Follicular phase/);
+});
+
+test('Period ownership: invalid/missing Focus period estimate must not claim and must not suppress valid evidence', () => {
+  const { smartInsightsHTML } = renderContext();
+  const pred = predictedState(false);
+  const current = { state: 'estimated', phase: 'Luteal', phaseLabel: 'Luteal phase', cycleDay: 18, cycleLength: 28, confidence: 'Limited history', predictedDate: '2026-04-23' };
+  const predNo = { state: 'limited-history', expected: null };
+  const curNo = { state: 'single-start', phase: null, phaseLabel: null, cycleDay: null, cycleLength: null, confidence: 'Limited history', predictedDate: null };
+  const base = (focus, comingUp, p = pred, c = current) => smartInsightsHTML(p, c, [], 'Alex', null, {
+    selectedGoal: 'Understand my cycle', focusGoals: ['Understand my cycle'], noGoals: false,
+    focus, week: [], ro: false, weekCard: null, weekFacts: null, comingUp
+  });
+  const cases = [
+    { focus: { goal: 'Understand my cycle', headline: 'H', metric: null, trend: null, action: 'A' }, comingUp: { daysToPeriod: 4, phases: [] } },
+    { focus: { goal: 'Understand my cycle', headline: 'H', metric: '', trend: null, action: 'A' }, comingUp: { daysToPeriod: 4, phases: [] } },
+    { focus: { goal: 'Understand my cycle', headline: 'H', metric: '   ', trend: null, action: 'A' }, comingUp: { daysToPeriod: 4, phases: [] } },
+    { focus: { goal: 'Understand my cycle', headline: 'H', metric: 'Period expected in 4 days', trend: null, action: 'A' }, comingUp: null },
+    { focus: { goal: 'Understand my cycle', headline: 'H', metric: 'Period expected in 4 days', trend: null, action: 'A' }, comingUp: { daysToPeriod: null, phases: [] } },
+    { focus: { goal: 'Understand my cycle', headline: 'H', metric: 'Period expected in 4 days', trend: null, action: 'A' }, comingUp: { daysToPeriod: 0, phases: [] } },
+    { focus: { goal: 'Understand my cycle', headline: 'H', metric: 'Period expected in 4 days', trend: null, action: 'A' }, comingUp: { daysToPeriod: -1, phases: [] } },
+    { focus: { goal: 'Understand my cycle', headline: 'H', metric: 'Period expected in 4 days', trend: null, action: 'A' }, comingUp: { daysToPeriod: NaN, phases: [] } },
+  ];
+  for (const tc of cases) {
+    const out = base(tc.focus, tc.comingUp, pred, current);
+    assert.match(out, /Next period/, 'Cycle remains eligible to display valid period estimate: ' + JSON.stringify(tc.comingUp));
+  }
+  for (const tc of cases) {
+    const out = base(tc.focus, tc.comingUp, predNo, curNo);
+    if (tc.comingUp && Number.isFinite(tc.comingUp.daysToPeriod) && tc.comingUp.daysToPeriod > 0) {
+      assert.match(out, /Period expected in 4 days\./, 'Coming up remains eligible when Cycle has no valid estimate');
+    } else {
+      assert.ok(!/Period expected in 4 days\./.test(out), 'invalid/missing coming period not fabricated');
+    }
+  }
+});
+
+test('Period ownership: read-only mode does not claim hidden Focus period evidence', () => {
+  const { smartInsightsHTML } = renderContext();
+  const pred = predictedState(false);
+  const current = { state: 'estimated', phase: 'Luteal', phaseLabel: 'Luteal phase', cycleDay: 18, cycleLength: 28, confidence: 'Limited history', predictedDate: '2026-04-23' };
+  const predNo = { state: 'limited-history', expected: null };
+  const curNo = { state: 'single-start', phase: null, phaseLabel: null, cycleDay: null, cycleLength: null, confidence: 'Limited history', predictedDate: null };
+  const out = smartInsightsHTML(pred, current, [], 'Alex', null, {
+    selectedGoal: 'Understand my cycle', focusGoals: ['Understand my cycle'], noGoals: false,
+    focus: { goal: 'Understand my cycle', headline: 'Day 18 of ~28 · Luteal phase', metric: 'Period expected in 4 days', trend: null, action: 'Keep logging.' },
+    week: [], ro: true, weekCard: null, weekFacts: null,
+    comingUp: { daysToPeriod: 4, phases: [] }
+  });
+  assert.ok(!/Your focus/.test(out));
+  assert.ok(!/Period expected in 4 days/.test(out.replace(/[\s\S]*<section class="smart-section smart-cycle"[\s\S]*?<\/section>/,'')), 'hidden focus metric not rendered elsewhere as focus claim');
+  assert.match(out, /Next period/, 'Cycle remains eligible when focus hidden');
+  const out2 = smartInsightsHTML(predNo, curNo, [], 'Alex', null, {
+    selectedGoal: 'Understand my cycle', focusGoals: ['Understand my cycle'], noGoals: false,
+    focus: { goal: 'Understand my cycle', headline: 'Day 18 of ~28 · Luteal phase', metric: 'Period expected in 4 days', trend: null, action: 'Keep logging.' },
+    week: [], ro: true, weekCard: null, weekFacts: null,
+    comingUp: { daysToPeriod: 4, phases: [] }
+  });
+  assert.ok(!/Your focus/.test(out2));
+  assert.ok(!/Next period/.test(out2));
+  assert.match(out2, /Period expected in 4 days\./, 'Coming up remains eligible if Cycle has no valid estimate');
+});
+
+test('Period ownership: registry is render-scoped and does not leak between renders', () => {
+  const { smartInsightsHTML } = renderContext();
+  const pred = predictedState(false);
+  const current = { state: 'estimated', phase: 'Luteal', phaseLabel: 'Luteal phase', cycleDay: 18, cycleLength: 28, confidence: 'Limited history', predictedDate: '2026-04-23' };
+  const predNo = { state: 'limited-history', expected: null };
+  const curNo = { state: 'single-start', phase: null, phaseLabel: null, cycleDay: null, cycleLength: null, confidence: 'Limited history', predictedDate: null };
+  const extrasOwned = {
+    selectedGoal: 'Understand my cycle', focusGoals: ['Understand my cycle'], noGoals: false,
+    focus: { goal: 'Understand my cycle', headline: 'Day 18 of ~28 · Luteal phase', metric: 'Period expected in 4 days', trend: null, action: 'Keep logging.' },
+    week: [], ro: false, weekCard: null, weekFacts: null,
+    comingUp: { daysToPeriod: 4, phases: [] }
+  };
+  const extrasComing = {
+    selectedGoal: 'Understand my cycle', focusGoals: ['Understand my cycle'], noGoals: false,
+    focus: { goal: 'Understand my cycle', headline: 'Log period start dates to see this', metric: null, trend: null, action: null },
+    week: [], ro: false, weekCard: null, weekFacts: null,
+    comingUp: { daysToPeriod: 4, phases: [] }
+  };
+  const out1 = smartInsightsHTML(pred, current, [], 'Alex', null, extrasOwned);
+  assert.match(out1, /Period expected in 4 days/);
+  assert.ok(!/Next period/.test(out1));
+  const out2 = smartInsightsHTML(predNo, curNo, [], 'Alex', null, extrasComing);
+  assert.ok(!/Next period/.test(out2));
+  assert.match(out2, /Period expected in 4 days\./, 'later render can show Coming up period when no higher-priority owner');
+  const out3 = smartInsightsHTML(pred, current, [], 'Alex', null, extrasOwned);
+  assert.ok(!/Next period/.test(out3));
+});
+

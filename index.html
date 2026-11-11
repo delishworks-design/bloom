@@ -3033,11 +3033,16 @@ function smartInsightsHTML(pred,current,patterns,viewerName,aiMap,extras){
   }
  }
 
- // Focus: prepare and claim period evidence before Cycle if actually rendered
+ // Focus: authoritative period-owner decision (after Your week, before Cycle)
  let focusToShow=extras.focus||null;
  const focusRendered=!!(focusToShow&&!extras.ro&&!noGoals);
- if(focusRendered&&goal==='Understand my cycle'&&focusToShow.metric!=null&&String(focusToShow.metric).trim()!==''&&extras.comingUp&&Number.isFinite(+extras.comingUp.daysToPeriod)&&+extras.comingUp.daysToPeriod>0){
-  registry.claim('period:expected','Your focus','period');
+ const focusHasValidPeriod=focusRendered&&goal==='Understand my cycle'&&focusToShow.metric!=null&&String(focusToShow.metric).trim()!==''&&extras.comingUp&&Number.isFinite(+extras.comingUp.daysToPeriod)&&+extras.comingUp.daysToPeriod>0;
+ if(focusHasValidPeriod){
+  if(registry.owner('period:expected')==='Your week'){
+   focusToShow=Object.assign({},focusToShow,{metric:null});
+  }else{
+   registry.claim('period:expected','Your focus','period');
+  }
  }
 
  const cycleHtml=smartCycleSection(pred,current,dateText,registry);
