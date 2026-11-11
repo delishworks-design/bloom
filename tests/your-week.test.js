@@ -115,7 +115,7 @@ test('smartWeekValidate rejects banned phrases, punctuation, emoji, em dash, len
   assert.equal(mod.smartWeekValidate(Object.assign({}, ok, { actions: ['Plan 1 lighter day', 'Keep a steady bedtime'] }), facts), null, 'digits in action');
 });
 
-test('smartWeekTemplate pluralizes days, lowercases symptoms, avoids filler and stays valid for every goal', () => {
+test('smartWeekTemplate pluralizes days, lowercases symptoms, avoids filler and never says starts today', () => {
   const mod = ctx();
   const goals = ['Better sleep', 'Steadier energy', 'Move more', 'Manage stress', 'Understand my cycle', 'Prepare for doctor visits', 'Eat regularly'];
   for (const g of goals) {
@@ -126,19 +126,70 @@ test('smartWeekTemplate pluralizes days, lowercases symptoms, avoids filler and 
     assert.ok(!/Keep logging this week|Check in tomorrow/.test(out.actions.join(' ')), 'no filler for ' + g);
     assert.ok(out.actions.every(a => !/\d/.test(a)), 'no digits in actions for ' + g);
   }
-  const f0 = baseFacts({ daysToPeriod: 4, comingUp: [{ phaseLabel: 'Menstrual phase', startsIn: 0, mood: 3, energy: 2, stress: 3, symptoms: ['Cramps'] }] });
+  const f0 = baseFacts({ daysToPeriod: 4, comingUp: [{ phaseLabel: 'Menstrual phase', startsIn: 0, mood: 3, energy: 2, stress: 3, symptoms: ['Cramps'] }, { phaseLabel: 'Follicular phase', startsIn: 2, mood: 3, energy: 3, stress: 2, symptoms: ['Cramps'] }] });
   const o0 = mod.smartWeekTemplate(f0);
-  assert.match(o0.summary, /starts today/);
+  assert.ok(!/starts today|starts in 0 day/i.test(o0.summary), 'no starts today');
+  assert.match(o0.summary, /Follicular phase starts in 2 days/);
   assert.match(o0.summary, /with cramps often logged/);
   assert.ok(mod.smartWeekValidate(o0, f0));
   const f1 = baseFacts({ daysToPeriod: 4, comingUp: [{ phaseLabel: 'Menstrual phase', startsIn: 1, mood: 3, energy: 2, stress: 3, symptoms: ['Cramps'] }] });
   const o1 = mod.smartWeekTemplate(f1);
   assert.match(o1.summary, /starts in 1 day/);
+  assert.ok(!/starts in 1 days/.test(o1.summary));
   assert.ok(mod.smartWeekValidate(o1, f1));
-  const f2 = baseFacts({ daysToPeriod: 4, comingUp: [{ phaseLabel: 'Menstrual phase', startsIn: 2, mood: 3, energy: 2, stress: 3, symptoms: ['Cramps'] }] });
+  const f2 = baseFacts({ daysToPeriod: 4, comingUp: [{ phaseLabel: 'Menstrual phase', startsIn: 2, mood: 3, energy: 2, stress: 3, symptoms: [] }] });
   const o2 = mod.smartWeekTemplate(f2);
   assert.match(o2.summary, /starts in 2 days/);
   assert.ok(mod.smartWeekValidate(o2, f2));
+  const fOnly0 = baseFacts({ daysToPeriod: 4, comingUp: [{ phaseLabel: 'Luteal phase', startsIn: 0, mood: 3, energy: 2, stress: 3, symptoms: ['Cramps'] }] });
+  const oOnly0 = mod.smartWeekTemplate(fOnly0);
+  assert.ok(!/Luteal phase starts/i.test(oOnly0.summary));
+  assert.ok(mod.smartWeekValidate(oOnly0, fOnly0));
+});
+
+test('template is goal-led and has no duplicate action topics', () => {
+  const mod = ctx();
+  const cases = [
+    ['Better sleep', { week: [{ label: 'Sleep', now: 6.4, prev: 7.6 }, { label: 'Energy', now: 2.6, prev: 3.4 }, { label: 'Stress', now: 3.8, prev: 2.4 }] }, 'Sleep averaged 6.4 h this week, down from 7.6.'],
+    ['Steadier energy', { week: [{ label: 'Sleep', now: 6.4, prev: 7.6 }, { label: 'Energy', now: 2.6, prev: 3.4 }, { label: 'Stress', now: 3.8, prev: 2.4 }] }, 'Energy averaged 2.6 this week, down from 3.4.'],
+    ['Manage stress', { week: [{ label: 'Sleep', now: 6.4, prev: 7.6 }, { label: 'Energy', now: 2.6, prev: 3.4 }, { label: 'Stress', now: 3.8, prev: 2.4 }] }, 'Stress averaged 3.8 this week, up from 2.4.'],
+    ['Understand my cycle', { week: [{ label: 'Sleep', now: 6.4, prev: 7.6 }, { label: 'Energy', now: 2.6, prev: 3.4 }, { label: 'Stress', now: 3.8, prev: 2.4 }] }, 'Day 18 in Luteal phase, period in 10 days.'],
+    ['Move more', { week: [{ label: 'Energy', now: 3.2, prev: 2.8 }], focus: { headline: 'Active on 2 of 7 days', metric: '2 active days', trend: '2 vs 1 the week before' } }, '2 active days.'],
+    ['Eat regularly', { week: [{ label: 'Energy', now: 3.2, prev: 2.8 }], focus: { headline: 'Meals on 4 of 7 days', metric: '4 of 7 days', trend: '3 vs 4 the week before' } }, '4 of 7 days.'],
+    ['Prepare for doctor visits', { week: [{ label: 'Energy', now: 3.2, prev: 2.8 }], focus: { headline: 'Visit summary ready', metric: '3 cycles logged', trend: '28 day average' } }, '3 cycles logged.'],
+  ];
+  for (const [goal, extra, expectedStart] of cases) {
+    const facts = baseFacts(Object.assign({ goals: [goal] }, extra));
+    const out = mod.smartWeekTemplate(facts);
+    assert.ok(out.summary.startsWith(expectedStart), goal + ' starts with focus: ' + out.summary);
+    assert.ok(mod.smartWeekValidate(out, facts));
+  }
+  const fSleep = baseFacts({ goals: ['Better sleep'], week: [{ label: 'Sleep', now: 6.2, prev: 7.1 }] });
+  const oSleep = mod.smartWeekTemplate(fSleep);
+  const bedtime = oSleep.actions.filter(a => /bedtime/i.test(a)).length;
+  assert.ok(bedtime <= 1, 'no duplicate bedtime: ' + oSleep.actions.join('|'));
+  assert.ok(mod.smartWeekValidate(oSleep, fSleep));
+  const fStress = baseFacts({ goals: ['Manage stress'], week: [{ label: 'Stress', now: 3.8, prev: 2.4 }, { label: 'Sleep', now: 6.2, prev: 7.1 }] });
+  const oStress = mod.smartWeekTemplate(fStress);
+  assert.notEqual(oStress.actions[0], oStress.actions[1]);
+  assert.ok(mod.smartWeekValidate(oStress, fStress));
+});
+
+test('extractModelText parses response shapes and strips think blocks', () => {
+  const mod = ctx();
+  const weekJson = '{"week":{"headline":"Energy up","summary":"Energy 3.2 this week, up from 2.8. Day 18 in Luteal phase.","actions":["Plan a lighter day","Keep a steady bedtime"]}}';
+  assert.equal(mod.extractModelText({ response: weekJson }), weekJson);
+  assert.equal(mod.extractModelText({ choices: [{ message: { content: weekJson } }] }), weekJson);
+  assert.equal(mod.extractModelText({ choices: [{ message: { content: [{ type: 'text', text: weekJson }] } }] }), weekJson);
+  assert.equal(mod.extractModelText({ choices: [{ text: weekJson }] }), weekJson);
+  assert.equal(mod.extractModelText({ output_text: weekJson }), weekJson);
+  const withThink = '<think>reasoning here</think>' + weekJson;
+  assert.equal(mod.extractModelText({ response: withThink }), weekJson);
+  const thinkInside = 'prefix<think>hidden</think>' + weekJson;
+  assert.equal(mod.extractModelText({ choices: [{ message: { content: thinkInside } }] }), 'prefix' + weekJson);
+  assert.equal(mod.extractModelText(null), null);
+  assert.equal(mod.extractModelText({}), null);
+  assert.equal(mod.extractModelText({ response: 123 }), null);
 });
 
 test('aiWeekSummary respects attempt cap and rate limits', async () => {

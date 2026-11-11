@@ -49,7 +49,7 @@ function load() {
     sxmig: ['migrateCustomSymptoms'],
     backup: ['makeBackup', 'validateBackup'],
     phases: ['phaseInfo'],
-    ai: ['aiWeekSummary','aiWeekCacheGet','aiWeekCacheSet','aiWeekKey','aiConsentEnabled','aiSetConsent','validateAIWeekResponse','aiInflightReset','aiHash','smartAIRefresh','wireSmartAI','smartAIConsentHTML'],
+    ai: ['aiWeekSummary','aiWeekCacheGet','aiWeekCacheSet','aiWeekKey','aiConsentEnabled','aiSetConsent','validateAIWeekResponse','aiInflightReset','aiHash','smartAIRefresh','wireSmartAI','smartAIConsentHTML','extractModelText'],
     smart: ['smartPredictionHistory', 'smartCurrentCycle', 'smartCurrentCycleFromHistory', 'smartHistoricalPhaseFor', 'smartPatternsFromLogs', 'smartInsightsHTML', 'smartPatternsHTML', 'smartPhaseInsight', 'smartProgress', 'smartInsightsExtras', 'smartComingUp', 'smartWeekCompare', 'smartActiveGoals', 'smartGoalFocus', 'smartWeekFacts', 'smartWeekTemplate', 'smartWeekValidate', 'smartWeekAllowedNumbers', 'smartWeekHTML', 'smartWeekCompareHTML', 'dashboardCycle']
   };
   for (const name of ['phases', 'esc', 'sync', 'roWho', 'sxmig', 'backup', 'smart', 'ai']) {

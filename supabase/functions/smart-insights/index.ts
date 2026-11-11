@@ -10,11 +10,13 @@ const reply = (body: unknown, status = 200) =>
 
 const MODEL = Deno.env.get("AI_MODEL") ?? "@cf/zai-org/glm-4.7-flash";
 const USER_LIMIT = Number(Deno.env.get("AI_DAILY_LIMIT") ?? "3");
-// @cf/zai-org/glm-4.7-flash (CF pricing): 5500 neurons/M input, 36400 neurons/M output.
-// Week: ~1200 in + 250 out = 1.2e-3*5500 + 2.5e-4*36400 = 6.6 + 9.1 = 15.7 neurons.
-// Findings (conservative): ~1500 in + 600 out = 1.5e-3*5500 + 6e-4*36400 = 8.25 + 21.84 = 30.09 neurons.
-// 10k/day * 0.75 headroom / 31 ≈ 241 → default 240.
-const GLOBAL_LIMIT = Number(Deno.env.get("AI_GLOBAL_LIMIT") ?? "240");
+// @cf/zai-org/glm-4.7-flash (CF pricing, verified): 5500 neurons/M input, 36400 neurons/M output.
+// No documented reasoning-disable parameter in model schema; week max_tokens 900, findings 1400 to avoid starvation.
+// Worst-case output = max_tokens. Input estimates unchanged (week ~1200, findings ~1500).
+// Week: 1200/1e6*5500 + 900/1e6*36400 = 6.6 + 32.76 = 39.36 neurons/call; retry up to 2 calls => 78.72.
+// Findings: 1500/1e6*5500 + 1400/1e6*36400 = 8.25 + 50.96 = 59.21 neurons.
+// 10000/day * 0.75 headroom / 78.72 (costlier week worst case) = 95.27 -> default 95.
+const GLOBAL_LIMIT = Number(Deno.env.get("AI_GLOBAL_LIMIT") ?? "95");
 
 const SYSTEM_FINDINGS = `You reword health-tracking observations for a cycle and wellness app.
 You receive JSON: {"findings":[{id,category,title,evidenceSummary,observationCount,comparisonCount,confidenceLevel,limitations}]}.
@@ -35,7 +37,9 @@ Return ONLY valid JSON, no markdown, no extra text. Shape:
 Voice rules:
 - Plain, calm, specific, like a friend who read the numbers. English.
 - headline <=8 words, no punctuation at the end. summary max 3 sentences, max 55 words. 2 actions, each starts with a verb, <=10 words.
+- Lead the summary with the first goal in facts.goals.
 - Every sentence has a concrete number or phase name taken from the facts. Never invent numbers. Use only numbers that appear in the facts.
+- comingUp entries with startsIn 0 describe the current phase; do not say they start.
 - Actions contain no digits.
 - Say "this week", not "according to your logs".
 - BANNED: exclamation marks, emojis, em dashes (—), rhetorical questions, and these phrases (case-insensitive): "it looks like", "overall", "remember", "it's important", "great job", "keep it up", "journey", "listen to your body", "self-care", "gentle reminder", "consider", "you might want", "based on your", "your data", "your logs", "tracking", "AI", "insight", "pattern", "balance", "wellness", "navigate", "hang in there".
@@ -180,6 +184,27 @@ function validateWeek(parsed: any, facts: any): { week?: any; reason?: string } 
   return { week: { headline, summary, actions } };
 }
 
+
+function extractModelText(result: any): string | null {
+  if (!result || typeof result !== "object") return null;
+  let text: unknown = result.response;
+  if (typeof text !== "string") {
+    const choice = Array.isArray(result.choices) ? result.choices[0] : null;
+    const msg = choice && typeof choice === "object" ? (choice.message || choice) : null;
+    if (msg && typeof msg === "object") {
+      const c = (msg as any).content;
+      if (typeof c === "string") text = c;
+      else if (Array.isArray(c)) {
+        text = c.map((p: any) => (p && typeof p === "object" && (p.type === "text" || p.text) ? String(p.text ?? "") : "")).join("");
+      } else if (typeof (msg as any).text === "string") text = (msg as any).text;
+    }
+    if (typeof text !== "string" && choice && typeof choice === "object" && typeof (choice as any).text === "string") text = (choice as any).text;
+  }
+  if (typeof text !== "string" && typeof result.output_text === "string") text = result.output_text;
+  if (typeof text !== "string") return null;
+  return String(text).replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
   if (req.method !== "POST") return reply({ error: "method" }, 405);
@@ -244,10 +269,19 @@ Deno.serve(async (req) => {
         return { error: "upstream", status: r.status as number };
       }
       const j = await r.json();
-      const out = j?.result?.response;
-      const text = typeof out === "string" ? out : JSON.stringify(out ?? "");
+      const result = j && typeof j === "object" ? (j as any).result : null;
+      const text = extractModelText(result);
+      if (typeof text !== "string" || !text) {
+        const choice = result && Array.isArray(result.choices) ? result.choices[0] : null;
+        const msg = choice && typeof choice === "object" ? (choice as any).message : null;
+        console.error("shape", Object.keys(result || {}), Object.keys(msg && typeof msg === "object" ? msg : {}));
+        return { error: "bad_model_output", reason: "json" as string };
+      }
       const a = text.indexOf("{"), b = text.lastIndexOf("}");
-      if (a < 0 || b <= a) return { error: "bad_model_output", reason: "json" as string, text };
+      if (a < 0 || b <= a) {
+        console.error("shape", Object.keys(result || {}), Object.keys(((result || {}).choices || [])[0]?.message || {}));
+        return { error: "bad_model_output", reason: "json" as string, text };
+      }
       try {
         return { parsed: JSON.parse(text.slice(a, b + 1)), text };
       } catch {
@@ -259,7 +293,7 @@ Deno.serve(async (req) => {
         { role: "system", content: SYSTEM_WEEK },
         { role: "user", content: JSON.stringify({ facts }) },
       ];
-      const first = await callModel({ messages, max_tokens: 400, temperature: 0.3 });
+      const first = await callModel({ messages, max_tokens: 900, temperature: 0.3 });
       if ((first as any).error) {
         if ((first as any).status) return reply({ error: "upstream", status: (first as any).status }, 502);
         console.error("week invalid", (first as any).reason || "bad");
@@ -274,7 +308,7 @@ Deno.serve(async (req) => {
           { role: "assistant", content: (first as any).text || JSON.stringify((first as any).parsed) },
           { role: "user", content: `That answer broke this rule: ${v1.reason || "invalid"}. Return corrected JSON only.` },
         ],
-        max_tokens: 400,
+        max_tokens: 900,
         temperature: 0.2,
       });
       if ((retry as any).error) {
@@ -292,7 +326,7 @@ Deno.serve(async (req) => {
         { role: "system", content: SYSTEM_FINDINGS },
         { role: "user", content: JSON.stringify({ findings }) },
       ],
-      max_tokens: 900,
+      max_tokens: 1400,
       temperature: 0.2,
     };
     const r1 = await callModel(payload);
