@@ -2456,7 +2456,7 @@ function smartGoalFocus(goal,ctx){
    trend=d<=-.15?'Steadier than the two weeks before':d>=.15?'More variable than the two weeks before':'About the same as the two weeks before';
   }
   const lows=now.filter(r=>{const e=spNum(r.log.energy);return e!=null&&e<=2});
-  let action='Keep logging to spot what tends to drain your energy.';
+  let action='Keep logging to spot what tends to drain your energy.',evidenceId=null;
   if(lows.length>=3){
    const cover={short:0,luteal:0,noactivity:0,stress:0};
    lows.forEach(r=>{
@@ -2469,9 +2469,10 @@ function smartGoalFocus(goal,ctx){
    if(best&&best[1]*2>lows.length){
     const lines={short:'Short sleep was also recorded on most low-energy days.',luteal:'Low energy was recorded on more days in the luteal phase.',noactivity:'Most low-energy days had no activity logged.',stress:'Most low-energy days also had high stress.'};
     action=lines[best[0]];
+    if(best[0]==='short') evidenceId='association:sleep-energy:all';
    }
   }
-  return {goal,headline:`Energy ranged ${Math.min(...vals)}–${Math.max(...vals)} of 5 over 14 days`,metric:`Range ${range} · spread ±${smartRound1(sd)}`,trend,action};
+  return {goal,headline:`Energy ranged ${Math.min(...vals)}–${Math.max(...vals)} of 5 over 14 days`,metric:`Range ${range} · spread ±${smartRound1(sd)}`,trend,action,evidenceId};
  }
 
  if(goal==='Better sleep'){
@@ -2489,17 +2490,17 @@ function smartGoalFocus(goal,ctx){
    parts.push(`quality ${q}/5`);
    if(qP.length>=3)trendParts.push(`quality ${q} vs ${smartRound1(spAverage(qP))}`);
   }
-  let action=null;
+  let action=null,evidenceId=null;
   const rough=now.filter(r=>{const q=spNum(r.log.sleepq),s=spNum(r.log.sleep);return q!=null&&q<=2&&s!=null&&s>=7});
   if(rough.length>=2){
    action=`Hours are fine but quality is low on ${rough.length} days`;
   }else{
    const pat=smartPatternsFromLogs(logs,starts).find(p=>p.type==='sleep-energy');
-   if(pat)action=pat.detail.replace(/^So far: /,'');
+   if(pat){action=pat.detail.replace(/^So far: /,'');evidenceId='association:sleep-energy:all'}
    else action='Try a consistent wind-down time.';
   }
   const headline=sN.length>=3?`Sleep ${smartRound1(spAverage(sN))} h last week`:`Sleep quality ${smartRound1(spAverage(qN))}/5 last week`;
-  return {goal,headline,metric:parts.join(' · '),trend:trendParts.length?trendParts.join(' · '):null,action};
+  return {goal,headline,metric:parts.join(' · '),trend:trendParts.length?trendParts.join(' · '):null,action,evidenceId};
  }
 
  if(goal==='Move more'){
@@ -2508,7 +2509,7 @@ function smartGoalFocus(goal,ctx){
   if(!anyActivity)return missing('activity on more days');
   const nowN=now.filter(isActive).length,prevN=before.filter(isActive).length;
   const pat=smartPatternsFromLogs(logs,starts).find(p=>p.type==='activity-energy');
-  return {goal,headline:`Active on ${nowN} of 7 days`,metric:`${nowN} active days`,trend:`${nowN} vs ${prevN} the week before`,action:pat?pat.detail.replace(/^So far: /,''):'A short walk on two days this week is a start.'};
+  return {goal,headline:`Active on ${nowN} of 7 days`,metric:`${nowN} active days`,trend:`${nowN} vs ${prevN} the week before`,action:pat?pat.detail.replace(/^So far: /,''):'A short walk on two days this week is a start.',evidenceId:pat?'association:activity-energy:all':null};
  }
 
  if(goal==='Eat regularly'){
@@ -2536,7 +2537,7 @@ function smartGoalFocus(goal,ctx){
   const avg=smartRound1(spAverage(nv)),prevAvg=smartRound1(spAverage(pv));
   const window14=smartWindow(rows,spAddDays(today,-13),today);
   const high=window14.filter(r=>{const s=spNum(r.log.stress);return s!=null&&s>=4});
-  let action='Protect one small routine on high-stress days.';
+  let action='Protect one small routine on high-stress days.',evidenceId=null;
   if(high.length>=3){
    let short=0,quality=0,luteal=0;
    high.forEach(r=>{
@@ -2548,9 +2549,10 @@ function smartGoalFocus(goal,ctx){
    if(best[1]*2>high.length){
     const lead={short:'Short sleep was recorded on several high-stress days.',quality:'Poor sleep quality was recorded more often on days with higher stress.',luteal:'High stress was recorded on more days in the luteal phase.'}[best[0]];
     action=`${lead} Protect one small routine on high-stress days.`;
+    if(best[0]==='short'||best[0]==='quality') evidenceId='association:stress-sleep:all';
    }
   }
-  return {goal,headline:`Stress ${avg}/5 last week`,metric:`${avg}/5 · ${high.length} high day${high.length===1?'':'s'}`,trend:`${avg} vs ${prevAvg} before`,action};
+  return {goal,headline:`Stress ${avg}/5 last week`,metric:`${avg}/5 · ${high.length} high day${high.length===1?'':'s'}`,trend:`${avg} vs ${prevAvg} before`,action,evidenceId};
  }
 
  if(goal==='Prepare for doctor visits'){
@@ -2851,10 +2853,13 @@ function smartWeekCompareHTML(week){
  return `<section class="smart-section" aria-labelledby="smart-weekcmp-title"><h3 class="smart-kicker" id="smart-weekcmp-title">This week vs last</h3>${rows}</section>`;
 }
 function smartComingUpHTML(cu,opts){
- if(!cu||!cu.phases||!cu.phases.length)return '';
+ if(!cu)return '';
  opts=opts||{};
  const reg=opts.registry||null;
- const blocks=cu.phases.filter(p=>p&&Number.isFinite(+p.startsIn)&&+p.startsIn>=0).map(p=>{
+ const hasPhases=Array.isArray(cu.phases)&&cu.phases.length>0;
+ const hasPeriod=cu.daysToPeriod!=null&&Number.isFinite(+cu.daysToPeriod)&&+cu.daysToPeriod>0;
+ if(!hasPhases&&!hasPeriod)return '';
+ const blocks=hasPhases?cu.phases.filter(p=>p&&Number.isFinite(+p.startsIn)&&+p.startsIn>=0).map(p=>{
   const sid=+p.startsIn;
   const id='phase-upcoming:'+String(p.phaseLabel||p.phase||'')+':in-'+sid;
   if(reg&&reg.has(id))return '';
@@ -2866,10 +2871,10 @@ function smartComingUpHTML(cu,opts){
   if(p.stress!=null)bits.push(`stress ${p.stress}/5`);
   if(p.symptoms&&p.symptoms.length)bits.push(`most logged: ${p.symptoms.join(', ')}`);
   return `<div class="smart-upcoming"><div class="smart-pattern-title">${E(p.phaseLabel)} ${E(when)}</div>${bits.length?`<p class="smart-pattern-text">Usually ${E(bits.join(' · '))}</p>`:''}</div>`;
- }).filter(Boolean).join('');
+ }).filter(Boolean).join(''):'';
  const periodId='period:expected';
  let tail='';
- if(cu.daysToPeriod!=null&&Number.isFinite(+cu.daysToPeriod)&&+cu.daysToPeriod>=0){
+ if(hasPeriod){
   if(!(reg&&reg.has(periodId))){
    if(reg)reg.claim(periodId,'Coming up','period');
    const d=+cu.daysToPeriod;
@@ -2898,13 +2903,16 @@ function wireSmartFocus(state){
   };
  });
 }
-function smartCycleSection(pred,current,dateText){
+function smartCycleSection(pred,current,dateText,registry){
  pred=pred||{};
  const c=current||{};
  if(c.state==='estimated'){
   const phaseName=c.phaseLabel||(c.phase?c.phase+' phase':'');
   const lines=[`Day ${c.cycleDay} of ~${c.cycleLength} · ${phaseName}`];
-  if(pred.expected)lines.push(`Next period ~${dateText(pred.expected)} (range ${dateText(pred.rangeStart)}–${dateText(pred.rangeEnd)})`);
+  if(pred.expected){
+   if(registry) registry.claim('period:expected','Cycle','period');
+   lines.push(`Next period ~${dateText(pred.expected)} (range ${dateText(pred.rangeStart)}–${dateText(pred.rangeEnd)})`);
+  }
   if(c.confidence)lines.push(c.confidence);
   return `<section class="smart-section smart-cycle" aria-labelledby="smart-cycle-title"><h3 class="smart-kicker" id="smart-cycle-title">Cycle</h3>${lines.map(l=>`<p class="smart-copy">${E(l)}</p>`).join('')}</section>`;
  }
@@ -2972,7 +2980,7 @@ function smartGoalPrimaryMetric(goal){
 function smartPatternEvidenceId(p){
  if(!p||!p.type)return null;
  if(p.type==='symptom-phase') return 'symptom-phase:'+String(p.id||'').slice('symptom-phase-'.length||0)+':completed';
- if(p.type==='sleep-energy'||p.type==='mood-sleep'||p.type==='activity-energy'||p.type==='stress-sleep') return 'association:'+p.type+':'+String(p.id||'all');
+ if(p.type==='sleep-energy'||p.type==='mood-sleep'||p.type==='activity-energy'||p.type==='stress-sleep') return 'association:'+p.type+':all';
  return 'pattern:'+String(p.type)+':'+String(p.id||'all');
 }
 function smartWeekFactsEvidenceIds(facts){
@@ -3001,17 +3009,16 @@ function smartInsightsHTML(pred,current,patterns,viewerName,aiMap,extras){
  const registry=smartEvidenceRegistry();
  const primaryMetric=smartGoalPrimaryMetric(goal);
 
- // Claim evidence owned by Your week (if rendered)
- if(extras.weekCard&&!extras.ro&&extras.weekFacts){
-  smartWeekFactsEvidenceIds(extras.weekFacts).forEach(id=>registry.claim(id,'Your week'));
-  // if summary fell back to biggest non-primary metric, claim it
+ // Claim evidence owned by Your week only when actually rendered/presented
+ const weekRendered=!!(extras.weekCard&&!extras.ro);
+ if(weekRendered&&extras.weekFacts){
+  smartWeekFactsEvidenceIds(extras.weekFacts).forEach(id=>registry.claim(id,'Your week',id.indexOf('period:')===0?'period':id.indexOf('cycle:')===0?'cycle':id.indexOf('focus:')===0?'focus':'metric-week'));
   const facts=extras.weekFacts;
   const pg=(facts.goals||[])[0]||'Understand my cycle';
   const gl={'Better sleep':'Sleep','Steadier energy':'Energy','Manage stress':'Stress','Move more':'Activity','Eat regularly':'Meals','Prepare for doctor visits':'Visit summary'}[pg]||null;
   const weekList=facts.week||[];
   const goalBig=(gl&&weekList.find(w=>w.label===gl&&Math.abs((+w.now)-(+w.prev))>=0.3))?weekList.find(w=>w.label===gl):null;
   const s1=(function(){try{return smartWeekTemplate(facts)}catch(e){return null}})();
-  // fallback biggest non-primary appears in summary when no s1 and not goalBig; detect by text
   if(s1&&s1.summary){
    weekList.forEach(w=>{
     if(w.label===gl)return;
@@ -3022,9 +3029,22 @@ function smartInsightsHTML(pred,current,patterns,viewerName,aiMap,extras){
    });
   }
  }
- // claim primary metric for focus suppression even if weekFacts missing but weekCard exists
- if(extras.weekCard&&!extras.ro&&primaryMetric&&(extras.week||[]).some(w=>w.label===primaryMetric)){
-  registry.claim('metric:'+primaryMetric+':window:7d','Your week','metric-week');
+
+ const cycleHtml=smartCycleSection(pred,current,dateText,registry);
+
+ // Focus: claim/suppress evidence (priority before Week comparison/Patterns/Coming up)
+ let focusToShow=extras.focus||null;
+ if(focusToShow&&!extras.ro){
+  const focusClaimId=primaryMetric?'metric:'+primaryMetric+':window:7d':(goal==='Move more'?'focus:activity-days:window:14d':goal==='Eat regularly'?'focus:meal-plan:window:14d':goal==='Prepare for doctor visits'?'focus:visit-summary:window:90d':goal==='Understand my cycle'?'cycle:day-phase:current':null);
+  if(focusClaimId){
+   if(registry.has(focusClaimId)){
+    if(registry.owner(focusClaimId)!=='Your focus') focusToShow=Object.assign({},focusToShow,{headline:null,metric:null,trend:null});
+   }else{
+    // claim focus's primary metric evidence as presented by focus (headline/metric/trend)
+    if(focusToShow.headline||focusToShow.metric||focusToShow.trend) registry.claim(focusClaimId,'Your focus',focusClaimId.indexOf('metric:')===0?'metric-week':focusClaimId.indexOf('cycle:')===0?'cycle':'focus');
+   }
+  }
+  if(focusToShow.evidenceId) registry.claim(focusToShow.evidenceId,'Your focus','association');
  }
 
  // Week comparison: omit metrics already claimed as same evidence
@@ -3038,14 +3058,6 @@ function smartInsightsHTML(pred,current,patterns,viewerName,aiMap,extras){
 
  // Coming up: consult registry (period/phase ids)
  const comingHtml=smartComingUpHTML(extras.comingUp||null,{registry});
-
- // Focus: suppress duplicated metric evidence but keep action
- const focusClaimId=primaryMetric?'metric:'+primaryMetric+':window:7d':(goal==='Move more'?'focus:activity-days:window:14d':goal==='Eat regularly'?'focus:meal-plan:window:14d':goal==='Prepare for doctor visits'?'focus:visit-summary:window:90d':goal==='Understand my cycle'?'cycle:day-phase:current':null);
- let focusToShow=extras.focus||null;
- if(focusToShow&&focusClaimId&&registry.has(focusClaimId)){
-  // if same evidence shown, keep action but drop headline/metric/trend
-  focusToShow=Object.assign({},focusToShow,{headline:null,metric:null,trend:null});
- }
 
  const sections=smartSectionOrder(goal).map(k=>k==='week'?weekCmpHtml:comingHtml).filter(Boolean).join('');
  const weekCard=(extras.weekCard&&!extras.ro)?smartWeekHTML(extras.weekCard,extras.weekOpts||{}):'';
@@ -3066,7 +3078,7 @@ function smartInsightsHTML(pred,current,patterns,viewerName,aiMap,extras){
   </div>
   <div class="smart-hero-art">${smartArt('insight')}</div>
  </header>
- ${smartCycleSection(pred,current,dateText)}
+ ${cycleHtml}
  ${weekCard}
  ${extras.ro?'':smartFocusHTML(goal,goals,noGoals,focusToShow||null)}
  ${sections}
