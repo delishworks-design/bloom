@@ -222,16 +222,11 @@ test('cycle states keep plain messages', () => {
   assert.match(overdue, /later than expected/);
 });
 
-test('Cloud AI row keeps the consent id and has no explanatory paragraph', () => {
-  const start = html.indexOf('function smartAIConsentHTML(){');
-  const end = html.indexOf('function wireSmartAI(', start);
-  const source = html.slice(start, end);
-
-  assert.ok(source.includes('id="ai-consent"'));
-  assert.ok(source.includes('smart-ai-row'));
-  assert.ok(!/Let Cloud AI explain/.test(source));
-  assert.ok(!/external AI service/.test(source));
-  assert.ok(!/Journal entries/.test(source));
+test('Smart Insights has no Cloud AI controls or endpoint', () => {
+  assert.equal(html.indexOf('function smartAIConsentHTML(){'), -1);
+  assert.equal(html.indexOf('AI_ENDPOINT'), -1);
+  assert.equal(html.indexOf('smartAIRefresh'), -1);
+  assert.equal(html.indexOf('Make this more personal'), -1);
 });
 
 test('the only app disclaimer lives in Settings', () => {

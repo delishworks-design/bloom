@@ -189,70 +189,16 @@ test('template is goal-led with natural sentences and no duplicate action topics
   assert.ok(mod.smartWeekValidate(oStress2, fStress2));
 });
 
-test('extractModelText parses response shapes and strips think blocks', () => {
+test('Your week template is deterministic for the same facts', () => {
   const mod = ctx();
-  const weekJson = '{"week":{"headline":"Energy up","summary":"Energy 3.2 this week, up from 2.8. Day 18 in Luteal phase.","actions":["Plan a lighter day","Keep a steady bedtime"]}}';
-  assert.equal(mod.extractModelText({ response: weekJson }), weekJson);
-  assert.equal(mod.extractModelText({ choices: [{ message: { content: weekJson } }] }), weekJson);
-  assert.equal(mod.extractModelText({ choices: [{ message: { content: [{ type: 'text', text: weekJson }] } }] }), weekJson);
-  assert.equal(mod.extractModelText({ choices: [{ text: weekJson }] }), weekJson);
-  assert.equal(mod.extractModelText({ output_text: weekJson }), weekJson);
-  const withThink = '<think>reasoning here</think>' + weekJson;
-  assert.equal(mod.extractModelText({ response: withThink }), weekJson);
-  const thinkInside = 'prefix<think>hidden</think>' + weekJson;
-  assert.equal(mod.extractModelText({ choices: [{ message: { content: thinkInside } }] }), 'prefix' + weekJson);
-  assert.equal(mod.extractModelText(null), null);
-  assert.equal(mod.extractModelText({}), null);
-  assert.equal(mod.extractModelText({ response: 123 }), null);
-});
-
-test('aiWeekSummary respects attempt cap and rate limits', async () => {
-  const mod = ctx();
-  mod.aiSetConsent(true);
-  mod.aiInflightReset();
   const facts = baseFacts();
-  const bad = async () => ({ ok: true, json: async () => ({ week: { headline: 'Bad!', summary: 'overall 99.', actions: ['go', 'do'] } }) });
-  const r1 = await mod.aiWeekSummary(facts, { store: mod.ST, today: '2026-01-20', token: 'tok', ignoreCache: true, fetch: bad });
-  assert.equal(r1.state, 'invalid');
-  mod.aiInflightReset();
-  const r2 = await mod.aiWeekSummary(facts, { store: mod.ST, today: '2026-01-20', token: 'tok', ignoreCache: true, fetch: bad });
-  assert.equal(r2.state, 'invalid');
-  let calls = 0;
-  mod.aiInflightReset();
-  const r3 = await mod.aiWeekSummary(facts, { store: mod.ST, today: '2026-01-20', token: 'tok', ignoreCache: true, fetch: async () => { calls++; return bad(); } });
-  assert.equal(r3.state, 'exhausted');
-  assert.equal(calls, 0);
-
-  // 429 stops immediately
-  const mod2 = ctx(); mod2.aiSetConsent(true); mod2.aiInflightReset();
-  const f429 = baseFacts({ goals: ['Manage stress'] });
-  let c429 = 0;
-  const r429 = await mod2.aiWeekSummary(f429, { store: mod2.ST, today: '2026-01-20', token: 'tok', ignoreCache: true, fetch: async () => { c429++; return { ok: false, status: 429 }; } });
-  assert.equal(r429.state, 'unavailable');
-  mod2.aiInflightReset();
-  const r429b = await mod2.aiWeekSummary(f429, { store: mod2.ST, today: '2026-01-20', token: 'tok', ignoreCache: true, fetch: async () => { c429++; return { ok: false, status: 429 }; } });
-  assert.equal(r429b.state, 'exhausted');
-  assert.equal(c429, 1);
-
-  // success cached, no request with consent off
-  const mod3 = ctx(); mod3.aiSetConsent(true); mod3.aiInflightReset();
-  const fok = baseFacts({ goals: ['Move more'] });
-  const week = { headline: 'Energy up this week', summary: 'Energy 3.2 this week, up from 2.8. Day 18 in Luteal phase.', actions: ['Plan a lighter day', 'Keep a steady bedtime'] };
-  let cok = 0;
-  const okr = await mod3.aiWeekSummary(fok, { store: mod3.ST, today: '2026-01-20', token: 'tok', ignoreCache: true, fetch: async () => { cok++; return { ok: true, json: async () => ({ week }) }; } });
-  assert.equal(okr.state, 'ok');
-  mod3.aiInflightReset();
-  const okr2 = await mod3.aiWeekSummary(fok, { store: mod3.ST, today: '2026-01-20', token: 'tok', fetch: async () => { cok++; return { ok: true, json: async () => ({ week }) }; } });
-  assert.equal(okr2.state, 'cached');
-  assert.equal(cok, 1);
-  const mod4 = ctx(); mod4.aiInflightReset(); // consent off
-  let coff = 0;
-  const off = await mod4.aiWeekSummary(baseFacts({ goals: ['Eat regularly'] }), { store: mod4.ST, today: '2026-01-20', token: 'tok', fetch: async () => { coff++; return { ok: true, json: async () => ({ week }) }; } });
-  assert.equal(off.state, 'disabled');
-  assert.equal(coff, 0);
+  const a = mod.smartWeekTemplate(facts);
+  const b = mod.smartWeekTemplate(facts);
+  assert.deepEqual(a, b);
+  assert.ok(mod.smartWeekValidate(a, facts));
 });
 
-test('Your week card renders, escapes, shows prompt only when allowed, and sits after cycle before focus', () => {
+test('Your week card renders, escapes, and sits after cycle before focus', () => {
   const mod = ctx();
   const extras = {
     week: [{ key: 'energy', label: 'Energy', now: 3.2, prev: 2.8, arrow: '↑' }],
@@ -271,16 +217,12 @@ test('Your week card renders, escapes, shows prompt only when allowed, and sits 
   assert.ok(!html.includes('<up>'));
   assert.ok(html.includes('&lt;up&gt;'));
   assert.ok(html.includes('&lt;lighter&gt;'));
-  assert.match(html, /Make this more personal/);
-  assert.match(html, /Sends summary numbers only, never your notes\./);
   const cycleIdx = html.indexOf('smart-cycle-title');
   const weekIdx = html.indexOf('id="smart-week"');
   const focusIdx = html.indexOf('id="smart-focus"');
   assert.ok(cycleIdx !== -1 && weekIdx !== -1 && focusIdx !== -1);
   assert.ok(cycleIdx < weekIdx && weekIdx < focusIdx, 'order cycle < week < focus');
 
-  const noPrompt = mod.smartInsightsHTML({ state: 'single-start' }, { state: 'single-start' }, [], 'Alex', null, Object.assign({}, extras, { weekOpts: { showPrompt: false } }));
-  assert.ok(!noPrompt.includes('Make this more personal'));
 
   const ro = mod.smartInsightsHTML({ state: 'single-start' }, { state: 'single-start' }, [], 'Alex', null, Object.assign({}, extras, { ro: true, focus: null }));
   assert.ok(!ro.includes('id="smart-week"'));
