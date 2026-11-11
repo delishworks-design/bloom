@@ -263,3 +263,33 @@ test('all seven goal CTA mappings are real and meaningful', () => {
   assert.equal(smartCTAFor('Manage stress'), 'journal');
   assert.equal(smartCTAFor('Prepare for doctor visits'), 'export');
 });
+
+test('logout and full deletion invoke legacy AI cleanup', () => {
+  assert.ok(/function logout\(\)[\s\S]*?clearLegacySmartAIStorage\(\)/.test(html));
+  assert.ok(/function wipeLocalData\(\)\{[^}]*clearLegacySmartAIStorage\(\)/.test(html));
+  assert.ok(html.includes("wipeLocalData();"));
+});
+
+test('Smart Insights deduplicates primary sleep evidence across sections', () => {
+  const { smartInsightsHTML } = renderContext();
+  const out = smartInsightsHTML(
+    { state: 'predicted', startCount: 4, validCount: 3, last: '2026-03-26', expected: '2026-04-23', rangeStart: '2026-04-20', rangeEnd: '2026-04-30', min: 25, max: 35, avg: 28, overdue: false, confidence: 'Limited history' },
+    { state: 'due-today', phase: null, phaseLabel: null, cycleDay: null, cycleLength: null, confidence: 'Limited history', predictedDate: '2026-04-23' },
+    [],
+    'Alex',
+    null,
+    {
+      selectedGoal: 'Better sleep',
+      focusGoals: ['Better sleep'],
+      noGoals: false,
+      focus: { goal: 'Better sleep', headline: 'Sleep 6.8 h last week', metric: '6.8 h (3 under 7h)', trend: 'sleep 6.8 vs 7.2 h', action: 'Try a consistent wind-down time.' },
+      week: [{ key: 'sleep', label: 'Sleep', now: 6.8, prev: 7.2, arrow: '↓' }, { key: 'energy', label: 'Energy', now: 3.4, prev: 2.9, arrow: '↑' }],
+      comingUp: { daysToPeriod: 10, phases: [{ phase: 'Luteal', phaseLabel: 'Luteal phase', startsIn: 3, mood: 3.2, energy: 2.8, stress: 3.5, symptoms: ['Headache', 'Cramps'] }] },
+      weekCard: { headline: 'Sleep down this week', summary: 'No other changes worth highlighting this week.', actions: ['Try an earlier bedtime', 'Plan a short walk'] },
+      ro: false
+    }
+  );
+  const sleepMetricOccurrences = (out.match(/6\.8 h/g) || []).length;
+  assert.ok(sleepMetricOccurrences <= 1, 'sleep metric should not repeat');
+  assert.match(out, /Your focus/);
+});
