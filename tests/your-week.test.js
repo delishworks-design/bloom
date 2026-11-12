@@ -211,10 +211,9 @@ test('Your week card renders, escapes, and sits after cycle before focus', () =>
   };
   const html = mod.smartInsightsHTML({ state: 'single-start' }, { state: 'single-start' }, [], 'Alex', null, extras);
   assert.match(html, /Your week/);
-  assert.match(html, /Next 3 days/);
+  assert.ok(!/Next 3 days/.test(html));
   assert.ok(!html.includes('<up>'));
-  assert.ok(html.includes('&lt;up&gt;'));
-  assert.ok(html.includes('&lt;lighter&gt;'));
+  assert.ok(!/Log a few more days/.test(html));
   const cycleIdx = html.indexOf('smart-cycle-title');
   const weekIdx = html.indexOf('id="smart-week"');
   const focusIdx = html.indexOf('id="smart-focus"');

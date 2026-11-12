@@ -1,7 +1,7 @@
 {
-    "versionCode": 80,
-    "versionName": "1.2.65",
-    "notes": "Tasks, meals and journal now have their own share switches for both accounts. The stray subtitles are gone, and Settings shows your nickname with a Change name button.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.65/bloom-1.2.65.apk",
+    "versionCode": 81,
+    "versionName": "1.2.66",
+    "notes": "Smart Insights now reads as calm sentences. Your week, your focus, good to know and your next step explain what changed and what to try, without numbers or jargon.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.66/bloom-1.2.66.apk",
     "publishedAt": "2026-11-12"
 }

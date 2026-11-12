@@ -373,6 +373,8 @@ details{border-bottom:1px solid #EADFD2;padding:14px 0}summary{cursor:pointer;fo
 .smart-upcoming{margin-top:10px}
 .smart-week-bullets{margin:6px 0 0;padding-left:18px}
 .smart-week-bullets li{font-size:.86rem;color:var(--ink);margin:4px 0;line-height:1.4}
+.smart-week-lead{font-size:.95rem;line-height:1.5;font-weight:600;color:var(--ink);margin:0 0 5px}
+.smart-week-body{font-size:.86rem;line-height:1.55;color:var(--mut);margin:0}
 .smart-week-prompt{margin-top:10px}
 .smart-week-personal{background:none;border:0;padding:0;color:var(--teal);font-size:.82rem;font-weight:700;cursor:pointer}
 .smart-week-prompt .smart-copy{margin-top:4px}
@@ -1523,7 +1525,7 @@ async function fetchManifest(){const bust='?t='+Date.now();
  const r=await fetch(UPDATE_MANIFEST+bust,{cache:'no-store'});if(!r.ok)throw new Error('manifest '+r.status);
  return await r.json()}
 // Baked-in build identity. Keep in sync with android/app/build.gradle (versionCode/versionName).
-const APP_VERSION={code:80,name:'1.2.65'};
+const APP_VERSION={code:81,name:'1.2.66'};
 const UPD_SKIP_KEY='bloom_upd_skip';
 const updater=()=>{const C=window.Capacitor;if(!C)return null;
  const P=C.Plugins&&C.Plugins.BloomUpdater;
@@ -2983,9 +2985,9 @@ function smartPatternIcon(type){
  };
  return `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${paths[type]||paths['symptom-phase']}</svg>`;
 }
-function smartPatternsHTML(patterns){
+function smartPatternsHTML(patterns,emptyHint){
  const titles={'sleep-energy':'Sleep and energy','mood-sleep':'Mood and sleep','activity-energy':'Activity and energy','stress-sleep':'Stress and sleep','symptom-phase':'Symptoms across recorded phases'};
- if(!patterns||!patterns.length)return '<p class="smart-copy">Log a few more days to see insights.</p>';
+ if(!patterns||!patterns.length)return `<p class="smart-copy">${E(emptyHint||'A few quiet notes are enough to begin.')}</p>`;
  return `<div>${patterns.slice(0,3).map(p=>{
   const title=p.headline||titles[p.type]||'Personal pattern';
   const body=p.detail||p.text||'';
@@ -3206,9 +3208,9 @@ function smartComingUpHTML(cu,opts){
  if(!blocks&&!tail)return '';
  return `<section class="smart-section" aria-labelledby="smart-upcoming-title"><h3 class="smart-kicker" id="smart-upcoming-title">Coming up</h3>${blocks}${tail}</section>`;
 }
-function smartFocusHTML(goal,goals,noGoals,focus){
+function smartFocusHTML(goal,goals,noGoals,focus,prose){
  const chips=goals&&goals.length>1?`<div class="smart-goal-chips">${goals.map(g=>`<button type="button" class="chip smart-goal-chip" data-goal="${E(g)}" aria-pressed="${g===goal}">${E(g)}</button>`).join('')}</div>`:'';
- const body=noGoals?'<p class="smart-copy">Pick your goals in Profile to personalize this.</p>':(focus?`<div class="smart-pattern-title">${E(focus.headline)}</div>${focus.metric?`<p class="smart-pattern-text">${E(focus.metric)}</p>`:''}${focus.trend?`<p class="smart-pattern-text">${E(focus.trend)}</p>`:''}${focus.action?`<p class="smart-pattern-takeaway">${E(focus.action)}</p>`:''}`:'<p class="smart-copy">Log a few more days to see insights.</p>');
+ const body=noGoals?'<p class="smart-copy">Pick your goals in Profile to personalize this.</p>':(prose?`<p class="smart-pattern-text smart-focus-prose" style="margin-top:8px">${E(prose)}</p>`:(focus?`<div class="smart-pattern-title">${E(focus.headline)}</div>${focus.metric?`<p class="smart-pattern-text">${E(focus.metric)}</p>`:''}${focus.trend?`<p class="smart-pattern-text">${E(focus.trend)}</p>`:''}${focus.action?`<p class="smart-pattern-takeaway">${E(focus.action)}</p>`:''}`:'<p class="smart-copy">A few quiet notes are enough to begin.</p>'));
  return `<section class="smart-section smart-focus" id="smart-focus" aria-labelledby="smart-focus-title"><div class="smart-focus-head"><h3 class="smart-kicker" id="smart-focus-title">Your focus</h3>${chips}</div>${body}</section>`;
 }
 function wireSmartFocus(state){
@@ -3218,10 +3220,8 @@ function wireSmartFocus(state){
   btn.onclick=()=>{
    const g=btn.dataset.goal,extras=state.extras||{};
    if(!extras.focusGoals||!extras.focusGoals.includes(g))return;
-   extras.selectedGoal=g;extras.focus=smartGoalFocus(g,extras.ctx);smartFocusGoal=g;
-   const el=document.getElementById('smart-focus');
-   if(el)el.outerHTML=smartFocusHTML(g,extras.focusGoals,extras.noGoals,extras.focus);
-   wireSmartFocus(state);
+   smartFocusGoal=g;
+   insights();
   };
  });
 }
@@ -3398,7 +3398,14 @@ function smartInsightsHTML(pred,current,patterns,viewerName,aiMap,extras){
  const comingHtml=smartComingUpHTML(extras.comingUp||null,{registry});
 
  const sections=smartSectionOrder(goal).map(k=>k==='week'?weekCmpHtml:comingHtml).filter(Boolean).join('');
- const weekCard=(extras.weekCard&&!extras.ro)?smartWeekHTML(extras.weekCard,extras.weekOpts||{}):'';
+ const proseCtx=extras.ctx||{current,pred,todayStr:(typeof today==='function'?today():''),logs:{} };
+ const proseExtras=Object.assign({},extras,{ctx:proseCtx});
+ const weekProse=(extras.weekCard&&!extras.ro)?smartWeekProse(proseExtras):null;
+ const weekHtml=weekProse&&weekProse.lead?`<section class="smart-section smart-week" id="smart-week" aria-labelledby="smart-week-title"><p class="smart-kicker" id="smart-week-title">Your week</p><p class="smart-week-lead">${E(weekProse.lead)}</p><p class="smart-week-body">${E([weekProse.body,weekProse.closer].filter(Boolean).join(' '))}</p></section>`:'';
+ const focusProse=(focusRendered&&!noGoals)?smartFocusProse(goal,proseExtras,focusToShow||null):null;
+ const knowProse=smartKnowledgeProse(goal,proseExtras);
+ const nextProse=smartNextProse(goal);
+ const emptyHint=smartEmptyPatternLine((proseCtx&&proseCtx.logs)||{});
 
  // Patterns: filter by registry evidence ids
  const patsToShow=(patterns||[]).filter(p=>{
@@ -3417,12 +3424,12 @@ function smartInsightsHTML(pred,current,patterns,viewerName,aiMap,extras){
   <div class="smart-hero-art">${smartArt('insight')}</div>
  </header>
  ${cycleHtml}
- ${weekCard}
- ${extras.ro?'':smartFocusHTML(goal,goals,noGoals,focusToShow||null)}
+ ${weekHtml}
+ ${extras.ro?'':smartFocusHTML(goal,goals,noGoals,focusToShow||null,focusProse)}
  ${sections}
- <section class="smart-section" aria-labelledby="smart-patterns-title"><h3 class="smart-kicker" id="smart-patterns-title">Patterns</h3>${smartPatternsHTML(patsToShow)}</section>
- ${smartKnowledgeFor(goal)?`<section class="smart-section" aria-labelledby="smart-know-title"><h3 class="smart-kicker" id="smart-know-title">Good to know</h3><p class="smart-copy">${E(smartKnowledgeFor(goal))}</p></section>`:''}
- ${extras.ro?'':`<section class="smart-section smart-cta" aria-labelledby="smart-cta-title"><h3 class="smart-kicker" id="smart-cta-title">Your next step</h3><p class="smart-pattern-takeaway">${E(smartCTALabel(goal))}</p><button class="btn" id="smart-cta" data-action="${E(smartCTAFor(goal))}" style="width:100%;margin-top:8px">${E(smartCTALabel(goal))}</button></section>`}
+ <section class="smart-section" aria-labelledby="smart-patterns-title"><h3 class="smart-kicker" id="smart-patterns-title">Patterns</h3>${smartPatternsHTML(patsToShow,emptyHint)}</section>
+ ${knowProse?`<section class="smart-section" aria-labelledby="smart-know-title"><h3 class="smart-kicker" id="smart-know-title">Good to know</h3><p class="smart-copy">${E(knowProse)}</p></section>`:''}
+ ${extras.ro?'':`<section class="smart-section smart-cta" aria-labelledby="smart-cta-title"><h3 class="smart-kicker" id="smart-cta-title">Your next step</h3><p class="smart-pattern-text" style="margin-top:2px">${E(nextProse)}</p><button class="btn" id="smart-cta" data-action="${E(smartCTAFor(goal))}" style="width:100%;margin-top:10px">${E(smartCTALabel(goal))}</button></section>`}
  `;
 }
 function clearLegacySmartAIStorage(){
@@ -3474,6 +3481,178 @@ function dirWordVar(now,prev,dateStr,finding){
  const words=up?['up','increased','higher']:['down','decreased','lower'];
  const idx=smartWeekVariantIndex(key+'-'+(up?'up':'down'),words.length,dateStr);
  return words[idx]||words[0];
+}
+function smartPlainPhase(label){
+ const t=String(label||'').toLowerCase();
+ if(t.indexOf('menstrual')>=0)return 'your period';
+ if(t.indexOf('follicular')>=0)return 'the week after your period';
+ if(t.indexOf('ovulat')>=0)return 'around ovulation';
+ if(t.indexOf('luteal')>=0)return 'the week before your period';
+ return 'this stretch of your cycle';
+}
+function smartPeriodInfo(extras){
+ const c=(extras&&extras.ctx)||{},f=(extras&&extras.weekFacts)||{},pred=c.pred||{},cur=c.current||{};
+ let days=null,state=cur.state||'';
+ const cu=extras&&extras.comingUp;
+ const candidates=[];
+ if(pred.expected&&c.todayStr){try{const d=spDayDiff(c.todayStr,pred.expected);if(Number.isFinite(d))candidates.push(d)}catch(e){}}
+ if(cu&&Number.isFinite(+cu.daysToPeriod))candidates.push(+cu.daysToPeriod);
+ if(Number.isFinite(+f.daysToPeriod))candidates.push(+f.daysToPeriod);
+ if(candidates.length)days=Math.min.apply(null,candidates);
+ if(state!=='estimated'&&(Number.isFinite(+f.cycleDay)||days!=null))state='estimated';
+ if(days!=null&&days<0)days=0;
+ const known=state==='estimated'&&days!=null;
+ return {days,known,near:known&&days<=7,state,phase:smartPlainPhase(cur.phaseLabel||f.phaseLabel||'')};
+}
+function smartDirFromWeek(extras,label){
+ const own=(extras&&extras.week)||[];
+ const list=own.length?own:((extras&&extras.weekFacts&&extras.weekFacts.week)||[]);
+ const w=list.find(x=>x&&x.label===label);
+ if(!w)return null;
+ const n=+w.now,p=+w.prev;
+ if(!Number.isFinite(n)||!Number.isFinite(p))return null;
+ const d=n-p;
+ return d>=.3?'up':d<=-.3?'down':'flat';
+}
+function smartDirFromFocus(extras){
+ const tr=String((extras&&extras.focus&&extras.focus.trend)||'');
+ const m=tr.match(/^(\d+(?:\.\d+)?)\s+vs\s+(\d+(?:\.\d+)?)/);
+ if(!m)return null;
+ const n=+m[1],p=+m[2];
+ return n>p?'up':n<p?'down':'flat';
+}
+function smartPickLine(lines,key,dateStr){
+ if(!Array.isArray(lines)||!lines.length)return '';
+ const idx=smartWeekVariantIndex(String(key||''),lines.length,dateStr||'');
+ return lines[idx]||lines[0];
+}
+function smartWeekProse(extras){
+ extras=extras||{};
+ const ctx=extras.ctx||{},date=ctx.todayStr||'';
+ const goal=extras.selectedGoal||(extras.focusGoals||[])[0]||'Understand my cycle';
+ const period=smartPeriodInfo(extras);
+ const energyDir=smartDirFromWeek(extras,'Energy');
+ const sleepDir=smartDirFromWeek(extras,'Sleep');
+ const stressDir=smartDirFromWeek(extras,'Stress');
+ const actionDir=smartDirFromFocus(extras);
+ let lead='',body='',closer='';
+ if(goal==='Understand my cycle'){
+  if(period.state!=='estimated'){
+   lead=smartPickLine(['Your cycle is still finding its shape, and each note makes the timing clearer.','Your cycle is still learning its rhythm, and the picture grows with every quiet note.'],'cycle-open',date);
+   body='There is no perfect way to begin. A line about how today feels is enough.';
+  }else if(period.near){
+   lead=smartPickLine(['Your cycle sits in the quiet stretch just before your period.','Your cycle has reached the softer stretch before your period.'],'cycle-near',date);
+   body='The days ahead usually ask for a little more rest and a little more patience. Leave room for both, and the timing will keep getting clearer.';
+  }else{
+   lead=smartPickLine(['Your cycle is moving through its middle stretch, where energy often feels a little more even.','Your cycle is in its steadier middle stretch, with a little more room to spare.'],'cycle-far',date);
+   body='This is a good window to notice what feels steady, so the contrast later is easier to read.';
+  }
+ }else if(goal==='Steadier energy'){
+  if(energyDir==='up')lead=smartPickLine(['Energy held steadier this week, with fewer sharp dips than the week before.','Energy came in steadier this week, and the low points were gentler.'],'energy-up',date);
+  else if(energyDir==='down')lead=smartPickLine(['Energy dipped lower than the week before, and the low days were not spread evenly.','Energy ran lower than the week before, with a few days pulling the week down.'],'energy-down',date);
+  else if(energyDir==='flat')lead=smartPickLine(['Energy stayed close to its usual range this week.','Energy held near its usual level this week, calm rather than flat.'],'energy-flat',date);
+  else lead='Energy is the goal you chose, and the week is still taking shape.';
+  if(energyDir==='up')body='The steadier days lined up with fuller nights of sleep.';
+  else if(period.near)body='The stretch before your period can pull energy down, so this reads as timing more than effort.';
+  else body='Small changes in sleep and food often show up here first.';
+ }else if(goal==='Better sleep'){
+  if(sleepDir==='down')lead=period.near?'Sleep slipped this week, and most of the shorter nights came just before your period.':smartPickLine(['Sleep slipped this week, and the shorter nights clustered closer together.','Sleep ran shorter than the week before, and the short nights arrived together.'],'sleep-down',date);
+  else if(sleepDir==='up')lead=smartPickLine(['Sleep came easier this week, with longer nights than the week before.','Sleep stretched out this week, with longer nights than the week before.'],'sleep-up',date);
+  else if(sleepDir==='flat')lead=smartPickLine(['Sleep held close to where it was last week, steady rather than perfect.','Sleep stayed near last week, steady rather than perfect.'],'sleep-flat',date);
+  else lead='Sleep is the goal you chose, and the week is still taking shape.';
+  if(sleepDir==='down'&&period.near)body='Your body often asks for more rest then. An earlier bedtime on those nights is a small answer, and it gives next week a fairer start.';
+  else if(sleepDir==='up')body='Keep the evening that helped, even on nights you do not feel tired.';
+  else if(sleepDir==='down'||sleepDir==='flat')body='A steady wind-down is the smallest lever you have, and it tends to show in the next week rather than tonight.';
+  else body='One logged night is enough to begin.';
+ }else if(goal==='Move more'){
+  if(actionDir==='up')lead=smartPickLine(['You moved more often than the week before, and the active days tended to sit with better energy.','Movement came more often this week, and the active days sat with better energy.'],'move-up',date);
+  else if(actionDir==='down')lead=smartPickLine(['Movement was lighter than the week before, and the quiet days lined up with lower energy.','Movement eased off this week, and the quiet days lined up with lower energy.'],'move-down',date);
+  else if(actionDir==='flat')lead=smartPickLine(['Movement held about the same as the week before, steady and unforced.','Movement stayed near last week, steady and unforced.'],'move-flat',date);
+  else lead='Movement is the goal you chose, and the week is still taking shape.';
+  if(actionDir==='down')body='That reads as your body asking for a different pace, not a missed mark. A short walk on an open day is a kind way back in.';
+  else if(actionDir==='up')body='That is worth noticing. Keep the days that feel easy, rather than adding more.';
+  else body='A short walk on an open day is a gentle way to lift the week.';
+ }else if(goal==='Eat regularly'){
+  if(actionDir==='up')lead=smartPickLine(['Meals were planned more consistently than the week before, with most days covered.','Meals landed more consistently this week, with most days covered.'],'eat-up',date);
+  else if(actionDir==='down')lead=smartPickLine(['Meals were planned on most days, though one slot kept slipping.','Most meals were planned, though one slot kept slipping.'],'eat-down',date);
+  else if(actionDir==='flat')lead=smartPickLine(['Meals held a steady rhythm this week.','Meals kept a steady rhythm this week.'],'eat-flat',date);
+  else lead='Meal planning is the goal you chose, and the week is still taking shape.';
+  if(actionDir==='down')body='The gap is easy to spot once the week is laid out, and easy to close one day at a time. A little planning goes further than a perfect plan.';
+  else body='A little planning goes further than a perfect plan.';
+ }else if(goal==='Manage stress'){
+  if(stressDir==='up')lead=period.near?'Stress pressed higher than the week before, and most of it gathered in the days before your period.':smartPickLine(['Stress pressed higher than the week before, and the rise was hard to miss.','Stress climbed this week, and the rise was hard to miss.'],'stress-up',date);
+  else if(stressDir==='down')lead=smartPickLine(['Stress eased compared with the week before, and the calmer days were easier to find.','Stress settled a little this week, and the calmer days were easier to find.'],'stress-down',date);
+  else if(stressDir==='flat')lead=smartPickLine(['Stress held near its usual level this week.','Stress stayed near its usual level this week.'],'stress-flat',date);
+  else lead='Stress is the goal you chose, and the week is still taking shape.';
+  if(stressDir==='up'&&period.near)body='That stretch asks a lot of the body, and seeing it early makes room to soften it.';
+  else if(stressDir==='up')body='A routine you can reach for on the hard days does more than a plan saved for later.';
+  else if(stressDir==='down')body='Keep the small things that helped, because they are easier to repeat than to invent.';
+  else body='Small routines tend to help more than big plans.';
+ }else if(goal==='Prepare for doctor visits'){
+  lead='Your records are gathered into one calm summary, ready to speak for you.';
+  body='Bring the questions you keep circling, because they belong in the room. You do not have to hold all of it in your head.';
+ }
+ return {lead,body,closer};
+}
+function smartFocusProse(goal,extras,focus){
+ extras=extras||{};
+ const period=smartPeriodInfo(extras);
+ const showsPeriod=!!(focus&&focus.metric);
+ const names={'Understand my cycle':'Understanding your cycle','Steadier energy':'Steadier energy','Better sleep':'Better sleep','Move more':'Moving more','Eat regularly':'Eating regularly','Manage stress':'Keeping stress steady'};
+ const name=names[goal]||'This';
+ if(goal==='Understand my cycle'){
+  if(period.state!=='estimated')return 'Understanding your cycle is the goal you chose, and the shape of it is still forming. Keep noting how you feel each day, and the weeks will fill in the rest.';
+  if(period.near&&showsPeriod)return 'Understanding your cycle is the goal you chose, and your period is close enough to watch for a rhythm. Keep noting how you feel each day, and let the timing settle on its own.';
+  return 'Understanding your cycle is the goal you chose, and the shape of it is beginning to show. Keep noting how you feel each day, and let the weeks fill in the rest.';
+ }
+ if(goal==='Prepare for doctor visits')return 'A clear visit summary is the goal you chose, and the pieces are already in place. Read it once before you go, and add anything the week brings.';
+ const dir=goal==='Better sleep'?smartDirFromWeek(extras,'Sleep'):goal==='Steadier energy'?smartDirFromWeek(extras,'Energy'):goal==='Manage stress'?smartDirFromWeek(extras,'Stress'):(goal==='Move more'||goal==='Eat regularly')?smartDirFromFocus(extras):null;
+ const stressGoal=goal==='Manage stress';
+ const positive=stressGoal?dir==='down':dir==='up';
+ const negative=stressGoal?dir==='up':dir==='down';
+ const frame=positive?`${name} is the goal you chose, and this week leaned your way.`:negative?`${name} is the goal you chose, and this week asked more of you than it gave back.`:dir==='flat'?`${name} is the goal you chose, and this week held close to your usual.`:`${name} is the goal you chose, and the week is still taking shape.`;
+ const advice={
+  'Steadier energy':'Plan the harder tasks for the hours that usually feel lighter, and let the quieter hours stay quiet.',
+  'Better sleep':'Choose one quiet cue before bed and repeat it for a week or two, then see what changes.',
+  'Move more':'Start with a walk you would take anyway, and let it count.',
+  'Eat regularly':'Fill the meal that keeps going missing, and let the rest stay simple.',
+  'Manage stress':'One small routine, kept on the hard days, does more than a big plan saved for later.'
+ }[goal]||'Keep noting how you feel each day, and the picture will fill in.';
+ return frame+' '+advice;
+}
+function smartKnowledgeProse(goal,extras){
+ const pred=(extras&&extras.ctx&&extras.ctx.pred)||{};
+ const steady=Number(pred.validCount)>=4;
+ const map={
+  'Understand my cycle':steady?'Cycle timing is a rough guess drawn from your own history, so it can move by a few days. The more history you add, the steadier it becomes.':'Cycle timing is a rough guess drawn from your own history, so it can move by a few days. A shift is normal while the history is still new.',
+  'Steadier energy':'Energy is your own reading of the day, so it reflects how you felt, not how much you did. Comparing weeks shows change without judging it.',
+  'Better sleep':'Sleep length and sleep quality are separate, so a long night can still feel poor. One without the other only tells half the story.',
+  'Move more':'A day counts as active here once you move for a stretch, not all at once. Small pieces add up the same.',
+  'Eat regularly':'A planned meal is a note to yourself, not proof that you ate it. The plan is there to make the day easier, not to keep score.',
+  'Manage stress':'A stress rating is your own reading of the day, not a measure of how well you coped. A higher reading is information, not failure.',
+  'Prepare for doctor visits':'This summary holds your own notes for a visit, and it does not replace what a clinician sees in person. It is a starting point for the conversation, not a verdict.'
+ };
+ return map[goal]||'';
+}
+function smartNextProse(goal){
+ const map={
+  'Understand my cycle':'A line about today is enough to keep the picture growing.',
+  'Steadier energy':'One check-in tonight keeps the comparison honest.',
+  'Better sleep':'One honest night is all this week still needs.',
+  'Move more':'A few minutes outside today would give next week a warmer start.',
+  'Eat regularly':'One missing meal is all this week needs from you.',
+  'Manage stress':'A quiet minute before the day starts is enough.',
+  'Prepare for doctor visits':'One more note now makes the summary more complete.'
+ };
+ return map[goal]||'One small note is enough to begin.';
+}
+function smartEmptyPatternLine(logs){
+ const p=smartProgress(logs||{});
+ const hint=((p&&p.hints)||[])[0]||'';
+ const m=hint.match(/^Log (.+?) on (\d+) more days?/);
+ if(!m)return 'A few quiet notes are enough to begin.';
+ const n=+m[2],words={1:'one',2:'two',3:'three',4:'four'};
+ return `Log ${m[1]} on ${words[n]||'a few'} more ${n===1?'day':'days'} and a gentle picture will start to appear.`;
 }
 // @test-end smart
 
