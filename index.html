@@ -179,7 +179,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;
 .segwrap button[aria-pressed="true"]{background:#FFFBF5;color:#3A2E33;box-shadow:0 2px 6px rgba(120,70,80,.12)}
 body.ro .segwrap{background:#E7EEF3}
 body.ro .segwrap button[aria-pressed="true"]{background:#FAFCFD;color:#2A353D}
-#snm{margin:2px 0 6px !important}#sChg{margin-top:0 !important}
 .ringwrap svg{position:relative;z-index:1;width:100%;height:100%;display:block}
 
 /* Stats */
@@ -832,8 +831,20 @@ function seedOwnDoc(ownDoc,cachedDoc,pname,pavatar){
 }
 // @test-end ownmode
 // @test-begin planui
-function shareFlags(doc){const s=((doc&&doc.p&&doc.p.share)||'');return{state:s==='shared'?'shared':s==='private'?'private':'default',tasks:s!=='private',meals:s!=='private',journal:s==='shared'}}
-function plannerTabSet(mine,showJournal){const t=[['day','Today'],['week','Week'],['meals','Meals']];if(mine||showJournal)t.push(['journal','Journal']);return t}
+function shareBool(v,def){return typeof v==='boolean'?v:v==='true'?true:v==='false'?false:def}
+function shareFlags(doc){
+ const s=doc&&doc.p&&doc.p.share;
+ if(isPlainObject(s)){
+  const tasks=shareBool(s.tasks,true),meals=shareBool(s.meals,true),journal=shareBool(s.journal,false);
+  return{state:tasks&&meals&&journal?'shared':!tasks&&!meals&&!journal?'private':'custom',tasks,meals,journal};
+ }
+ const str=typeof s==='string'?s:'';
+ return{state:str==='shared'?'shared':str==='private'?'private':'default',tasks:str!=='private',meals:str!=='private',journal:str==='shared'};
+}
+function plannerTabSet(mine,flags){
+ const f=typeof flags==='boolean'?{tasks:true,meals:true,journal:flags}:(flags||{tasks:true,meals:true,journal:false});
+ const t=[];if(mine||f.tasks!==false)t.push(['day','Today'],['week','Week']);if(mine||f.meals!==false)t.push(['meals','Meals']);if(mine||f.journal)t.push(['journal','Journal']);return t;
+}
 function ringPillBare(state,irregular){return state==='estimated'&&!!irregular}
 function peerLabel(sharedName,profName,fallback){return String(sharedName||profName||'').trim()||fallback||'Follower'}
 // @test-end planui
@@ -857,7 +868,7 @@ function validateBackup(obj){
  const idOk=x=>isPlainObject(x)&&(typeof x.id==='string'||typeof x.id==='number');
  if(out.tasks)out.tasks=out.tasks.filter(idOk).slice(0,5000);
  if(out.journal)out.journal=out.journal.filter(idOk).slice(0,5000);
- if(isPlainObject(out.p)){const pk=['name','avatar','avatarCrop','bud','waterGoal','goals','done','role'];const np={};pk.forEach(k=>{if(k in out.p)np[k]=out.p[k]});out.p=np;if(out.p.avatar!=null&&!(typeof out.p.avatar==='string'&&out.p.avatar.startsWith('data:image/')&&out.p.avatar.length<400000))delete out.p.avatar}
+ if(isPlainObject(out.p)){const pk=['name','avatar','avatarCrop','bud','waterGoal','goals','done','role','share'];const np={};pk.forEach(k=>{if(k in out.p)np[k]=out.p[k]});out.p=np;if(out.p.avatar!=null&&!(typeof out.p.avatar==='string'&&out.p.avatar.startsWith('data:image/')&&out.p.avatar.length<400000))delete out.p.avatar}
  if('cons' in out&&typeof out.cons!=='boolean')delete out.cons;
  if('savedAt' in out&&!(typeof out.savedAt==='number'&&Number.isFinite(out.savedAt)))delete out.savedAt;
  const capStr=v=>{
@@ -991,7 +1002,7 @@ async function sbAfterLoginOnce(u){ownMode=false;ownStash=null;ownLoaded=false;o
  save();restoreNav();shell();
  startCloudSync();
  setTimeout(()=>{try{reminderSync(true)}catch(e){}},1200);
- toast('Signed in \u00b7 syncing')}
+}
 let afterLoginInFlight=null,afterLoginUid='';
 function sbAfterLogin(u){
  if(!u)return Promise.resolve();
@@ -1179,8 +1190,7 @@ async function exitPartnerNow(){
 function roPage(){
  const mail=(user||'').toLowerCase();
  let mine=null;try{mine=J(key(mail),null)}catch(e){}
- const myShare=shareFlags(mine||{}).state;
- const ownerNm=(D.p&&D.p.name)||'partner';
+ const myShare=shareFlags(mine||{});
  const c=cycleStats(),len=c.avg||28,cycle=dashboardCycle();let sum='No cycle logged yet';
  if(cycle.state==='estimated')sum='Day '+cycle.cycleDay+' \u00b7 '+cycle.phase;
  else if(cycle.state==='overdue')sum='Expected period date has passed';
@@ -1194,25 +1204,26 @@ function roPage(){
   </div>
  <div class="card"><div class="card-h"><h3>Following</h3></div><div class="row" style="gap:12px;align-items:center">${avatarHTML(56)}<div style="min-width:0"><b style="display:block">${E((D.p&&D.p.name)||'partner')}</b></div></div><button class="btn ghost" id="exv" style="width:100%;margin-top:14px">Exit ${E((D.p&&D.p.name)||'partner')}'s view</button></div>
 <div class="card"><div class="card-h"><h3>What I share</h3></div>
- <label class="row sp" style="color:var(--ink);cursor:pointer"><span style="min-width:0"><b style="display:block">Share my planner with ${E(ownerNm)}</b><span class="meta">${myShare==='private'?'Private \u00b7 nothing shared':myShare==='shared'?'Tasks, meals and journal shared':'Tasks and meals shared \u00b7 journal private'}</span></span><input type="checkbox" id="myShare" style="width:22px;margin:0;flex:0 0 auto" ${myShare!=='private'?'checked':''}></label>
- <p class="meta" style="margin:10px 0 0">Your own planner syncs to your account either way.</p></div>
+ <div style="display:flex;flex-direction:column;gap:10px">
+  <label class="row sp" style="color:var(--ink);cursor:pointer"><span><b>Tasks</b></span><input type="checkbox" id="myShareTasks" style="width:22px;margin:0;flex:0 0 auto" ${myShare.tasks?'checked':''}></label>
+  <label class="row sp" style="color:var(--ink);cursor:pointer"><span><b>Meals</b></span><input type="checkbox" id="myShareMeals" style="width:22px;margin:0;flex:0 0 auto" ${myShare.meals?'checked':''}></label>
+  <label class="row sp" style="color:var(--ink);cursor:pointer"><span><b>Journal</b></span><input type="checkbox" id="myShareJournal" style="width:22px;margin:0;flex:0 0 auto" ${myShare.journal?'checked':''}></label>
+ </div></div>
    <div class="card"><button class="btn ghost" id="stg" style="width:100%">Settings</button></div>
-   <button class="btn ghost" id="lo" style="width:100%">Sign out</button>
-<p class="meta" style="margin-top:8px;text-align:center">Signing out keeps this pairing. Their data stays untouched.</p>`;
+   <button class="btn ghost" id="lo" style="width:100%">Sign out</button>`;
   $('#exv').onclick=exitPartner;
-  $('#myShare').onchange=e=>setFollowerShare(e.target.checked?'shared':'private');
+  [['myShareTasks','tasks'],['myShareMeals','meals'],['myShareJournal','journal']].forEach(([id,key])=>{const el=document.getElementById(id);if(el)el.onchange=e=>setFollowerShareFlag(key,e.target.checked)});
   $('#stg').onclick=()=>{view='settings';shell()};
   $('#rpav').onchange=e=>{const f=e.target.files&&e.target.files[0];e.target.value='';if(f)roPickAvatar(f)};
   $('#lo').onclick=logout;}
 
-async function setFollowerShare(share){
+async function setFollowerShareFlag(key,val){
  if(!sbUser)return;
  const backView=view,backPanel=planPanel;
  try{
   if(!ownMode)await enterOwnMode();
-  D.p=D.p||{};D.p.share=share;save();
-  try{await sbPush()}catch(e){reportErr('share.push',e)}
-  toast(share==='shared'?'Sharing on':'Sharing private');
+  if(!ownMode)return;
+  if(saveShareFlags(key,val)){try{await sbPush()}catch(e){reportErr('share.push',e)}}
  }catch(e){reportErr('share.follower',e);toast('Could not update sharing')}
  if(ownMode)exitOwnMode(true);
  view=backView;planPanel=backPanel;shell();
@@ -1499,7 +1510,7 @@ async function fetchManifest(){const bust='?t='+Date.now();
  const r=await fetch(UPDATE_MANIFEST+bust,{cache:'no-store'});if(!r.ok)throw new Error('manifest '+r.status);
  return await r.json()}
 // Baked-in build identity. Keep in sync with android/app/build.gradle (versionCode/versionName).
-const APP_VERSION={code:79,name:'1.2.64'};
+const APP_VERSION={code:80,name:'1.2.65'};
 const UPD_SKIP_KEY='bloom_upd_skip';
 const updater=()=>{const C=window.Capacitor;if(!C)return null;
  const P=C.Plugins&&C.Plugins.BloomUpdater;
@@ -2262,9 +2273,8 @@ function planner(){tab=tab||'day';
  if(mine&&RO&&!ownMode){enterOwnMode();return}
  const src=mine?D:(RO?D:(peekDoc||null));
  const flags=mine?{tasks:true,meals:true,journal:true}:shareFlags(src||{});
- const showJ=mine?true:!!flags.journal;
- if(!showJ&&tab==='journal')tab='day';
- const tabs=plannerTabSet(mine,showJ);
+ const tabs=plannerTabSet(mine,flags);
+ if(!tabs.some(t=>t[0]===tab))tab=(tabs[0]||['day'])[0];
  const seg=partner?`<div class="segwrap" role="tablist" aria-label="Whose planner"><button type="button" data-pp="mine" aria-pressed="${mine}">Mine</button><button type="button" data-pp="partner" aria-pressed="${!mine}">${E(pp.name)}</button></div>`:'';
  $('#main').innerHTML=`<h1>Planner</h1>${seg}<div class="tabsrow" role="tablist">${tabs.map(([k,l])=>`<button class="chip" role="tab" data-tb="${k}" aria-pressed="${tab==k}">${l}</button>`).join('')}</div><div id="pb" style="margin-top:12px"></div>`;
  document.querySelectorAll('[data-tb]').forEach(b=>b.onclick=()=>{tab=b.dataset.tb;planner()});
@@ -2274,8 +2284,8 @@ function planner(){tab=tab||'day';
  if(!mine&&!src){
   if(!RO&&!peekDoc)loadPeek(true);
   $('#pb').innerHTML='<div class="card"><p class="meta" style="margin:0">Loading\u2026</p></div>';return}
- if(!mine&&!flags.tasks){
-  $('#pb').innerHTML=`<div class="card"><div class="card-h"><h3>Private</h3></div><p class="meta" style="margin:0">Planner is private. Cycle stays shared.</p></div>`;return}
+ if(!mine&&(tab==='day'||tab==='week')&&!flags.tasks){
+  $('#pb').innerHTML=`<div class="card"><div class="card-h"><h3>Private</h3></div><p class="meta" style="margin:0">Tasks are private.</p></div>`;return}
  const ro=!mine;
  ({day:()=>pDay(src,ro),week:()=>pWeek(src,ro),meals:()=>pMeals(src,ro),journal:()=>pJournal(src,ro)})[tab]();
 }
@@ -2337,7 +2347,6 @@ function pJournal(src,ro){const doc=src||D,only=ro==null?RO:ro;
  $('#pb').innerHTML=`<div class="card" style="gap:10px">
   <h2 style="margin:0;font-size:1.35rem">Journal</h2>
   <p class="meta" style="margin:0">Your space, your pace.</p>
-  <label for="jTitle">Title <span class="meta">(optional)</span></label>
   <input id="jTitle" maxlength="80" placeholder="Give it a title" aria-label="Journal title">
   <textarea id="jt" rows="5" placeholder="Write something..." aria-label="Journal entry"></textarea>
   <div class="err" id="er"></div>
@@ -4066,6 +4075,19 @@ async function ownerPairing(){
    let shName=null;try{const s=await cl.from('bloom_shared').select('doc').eq('user_id',data[0].partner_id).maybeSingle();const p=s&&s.data&&s.data.doc&&s.data.doc.p;if(p&&p.name)shName=String(p.name)}catch(e){reportErr('partner.shared',e)}
   return{row:data[0],prof,shName};
  }catch(e){return null}}
+function saveShareFlags(key,val){
+ if(!D||RO)return false;
+ if(!isPlainObject(D.p))D.p={};
+ const f=shareFlags(D);
+ D.p.share={tasks:f.tasks,meals:f.meals,journal:f.journal};D.p.share[key]=!!val;
+ save();return true;
+}
+function setOwnerShareFlag(key,val){
+ if(RO||!D)return;
+ if(!saveShareFlags(key,val))return;
+ toast((key==='tasks'?'Tasks':key==='meals'?'Meals':'Journal')+(val?' shared':' private'));
+ if(view==='me'&&!RO)loadPairCard();
+}
 async function loadPairCard(){
  const box=document.getElementById('pairCard');if(!box||RO)return;
  const st=await ownerPairing();
@@ -4073,16 +4095,15 @@ async function loadPairCard(){
  if(!st||!document.body.contains(box))return;
   const nm=(st.prof&&st.prof.name)||'Your follower',av=(st.prof&&st.prof.avatar)||null;
   const sh=shareFlags(D||{});
-  box.innerHTML=`<div class="card-h"><h3>Follower</h3></div>
+  box.innerHTML=`<div class="card-h"><h3>What I share</h3></div>
   <button class="pairrow" id="folRow" aria-label="Stop sharing with ${E(nm)}">${av?`<span class="avatar-wrap" style="width:56px;height:56px"><img class="avatar" src="${E(av)}" alt=""></span>`:`<span class="avatar-fb" style="width:56px;height:56px;font-size:20px">${E(nm.charAt(0).toUpperCase())}</span>`}<div style="min-width:0"><b style="display:block">${E(nm)}</b></div><span class="chev" aria-hidden="true">\u203a</span></button>
-  <label class="row sp" style="color:var(--ink);cursor:pointer;margin-top:14px"><span style="min-width:0"><b style="display:block">Share my planner</b><span class="meta">${sh.state==='private'?'Private \u00b7 cycle only':sh.state==='shared'?'Tasks, meals and journal':'Tasks and meals \u00b7 journal private'}</span></span><input type="checkbox" id="ownShare" style="width:22px;margin:0;flex:0 0 auto" ${sh.state!=='private'?'checked':''}></label>`;
+  <div style="display:flex;flex-direction:column;gap:10px;margin-top:14px">
+   <label class="row sp" style="color:var(--ink);cursor:pointer"><span><b>Tasks</b></span><input type="checkbox" id="ownShareTasks" style="width:22px;margin:0;flex:0 0 auto" ${sh.tasks?'checked':''}></label>
+   <label class="row sp" style="color:var(--ink);cursor:pointer"><span><b>Meals</b></span><input type="checkbox" id="ownShareMeals" style="width:22px;margin:0;flex:0 0 auto" ${sh.meals?'checked':''}></label>
+   <label class="row sp" style="color:var(--ink);cursor:pointer"><span><b>Journal</b></span><input type="checkbox" id="ownShareJournal" style="width:22px;margin:0;flex:0 0 auto" ${sh.journal?'checked':''}></label>
+  </div>`;
  const row=document.getElementById('folRow');if(row)row.onclick=()=>stopShareSheet(nm);
- const os=document.getElementById('ownShare');
- if(os)os.onchange=e=>{
-  D.p=D.p||{};D.p.share=e.target.checked?'shared':'private';save();
-  toast(e.target.checked?'Sharing on':'Sharing private');
-  if(view==='me')loadPairCard();
- };
+ [['ownShareTasks','tasks'],['ownShareMeals','meals'],['ownShareJournal','journal']].forEach(([id,key])=>{const el=document.getElementById(id);if(el)el.onchange=e=>setOwnerShareFlag(key,e.target.checked)});
 }
 function stopShareSheet(name){
  const who=name?E(name)+' will lose access right away.':'That code stops working right away.';
@@ -4287,10 +4308,9 @@ function settingsPage(){
  const bkRestore=bkOk?'<button class="btn ghost" id="sRestore" style="width:100%">Restore last safety copy</button>':'';
  $('#main').innerHTML=`<button class="btn ghost" id="bk" style="margin-bottom:10px">‹ Back</button><h1>Settings</h1>
  <div class="card">
-  <div class="card-h"><h3>Name</h3></div>
-  <label for="snm">Nickname</label><input id="snm" maxlength="30" value="${E(nm)}" readonly>
-  <button class="btn ghost" id="sChg" style="margin-top:8px">Change name</button>
-  <p class="meta" style="margin:8px 0 0">${RO?'Shown to your partner in read-only view.':'You can change it once a week.'}</p>
+  <div class="card-h"><h3>Nickname</h3></div>
+  <div style="font-size:1.15rem;font-weight:600;color:var(--ink);margin:2px 0 12px;word-break:break-word">${E(nm)}</div>
+  <button class="btn ghost" id="sChg" style="width:100%">Change name</button>
  </div>
  <div class="card">
   <div class="card-h"><h3>Password</h3></div>
@@ -4306,9 +4326,9 @@ function settingsPage(){
     ${RO?'<p class="meta" style="margin:10px 0 0">To use Bloom for yourself, exit the partner’s view.</p>':''}
    </div>
    <div class="card"><div class="card-h"><h3>Sync</h3></div><p class="meta" id="syncLine" style="margin:0 0 10px">${E(syncLineText())}</p><div class="row" style="gap:10px"><button class="btn ghost" id="syncNow" style="flex:1">Sync now</button><button class="btn ghost" id="syncCopy" style="flex:1">Copy diagnostics</button></div></div>
-    ${RO?'<div class="card"><div class="card-h"><h3>Your data</h3></div><p class="meta" style="margin:0 0 10px">Delete your sign-in account and your profile copy. The person you follow keeps everything.</p><button class="btn pink" id="sDelAcct" style="width:100%">Delete my account</button></div>':'<div class="card"><div class="card-h"><h3>Your data</h3></div><p class="meta" style="margin:0 0 10px">Erase all your logs, meals, tasks and journal from this phone and the cloud. Your partner loses access. Your sign-in account itself is not deleted.</p><button class="btn pink" id="sDel" style="width:100%">Delete all my data</button><button class="btn ghost" id="sDelAcct" style="width:100%">Delete my account</button><button class="btn ghost" id="sExp" style="width:100%">Export backup</button><button class="btn ghost" id="sImp" style="width:100%">Import backup</button>'+bkRestore+'</div>'}
+    ${RO?'<div class="card"><div class="card-h"><h3>Your data</h3></div><button class="btn pink" id="sDelAcct" style="width:100%">Delete my account</button></div>':'<div class="card"><div class="card-h"><h3>Your data</h3></div><button class="btn pink" id="sDel" style="width:100%">Delete all my data</button><button class="btn ghost" id="sDelAcct" style="width:100%">Delete my account</button><button class="btn ghost" id="sExp" style="width:100%">Export backup</button><button class="btn ghost" id="sImp" style="width:100%">Import backup</button>'+bkRestore+'</div>'}
    ${widgetSupported()?`<div class="card"><div class="card-h"><h3>Home-screen widgets</h3></div><p class="meta" style="margin:0 0 12px">Two widgets, one tap away.</p><button class="btn ghost" id="wPinTasks" style="width:100%">Add Tasks widget</button><button class="btn ghost" id="wPinWater" style="width:100%;margin-top:8px">Add Water &amp; mood widget</button><p class="meta" id="wNote" style="margin:10px 0 0"></p></div>`:''}
-   <div class="card"><div class="card-h"><h3>App</h3><span class="meta" id="appVer">\u2014</span></div><button class="btn ghost" id="chkUp" style="width:100%">Check for updates</button><p class="meta" style="margin:10px 0 0">Bloom shows patterns from your logs. It is not medical advice.</p></div>`;
+   <div class="card"><div class="card-h"><h3>App</h3><span class="meta" id="appVer">\u2014</span></div><button class="btn ghost" id="chkUp" style="width:100%">Check for updates</button></div>`;
  $('#bk').onclick=()=>{view='me';shell()};
  $('#sChg').onclick=()=>changeNameSheet(nm,async v=>{
   if(RO){

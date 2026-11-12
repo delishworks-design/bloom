@@ -1,7 +1,7 @@
 {
-    "versionCode": 79,
-    "versionName": "1.2.64",
-    "notes": "Fixes sign-in after logging out, so the petal loading screen finishes instead of stopping with an error. Switching between your cycle and your partner still keeps the two separate, and the widget still shows your own day.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.64/bloom-1.2.64.apk",
+    "versionCode": 80,
+    "versionName": "1.2.65",
+    "notes": "Tasks, meals and journal now have their own share switches for both accounts. The stray subtitles are gone, and Settings shows your nickname with a Change name button.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.65/bloom-1.2.65.apk",
     "publishedAt": "2026-11-12"
 }

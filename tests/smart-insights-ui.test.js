@@ -230,8 +230,8 @@ test('Smart Insights has no Cloud AI controls or endpoint', () => {
   assert.equal(html.indexOf('Make this more personal'), -1);
 });
 
-test('the only app disclaimer lives in Settings', () => {
-  assert.equal((html.match(/Bloom shows patterns from your logs\. It is not medical advice\./g) || []).length, 1);
+test('Settings no longer carries a medical disclaimer line', () => {
+  assert.equal((html.match(/Bloom shows patterns from your logs\. It is not medical advice\./g) || []).length, 0);
   assert.ok(html.includes('<h3>App</h3>'));
 });
 
