@@ -1,7 +1,7 @@
 {
-    "versionCode": 78,
-    "versionName": "1.2.63",
-    "notes": "Switching between your cycle and your partner no longer mixes the two, Mine opens instantly with a petal loading screen, signing in shows the same petal animation, and the home-screen widget always shows your own day even while you are following someone.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.63/bloom-1.2.63.apk",
+    "versionCode": 79,
+    "versionName": "1.2.64",
+    "notes": "Fixes sign-in after logging out, so the petal loading screen finishes instead of stopping with an error. Switching between your cycle and your partner still keeps the two separate, and the widget still shows your own day.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.64/bloom-1.2.64.apk",
     "publishedAt": "2026-11-12"
 }
