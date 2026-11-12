@@ -1,7 +1,7 @@
 {
-    "versionCode": 75,
-    "versionName": "1.2.60",
-    "notes": "New: the Planner now shows both of you side by side - swipe between Mine and your partner. Choose what you share (tasks, meals, journal) from Profile. Plus a home-screen widget for tasks, water and mood, hourly water reminders, and a simpler Journal.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.60/bloom-1.2.60.apk",
+    "versionCode": 76,
+    "versionName": "1.2.61",
+    "notes": "Fixed: Mine now stays on the same page as your partner's view, and the Planner shows the other person's real name. New: two home-screen widgets - Tasks, and Water & mood.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.61/bloom-1.2.61.apk",
     "publishedAt": "2026-11-12"
 }
