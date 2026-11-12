@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { load } = require('./load');
 
-const { shareFlags, plannerTabSet, ringPillBare } = load();
+const { shareFlags, plannerTabSet, ringPillBare, peerLabel } = load();
 
 test('shareFlags: absent share keeps legacy tasks/meals shared, journal private', () => {
   const f = shareFlags({ p: {} });
@@ -48,4 +48,12 @@ test('ringPillBare: only the estimated irregular variant drops the pill', () => 
   assert.equal(ringPillBare('estimated', false), false);
   assert.equal(ringPillBare('overdue', true), false);
   assert.equal(ringPillBare('no-history', true), false);
+});
+
+test('peerLabel: shared doc name wins, then profile, then fallback', () => {
+  assert.equal(peerLabel('Schatzie', 'Tintin', 'Follower'), 'Schatzie');
+  assert.equal(peerLabel('', 'Schatzie', 'Follower'), 'Schatzie');
+  assert.equal(peerLabel(null, null, 'Follower'), 'Follower');
+  assert.equal(peerLabel('   ', '  ', 'Follower'), 'Follower');
+  assert.equal(peerLabel('', '', ''), 'Follower');
 });

@@ -831,6 +831,7 @@ function seedOwnDoc(ownDoc,cachedDoc,pname,pavatar){
 function shareFlags(doc){const s=((doc&&doc.p&&doc.p.share)||'');return{state:s==='shared'?'shared':s==='private'?'private':'default',tasks:s!=='private',meals:s!=='private',journal:s==='shared'}}
 function plannerTabSet(mine,showJournal){const t=[['day','Today'],['week','Week'],['meals','Meals']];if(mine||showJournal)t.push(['journal','Journal']);return t}
 function ringPillBare(state,irregular){return state==='estimated'&&!!irregular}
+function peerLabel(sharedName,profName,fallback){return String(sharedName||profName||'').trim()||fallback||'Follower'}
 // @test-end planui
 function backupLocal(){const m=user||(sbUser&&sbUser.email&&sbUser.email.toLowerCase());if(!m||!D)return;try{ST.set('bloom_backup_'+m,JSON.stringify(D))}catch(e){}}
 // @test-begin backup
@@ -897,6 +898,7 @@ let sbPushing=false,sbPushAgain=false;
 function sbScheduleRetry(){if(sbRetryTimer||!sbUser)return;const delays=[15000,30000,60000,120000,300000];const ms=delays[Math.min(Math.max(SYNC.fails-1,0),4)];sbRetryTimer=setTimeout(()=>{sbRetryTimer=null;sbPush()},ms)}
 function sbNoteFailure(e){reportErr('sync.push',e);SYNC.fails++;if(SYNC.fails===3)toast('Cloud sync is having trouble. Your data is safe on this phone.');setSyncState(/fetch|network|ENOTFOUND|ETIMEDOUT|timeout|Failed to fetch/i.test(String(e&&e.message||e))?'offline':'error');sbScheduleRetry()}
 async function sbPush(){if(!sb||!sbUser||RO)return;
+ if(D&&D._uid&&D._uid!==sbUser.id){reportErr('sync.guard','refusing to push another account doc');return}
  if(sbPushing){sbPushAgain=true;return}
  sbPushing=true;
  try{
@@ -935,21 +937,24 @@ async function sbPull(){if(!sb||!sbUser||RO||document.hidden)return;
   const rev=+(data.rev||0);if(rev<=sbRev)return;
   if(JSON.stringify(D)!==sbLastPush)return;
   backupLocal();const row=await sbFetchDocWithRev(sbUser.id);if(!row)return;
-   D=Object.assign(blank(),row.doc);sbRev=row.rev;saveRev();setDirtyFlag(0);sbLastPush=JSON.stringify(D);
+   D=Object.assign(blank(),row.doc);D._uid=sbUser.id;sbRev=row.rev;saveRev();setDirtyFlag(0);sbLastPush=JSON.stringify(D);
    try{ST.set(key(user),JSON.stringify(D))}catch(e){}
   if(safeToRender())shell();else sbPendingRender=true;
  }catch(e){reportErr('sync.pull',e)}}
 function safeToRender(){const sheetEl=document.getElementById('sheet');if(sheetEl&&sheetEl.innerHTML.trim())return false;const a=document.activeElement;return !(a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA'||a.tagName==='SELECT'))}
 function startCloudSync(){if(cloudTimer)clearInterval(cloudTimer);cloudTimer=setInterval(()=>{if(sbUser&&!document.hidden)sbPush()},15000);if(sbPullTimer)clearInterval(sbPullTimer);sbPullTimer=setInterval(sbPull,60000);if(pendRenderTimer)clearInterval(pendRenderTimer);pendRenderTimer=setInterval(()=>{if(sbPendingRender&&safeToRender()){sbPendingRender=false;shell()}},5000)}
-async function sbAfterLogin(u){ownMode=false;ownStash=null;sbUser=u;planPanel='mine';peekDoc=null;peekAt=0;pairInfo=null;
+async function sbAfterLogin(u){ownMode=false;ownStash=null;sbUser=u;planPanel='mine';peekDoc=null;peekAt=0;pairInfo=null;ownPeerName='';
  const mail=(u.email||'').toLowerCase();
  const cached=J(key(mail),null);
-  const keep=Object.assign(blank(),JSON.parse(JSON.stringify(D||cached||blank())));
+  // never seed from the global D here: on a follower device D can hold the followed person's doc,
+  // and copying it into this account's row is how one account's logs leaked into another's.
+  const keep=Object.assign(blank(),JSON.parse(JSON.stringify(cached||blank())));
  const row=await sbFetchDocWithRev(u.id);
  const doc=row?row.doc:null;
  sbRev=row?row.rev:0;
  if(doc){backupLocal();D=chooseLoginDoc(keep,doc,ST.get('bloom_dirty_'+mail))}
  else D=Object.assign(blank(),keep);
+ D._uid=u.id;
   try{const {data:prof}=await sb.from('bloom_profiles').select('*').eq('id',u.id).maybeSingle();
    if(prof){D.p=D.p||{};D.p.name=prof.name||D.p.name;D.p.avatar=prof.avatar||D.p.avatar;D.p.goals=prof.goals&&prof.goals.length?prof.goals:(D.p.goals||[])}}catch(e){reportErr('profile.load',e)}
  D.p=D.p||{};
@@ -1007,7 +1012,7 @@ async function sbSignUp(email,pw){await sbInit();if(!sb)return 'offline';
 // ---------- storage
 const key=u=>'bloom_d_'+u;
 const blank=()=>({p:{},logs:{},tasks:[],done:{},meals:{},journal:[],plan:{},games:{},cons:true,rem:{on:false,time:'20:00'}});
-function save(){if(RO||!user)return;D.savedAt=Date.now();try{ST.set('bloom_dirty_'+user,'1')}catch(e){};ST.set(key(user),JSON.stringify(D));sbPushSoon()}
+function save(){if(RO||!user)return;if(D&&D._uid&&sbUser&&D._uid!==sbUser.id){reportErr('save.guard','doc belongs to another account');return}D.savedAt=Date.now();try{ST.set('bloom_dirty_'+user,'1')}catch(e){};ST.set(key(user),JSON.stringify(D));sbPushSoon()}
 // session must survive an app kill -> localStorage, not sessionStorage
 const setSession=v=>{try{ST.set('bloom_s',v);sessionStorage.setItem('bloom_s',v)}catch(e){}};
 const clearSession=()=>{try{ST.del('bloom_s');sessionStorage.removeItem('bloom_s')}catch(e){}delete mem.s};
@@ -1024,7 +1029,7 @@ async function cloudPairing(){
   return{ok:true,pair:data&&data.length?{owner:data[0].owner_id,code:data[0].code}:null};
  }catch(e){return{ok:false}}}
 async function enterPartnerMode(owner,code,quiet){
- RO=true;ROcloud=true;ROowner=owner;ownMode=false;ownStash=null;planPanel='mine';peekDoc=null;peekAt=0;pairInfo=null;
+ RO=true;ROcloud=true;ROowner=owner;ownMode=false;ownStash=null;planPanel='partner';peekDoc=null;peekAt=0;pairInfo=null;
  if(cloudTimer){clearInterval(cloudTimer);cloudTimer=null}
  try{reminderCancel()}catch(e){}
  if(sbUser&&sbUser.email)user=sbUser.email.toLowerCase();
@@ -1033,9 +1038,14 @@ async function enterPartnerMode(owner,code,quiet){
  // a different account on this phone must not inherit the last follower's name
  try{const pu=ST.get('bloom_puid');if(sbUser&&pu&&pu!==sbUser.id){ST.del('bloom_pname');ST.del('bloom_pavatar')}if(sbUser)ST.set('bloom_puid',sbUser.id)}catch(e){}
  // the follower's own name/photo live in their profile; pull them once
-  if(sbUser&&(!ST.get('bloom_pname')||!ST.get('bloom_pavatar'))){try{const {data:prof}=await sb.from('bloom_profiles').select('name,avatar').eq('id',sbUser.id).maybeSingle();
-   if(prof&&prof.name&&!ST.get('bloom_pname'))ST.set('bloom_pname',prof.name);
-   if(prof&&prof.avatar&&!ST.get('bloom_pavatar'))ST.set('bloom_pavatar',JSON.stringify({a:prof.avatar,c:{z:1,x:0,y:0}}));
+  if(sbUser){try{const {data:prof}=await sb.from('bloom_profiles').select('name,avatar').eq('id',sbUser.id).maybeSingle();
+   const peer=((D.p&&D.p.name)||'');
+   const local=(ST.get('bloom_pname')||'').trim();
+   // the stored profile is the source of truth for identity: a local name that is empty or is
+   // just the followed person's name is stale and must not win over it
+   if(prof&&prof.name&&(!local||local===peer))ST.set('bloom_pname',prof.name);
+   if(prof&&prof.avatar)ST.set('bloom_pavatar',JSON.stringify({a:prof.avatar,c:{z:1,x:0,y:0}}));
+   else if(prof&&!prof.avatar){ST.del('bloom_pavatar')}
   }catch(e){reportErr('partner.profile',e)}}
  const doc=await sbFetchDoc(owner);
  D=Object.assign(blank(),doc||{});roHash=roHashOf(JSON.stringify(doc||{}));
@@ -1055,17 +1065,19 @@ async function partnerDropped(){
 async function enterOwnMode(){
  if(ownMode||!RO)return;
  if(!sbUser){toast('Sign in first');return}
- if(ownStash==null)ownStash={D:D,roHash:roHash,view:view,tab:tab};
+ if(ownStash==null)ownStash={D:D,roHash:roHash,view:view,tab:tab,peerName:(D&&D.p&&D.p.name)||''};
  if(roTimer){clearInterval(roTimer);roTimer=null}
  ownMode=true;RO=false;ROcloud=false;
  const mail=(user||'').toLowerCase();
- let cloud=null,cloudRev=0;
- try{const row=await sbFetchDocWithRev(sbUser.id);if(row){cloud=row.doc;cloudRev=row.rev}}catch(e){reportErr('own.load',e)}
- const cached=J(key(mail),null);
+ let cloud=null,cloudRev=0,contaminated=false;
+ try{const row=await sbFetchDocWithRev(sbUser.id);if(row){cloudRev=row.rev;const u=row.doc&&row.doc._uid;if(u&&u!==sbUser.id)contaminated=true;else cloud=row.doc}}catch(e){reportErr('own.load',e)}
+ if(contaminated){try{ST.del(key(mail))}catch(e){}}
+ const cached=contaminated?null:J(key(mail),null);
  const pname=(()=>{try{return ST.get('bloom_pname')||''}catch(e){return ''}})();
  let pavatar=null;try{pavatar=JSON.parse(ST.get('bloom_pavatar')||'null')}catch(e){}
  D=seedOwnDoc(cloud,cached,pname,pavatar);
- if(cloud)sbRev=cloudRev;else loadRev(mail);
+ D._uid=sbUser.id;ownPeerName=((ownStash&&ownStash.peerName)||'').trim();
+ if(cloud||cloudRev)sbRev=cloudRev;else loadRev(mail);
  saveRev();setDirtyFlag(0);sbLastPush=JSON.stringify(D);
  planPanel='mine';
  view='planner';if(['day','week','meals','journal'].indexOf(tab)<0)tab='day';
@@ -1082,13 +1094,13 @@ function exitOwnMode(keepView){
   if(pendRenderTimer){clearInterval(pendRenderTimer);pendRenderTimer=null}sbPendingRender=false;
  const st=ownStash;ownStash=null;
  D=(st&&st.D)||D;roHash=(st&&st.roHash)||'';
- ownMode=false;RO=true;ROcloud=true;
+ ownMode=false;RO=true;ROcloud=true;ownPeerName='';
  if(!keepView){const ov=(st&&st.view)||'cycle';view=(ov==='planner'||ov==='journal')?'cycle':ov;tab=''}
  return true;
 }
 // ---------- pairing (read-only sharing)
 let RO=false,ROowner=null,ROcloud=false,ownMode=false,ownStash=null;
-let planPanel='mine',peekDoc=null,peekAt=0,pairInfo=null;
+let planPanel='mine',peekDoc=null,peekAt=0,pairInfo=null,ownPeerName='';
 async function genPartnerCode(){
  const client=await sbInit();
  if(!client||!sbUser){toast('Pairing needs an internet connection');return null}
@@ -1457,7 +1469,7 @@ async function fetchManifest(){const bust='?t='+Date.now();
  const r=await fetch(UPDATE_MANIFEST+bust,{cache:'no-store'});if(!r.ok)throw new Error('manifest '+r.status);
  return await r.json()}
 // Baked-in build identity. Keep in sync with android/app/build.gradle (versionCode/versionName).
-const APP_VERSION={code:75,name:'1.2.60'};
+const APP_VERSION={code:76,name:'1.2.61'};
 const UPD_SKIP_KEY='bloom_upd_skip';
 const updater=()=>{const C=window.Capacitor;if(!C)return null;
  const P=C.Plugins&&C.Plugins.BloomUpdater;
@@ -1471,8 +1483,8 @@ function widgetNative(){try{const C=window.Capacitor;return (C&&C.Plugins&&C.Plu
 function widgetSupported(){const n=widgetNative();return !!(n&&n.sync)}
 function widgetSnapshot(){
  const d=today(),l=(D.logs||{})[d]||{};
- const tasks=(D.tasks||[]).filter(t=>!t.d||t.d<=d).slice(0,3).map(t=>({id:t.id,t:t.t,done:!!t.done}));
- return{d,water:l.water||0,mood:l.mood||null,tasks};
+ const tasks=tasksFor(d).slice(0,5).map(t=>({id:t.id,t:t.t,done:isDone(t.id,d)}));
+ return{d,hasToday:!!(D.logs&&D.logs[d]),water:l.water||0,mood:l.mood||null,tasks};
 }
 async function widgetSync(){const n=widgetNative();if(!n||!n.sync||RO)return;
  try{await n.sync({data:JSON.stringify(widgetSnapshot())})}catch(e){}}
@@ -1483,9 +1495,13 @@ async function widgetConsume(){
  const d=today();D.logs=D.logs||{};let ch=false;
  acts.forEach(a=>{
   if(!a||typeof a!=='object')return;
-  if(a.type==='water'){const x=L(d);D.logs[d]=Object.assign(x,{water:Math.min(D.p.waterGoal||8,(x.water||0)+Math.max(0,+a.v||1))});ch=true}
+  if(a.type==='water'){const x=L(d);D.logs[d]=Object.assign(x,{water:Math.max(0,Math.min(D.p.waterGoal||8,(x.water||0)+Math.max(0,+a.v||1)))});ch=true}
   else if(a.type==='mood'&&a.v){D.logs[d]=Object.assign(L(d),{mood:+a.v});ch=true}
-  else if(a.type==='task'&&a.v!=null){const t=(D.tasks||[]).find(t=>String(t.id)===String(a.v));if(t&&!t.done){t.done=true;ch=true}}
+  else if(a.type==='task'&&a.v!=null){
+   const t=(D.tasks||[]).find(t=>String(t.id)===String(a.v));if(!t)return;
+   const want=a.done!==false;if(isDone(t.id,d)!==want){
+    D.done=D.done||{};D.done[d]=D.done[d]||{};D.done[d][t.id]=want;ch=true}
+  }
  });
  if(ch){save();try{waterReminderSync(true)}catch(e){}shell()}
 }
@@ -1558,18 +1574,20 @@ function shell(){splashAppIsReady();
  if(funTimer){clearInterval(funTimer);funTimer=null}if(foodTimer){clearInterval(foodTimer);foodTimer=null}if(roTimer){clearInterval(roTimer);roTimer=null}
  if(ownMode&&view!=='planner'){exitOwnMode(true);planPanel='partner'}
  if(RO&&!ROcloud){const raw=ST.get(key(ROowner));if(raw!=null){roHash=roHashOf(raw);D=Object.assign(blank(),J(key(ROowner),{}))}}
-  document.body.classList.toggle('ro',!!RO);
-  if(!RO){stripSeededTasks();migrateCustomSymptoms()}
-  if(!D.p.done&&!RO){if(pLocked()){D.p.done=true;D.p=D.p||{};D.p.role='partner';save()}else return onboarding()}
-  if(pLocked()&&!RO&&view==='cycle')view='me';
+  const chromeRO=!!(RO||ownMode);
+  document.body.classList.toggle('ro',chromeRO);
+  if(!RO&&!ownMode){stripSeededTasks();migrateCustomSymptoms()}
+  if(!D.p.done&&!RO&&!ownMode){if(pLocked()){D.p.done=true;D.p=D.p||{};D.p.role='partner';save()}else return onboarding()}
+  if(pLocked()&&!chromeRO&&view==='cycle')view='me';
  const N=[['cycle','Cycle',IC.ring],['planner','Planner',IC.list] ,['insights','Insights',IC.chart],['learn','Learn',IC.book]]
-   .filter(x=>!(pLocked()&&!RO&&x[0]==='cycle'));
+   .filter(x=>!(pLocked()&&!chromeRO&&x[0]==='cycle'));
  const ariaCur=k=>view==k;
- const headBtn=RO?`<button class="profbtn" id="rome" aria-label="Your profile">${roAvatarHTML(44)}<span>${E(ownName())}</span></button>`:`<button class="profbtn" id="me" aria-label="Profile and settings">${avatarHTML(44)}<span>${E(D.p.name||user)}</span></button>`;
+ const headBtn=chromeRO?`<button class="profbtn" id="rome" aria-label="Your profile">${roAvatarHTML(44)}<span>${E(ownName())}</span></button>`:`<button class="profbtn" id="me" aria-label="Profile and settings">${avatarHTML(44)}<span>${E(D.p.name||user)}</span></button>`;
  $('#app').innerHTML=`<div class="blob blob-a"></div><div class="blob blob-b"></div><div class="blob blob-c"></div><div class="wrap"><header class="topbar"><div class="wordmark">Bloom<i>.</i></div>${headBtn}</header><main id="main"></main></div><nav aria-label="Main">${N.map(([k,l,ic])=>`<button data-v="${k}" ${ariaCur(k)?'aria-current="page"':''}>${ic(17)}<span>${l}</span></button>`).join('')}</nav>`;
- if(RO){
+ if(chromeRO){
  const rm=document.getElementById('rome');if(rm)rm.onclick=()=>{view='me';shell()};
- roTimer=setInterval(roReload,4000)}
+ }
+ if(RO)roTimer=setInterval(roReload,4000);
  document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{view=b.dataset.v;shell()});
  // #me only exists outside partner (read-only) mode  that header shows the Exit button instead
  const meBtn=$('#me');if(meBtn)meBtn.onclick=()=>{view='me';shell()};
@@ -2087,11 +2105,12 @@ function monthView(){const [y,mo]=calM.split('-').map(Number),first=new Date(y,m
  $('#pv').onclick=()=>{calM=iso(new Date(y,mo-2,1)).slice(0,7);monthView()};$('#nxm').onclick=()=>{calM=iso(new Date(y,mo,1)).slice(0,7);monthView()};
  if(!RO)document.querySelectorAll('.cal [data-d]').forEach(b=>b.onclick=()=>dayLog(b.dataset.d))}
 function plannerPanels(){
+ if(ownMode)return{partner:true,name:ownPeerName||'Partner'};
  if(RO)return{partner:true,name:((D.p&&D.p.name)||'Partner')};
  if(pLocked())return null;
  if(pairInfo===null)ensurePairInfo();
  if(!pairInfo)return null;
- return{partner:true,name:((pairInfo.prof&&pairInfo.prof.name)||'Follower')};
+ return{partner:true,name:peerLabel(pairInfo.shName,pairInfo.prof&&pairInfo.prof.name,'Follower')};
 }
 async function ensurePairInfo(){
  if(pairInfo!==null)return;
@@ -2108,6 +2127,7 @@ async function loadPeek(force){
 function setPlanPanel(v){
  if(v===planPanel)return;
  planPanel=v;
+ if(ownMode){if(v==='partner'){exitOwnMode(true);planPanel='partner';shell()}return}
  if(RO){if(v==='mine')enterOwnMode();else{exitOwnMode(true);planPanel='partner';shell()}return}
  if(v==='partner'){peekDoc=null;peekAt=0;planner();loadPeek(true);return}
  planner();
@@ -3924,7 +3944,8 @@ async function ownerPairing(){
   const {data}=await cl.from('bloom_partners').select('partner_id,code,created_at').eq('owner_id',sbUser.id).eq('revoked',false).not('partner_id','is',null).limit(1);
   if(!data||!data.length)return null;
    let prof=null;try{const r=await cl.from('bloom_profiles').select('name,avatar').eq('id',data[0].partner_id).maybeSingle();prof=r.data||null}catch(e){reportErr('partner.profile',e)}
-  return{row:data[0],prof};
+   let shName=null;try{const s=await cl.from('bloom_shared').select('doc').eq('user_id',data[0].partner_id).maybeSingle();const p=s&&s.data&&s.data.doc&&s.data.doc.p;if(p&&p.name)shName=String(p.name)}catch(e){reportErr('partner.shared',e)}
+  return{row:data[0],prof,shName};
  }catch(e){return null}}
 async function loadPairCard(){
  const box=document.getElementById('pairCard');if(!box||RO)return;
@@ -4167,7 +4188,7 @@ function settingsPage(){
    </div>
    <div class="card"><div class="card-h"><h3>Sync</h3></div><p class="meta" id="syncLine" style="margin:0 0 10px">${E(syncLineText())}</p><div class="row" style="gap:10px"><button class="btn ghost" id="syncNow" style="flex:1">Sync now</button><button class="btn ghost" id="syncCopy" style="flex:1">Copy diagnostics</button></div></div>
     ${RO?'<div class="card"><div class="card-h"><h3>Your data</h3></div><p class="meta" style="margin:0 0 10px">Delete your sign-in account and your profile copy. The person you follow keeps everything.</p><button class="btn pink" id="sDelAcct" style="width:100%">Delete my account</button></div>':'<div class="card"><div class="card-h"><h3>Your data</h3></div><p class="meta" style="margin:0 0 10px">Erase all your logs, meals, tasks and journal from this phone and the cloud. Your partner loses access. Your sign-in account itself is not deleted.</p><button class="btn pink" id="sDel" style="width:100%">Delete all my data</button><button class="btn ghost" id="sDelAcct" style="width:100%">Delete my account</button><button class="btn ghost" id="sExp" style="width:100%">Export backup</button><button class="btn ghost" id="sImp" style="width:100%">Import backup</button>'+bkRestore+'</div>'}
-   ${widgetSupported()?`<div class="card"><div class="card-h"><h3>Home-screen widget</h3></div><p class="meta" style="margin:0 0 12px">Today\u2019s tasks, water and mood, one tap away.</p><button class="btn ghost" id="wPin" style="width:100%">Add Bloom widget</button><p class="meta" id="wNote" style="margin:10px 0 0"></p></div>`:''}
+   ${widgetSupported()?`<div class="card"><div class="card-h"><h3>Home-screen widgets</h3></div><p class="meta" style="margin:0 0 12px">Two widgets, one tap away.</p><button class="btn ghost" id="wPinTasks" style="width:100%">Add Tasks widget</button><button class="btn ghost" id="wPinWater" style="width:100%;margin-top:8px">Add Water &amp; mood widget</button><p class="meta" id="wNote" style="margin:10px 0 0"></p></div>`:''}
    <div class="card"><div class="card-h"><h3>App</h3><span class="meta" id="appVer">\u2014</span></div><button class="btn ghost" id="chkUp" style="width:100%">Check for updates</button><p class="meta" style="margin:10px 0 0">Bloom shows patterns from your logs. It is not medical advice.</p></div>`;
  $('#bk').onclick=()=>{view='me';shell()};
  $('#sChg').onclick=()=>changeNameSheet(nm,async v=>{
@@ -4193,11 +4214,14 @@ function settingsPage(){
    if(document.getElementById('syncNow'))$('#syncNow').onclick=()=>{sbPush();setTimeout(updateSyncLine,200)};
    if(document.getElementById('syncCopy'))$('#syncCopy').onclick=async()=>{const txt='sync: '+syncLineText()+'\nrev: '+sbRev+'\nfails: '+SYNC.fails+'\nlast: '+(SYNC.last?new Date(SYNC.last).toISOString():'none')+'\nlogs:\n'+errLog().map(e=>new Date(e.t).toISOString()+' ['+e.ctx+'] '+e.msg).join('\n');try{await navigator.clipboard.writeText(txt);toast('Copied')}catch(e){toast('Copy failed')}};
   if(document.getElementById('chkUp'))$('#chkUp').onclick=()=>checkUpdate(true);
-  if(document.getElementById('wPin'))$('#wPin').onclick=async()=>{
-   const n=widgetNative(),note=document.getElementById('wNote');
-   let r={};try{r=await n.requestPin()}catch(e){}
-   if(note)note.textContent=(r&&r.pinned)?'Added to your home screen.':'Long-press your home screen, open Widgets and pick Bloom.';
-  };
+  ['wPinTasks','wPinWater'].forEach(id=>{
+   if(!document.getElementById(id))return;
+   $('#'+id).onclick=async()=>{
+    const n=widgetNative(),note=document.getElementById('wNote');
+    let r={};try{r=await n.requestPin({widget:id==='wPinWater'?'water':'tasks'})}catch(e){}
+    if(note)note.textContent=(r&&r.pinned)?'Added to your home screen.':'Long-press your home screen, open Widgets and pick Bloom.';
+   };
+  });
   (async()=>{const up=updater();if(!up)return;try{const v=await up.getVersion();const el=document.getElementById('appVer');if(el)el.textContent='v'+v.versionName+' ('+v.versionCode+')'}catch(e){}})()
 }
 function mePartner(){const p=D.p||{};
@@ -4337,7 +4361,7 @@ if(splashShouldShow())splashPlay();else splashSkip();  // only after 3 minutes a
  // update check runs for everyone, signed in or not
  setTimeout(()=>{try{checkUpdate(false)}catch(e){}},2400);
  if(s&&String(s).indexOf('p:')===0){const owner=String(s).slice(2);
-  RO=true;ROcloud=true;ROowner=owner;setRoleFlag('partner');
+  RO=true;ROcloud=true;ROowner=owner;setRoleFlag('partner');planPanel='partner';
   const cached=J(key(owner),{});
   D=Object.assign(blank(),cached||{});backfillMeals();view='cycle';shell();
   sbInit().then(async()=>{try{

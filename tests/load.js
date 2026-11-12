@@ -55,7 +55,7 @@ function load() {
     smart: ['smartPredictionHistory', 'smartCurrentCycle', 'smartCurrentCycleFromHistory', 'smartHistoricalPhaseFor', 'smartPatternsFromLogs', 'smartInsightsHTML', 'smartPatternsHTML', 'smartPhaseInsight', 'smartProgress', 'smartInsightsExtras', 'smartComingUp', 'smartWeekCompare', 'smartActiveGoals', 'smartGoalFocus', 'smartWeekFacts', 'smartWeekTemplate', 'smartWeekValidate', 'smartWeekAllowedNumbers', 'smartWeekHTML', 'smartWeekCompareHTML', 'smartComingUpHTML', 'dashboardCycle', 'clearLegacySmartAIStorage', 'smartCTAFor', 'smartCTALabel', 'smartKnowledgeFor', 'smartWeekVariantIndex', 'smartEvidenceRegistry'],
     auth: ['logout', 'wipeLocalData'],
     ownmode: ['seedOwnDoc'],
-    planui: ['shareFlags', 'plannerTabSet', 'ringPillBare']
+    planui: ['shareFlags', 'plannerTabSet', 'ringPillBare', 'peerLabel']
   };
   for (const name of ['phases', 'esc', 'sync', 'roWho', 'sxmig', 'backup', 'smart', 'auth', 'ownmode', 'planui']) {
     let code;
