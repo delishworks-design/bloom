@@ -1,7 +1,7 @@
 {
-    "versionCode": 74,
-    "versionName": "1.2.59",
-    "notes": "New: partners following someone can open their own Planner and Journal from the Profile page (My Bloom) - private, synced to their own account.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.59/bloom-1.2.59.apk",
+    "versionCode": 75,
+    "versionName": "1.2.60",
+    "notes": "New: the Planner now shows both of you side by side - swipe between Mine and your partner. Choose what you share (tasks, meals, journal) from Profile. Plus a home-screen widget for tasks, water and mood, hourly water reminders, and a simpler Journal.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.60/bloom-1.2.60.apk",
     "publishedAt": "2026-11-12"
 }
