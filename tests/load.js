@@ -43,6 +43,9 @@ function load() {
   sandbox.ST = { _m:{}, get(k){return Object.prototype.hasOwnProperty.call(this._m,k)?this._m[k]:null}, set(k,v){this._m[k]=String(v)}, del(k){delete this._m[k]} };
   sandbox.localStorage = { _m:{}, getItem(k){return Object.prototype.hasOwnProperty.call(this._m,k)?this._m[k]:null}, setItem(k,v){this._m[k]=String(v); this[k]=String(v)}, removeItem(k){delete this._m[k]; delete this[k]}, get length(){return Object.keys(this._m).length}, key(i){return Object.keys(this._m)[i]||null}, clear(){for(const k of Object.keys(this._m))delete this[k]; this._m={}} };
   sandbox.RO=false; sandbox.ROcloud=false; sandbox.roHash=''; sandbox.user=null; sandbox.sbLastPush=''; sandbox.sbRev=0; sandbox.view='cycle'; sandbox.tab=''; sandbox.onbStep=0; sandbox.calM='2026-01-01';
+  sandbox.ownMode=false; sandbox.key=function(u){return 'bloom_d_'+u}; sandbox.J=function(k,f){try{const v=sandbox.ST.get(k);return v==null?f:JSON.parse(v)}catch(e){return f}};
+  sandbox.tasksFor=function(d,doc){return ((doc||sandbox.D).tasks||[]).filter(t=>!t.once||t.once===d)};
+  sandbox.widgetNative=function(){return null};
   sandbox.clearSession=function(){}; sandbox.setRoleFlag=function(){}; sandbox.today=function(){return '2026-01-20'}; sandbox.reminderCancel=function(){}; sandbox.sb=null; sandbox.sbUser=null; sandbox.cloudTimer=null; sandbox.hideUpdateBanner=function(){}; sandbox.authView=function(){};
 
   const exportsByName = {
@@ -55,9 +58,10 @@ function load() {
     smart: ['smartPredictionHistory', 'smartCurrentCycle', 'smartCurrentCycleFromHistory', 'smartHistoricalPhaseFor', 'smartPatternsFromLogs', 'smartInsightsHTML', 'smartPatternsHTML', 'smartPhaseInsight', 'smartProgress', 'smartInsightsExtras', 'smartComingUp', 'smartWeekCompare', 'smartActiveGoals', 'smartGoalFocus', 'smartWeekFacts', 'smartWeekTemplate', 'smartWeekValidate', 'smartWeekAllowedNumbers', 'smartWeekHTML', 'smartWeekCompareHTML', 'smartComingUpHTML', 'dashboardCycle', 'clearLegacySmartAIStorage', 'smartCTAFor', 'smartCTALabel', 'smartKnowledgeFor', 'smartWeekVariantIndex', 'smartEvidenceRegistry'],
     auth: ['logout', 'wipeLocalData'],
     ownmode: ['seedOwnDoc'],
+    widget: ['ownWidgetDoc', 'widgetSnapshot', 'widgetSync', 'widgetReset'],
     planui: ['shareFlags', 'plannerTabSet', 'ringPillBare', 'peerLabel']
   };
-  for (const name of ['phases', 'esc', 'sync', 'roWho', 'sxmig', 'backup', 'smart', 'auth', 'ownmode', 'planui']) {
+  for (const name of ['phases', 'esc', 'sync', 'roWho', 'sxmig', 'backup', 'smart', 'auth', 'ownmode', 'widget', 'planui']) {
     let code;
     try{ code = extract(html, name); }catch(e){ if(name==='auth') continue; throw e; }
     const names = exportsByName[name];

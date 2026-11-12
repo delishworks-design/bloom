@@ -505,6 +505,7 @@ body.ro #updBanner.dark{background:#173F4B !important}
 [data-task],[data-meal]{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .splash-petal{position:absolute;left:50%;top:50%;width:var(--w);height:var(--h);margin:calc(var(--h)/-2) 0 0 calc(var(--w)/-2);opacity:0;z-index:5;will-change:transform,opacity}
 .splash-petal svg{width:100%;height:100%;display:block;overflow:visible}
+#busy{position:fixed;inset:0;z-index:9500;display:block;overflow:hidden;background:var(--bg)}
 #splashHint{position:absolute;z-index:9;bottom:calc(28px + env(safe-area-inset-bottom,0px));left:0;right:0;text-align:center;font:14px system-ui,sans-serif;color:#fdf3ee;opacity:0;transition:opacity .6s;pointer-events:none}
 /* partner accounts get a teal splash */
 body.roSplash #splash{background:#eef5f7}
@@ -784,7 +785,7 @@ function setDirtyFlag(v){if(user)try{ST.set('bloom_dirty_'+user,String(v))}catch
 function chooseLoginDoc(keep,doc,dirty){
  if(!doc)return keep;
  if(dirty==='0')return Object.assign(blank(),doc);
- const cloudHas=Object.keys(doc.logs||{}).length||Object.keys(doc.tasks||[]).length||Object.keys(doc.journal||[]).length;
+ const cloudHas=Object.keys(doc.logs||{}).length||Object.keys(doc.tasks||[]).length||Object.keys(doc.journal||[]).length||Object.keys(doc.meals||{}).length||Object.keys(doc.plan||{}).length;
  if(!cloudHas){const out=Object.assign(blank(),doc);out.logs=keep.logs||{};out.tasks=keep.tasks||[];out.done=keep.done||{};out.meals=keep.meals||{};out.journal=keep.journal||[];out.plan=keep.plan||{};return out}
  return mergeDocs(keep,doc);
 }
@@ -836,7 +837,7 @@ function plannerTabSet(mine,showJournal){const t=[['day','Today'],['week','Week'
 function ringPillBare(state,irregular){return state==='estimated'&&!!irregular}
 function peerLabel(sharedName,profName,fallback){return String(sharedName||profName||'').trim()||fallback||'Follower'}
 // @test-end planui
-function backupLocal(){const m=user||(sbUser&&sbUser.email&&sbUser.email.toLowerCase());if(!m||!D)return;try{ST.set('bloom_backup_'+m,JSON.stringify(D))}catch(e){}}
+function backupLocal(){const m=user||(sbUser&&sbUser.email&&sbUser.email.toLowerCase());if(!m||!D)return;if(D._uid&&sbUser&&D._uid!==sbUser.id){reportErr('backup.guard','skipped another account doc');return}try{ST.set('bloom_backup_'+m,JSON.stringify(D))}catch(e){}}
 // @test-begin backup
 function makeBackup(doc){return {app:'bloom',v:1,exportedAt:new Date().toISOString(),doc}}
 function validateBackup(obj){
@@ -907,9 +908,6 @@ async function sbPush(){if(!sb||!sbUser||RO)return;
   const snap=JSON.stringify(D);if(snap===sbLastPush){setSyncState(SYNC.last?'synced':'idle');return}
  if(navigator.onLine===false){setSyncState('offline');sbScheduleRetry();return}
   setSyncState('syncing');clearTimeout(sbRetryTimer);sbRetryTimer=null;
-  const p=D.p||{};
-   const profRes=await sb.from('bloom_profiles').upsert({id:sbUser.id,name:p.name||'',avatar:p.avatar||null,goals:p.goals||[]});
-  if(profRes&&profRes.error)throw profRes.error;
   const res=await sb.rpc('bloom_push_doc',{p_doc:D,p_base_rev:sbRev});
   if(res&&res.error){
    const em=String(res.error.message||'');
@@ -931,6 +929,8 @@ async function sbPush(){if(!sb||!sbUser||RO)return;
     toast('Merged changes from another device');setSyncState('pending');setTimeout(sbPush,0);return;
    }
   }catch(e){sbNoteFailure(e)}finally{sbPushing=false;if(sbPushAgain){sbPushAgain=false;sbPush()}}}
+async function pushProfile(){if(!sb||!sbUser||!D||RO)return;if(D._uid&&D._uid!==sbUser.id)return;const p=D.p||{};
+ try{await sb.from('bloom_profiles').upsert({id:sbUser.id,name:p.name||'',avatar:p.avatar||null,goals:p.goals||[]})}catch(e){reportErr('profile.push',e)}}
 function sbPushSoon(){if(!sbUser)return;if(JSON.stringify(D)!==sbLastPush)setSyncState('pending');clearTimeout(sbPushT);sbPushT=setTimeout(sbPush,1200)}
 async function sbPull(){if(!sb||!sbUser||RO||document.hidden)return;
  try{
@@ -939,25 +939,30 @@ async function sbPull(){if(!sb||!sbUser||RO||document.hidden)return;
   const rev=+(data.rev||0);if(rev<=sbRev)return;
   if(JSON.stringify(D)!==sbLastPush)return;
   backupLocal();const row=await sbFetchDocWithRev(sbUser.id);if(!row)return;
+   if(row.doc&&row.doc._uid&&row.doc._uid!==sbUser.id){reportErr('sync.pull.guard','row belongs to another account');return}
    D=Object.assign(blank(),row.doc);D._uid=sbUser.id;sbRev=row.rev;saveRev();setDirtyFlag(0);sbLastPush=JSON.stringify(D);
    try{ST.set(key(user),JSON.stringify(D))}catch(e){}
   if(safeToRender())shell();else sbPendingRender=true;
  }catch(e){reportErr('sync.pull',e)}}
 function safeToRender(){const sheetEl=document.getElementById('sheet');if(sheetEl&&sheetEl.innerHTML.trim())return false;const a=document.activeElement;return !(a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA'||a.tagName==='SELECT'))}
 function startCloudSync(){if(cloudTimer)clearInterval(cloudTimer);cloudTimer=setInterval(()=>{if(sbUser&&!document.hidden)sbPush()},15000);if(sbPullTimer)clearInterval(sbPullTimer);sbPullTimer=setInterval(sbPull,60000);if(pendRenderTimer)clearInterval(pendRenderTimer);pendRenderTimer=setInterval(()=>{if(sbPendingRender&&safeToRender()){sbPendingRender=false;shell()}},5000)}
-async function sbAfterLogin(u){ownMode=false;ownStash=null;sbUser=u;planPanel='mine';peekDoc=null;peekAt=0;pairInfo=null;ownPeerName='';
+async function sbAfterLoginOnce(u){ownMode=false;ownStash=null;ownLoaded=false;ownLoading=false;sbUser=u;planPanel='mine';peekDoc=null;peekAt=0;pairInfo=null;ownPeerName='';
  const mail=(u.email||'').toLowerCase();
- const cached=J(key(mail),null);
+ let cached=J(key(mail),null);
+ if(cached&&cached._uid&&cached._uid!==u.id){try{ST.del(key(mail))}catch(e){};cached=null}
   // never seed from the global D here: on a follower device D can hold the followed person's doc,
   // and copying it into this account's row is how one account's logs leaked into another's.
   const keep=Object.assign(blank(),JSON.parse(JSON.stringify(cached||blank())));
- let row=null;try{row=await sbFetchDocWithRev(u.id)}catch(er){reportErr('login.doc',er)}
+ const docP=sbFetchDocWithRev(u.id).catch(er=>{reportErr('login.doc',er);return null});
+ const profP=sb.from('bloom_profiles').select('*').eq('id',u.id).maybeSingle().catch(e=>{reportErr('profile.load',e);return {data:null}});
+ const pairP=cloudPairing();
+ let row=null;try{row=await docP}catch(e){}
  const doc=row?row.doc:null;
  sbRev=row?row.rev:0;
- if(doc){backupLocal();D=chooseLoginDoc(keep,doc,ST.get('bloom_dirty_'+mail))}
+ if(doc&&(!doc._uid||doc._uid===u.id)){backupLocal();D=chooseLoginDoc(keep,doc,ST.get('bloom_dirty_'+mail))}
  else D=Object.assign(blank(),keep);
  D._uid=u.id;
-  try{const {data:prof}=await sb.from('bloom_profiles').select('*').eq('id',u.id).maybeSingle();
+  try{const pr=await profP;const prof=pr&&pr.data;
    if(prof){D.p=D.p||{};D.p.name=prof.name||D.p.name;D.p.avatar=prof.avatar||D.p.avatar;D.p.goals=prof.goals&&prof.goals.length?prof.goals:(D.p.goals||[])}}catch(e){reportErr('profile.load',e)}
  D.p=D.p||{};
  // onboarding counts as done if the local cache says so OR the cloud does (offline friendly)
@@ -976,7 +981,7 @@ async function sbAfterLogin(u){ownMode=false;ownStash=null;sbUser=u;planPanel='m
   try{const j2=JSON.parse(ST.get('bloom_pavatar')||'null');if(j2&&j2.a&&!D.p.avatar){D.p.avatar=j2.a;D.p.avatarCrop=j2.c||{z:1,x:0,y:0};save()}}catch(eb){}
  }
  // the cloud link decides the role: a live follower never lands on the cycle app
- const q=await cloudPairing();
+ const q=await pairP;
  if(q.ok&&q.pair)return enterPartnerMode(q.pair.owner,q.pair.code,true);
  if(!q.ok){const po=ST.get('bloom_powner');if(po){try{await enterPartnerMode(po,ST.get('bloom_lastcode')||'',true)}catch(e){reportErr('partner.offline',e)}return}}
  if(q.ok&&pLocked())unlockPartner();
@@ -987,6 +992,17 @@ async function sbAfterLogin(u){ownMode=false;ownStash=null;sbUser=u;planPanel='m
  startCloudSync();
  setTimeout(()=>{try{reminderSync(true)}catch(e){}},1200);
  toast('Signed in \u00b7 syncing')}
+let afterLoginInFlight=null,afterLoginUid='';
+function sbAfterLogin(u){
+ if(!u)return Promise.resolve();
+ const uid=String(u.id||u.email||'');
+ if(afterLoginInFlight&&afterLoginUid===uid)return afterLoginInFlight;
+ afterLoginUid=uid;
+ const p=sbAfterLoginOnce(u);
+ afterLoginInFlight=p;
+ p.finally(()=>{if(afterLoginInFlight===p){afterLoginInFlight=null;afterLoginUid=''}}).catch(()=>{});
+ return p;
+}
 async function nativeGoogleSignIn(client){
   const formErr=msg=>{const e=document.getElementById('err');if(e){e.textContent=msg||'';e.classList.toggle('on',!!msg)}};
   const SL = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SocialLogin;
@@ -1066,39 +1082,62 @@ async function partnerDropped(){
   if(sbUser){try{await sbAfterLogin(sbUser);return}catch(e){reportErr('login.after',e)}}
   authView('in')}
 // the partner's own planner and journal: same account, separate doc, synced to their own row
+let ownSeq=0,ownLoading=false,ownLoaded=false;
 async function enterOwnMode(){
- if(ownMode||!RO)return;
+ if(ownMode||!RO||ownLoading)return;
  if(!sbUser){toast('Sign in first');return}
+ const seq=++ownSeq;ownLoading=true;
  if(ownStash==null)ownStash={D:D,roHash:roHash,view:view,tab:tab,peerName:(D&&D.p&&D.p.name)||''};
  if(roTimer){clearInterval(roTimer);roTimer=null}
- ownMode=true;RO=false;ROcloud=false;
  const mail=(user||'').toLowerCase();
- let cloud=null,cloudRev=0,contaminated=false;
- try{const row=await sbFetchDocWithRev(sbUser.id);if(row){cloudRev=row.rev;const u=row.doc&&row.doc._uid;if(u&&u!==sbUser.id)contaminated=true;else cloud=row.doc}}catch(e){reportErr('own.load',e)}
- if(contaminated){try{ST.del(key(mail))}catch(e){}}
- const cached=contaminated?null:J(key(mail),null);
+ let cached=null;try{cached=J(key(mail),null)}catch(e){}
+ if(cached&&cached._uid&&cached._uid!==sbUser.id){try{ST.del(key(mail))}catch(e){};cached=null}
  const pname=(()=>{try{return ST.get('bloom_pname')||''}catch(e){return ''}})();
  let pavatar=null;try{pavatar=JSON.parse(ST.get('bloom_pavatar')||'null')}catch(e){}
- D=seedOwnDoc(cloud,cached,pname,pavatar);
- D._uid=sbUser.id;ownPeerName=((ownStash&&ownStash.peerName)||'').trim();
+ const prepare=src=>{const d=seedOwnDoc(src,cached,pname,pavatar);d._uid=sbUser.id;return d};
+ const enter=d=>{D=d;ownPeerName=((ownStash&&ownStash.peerName)||'').trim();ownMode=true;RO=false;ROcloud=false;ownLoaded=true;ownLoading=false;
+  planPanel='mine';view='planner';if(['day','week','meals','journal'].indexOf(tab)<0)tab='day';startCloudSync();shell()};
+ if(cached){
+  const base=JSON.stringify(prepare(null));
+  enter(JSON.parse(base));
+  (async()=>{
+   let row=null;try{row=await sbFetchDocWithRev(sbUser.id)}catch(e){reportErr('own.load.refresh',e)}
+   if(seq!==ownSeq||!ownMode||!row||!row.doc)return;
+   const u=row.doc._uid;if(u&&u!==sbUser.id)return;
+   if(JSON.stringify(D)!==base)return;
+   const next=chooseLoginDoc(JSON.parse(base),row.doc,ST.get('bloom_dirty_'+mail));
+   next._uid=sbUser.id;D=next;sbRev=row.rev;saveRev();setDirtyFlag(0);sbLastPush=JSON.stringify(D);shell();
+  })();
+  return;
+ }
+ busyOn();
+ let cloud=null,cloudRev=0,contaminated=false;
+ try{const row=await sbFetchDocWithRev(sbUser.id);if(row){cloudRev=row.rev;const u=row.doc&&row.doc._uid;if(u&&u!==sbUser.id)contaminated=true;else cloud=row.doc}}catch(e){reportErr('own.load',e)}
+ if(seq!==ownSeq||!RO||ownMode){ownLoading=false;busyOff();return}
+ if(contaminated){try{ST.del(key(mail))}catch(e){}}
+ const next=prepare(cloud);
  if(cloud||cloudRev)sbRev=cloudRev;else loadRev(mail);
- saveRev();setDirtyFlag(0);sbLastPush=JSON.stringify(D);
- planPanel='mine';
- view='planner';if(['day','week','meals','journal'].indexOf(tab)<0)tab='day';
- startCloudSync();
- shell();
+ saveRev();setDirtyFlag(0);sbLastPush=JSON.stringify(next);
+ enter(next);busyOff();
 }
 function exitOwnMode(keepView){
- if(!ownMode)return false;
+ const st=ownStash;
+ if(ownLoading){ownSeq++;ownLoading=false;busyOff()}
+ if(!ownMode){
+  if(st){ownStash=null;D=st.D||D;roHash=st.roHash||'';RO=true;ROcloud=true;ownPeerName='';
+   if(!keepView){const ov=st.view||'cycle';view=(ov==='planner'||ov==='journal')?'cycle':ov;tab=''}}
+  return false;
+ }
  const mail=(user||'').toLowerCase();
- try{ST.set(key(mail),JSON.stringify(D))}catch(e){}
+ if(ownLoaded&&D&&(!D._uid||!sbUser||D._uid===sbUser.id)){try{ST.set(key(mail),JSON.stringify(D))}catch(e){}}
  try{saveRev()}catch(e){}
+ ownSeq++;
  if(sbPushT){clearTimeout(sbPushT);sbPushT=null}
  if(cloudTimer){clearInterval(cloudTimer);cloudTimer=null}if(sbPullTimer){clearInterval(sbPullTimer);sbPullTimer=null}
   if(pendRenderTimer){clearInterval(pendRenderTimer);pendRenderTimer=null}sbPendingRender=false;
- const st=ownStash;ownStash=null;
+ ownStash=null;
  D=(st&&st.D)||D;roHash=(st&&st.roHash)||'';
- ownMode=false;RO=true;ROcloud=true;ownPeerName='';
+ ownMode=false;RO=true;ROcloud=true;ownPeerName='';ownLoaded=false;
  if(!keepView){const ov=(st&&st.view)||'cycle';view=(ov==='planner'||ov==='journal')?'cycle':ov;tab=''}
  return true;
 }
@@ -1267,7 +1306,7 @@ function authView(mode){mode=mode||'in';try{fabSync()}catch(e){}document.body.cl
  if(authPrefill){const u0=g('u');if(u0)u0.value=authPrefill;authPrefill=''}
  const setFieldErr=(id,msg)=>{const w=g('f-'+id),h=g('e-'+id);if(!w)return;w.classList.toggle('invalid',!!msg);h.textContent=msg||''};
  const formErr=msg=>{const e=g('err');e.textContent=msg||'';e.classList.toggle('on',!!msg)};
- const gg=g('ggo');if(gg)gg.onclick=async()=>{if(busy)return;formErr('');const btn=g('go');busy=true;btn.disabled=true;gg.disabled=true;gg.innerHTML='<span class="spinner" aria-hidden="true"></span><span>Continuing\u2026</span>';try{const client=await sbInit();if(!client){formErr(!window.supabase?'Still starting up \u2014 try again in a moment.':'Could not start the cloud service. Restart the app.');return}if(isNative()){ await nativeGoogleSignIn(client); return; }const {error}=await client.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+(location.pathname||'/')}});if(error)formErr(errText(error.message||error))}catch(err){formErr(errText(err&&err.message||err))}finally{busy=false;btn.disabled=false;btn.textContent=up?'Create account':'Log in';gg.disabled=false;gg.innerHTML='<svg viewBox="0 0 18 18" aria-hidden="true"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.71-1.57 2.68-3.88 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.83.86-3.04.86-2.34 0-4.33-1.58-5.04-3.71H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.96 10.71A5.41 5.41 0 0 1 3.68 9c0-.59.1-1.17.28-1.71V4.96H.96A9 9 0 0 0 0 9c0 1.45.35 2.82.96 4.04l3-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58A8.99 8.99 0 0 0 9 0 9 9 0 0 0 .96 4.96l3 2.33C4.67 5.16 6.66 3.58 9 3.58z"/></svg><span>Continue with Google</span>'}};
+ const gg=g('ggo');if(gg)gg.onclick=async()=>{if(busy)return;formErr('');const btn=g('go');busy=true;btn.disabled=true;gg.disabled=true;gg.innerHTML='<span class="spinner" aria-hidden="true"></span><span>Continuing\u2026</span>';busyOn();try{const client=await sbInit();if(!client){formErr(!window.supabase?'Still starting up \u2014 try again in a moment.':'Could not start the cloud service. Restart the app.');return}if(isNative()){ await nativeGoogleSignIn(client); return; }const {error}=await client.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+(location.pathname||'/')}});if(error)formErr(errText(error.message||error))}catch(err){formErr(errText(err&&err.message||err))}finally{busy=false;btn.disabled=false;busyOff();btn.textContent=up?'Create account':'Log in';gg.disabled=false;gg.innerHTML='<svg viewBox="0 0 18 18" aria-hidden="true"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.71-1.57 2.68-3.88 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.83.86-3.04.86-2.34 0-4.33-1.58-5.04-3.71H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.96 10.71A5.41 5.41 0 0 1 3.68 9c0-.59.1-1.17.28-1.71V4.96H.96A9 9 0 0 0 0 9c0 1.45.35 2.82.96 4.04l3-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58A8.99 8.99 0 0 0 9 0 9 9 0 0 0 .96 4.96l3 2.33C4.67 5.16 6.66 3.58 9 3.58z"/></svg><span>Continue with Google</span>'}};
  document.querySelectorAll('.reveal').forEach(b=>{
   b.onclick=()=>{const inp=g(b.dataset.for),show=inp.type==='password';inp.type=show?'text':'password';b.textContent=show?'Hide':'Show';b.setAttribute('aria-label',show?'Hide password':'Show password');inp.focus()};
  });
@@ -1287,7 +1326,7 @@ function authView(mode){mode=mode||'in';try{fabSync()}catch(e){}document.body.cl
   if(up&&g('pw2').value!==pw){setFieldErr('pw2','Passwords don\u2019t match.');bad=true}
   if(up&&!g('cons').checked){formErr('Please give consent to continue.');bad=true}
   if(bad){const first=document.querySelector('.auth .field.invalid input');if(first)first.focus();return}
-  const btn=g('go');busy=true;btn.disabled=true;
+  const btn=g('go');busy=true;btn.disabled=true;busyOn();
   btn.innerHTML='<span class="spinner" aria-hidden="true"></span>'+(up?'Creating account\u2026':'Logging in\u2026');
   try{
    const client=await sbInit();
@@ -1297,7 +1336,7 @@ function authView(mode){mode=mode||'in';try{fabSync()}catch(e){}document.body.cl
    else if(e&&/Email not confirmed/i.test(String(e))){showCheckEmail(u);return}
    else if(e)formErr(errText(e));
   }catch(err){formErr(errText(err))}
-  finally{busy=false;btn.disabled=false;btn.textContent=up?'Create account':'Log in'}
+  finally{busy=false;btn.disabled=false;busyOff();btn.textContent=up?'Create account':'Log in'}
  };
  $('#authForm').addEventListener('submit',e=>{e.preventDefault();sub()});
 }
@@ -1382,10 +1421,11 @@ function forgotPasswordSheet(){
 }
 function login(u){user=u;D=Object.assign(blank(),J(key(u),{}));loadRev(u);setSession(u);applyTheme();view='cycle';shell()}
 // @test-begin auth
-function logout(){RO=false;ROcloud=false;ROowner=null;roHash='';ownMode=false;ownStash=null;user=null;D=null;clearSession();planPanel='mine';peekDoc=null;peekAt=0;pairInfo=null;setRoleFlag('');sbLastPush='';sbRev=0;
+function logout(){try{widgetReset()}catch(e){}RO=false;ROcloud=false;ROowner=null;roHash='';ownMode=false;ownStash=null;user=null;D=null;clearSession();planPanel='mine';peekDoc=null;peekAt=0;pairInfo=null;setRoleFlag('');sbLastPush='';sbRev=0;
  view='cycle';tab='';onbStep=0;calM=today().slice(0,7);try{window.__navReady=false}catch(e){}try{ST.del('bloom_nav')}catch(e){}
  try{ST.del('bloom_own')}catch(e){}try{clearLegacySmartAIStorage()}catch(e){}try{reminderCancel()}catch(e){}if(sb){sb.auth.signOut().catch(()=>{});sbUser=null}if(cloudTimer){clearInterval(cloudTimer);cloudTimer=null}hideUpdateBanner();authView('in')}
 function wipeLocalData(){
+  try{widgetReset()}catch(e){}
   try{clearLegacySmartAIStorage()}catch(e){}
   try{Object.keys(localStorage).filter(k=>k.indexOf('bloom_d_')===0||k.indexOf('bloom_backup_')===0||k.indexOf('bloom_dirty_')===0||k.indexOf('bloom_rev_')===0||k==='bloom_s'||k==='bloom_own'||k==='bloom_last_bg'||k==='bloom_upd_skip'||k==='bloom_pname'||k==='bloom_pavatar'||k==='bloom_pown'||k==='bloom_puid'||k==='bloom_powner'||k==='bloom_role'||k==='bloom_unpaired'||k==='bloom_lastcode'||k==='bloom_plocked'||k==='bloom_read'||k==='bloom_errlog'||k==='bloom_nav').forEach(k=>localStorage.removeItem(k))}catch(e){}
 }
@@ -1459,7 +1499,7 @@ async function fetchManifest(){const bust='?t='+Date.now();
  const r=await fetch(UPDATE_MANIFEST+bust,{cache:'no-store'});if(!r.ok)throw new Error('manifest '+r.status);
  return await r.json()}
 // Baked-in build identity. Keep in sync with android/app/build.gradle (versionCode/versionName).
-const APP_VERSION={code:77,name:'1.2.62'};
+const APP_VERSION={code:78,name:'1.2.63'};
 const UPD_SKIP_KEY='bloom_upd_skip';
 const updater=()=>{const C=window.Capacitor;if(!C)return null;
  const P=C.Plugins&&C.Plugins.BloomUpdater;
@@ -1471,29 +1511,61 @@ const updater=()=>{const C=window.Capacitor;if(!C)return null;
 // ---------- home-screen widget (native bridge, optional)
 function widgetNative(){try{const C=window.Capacitor;return (C&&C.Plugins&&C.Plugins.BloomWidget)||null}catch(e){return null}}
 function widgetSupported(){const n=widgetNative();return !!(n&&n.sync)}
-function widgetSnapshot(){
- const d=today(),l=(D.logs||{})[d]||{};
- const tasks=tasksFor(d).slice(0,100).map(t=>({id:t.id,t:t.t,done:isDone(t.id,d)}));
- return{d,hasToday:!!(D.logs&&D.logs[d]),water:l.water||0,mood:l.mood||null,tasks};
+// @test-begin widget
+function ownWidgetDoc(){
+ const uid=sbUser&&sbUser.id;if(!uid)return null;
+ if(!RO||ownMode){if(D&&(!D._uid||D._uid===uid))return D}
+ const mail=(user||ST.get('bloom_own')||'').toLowerCase();if(!mail)return null;
+ let c=null;try{c=J(key(mail),null)}catch(e){}
+ if(!c||typeof c!=='object')return null;
+ if(c._uid&&c._uid!==uid)return null;
+ return c;
 }
-async function widgetSync(){const n=widgetNative();if(!n||!n.sync||RO)return;
- try{await n.sync({data:JSON.stringify(widgetSnapshot())})}catch(e){}}
+function widgetSnapshot(src){
+ const doc=src||ownWidgetDoc();if(!doc)return null;
+ const d=today(),l=(doc.logs||{})[d]||{},done=(doc.done&&doc.done[d])||{};
+ let list=[];try{list=tasksFor(d,doc)}catch(e){list=doc.tasks||[]}
+ const tasks=list.slice(0,100).map(t=>({id:t.id,t:t.t,done:!!done[t.id]}));
+ return{d,uid:sbUser?sbUser.id:'',hasToday:!!(doc.logs&&doc.logs[d]),water:l.water||0,mood:l.mood||null,tasks};
+}
+async function widgetSync(){const n=widgetNative();if(!n||!n.sync)return;
+ const snap=widgetSnapshot();if(!snap)return;
+ try{await n.sync({data:JSON.stringify(snap)})}catch(e){}}
+async function widgetReset(){const n=widgetNative();if(!n||!n.reset)return;try{await n.reset()}catch(e){}}
+// @test-end widget
 async function widgetConsume(){
- const n=widgetNative();if(!n||!n.consumeActions||RO)return;
+ const n=widgetNative();if(!n||!n.consumeActions)return;
  let acts=[];try{const r=await n.consumeActions();acts=JSON.parse((r&&r.actions)||'[]')}catch(e){return}
  if(!Array.isArray(acts)||!acts.length)return;
- const d=today();D.logs=D.logs||{};let ch=false;
+ const following=RO&&!ownMode;
+ let doc=D;
+ if(following){
+  const uid=sbUser&&sbUser.id;if(!uid)return;
+  doc=ownWidgetDoc();
+  if(!doc||(doc._uid&&doc._uid!==uid))return;
+  doc=Object.assign(blank(),JSON.parse(JSON.stringify(doc)));
+ }
+ if(!doc||(doc._uid&&sbUser&&doc._uid!==sbUser.id))return;
+ const d=today();doc.logs=doc.logs||{};let ch=false;
  acts.forEach(a=>{
   if(!a||typeof a!=='object')return;
-  if(a.type==='water'){const x=L(d);D.logs[d]=Object.assign(x,{water:Math.max(0,Math.min(D.p.waterGoal||8,(x.water||0)+Math.max(0,+a.v||1)))});ch=true}
-  else if(a.type==='mood'&&a.v){D.logs[d]=Object.assign(L(d),{mood:+a.v});ch=true}
+  const cur=doc.logs[d]||{};
+  if(a.type==='water'){doc.logs[d]=Object.assign(cur,{water:Math.max(0,Math.min((doc.p&&doc.p.waterGoal)||8,(cur.water||0)+Math.max(0,+a.v||1)))});ch=true}
+  else if(a.type==='mood'&&a.v){doc.logs[d]=Object.assign(doc.logs[d]||{}, {mood:+a.v});ch=true}
   else if(a.type==='task'&&a.v!=null){
-   const t=(D.tasks||[]).find(t=>String(t.id)===String(a.v));if(!t)return;
-   const want=a.done!==false;if(isDone(t.id,d)!==want){
-    D.done=D.done||{};D.done[d]=D.done[d]||{};D.done[d][t.id]=want;ch=true}
+   const t=(doc.tasks||[]).find(t=>String(t.id)===String(a.v));if(!t)return;
+   const done=(doc.done&&doc.done[d])||{};
+   const want=a.done!==false;if(!!done[t.id]!==want){
+    doc.done=doc.done||{};doc.done[d]=doc.done[d]||{};doc.done[d][t.id]=want;ch=true}
   }
  });
- if(ch){save();try{waterReminderSync(true)}catch(e){}shell()}
+ if(!ch)return;
+ if(following){
+  const mail=(user||ST.get('bloom_own')||'').toLowerCase();
+  try{ST.set(key(mail),JSON.stringify(doc));ST.set('bloom_dirty_'+mail,'1')}catch(e){}
+  widgetSync();return;
+ }
+ D=doc;save();try{waterReminderSync(true)}catch(e){}shell();
 }
 let lastUpdV=null;
 async function checkUpdate(manual){
@@ -1604,8 +1676,8 @@ function shell(){splashAppIsReady();
  if(view=='me')document.querySelector('nav [aria-current]')?.removeAttribute('aria-current');
   ({cycle:cyclePage,month:monthView,planner,insights,learn,settings:settingsPage,me:(RO?roPage:(pLocked()?mePartner:me))})[view]()
  try{fabSync()}catch(e){}
- try{widgetSync()}catch(e){}
  try{widgetConsume()}catch(e){}
+ try{widgetSync()}catch(e){}
  try{restoreNavScroll()}catch(e){}
  if(window.__navScroll==null)try{saveNav()}catch(e){}
 }
@@ -1631,7 +1703,7 @@ function onboarding(){splashAppIsReady();try{fabSync()}catch(e){}const p=D.p;if(
  document.querySelectorAll('.dx-chip').forEach(c=>c.onclick=()=>{const v=c.dataset.dx;document.querySelectorAll('.dx-chip').forEach(x=>{x.classList.toggle('on',x.dataset.dx===v);x.setAttribute('aria-pressed',x.dataset.dx===v)});$('#dx').value=v;});
  bindFields();
  const grab=()=>{if(onbStep===1){p.name=$('#nm').value.trim();p.dx=$('#dx').value}if(onbStep===2)p.goals=[...document.querySelectorAll('#goals .chip[aria-pressed=true]')].map(c=>c.textContent);if(onbStep===3){p.cy=$('#cy').value;p.food=$('#food').value.trim();p.act=$('#act').value}};
- const nx=()=>{if(onbStep===3){p.done=true;save();view='cycle';return shell()}onbStep++;save();onboarding()};
+ const nx=()=>{if(onbStep===3){p.done=true;save();pushProfile();view='cycle';return shell()}onbStep++;save();if(onbStep>1)pushProfile();onboarding()};
  const skipAll=()=>{if(onbStep<3){onbStep=3;save();onboarding();return}nx()};
  $('#nx').onclick=()=>{grab();nx()};$('#sk').onclick=()=>{grab();skipAll()}}
 function partnerOnboard(){
@@ -2168,6 +2240,7 @@ async function loadPeek(force){
  if(view==='planner'&&planPanel==='partner')planner();
 }
 function setPlanPanel(v){
+ if(ownLoading)return;
  if(v===planPanel)return;
  planPanel=v;
  if(ownMode){if(v==='partner'){exitOwnMode(true);planPanel='partner';shell()}return}
@@ -4300,7 +4373,7 @@ $('#main').innerHTML=`<h1>Profile</h1>
   <div class="card"><button class="btn ghost" id="stg" style="width:100%">Settings</button></div>
   <button class="btn ghost" id="lo" style="width:100%">Log out</button>`;
  document.querySelectorAll('#goals .chip').forEach(c=>c.onclick=()=>c.setAttribute('aria-pressed',c.getAttribute('aria-pressed')!=='true'));
-  $('#sv').onclick=()=>{p.goals=[...document.querySelectorAll('#goals .chip[aria-pressed=true]')].map(c=>c.textContent);D.rem={on:$('#rm').checked,time:$('#rt').value||'20:00',water:$('#wm').checked};save();applyTheme();waterReminderSync(true);toast('Saved');shell()};
+  $('#sv').onclick=()=>{p.goals=[...document.querySelectorAll('#goals .chip[aria-pressed=true]')].map(c=>c.textContent);D.rem={on:$('#rm').checked,time:$('#rt').value||'20:00',water:$('#wm').checked};save();pushProfile();applyTheme();waterReminderSync(true);toast('Saved');shell()};
  $('#av').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f)pickAvatar(f)};
  const saveRem=async()=>{D.rem={on:$('#rm').checked,time:$('#rt').value||'20:00',water:$('#wm').checked};save();try{waterReminderSync(true)}catch(e){}
   const r=await reminderSync(),note=document.getElementById('remNote');
@@ -4318,6 +4391,44 @@ $('#main').innerHTML=`<h1>Profile</h1>
  if(document.getElementById('pg'))$('#pg').onclick=async()=>{await genPartnerCode();me()};
   if(document.getElementById('pv'))$('#pv').onclick=()=>stopShareSheet('');}
 
+let busyEl=null,busyN=0,busyTimer=null;
+function busyBurst(){
+ if(!busyEl)return;
+ busyEl.querySelectorAll('.splash-petal').forEach(n=>n.remove());
+ const PAL=(document.body.classList.contains('ro')||document.body.classList.contains('roSplash'))?SPLASH_PAL_RO:SPLASH_PAL;
+ const reduce=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+ const W=Math.max(innerWidth,innerHeight),N=reduce?10:26;
+ const {spread,dur}=splashPetalTiming(1300);
+ for(let i=0;i<N;i++){
+  const d=document.createElement('div');d.className='splash-petal';
+  const w=Math.min(innerWidth,innerHeight)*(.14+Math.random()*.24),h=w*1.15;
+  d.style.setProperty('--w',w+'px');d.style.setProperty('--h',h+'px');
+  const ci=Math.floor(Math.random()*4);d.innerHTML=splashPetalSVG(PAL[ci],PAL[Math.min(5,ci+2)]);
+  busyEl.appendChild(d);
+  const a=(i/N)*Math.PI*2+Math.random()*.4,dist=W*(.25+Math.random()*.45);
+  const dx=Math.cos(a)*dist,dy=Math.sin(a)*dist,r0=Math.random()*360;
+  if(reduce){d.style.opacity='.85';d.style.transform='translate('+(dx*.5)+'px,'+(dy*.5)+'px) scale(.9) rotate('+r0+'deg)';continue}
+  d.animate([
+   {opacity:0,transform:'translate(0,0) scale(.2) rotate('+r0+'deg)',offset:0},
+   {opacity:1,transform:'translate('+(dx*.25)+'px,'+(dy*.25)+'px) scale(.8) rotate('+(r0+40)+'deg)',offset:.35},
+   {opacity:0,transform:'translate('+dx+'px,'+dy+'px) scale(1.2) rotate('+(r0+90)+'deg)',offset:1}
+  ],{duration:dur,delay:Math.round(spread*Math.random()*.4),easing:'cubic-bezier(.15,.7,.3,1)',fill:'both'});
+ }
+}
+function busyOn(){
+ busyN++;
+ if(busyEl)return;
+ const e=document.createElement('div');e.id='busy';e.setAttribute('role','status');e.setAttribute('aria-live','polite');e.setAttribute('aria-busy','true');
+ e.innerHTML='<span class="sr">Loading</span>';
+ document.body.appendChild(e);busyEl=e;
+ busyBurst();busyTimer=setInterval(busyBurst,2200);
+}
+function busyOff(){
+ if(busyN>0)busyN--;
+ if(busyN>0||!busyEl)return;
+ if(busyTimer){clearInterval(busyTimer);busyTimer=null}
+ const e=busyEl;busyEl=null;e.remove();
+}
 // @test-begin splash
 var SPLASH_MIN=2600,SPLASH_MAX=3200,RESUME_MIN=1800,RESUME_MAX=2400,SPLASH_AFTER_MS=180000;
 var splashDone=false,splashAppReady=false,splashT0=0,splashMin=SPLASH_MIN,splashPlaying=false;

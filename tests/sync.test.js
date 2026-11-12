@@ -42,3 +42,10 @@ test('chooseLoginDoc merges dirty local with cloud data', () => {
   assert.deepEqual([...out.tasks.map(t => t.id)].sort(), ['cloud', 'local']);
   assert.equal(out.logs.a.mood, 1);
 });
+
+test('chooseLoginDoc keeps a meals-only cloud doc', () => {
+  const keep = { savedAt: 100, logs: {}, tasks: [], journal: [], meals: {}, plan: {}, p: {} };
+  const cloud = { savedAt: 300, logs: {}, tasks: [], journal: [], meals: { '2026-01-20': [{ t: 'Soup' }] }, plan: {}, p: {} };
+  const out = chooseLoginDoc(keep, cloud, '0');
+  assert.equal(out.meals['2026-01-20'][0].t, 'Soup');
+});
