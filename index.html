@@ -54,6 +54,9 @@ p{margin:0;line-height:1.5}
 .wordmark i{font-size:20px;font-weight:400;font-style:normal;vertical-align:super;margin-left:2px}
 
 /* Cards - hierarchy */
+.shareblock{margin-top:2px;padding-top:14px;border-top:1px solid #EADFD2;display:flex;flex-direction:column;gap:8px}
+.sharelist{display:flex;flex-direction:column;gap:0}
+.sharelist label{margin:0 !important;padding:9px 0 !important;color:var(--ink) !important;cursor:pointer}
 .card{background:#FFFBF5 !important;border:1.5px solid #EADFD2;border-radius:22px;padding:18px 16px;box-shadow:0 2px 10px rgba(120,70,80,.08);display:flex;flex-direction:column;gap:14px}
 .card-h{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:2px;border-bottom:0}
 .card-h h3{font-size:17px;line-height:1.2;margin:0}
@@ -781,10 +784,14 @@ function saveRev(){if(user)try{ST.set('bloom_rev_'+user,String(sbRev||0))}catch(
 function setDirtyFlag(v){if(user)try{ST.set('bloom_dirty_'+user,String(v))}catch(e){}}
 
 // @test-begin sync
+function docHasContent(doc){
+ if(!doc)return false;
+ return !!(Object.keys(doc.logs||{}).length||(doc.tasks||[]).length||Object.keys(doc.meals||{}).length||Object.keys(doc.plan||{}).length||(doc.journal||[]).length);
+}
 function chooseLoginDoc(keep,doc,dirty){
  if(!doc)return keep;
  if(dirty==='0')return Object.assign(blank(),doc);
- const cloudHas=Object.keys(doc.logs||{}).length||Object.keys(doc.tasks||[]).length||Object.keys(doc.journal||[]).length||Object.keys(doc.meals||{}).length||Object.keys(doc.plan||{}).length;
+ const cloudHas=docHasContent(doc);
  if(!cloudHas){const out=Object.assign(blank(),doc);out.logs=keep.logs||{};out.tasks=keep.tasks||[];out.done=keep.done||{};out.meals=keep.meals||{};out.journal=keep.journal||[];out.plan=keep.plan||{};return out}
  return mergeDocs(keep,doc);
 }
@@ -951,6 +958,7 @@ async function sbPull(){if(!sb||!sbUser||RO||document.hidden)return;
   if(JSON.stringify(D)!==sbLastPush)return;
   backupLocal();const row=await sbFetchDocWithRev(sbUser.id);if(!row)return;
    if(row.doc&&row.doc._uid&&row.doc._uid!==sbUser.id){reportErr('sync.pull.guard','row belongs to another account');return}
+   if(!docHasContent(row.doc)&&docHasContent(D)){reportErr('sync.pull.guard','ignoring an empty cloud copy');return}
    D=Object.assign(blank(),row.doc);D._uid=sbUser.id;sbRev=row.rev;saveRev();setDirtyFlag(0);sbLastPush=JSON.stringify(D);
    try{ST.set(key(user),JSON.stringify(D))}catch(e){}
   if(safeToRender())shell();else sbPendingRender=true;
@@ -967,6 +975,7 @@ async function sbAfterLoginOnce(u){ownMode=false;ownStash=null;ownLoaded=false;o
  const docP=sbFetchDocWithRev(u.id).catch(er=>{reportErr('login.doc',er);return null});
  const profP=Promise.resolve(sb.from('bloom_profiles').select('*').eq('id',u.id).maybeSingle()).catch(e=>{reportErr('profile.load',e);return {data:null}});
  const pairP=cloudPairing();
+ if(docHasContent(keep)){try{ST.set('bloom_backup_'+mail,JSON.stringify(keep))}catch(e){}}
  let row=null;try{row=await docP}catch(e){}
  const doc=row?row.doc:null;
  sbRev=row?row.rev:0;
@@ -1202,13 +1211,17 @@ function roPage(){
   <div style="display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:6px">${roAvatarHTML(192)}<label class="btn ghost" for="rpav" style="display:inline-flex !important;align-items:center !important;justify-content:center !important;gap:8px !important;cursor:pointer !important;align-self:center">${IC.camera(18)} Change photo</label><input type="file" id="rpav" accept="image/*" hidden></div>
   <div class="hi" style="text-align:center">Hello ${E(ownName())}!</div>
   </div>
- <div class="card"><div class="card-h"><h3>Following</h3></div><div class="row" style="gap:12px;align-items:center">${avatarHTML(56)}<div style="min-width:0"><b style="display:block">${E((D.p&&D.p.name)||'partner')}</b></div></div><button class="btn ghost" id="exv" style="width:100%;margin-top:14px">Exit ${E((D.p&&D.p.name)||'partner')}'s view</button></div>
-<div class="card"><div class="card-h"><h3>What I share</h3></div>
- <div style="display:flex;flex-direction:column;gap:10px">
-  <label class="row sp" style="color:var(--ink);cursor:pointer"><span><b>Tasks</b></span><input type="checkbox" id="myShareTasks" style="width:22px;margin:0;flex:0 0 auto" ${myShare.tasks?'checked':''}></label>
-  <label class="row sp" style="color:var(--ink);cursor:pointer"><span><b>Meals</b></span><input type="checkbox" id="myShareMeals" style="width:22px;margin:0;flex:0 0 auto" ${myShare.meals?'checked':''}></label>
-  <label class="row sp" style="color:var(--ink);cursor:pointer"><span><b>Journal</b></span><input type="checkbox" id="myShareJournal" style="width:22px;margin:0;flex:0 0 auto" ${myShare.journal?'checked':''}></label>
- </div></div>
+ <div class="card"><div class="card-h"><h3>Following</h3></div>
+  <div class="row" style="gap:12px;align-items:center">${avatarHTML(56)}<div style="min-width:0"><b style="display:block">${E((D.p&&D.p.name)||'partner')}</b></div></div>
+  <button class="btn ghost" id="exv" style="width:100%;margin-top:4px">Exit ${E((D.p&&D.p.name)||'partner')}'s view</button>
+  <div class="shareblock"><h3 style="margin:0;font-size:1rem">What I share</h3>
+   <div class="sharelist">
+    <label class="row sp"><span>Tasks</span><input type="checkbox" id="myShareTasks" style="width:22px;margin:0;flex:0 0 auto" ${myShare.tasks?'checked':''}></label>
+    <label class="row sp"><span>Meals</span><input type="checkbox" id="myShareMeals" style="width:22px;margin:0;flex:0 0 auto" ${myShare.meals?'checked':''}></label>
+    <label class="row sp"><span>Journal</span><input type="checkbox" id="myShareJournal" style="width:22px;margin:0;flex:0 0 auto" ${myShare.journal?'checked':''}></label>
+   </div>
+  </div>
+ </div>
    <div class="card"><button class="btn ghost" id="stg" style="width:100%">Settings</button></div>
    <button class="btn ghost" id="lo" style="width:100%">Sign out</button>`;
   $('#exv').onclick=exitPartner;
@@ -4088,19 +4101,34 @@ function setOwnerShareFlag(key,val){
  toast((key==='tasks'?'Tasks':key==='meals'?'Meals':'Journal')+(val?' shared':' private'));
  if(view==='me'&&!RO)loadPairCard();
 }
+function pairingCardHTML(){
+ const has=!!(D.partner&&D.partner.on&&D.partner.code);
+ return `<div class="card-h"><h3>Follower</h3></div>`+
+  (has?`<div class="syncbox"><span class="synccode">${E(D.partner.code)}</span><button class="btn ghost sm" id="cp">Copy</button></div><div class="linkrow"><button class="linkbtn" id="pg">New code</button><span class="linkdot">\u00b7</span><button class="linkbtn" id="pv">Stop sharing</button></div>`
+      :`<button class="btn" id="gc" style="width:100%">Create pairing code</button>`);
+}
+function bindPairActions(){
+ const gc=document.getElementById('gc');if(gc)gc.onclick=async()=>{const c=await genPartnerCode();if(c)me()};
+ const cp=document.getElementById('cp');if(cp)cp.onclick=async()=>{try{await navigator.clipboard.writeText(D.partner.code);toast('Code copied')}catch(e){toast(D.partner.code)}};
+ const pg=document.getElementById('pg');if(pg)pg.onclick=async()=>{await genPartnerCode();me()};
+ const pv=document.getElementById('pv');if(pv)pv.onclick=()=>stopShareSheet('');
+}
 async function loadPairCard(){
  const box=document.getElementById('pairCard');if(!box||RO)return;
  const st=await ownerPairing();
  pairInfo=st||false;
- if(!st||!document.body.contains(box))return;
+ if(!document.body.contains(box))return;
+ if(!st){box.innerHTML=pairingCardHTML();bindPairActions();return}
   const nm=(st.prof&&st.prof.name)||'Your follower',av=(st.prof&&st.prof.avatar)||null;
   const sh=shareFlags(D||{});
-  box.innerHTML=`<div class="card-h"><h3>What I share</h3></div>
+  box.innerHTML=`<div class="card-h"><h3>Follower</h3></div>
   <button class="pairrow" id="folRow" aria-label="Stop sharing with ${E(nm)}">${av?`<span class="avatar-wrap" style="width:56px;height:56px"><img class="avatar" src="${E(av)}" alt=""></span>`:`<span class="avatar-fb" style="width:56px;height:56px;font-size:20px">${E(nm.charAt(0).toUpperCase())}</span>`}<div style="min-width:0"><b style="display:block">${E(nm)}</b></div><span class="chev" aria-hidden="true">\u203a</span></button>
-  <div style="display:flex;flex-direction:column;gap:10px;margin-top:14px">
-   <label class="row sp" style="color:var(--ink);cursor:pointer"><span><b>Tasks</b></span><input type="checkbox" id="ownShareTasks" style="width:22px;margin:0;flex:0 0 auto" ${sh.tasks?'checked':''}></label>
-   <label class="row sp" style="color:var(--ink);cursor:pointer"><span><b>Meals</b></span><input type="checkbox" id="ownShareMeals" style="width:22px;margin:0;flex:0 0 auto" ${sh.meals?'checked':''}></label>
-   <label class="row sp" style="color:var(--ink);cursor:pointer"><span><b>Journal</b></span><input type="checkbox" id="ownShareJournal" style="width:22px;margin:0;flex:0 0 auto" ${sh.journal?'checked':''}></label>
+  <div class="shareblock"><h3 style="margin:0;font-size:1rem">What I share</h3>
+   <div class="sharelist">
+    <label class="row sp"><span>Tasks</span><input type="checkbox" id="ownShareTasks" style="width:22px;margin:0;flex:0 0 auto" ${sh.tasks?'checked':''}></label>
+    <label class="row sp"><span>Meals</span><input type="checkbox" id="ownShareMeals" style="width:22px;margin:0;flex:0 0 auto" ${sh.meals?'checked':''}></label>
+    <label class="row sp"><span>Journal</span><input type="checkbox" id="ownShareJournal" style="width:22px;margin:0;flex:0 0 auto" ${sh.journal?'checked':''}></label>
+   </div>
   </div>`;
  const row=document.getElementById('folRow');if(row)row.onclick=()=>stopShareSheet(nm);
  [['ownShareTasks','tasks'],['ownShareMeals','meals'],['ownShareJournal','journal']].forEach(([id,key])=>{const el=document.getElementById(id);if(el)el.onchange=e=>setOwnerShareFlag(key,e.target.checked)});
@@ -4376,7 +4404,7 @@ function mePartner(){const p=D.p||{};
   $('#gFollow').onclick=()=>partnerOnboard();
   $('#stg').onclick=()=>{view='settings';shell()};
   $('#lo').onclick=logout;}
-function me(){const p=D.p;const hasCode=!!(D.partner&&D.partner.on&&D.partner.code);
+function me(){const p=D.p;
 $('#main').innerHTML=`<h1>Profile</h1>
 <div class="card">
  <div style="display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:20px">${avatarHTML(192)}<label class="btn ghost" for="av" style="display:inline-flex !important;align-items:center !important;justify-content:center !important;gap:8px !important;cursor:pointer !important;align-self:center">${IC.camera(18)} Change photo</label><input type="file" id="av" accept="image/*" hidden></div>
@@ -4385,10 +4413,7 @@ $('#main').innerHTML=`<h1>Profile</h1>
  <label>Goals</label><div class="row" id="goals">${GOALS.map(g=>`<button class="chip" aria-pressed="${(p.goals||[]).includes(g)}">${g}</button>`).join('')}</div>
  <button class="btn" id="sv" style="width:100%;margin-top:12px">Save</button>
 </div>
-<div class="card" id="pairCard"><div class="card-h"><h3>Pairing code</h3></div>
- ${hasCode?`<p class="meta" style="margin:0 0 12px">Read-only access for one person. Stop sharing any time.</p><div class="syncbox"><span class="synccode">${E(D.partner.code)}</span><button class="btn ghost sm" id="cp">Copy</button></div><div class="linkrow"><button class="linkbtn" id="pg">New code</button><span class="linkdot">\u00b7</span><button class="linkbtn" id="pv">Stop sharing</button></div>`
- :`<p class="meta" style="margin:0 0 12px">Let one person follow your cycle read-only.</p><button class="btn" id="gc" style="width:100%">Create pairing code</button>`}
-</div>
+<div class="card" id="pairCard"><p class="meta" style="margin:0">Loading\u2026</p></div>
 <div class="card"><div class="card-h"><h3>Reminder</h3></div><label class="row" style="color:var(--ink)"><input type="checkbox" id="rm" style="width:22px;margin:0" ${D.rem.on?'checked':''}> Daily logging reminder</label><label for="rt">Time</label><input id="rt" type="time" value="${D.rem.time}"><label class="row" style="color:var(--ink);margin-top:12px"><input type="checkbox" id="wm" style="width:22px;margin:0" ${D.rem.water?'checked':''}> Hourly water reminder <span class="meta" style="margin-left:4px">8:00\u201322:00</span></label><button class="btn ghost" id="rs" style="width:100%;margin-top:4px">Save reminders</button><p class="meta" id="remNote" style="margin:10px 0 0"></p></div>
   <div class="card"><button class="btn ghost" id="stg" style="width:100%">Settings</button></div>
   <button class="btn ghost" id="lo" style="width:100%">Log out</button>`;
@@ -4405,11 +4430,7 @@ $('#main').innerHTML=`<h1>Profile</h1>
  $('#rs').onclick=saveRem;$('#rt').onchange=saveRem;$('#rm').onchange=saveRem;
  $('#lo').onclick=logout;loadPairCard();
  syncPartnerCode().then(ch=>{if(ch&&view==='me'&&!RO)me()});
-  $('#stg').onclick=()=>{view='settings';shell()};
-  if(document.getElementById('gc'))$('#gc').onclick=async()=>{const c=await genPartnerCode();if(c)me()};
- if(document.getElementById('cp'))$('#cp').onclick=async()=>{try{await navigator.clipboard.writeText(D.partner.code);toast('Code copied')}catch(e){toast(D.partner.code)}};
- if(document.getElementById('pg'))$('#pg').onclick=async()=>{await genPartnerCode();me()};
-  if(document.getElementById('pv'))$('#pv').onclick=()=>stopShareSheet('');}
+  $('#stg').onclick=()=>{view='settings';shell()};}
 
 let busyEl=null,busyN=0,busyTimer=null;
 function busyBurst(){

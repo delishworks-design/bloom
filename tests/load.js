@@ -50,7 +50,7 @@ function load() {
 
   const exportsByName = {
     esc: ['E'],
-    sync: ['isPlainObject', 'mergeDocs', 'chooseLoginDoc'],
+    sync: ['isPlainObject', 'mergeDocs', 'chooseLoginDoc', 'docHasContent'],
     roWho: ['roWho'],
     sxmig: ['migrateCustomSymptoms'],
     backup: ['makeBackup', 'validateBackup'],

@@ -49,3 +49,11 @@ test('chooseLoginDoc keeps a meals-only cloud doc', () => {
   const out = chooseLoginDoc(keep, cloud, '0');
   assert.equal(out.meals['2026-01-20'][0].t, 'Soup');
 });
+
+test('docHasContent ignores an empty reset but keeps real follower data', () => {
+  const { docHasContent } = load();
+  assert.equal(docHasContent(null), false);
+  assert.equal(docHasContent({ logs: {}, tasks: [], journal: [], meals: {}, plan: {}, p: { name: 'Schatzie' } }), false);
+  assert.equal(docHasContent({ logs: {}, tasks: [], journal: [{ id: 'j', t: 'kept' }] }), true);
+  assert.equal(docHasContent({ logs: { '2026-01-20': { mood: 3 } } }), true);
+});
