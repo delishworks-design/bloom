@@ -173,6 +173,12 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;
 .ringcap{margin-top:4px;font-size:.78rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#7C6B71;max-width:180px;line-height:1.3;text-align:center}
 .ringpill{margin-top:10px;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0 14px;min-height:30px;border-radius:999px;background:#FFFBF5 !important;border:1.5px solid #EADFD2 !important;box-shadow:0 2px 8px rgba(120,70,80,.08) !important;font-size:.8rem;font-weight:700;color:#3A2E33 !important;line-height:1}
 .ringpill{max-width:42%;box-sizing:border-box;padding:6px 12px;border-radius:18px;font-size:.74rem;line-height:1.25;text-align:center;white-space:normal;overflow-wrap:anywhere}
+.ringnote{margin-top:10px;max-width:46%;font-size:.76rem;font-weight:700;color:var(--teal) !important;text-align:center;line-height:1.3;white-space:normal;overflow-wrap:anywhere}
+.segwrap{display:flex;gap:6px;background:#F1E7DA;border-radius:999px;padding:4px;margin:2px 0 12px}
+.segwrap button{flex:1;border:0;background:transparent;border-radius:999px;padding:9px 10px;font:inherit;font-weight:700;font-size:.86rem;color:#7C6B71;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+.segwrap button[aria-pressed="true"]{background:#FFFBF5;color:#3A2E33;box-shadow:0 2px 6px rgba(120,70,80,.12)}
+body.ro .segwrap{background:#E7EEF3}
+body.ro .segwrap button[aria-pressed="true"]{background:#FAFCFD;color:#2A353D}
 #snm{margin:2px 0 6px !important}#sChg{margin-top:0 !important}
 .ringwrap svg{position:relative;z-index:1;width:100%;height:100%;display:block}
 
@@ -821,6 +827,11 @@ function seedOwnDoc(ownDoc,cachedDoc,pname,pavatar){
  return d;
 }
 // @test-end ownmode
+// @test-begin planui
+function shareFlags(doc){const s=((doc&&doc.p&&doc.p.share)||'');return{state:s==='shared'?'shared':s==='private'?'private':'default',tasks:s!=='private',meals:s!=='private',journal:s==='shared'}}
+function plannerTabSet(mine,showJournal){const t=[['day','Today'],['week','Week'],['meals','Meals']];if(mine||showJournal)t.push(['journal','Journal']);return t}
+function ringPillBare(state,irregular){return state==='estimated'&&!!irregular}
+// @test-end planui
 function backupLocal(){const m=user||(sbUser&&sbUser.email&&sbUser.email.toLowerCase());if(!m||!D)return;try{ST.set('bloom_backup_'+m,JSON.stringify(D))}catch(e){}}
 // @test-begin backup
 function makeBackup(doc){return {app:'bloom',v:1,exportedAt:new Date().toISOString(),doc}}
@@ -930,7 +941,7 @@ async function sbPull(){if(!sb||!sbUser||RO||document.hidden)return;
  }catch(e){reportErr('sync.pull',e)}}
 function safeToRender(){const sheetEl=document.getElementById('sheet');if(sheetEl&&sheetEl.innerHTML.trim())return false;const a=document.activeElement;return !(a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA'||a.tagName==='SELECT'))}
 function startCloudSync(){if(cloudTimer)clearInterval(cloudTimer);cloudTimer=setInterval(()=>{if(sbUser&&!document.hidden)sbPush()},15000);if(sbPullTimer)clearInterval(sbPullTimer);sbPullTimer=setInterval(sbPull,60000);if(pendRenderTimer)clearInterval(pendRenderTimer);pendRenderTimer=setInterval(()=>{if(sbPendingRender&&safeToRender()){sbPendingRender=false;shell()}},5000)}
-async function sbAfterLogin(u){ownMode=false;ownStash=null;sbUser=u;
+async function sbAfterLogin(u){ownMode=false;ownStash=null;sbUser=u;planPanel='mine';peekDoc=null;peekAt=0;pairInfo=null;
  const mail=(u.email||'').toLowerCase();
  const cached=J(key(mail),null);
   const keep=Object.assign(blank(),JSON.parse(JSON.stringify(D||cached||blank())));
@@ -1013,7 +1024,7 @@ async function cloudPairing(){
   return{ok:true,pair:data&&data.length?{owner:data[0].owner_id,code:data[0].code}:null};
  }catch(e){return{ok:false}}}
 async function enterPartnerMode(owner,code,quiet){
- RO=true;ROcloud=true;ROowner=owner;ownMode=false;ownStash=null;
+ RO=true;ROcloud=true;ROowner=owner;ownMode=false;ownStash=null;planPanel='mine';peekDoc=null;peekAt=0;pairInfo=null;
  if(cloudTimer){clearInterval(cloudTimer);cloudTimer=null}
  try{reminderCancel()}catch(e){}
  if(sbUser&&sbUser.email)user=sbUser.email.toLowerCase();
@@ -1034,7 +1045,7 @@ async function enterPartnerMode(owner,code,quiet){
  return true}
 async function partnerDropped(){
  const old=ROowner;
- RO=false;ROcloud=false;ROowner=null;roHash='';ownMode=false;ownStash=null;D=null;
+ RO=false;ROcloud=false;ROowner=null;roHash='';ownMode=false;ownStash=null;D=null;planPanel='mine';peekDoc=null;peekAt=0;pairInfo=null;
  setRoleFlag('');unlockPartner();setUnpaired(true);clearSession();
   try{ST.del('bloom_lastcode');ST.del('bloom_powner');if(old)ST.del(key(old))}catch(e){}
   try{toast('Sharing was stopped')}catch(e){}
@@ -1042,9 +1053,9 @@ async function partnerDropped(){
   authView('in')}
 // the partner's own planner and journal: same account, separate doc, synced to their own row
 async function enterOwnMode(){
- if(ownMode)return;
+ if(ownMode||!RO)return;
  if(!sbUser){toast('Sign in first');return}
- ownStash={D:D,roHash:roHash,view:view,tab:tab};
+ if(ownStash==null)ownStash={D:D,roHash:roHash,view:view,tab:tab};
  if(roTimer){clearInterval(roTimer);roTimer=null}
  ownMode=true;RO=false;ROcloud=false;
  const mail=(user||'').toLowerCase();
@@ -1056,24 +1067,28 @@ async function enterOwnMode(){
  D=seedOwnDoc(cloud,cached,pname,pavatar);
  if(cloud)sbRev=cloudRev;else loadRev(mail);
  saveRev();setDirtyFlag(0);sbLastPush=JSON.stringify(D);
- view='planner';tab='day';
+ planPanel='mine';
+ view='planner';if(['day','week','meals','journal'].indexOf(tab)<0)tab='day';
  startCloudSync();
  shell();
 }
-function exitOwnMode(){
- if(!ownMode){shell();return}
+function exitOwnMode(keepView){
+ if(!ownMode)return false;
  const mail=(user||'').toLowerCase();
  try{ST.set(key(mail),JSON.stringify(D))}catch(e){}
  try{saveRev()}catch(e){}
+ if(sbPushT){clearTimeout(sbPushT);sbPushT=null}
  if(cloudTimer){clearInterval(cloudTimer);cloudTimer=null}if(sbPullTimer){clearInterval(sbPullTimer);sbPullTimer=null}
   if(pendRenderTimer){clearInterval(pendRenderTimer);pendRenderTimer=null}sbPendingRender=false;
- D=(ownStash&&ownStash.D)||D;roHash=(ownStash&&ownStash.roHash)||'';
- const ov=(ownStash&&ownStash.view)||'cycle';ownStash=null;ownMode=false;RO=true;ROcloud=true;
- view=ov==='planner'||ov==='journal'?'cycle':ov;tab='';
- shell();
+ const st=ownStash;ownStash=null;
+ D=(st&&st.D)||D;roHash=(st&&st.roHash)||'';
+ ownMode=false;RO=true;ROcloud=true;
+ if(!keepView){const ov=(st&&st.view)||'cycle';view=(ov==='planner'||ov==='journal')?'cycle':ov;tab=''}
+ return true;
 }
 // ---------- pairing (read-only sharing)
 let RO=false,ROowner=null,ROcloud=false,ownMode=false,ownStash=null;
+let planPanel='mine',peekDoc=null,peekAt=0,pairInfo=null;
 async function genPartnerCode(){
  const client=await sbInit();
  if(!client||!sbUser){toast('Pairing needs an internet connection');return null}
@@ -1104,7 +1119,7 @@ async function exitPartnerNow(){
  const wasRO=RO;
  // leaving on purpose removes the cloud link too, so a sign-out cannot restore it
   try{if(wasRO){const cl=await sbInit();if(cl&&sbUser)await cl.rpc('bloom_leave_pairing')}}catch(e){reportErr('partner.leave',e)}
-  RO=false;ROcloud=false;ROowner=null;roHash='';ownMode=false;ownStash=null;D=null;clearSession();
+  RO=false;ROcloud=false;ROowner=null;roHash='';ownMode=false;ownStash=null;D=null;clearSession();planPanel='mine';peekDoc=null;peekAt=0;pairInfo=null;
   setRoleFlag('');unlockPartner();
   try{ST.del('bloom_lastcode');ST.del('bloom_powner')}catch(e){}
   if(wasRO)setUnpaired(true);
@@ -1112,6 +1127,10 @@ async function exitPartnerNow(){
  authView('in')}
 // partner's own profile: no pairing code, no cycle fields - just identity and exit
 function roPage(){
+ const mail=(user||'').toLowerCase();
+ let mine=null;try{mine=J(key(mail),null)}catch(e){}
+ const myShare=shareFlags(mine||{}).state;
+ const ownerNm=(D.p&&D.p.name)||'partner';
  const c=cycleStats(),len=c.avg||28,cycle=dashboardCycle();let sum='No cycle logged yet';
  if(cycle.state==='estimated')sum='Day '+cycle.cycleDay+' \u00b7 '+cycle.phase;
  else if(cycle.state==='overdue')sum='Expected period date has passed';
@@ -1124,16 +1143,30 @@ function roPage(){
   <div class="hi" style="text-align:center">Hello ${E(ownName())}!</div>
   </div>
  <div class="card"><div class="card-h"><h3>Following</h3></div><div class="row" style="gap:12px;align-items:center">${avatarHTML(56)}<div style="min-width:0"><b style="display:block">${E((D.p&&D.p.name)||'partner')}</b></div></div><button class="btn ghost" id="exv" style="width:100%;margin-top:14px">Exit ${E((D.p&&D.p.name)||'partner')}'s view</button></div>
-<div class="card"><div class="card-h"><h3>My Bloom</h3></div><p class="meta" style="margin:0 0 12px">Your own planner and journal, synced to your account. Only you can see this.</p><button class="btn" id="openOwn" style="width:100%">Open my planner &amp; journal</button></div>
+<div class="card"><div class="card-h"><h3>What I share</h3></div>
+ <label class="row sp" style="color:var(--ink);cursor:pointer"><span style="min-width:0"><b style="display:block">Share my planner with ${E(ownerNm)}</b><span class="meta">${myShare==='private'?'Private \u00b7 nothing shared':myShare==='shared'?'Tasks, meals and journal shared':'Tasks and meals shared \u00b7 journal private'}</span></span><input type="checkbox" id="myShare" style="width:22px;margin:0;flex:0 0 auto" ${myShare!=='private'?'checked':''}></label>
+ <p class="meta" style="margin:10px 0 0">Your own planner syncs to your account either way.</p></div>
    <div class="card"><button class="btn ghost" id="stg" style="width:100%">Settings</button></div>
    <button class="btn ghost" id="lo" style="width:100%">Sign out</button>
 <p class="meta" style="margin-top:8px;text-align:center">Signing out keeps this pairing. Their data stays untouched.</p>`;
   $('#exv').onclick=exitPartner;
-  $('#openOwn').onclick=enterOwnMode;
+  $('#myShare').onchange=e=>setFollowerShare(e.target.checked?'shared':'private');
   $('#stg').onclick=()=>{view='settings';shell()};
   $('#rpav').onchange=e=>{const f=e.target.files&&e.target.files[0];e.target.value='';if(f)roPickAvatar(f)};
   $('#lo').onclick=logout;}
 
+async function setFollowerShare(share){
+ if(!sbUser)return;
+ const backView=view,backPanel=planPanel;
+ try{
+  if(!ownMode)await enterOwnMode();
+  D.p=D.p||{};D.p.share=share;save();
+  try{await sbPush()}catch(e){reportErr('share.push',e)}
+  toast(share==='shared'?'Sharing on':'Sharing private');
+ }catch(e){reportErr('share.follower',e);toast('Could not update sharing')}
+ if(ownMode)exitOwnMode(true);
+ view=backView;planPanel=backPanel;shell();
+}
 function cloudStatus(){
  const el=document.getElementById('cloudStat');if(!el)return;
  const txt=document.getElementById('cloudText')||el;
@@ -1347,7 +1380,7 @@ function forgotPasswordSheet(){
 }
 function login(u){user=u;D=Object.assign(blank(),J(key(u),{}));loadRev(u);setSession(u);applyTheme();view='cycle';shell()}
 // @test-begin auth
-function logout(){RO=false;ROcloud=false;ROowner=null;roHash='';ownMode=false;ownStash=null;user=null;D=null;clearSession();setRoleFlag('');sbLastPush='';sbRev=0;
+function logout(){RO=false;ROcloud=false;ROowner=null;roHash='';ownMode=false;ownStash=null;user=null;D=null;clearSession();planPanel='mine';peekDoc=null;peekAt=0;pairInfo=null;setRoleFlag('');sbLastPush='';sbRev=0;
  view='cycle';tab='';onbStep=0;calM=today().slice(0,7);
  try{ST.del('bloom_own')}catch(e){}try{clearLegacySmartAIStorage()}catch(e){}try{reminderCancel()}catch(e){}if(sb){sb.auth.signOut().catch(()=>{});sbUser=null}if(cloudTimer){clearInterval(cloudTimer);cloudTimer=null}hideUpdateBanner();authView('in')}
 function wipeLocalData(){
@@ -1372,8 +1405,8 @@ function cycleLine(nowDate,startDates){const s=startDates||starts(),c=cycleStats
  if(current.state==='future-start')return 'Recorded period date is in the future';
  if(current.state!=='estimated')return 'Log 3 period starts to estimate';
  const nx=c.min===c.max?fmt(addD(c.last,c.min)):fmt(addD(c.last,c.min))+'\u2013'+fmt(addD(c.last,c.max));return`Day ${current.cycleDay} \u00b7 ${c.min===c.max?c.min+' days':c.min+'\u2013'+c.max+' days (avg '+c.avg+')'} \u00b7 next ${nx}`}
-function tasksFor(d){return D.tasks.filter(t=>!t.once||t.once===d).filter(t=>!t.days||t.days.includes(new Date(d+'T12:00').getDay()))}
-const isDone=(id,d)=>!!(D.done[d]||{})[id];
+function tasksFor(d,doc){const list=(doc||D).tasks||[];return list.filter(t=>!t.once||t.once===d).filter(t=>!t.days||t.days.includes(new Date(d+'T12:00').getDay()))}
+const isDone=(id,d,doc)=>!!(((doc||D).done||{})[d]||{})[id];
 function toggle(id,d){D.done[d]=D.done[d]||{};D.done[d][id]=!D.done[d][id];save()}
 const uid=()=>Math.random().toString(36).slice(2,9);
 let sheetVV=null;
@@ -1424,7 +1457,7 @@ async function fetchManifest(){const bust='?t='+Date.now();
  const r=await fetch(UPDATE_MANIFEST+bust,{cache:'no-store'});if(!r.ok)throw new Error('manifest '+r.status);
  return await r.json()}
 // Baked-in build identity. Keep in sync with android/app/build.gradle (versionCode/versionName).
-const APP_VERSION={code:74,name:'1.2.59'};
+const APP_VERSION={code:75,name:'1.2.60'};
 const UPD_SKIP_KEY='bloom_upd_skip';
 const updater=()=>{const C=window.Capacitor;if(!C)return null;
  const P=C.Plugins&&C.Plugins.BloomUpdater;
@@ -1433,6 +1466,29 @@ const updater=()=>{const C=window.Capacitor;if(!C)return null;
  return{getVersion:async()=>({versionCode:APP_VERSION.code,versionName:APP_VERSION.name}),
   installUpdate:async o=>{try{window.open(o.url,'_system')}catch(e){location.href=o.url}}};
 };
+// ---------- home-screen widget (native bridge, optional)
+function widgetNative(){try{const C=window.Capacitor;return (C&&C.Plugins&&C.Plugins.BloomWidget)||null}catch(e){return null}}
+function widgetSupported(){const n=widgetNative();return !!(n&&n.sync)}
+function widgetSnapshot(){
+ const d=today(),l=(D.logs||{})[d]||{};
+ const tasks=(D.tasks||[]).filter(t=>!t.d||t.d<=d).slice(0,3).map(t=>({id:t.id,t:t.t,done:!!t.done}));
+ return{d,water:l.water||0,mood:l.mood||null,tasks};
+}
+async function widgetSync(){const n=widgetNative();if(!n||!n.sync||RO)return;
+ try{await n.sync({data:JSON.stringify(widgetSnapshot())})}catch(e){}}
+async function widgetConsume(){
+ const n=widgetNative();if(!n||!n.consumeActions||RO)return;
+ let acts=[];try{const r=await n.consumeActions();acts=JSON.parse((r&&r.actions)||'[]')}catch(e){return}
+ if(!Array.isArray(acts)||!acts.length)return;
+ const d=today();D.logs=D.logs||{};let ch=false;
+ acts.forEach(a=>{
+  if(!a||typeof a!=='object')return;
+  if(a.type==='water'){const x=L(d);D.logs[d]=Object.assign(x,{water:Math.min(D.p.waterGoal||8,(x.water||0)+Math.max(0,+a.v||1))});ch=true}
+  else if(a.type==='mood'&&a.v){D.logs[d]=Object.assign(L(d),{mood:+a.v});ch=true}
+  else if(a.type==='task'&&a.v!=null){const t=(D.tasks||[]).find(t=>String(t.id)===String(a.v));if(t&&!t.done){t.done=true;ch=true}}
+ });
+ if(ch){save();try{waterReminderSync(true)}catch(e){}shell()}
+}
 let lastUpdV=null;
 async function checkUpdate(manual){
  const up=updater();if(!up){if(manual)toast('Updates are only available in the app');return}
@@ -1500,29 +1556,28 @@ async function roReload(){if(!RO||document.hidden)return;
  const raw=ST.get(key(ROowner));if(raw==null)return;const h=roHashOf(raw);if(h===roHash)return;roHash=h;D=Object.assign(blank(),J(key(ROowner),{}));shell()}
 function shell(){splashAppIsReady();
  if(funTimer){clearInterval(funTimer);funTimer=null}if(foodTimer){clearInterval(foodTimer);foodTimer=null}if(roTimer){clearInterval(roTimer);roTimer=null}
+ if(ownMode&&view!=='planner'){exitOwnMode(true);planPanel='partner'}
  if(RO&&!ROcloud){const raw=ST.get(key(ROowner));if(raw!=null){roHash=roHashOf(raw);D=Object.assign(blank(),J(key(ROowner),{}))}}
   document.body.classList.toggle('ro',!!RO);
   if(!RO){stripSeededTasks();migrateCustomSymptoms()}
   if(!D.p.done&&!RO){if(pLocked()){D.p.done=true;D.p=D.p||{};D.p.role='partner';save()}else return onboarding()}
-  if(ownMode){
-   if(view==='journal'){view='planner';tab='journal'}
-   else if(view!=='planner'){view='planner';tab='day'}
-  }else if(pLocked()&&!RO&&view==='cycle')view='me';
- const N=ownMode?[['planner','Planner',IC.list],['journal','Journal',IC.book]]:[['cycle','Cycle',IC.ring],['planner','Planner',IC.list] ,['insights','Insights',IC.chart],['learn','Learn',IC.book]]
+  if(pLocked()&&!RO&&view==='cycle')view='me';
+ const N=[['cycle','Cycle',IC.ring],['planner','Planner',IC.list] ,['insights','Insights',IC.chart],['learn','Learn',IC.book]]
    .filter(x=>!(pLocked()&&!RO&&x[0]==='cycle'));
- const ariaCur=k=>ownMode?(view==='planner'&&((k==='journal')===(tab==='journal'))):view==k;
- const headBtn=RO?`<button class="profbtn" id="rome" aria-label="Your profile">${roAvatarHTML(44)}<span>${E(ownName())}</span></button>`:ownMode?`<button class="profbtn" id="backFollow" aria-label="Back to followed view" style="padding:4px 16px">${'&#8249;'} <span>Followed view</span></button>`:`<button class="profbtn" id="me" aria-label="Profile and settings">${avatarHTML(44)}<span>${E(D.p.name||user)}</span></button>`;
+ const ariaCur=k=>view==k;
+ const headBtn=RO?`<button class="profbtn" id="rome" aria-label="Your profile">${roAvatarHTML(44)}<span>${E(ownName())}</span></button>`:`<button class="profbtn" id="me" aria-label="Profile and settings">${avatarHTML(44)}<span>${E(D.p.name||user)}</span></button>`;
  $('#app').innerHTML=`<div class="blob blob-a"></div><div class="blob blob-b"></div><div class="blob blob-c"></div><div class="wrap"><header class="topbar"><div class="wordmark">Bloom<i>.</i></div>${headBtn}</header><main id="main"></main></div><nav aria-label="Main">${N.map(([k,l,ic])=>`<button data-v="${k}" ${ariaCur(k)?'aria-current="page"':''}>${ic(17)}<span>${l}</span></button>`).join('')}</nav>`;
  if(RO){
  const rm=document.getElementById('rome');if(rm)rm.onclick=()=>{view='me';shell()};
  roTimer=setInterval(roReload,4000)}
- const bf=document.getElementById('backFollow');if(bf)bf.onclick=()=>exitOwnMode();
- document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{if(ownMode){tab=b.dataset.v==='journal'?'journal':'day';view='planner'}else view=b.dataset.v;shell()});
+ document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{view=b.dataset.v;shell()});
  // #me only exists outside partner (read-only) mode  that header shows the Exit button instead
  const meBtn=$('#me');if(meBtn)meBtn.onclick=()=>{view='me';shell()};
  if(view=='me')document.querySelector('nav [aria-current]')?.removeAttribute('aria-current');
   ({cycle:cyclePage,month:monthView,planner,insights,learn,settings:settingsPage,me:(RO?roPage:(pLocked()?mePartner:me))})[view]()
  try{fabSync()}catch(e){}
+ try{widgetSync()}catch(e){}
+ try{widgetConsume()}catch(e){}
 }
 function onboarding(){splashAppIsReady();try{fabSync()}catch(e){}const p=D.p;if(p.role==='me'&&onbStep===0)onbStep=1;
  if(p.role==='partner'){partnerOnboard();return}
@@ -1932,7 +1987,7 @@ function cyclePage(){const d=today(),l=L(d),ts=tasksFor(d),n=ts.filter(t=>isDone
 
  $('#main').innerHTML=`
  <div class="greet"><h1 class="sr">Cycle</h1><div class="hi">${h<12?'Good morning':h<18?'Good afternoon':'Good evening'},</div><div class="hi nm">${E(first)}</div><div class="date">${fmt(d,{weekday:'long',month:'long',day:'numeric'})}</div></div>
- <div class="ringwrap"><div class="ringdisc"></div>${ringSVG(c,current)}<div class="ringcenter"><div class="ringlbl">${current.state==='estimated'||current.state==='overdue'?'Day':current.state==='no-history'?'Cycle':'\u2014'}</div><div class="ringday">${ringNumber==null?'\u2014':ringNumber}</div><div class="ringcap">${ringCap}</div><div class="ringpill">${E(centerPill)}</div></div></div>
+ <div class="ringwrap"><div class="ringdisc"></div>${ringSVG(c,current)}<div class="ringcenter"><div class="ringlbl">${current.state==='estimated'||current.state==='overdue'?'Day':current.state==='no-history'?'Cycle':'\u2014'}</div><div class="ringday">${ringNumber==null?'\u2014':ringNumber}</div><div class="ringcap">${ringCap}</div>${ringPillBare(current.state,c.irregular)?`<div class="ringnote">${E(centerPill)}</div>`:`<div class="ringpill">${E(centerPill)}</div>`}</div></div>
  
  ${RO?'':`<button class="logpill" id="lp"><span class="plus">${IC.plus(16)}</span>Log Period</button>`}
  <div class="stats3">
@@ -1968,7 +2023,7 @@ function cyclePage(){const d=today(),l=L(d),ts=tasksFor(d),n=ts.filter(t=>isDone
  startFun();
  initPartnerCarousel();
  document.querySelectorAll('[data-mood]').forEach(b=>b.onclick=()=>{const x=L(d);D.logs[d]=Object.assign(x,{mood:+b.dataset.mood});save();cyclePage()});
- const setWater=v=>{const x=L(d);D.logs[d]=Object.assign(x,{water:Math.max(0,Math.min(goal,v))});save();cyclePage()};
+ const setWater=v=>{const x=L(d);D.logs[d]=Object.assign(x,{water:Math.max(0,Math.min(goal,v))});save();cyclePage();try{waterReminderSync(true)}catch(e){}};
  if(!RO){$('#wplus').onclick=()=>setWater((l.water||0)+1);
  $('#wminus').onclick=()=>setWater((l.water||0)-1);
  document.querySelectorAll('[data-goal]').forEach(b=>b.onclick=()=>{D.p.waterGoal=+b.dataset.goal||8;save();cyclePage()});
@@ -2031,33 +2086,88 @@ function monthView(){const [y,mo]=calM.split('-').map(Number),first=new Date(y,m
  $('#bk').onclick=()=>{view='cycle';shell()};
  $('#pv').onclick=()=>{calM=iso(new Date(y,mo-2,1)).slice(0,7);monthView()};$('#nxm').onclick=()=>{calM=iso(new Date(y,mo,1)).slice(0,7);monthView()};
  if(!RO)document.querySelectorAll('.cal [data-d]').forEach(b=>b.onclick=()=>dayLog(b.dataset.d))}
-function planner(){const d=today();tab=tab||'day';
- $('#main').innerHTML=`<h1>Planner</h1><div class="tabsrow" role="tablist">${(RO?[['day','Today'],['week','Week'],['meals','Meals']]:[['day','Today'],['week','Week'],['meals','Meals'],['journal','Journal']]).map(([k,l])=>`<button class="chip" role="tab" data-tb="${k}" aria-pressed="${tab==k}">${l}</button>`).join('')}</div><div id="pb" style="margin-top:12px"></div>`;
- document.querySelectorAll('[data-tb]').forEach(b=>b.onclick=()=>{tab=b.dataset.tb;planner()});({day:pDay,week:pWeek,meals:pMeals,journal:pJournal})[tab]()}
-function pDay(){const d=today(),ts=tasksFor(d);$('#pb').innerHTML=`<div class="card"><div class="card-h"><h3>Today</h3></div><div style="margin-top:6px">${ts.length?ts.map(t=>RO?`<div class="taskrow"><span class="ckt" style="${isDone(t.id,d)?'opacity:.55':''}">${isDone(t.id,d)?'&#10003;':''} ${E(t.t)}</span></div>`:`<div class="taskrow">${ck(t,d)}<button class="btn ghost sm del" data-del="${t.id}" aria-label="Delete ${E(t.t)}"></button></div>`).join(''):'<p class="meta">No tasks yet. Add one below.</p>'}</div>
-${RO?'':`<form id="af" style="margin-top:14px"><input id="nt" maxlength="80" placeholder="Add a task" aria-label="New task" style="width:100%;margin:0 0 10px">${chipField('rp','Repeat',[['all','Every day'],['wk','Weekdays'],['one','Today only']],'all')}<button class="btn" type="submit" style="width:100%;margin-top:12px">Add task</button></form><div class="err" id="er"></div>`}</div>`;
+function plannerPanels(){
+ if(RO)return{partner:true,name:((D.p&&D.p.name)||'Partner')};
+ if(pLocked())return null;
+ if(pairInfo===null)ensurePairInfo();
+ if(!pairInfo)return null;
+ return{partner:true,name:((pairInfo.prof&&pairInfo.prof.name)||'Follower')};
+}
+async function ensurePairInfo(){
+ if(pairInfo!==null)return;
+ pairInfo=false;
+ try{const st=await ownerPairing();pairInfo=st||false}catch(e){pairInfo=false}
+ if(view==='planner')planner();
+}
+async function loadPeek(force){
+ if(RO||!pairInfo||!pairInfo.row||!pairInfo.row.partner_id)return;
+ if(!force&&peekDoc&&Date.now()-peekAt<30000)return;
+ try{const doc=await sbFetchDoc(pairInfo.row.partner_id);peekDoc=Object.assign(blank(),doc||{});peekAt=Date.now()}catch(e){peekDoc=peekDoc||null}
+ if(view==='planner'&&planPanel==='partner')planner();
+}
+function setPlanPanel(v){
+ if(v===planPanel)return;
+ planPanel=v;
+ if(RO){if(v==='mine')enterOwnMode();else{exitOwnMode(true);planPanel='partner';shell()}return}
+ if(v==='partner'){peekDoc=null;peekAt=0;planner();loadPeek(true);return}
+ planner();
+}
+function attachPanelSwipe(el){
+ if(!el||!plannerPanels())return;
+ let x0=null,y0=null;
+ el.addEventListener('touchstart',e=>{const t=e.touches&&e.touches[0];if(!t)return;x0=t.clientX;y0=t.clientY},{passive:true});
+ el.addEventListener('touchend',e=>{const t=e.changedTouches&&e.changedTouches[0];if(!t||x0==null)return;const dx=t.clientX-x0,dy=t.clientY-y0;x0=null;if(Math.abs(dx)<70||Math.abs(dx)<Math.abs(dy)*1.4)return;
+  if(dx<0&&planPanel!=='partner')setPlanPanel('partner');
+  else if(dx>0&&planPanel==='partner')setPlanPanel('mine');},{passive:true});
+}
+function planner(){tab=tab||'day';
+ const pp=plannerPanels();const partner=!!pp;if(!partner)planPanel='mine';
+ const mine=planPanel!=='partner';
+ if(mine&&RO&&!ownMode){enterOwnMode();return}
+ const src=mine?D:(RO?D:(peekDoc||null));
+ const flags=mine?{tasks:true,meals:true,journal:true}:shareFlags(src||{});
+ const showJ=mine?true:!!flags.journal;
+ if(!showJ&&tab==='journal')tab='day';
+ const tabs=plannerTabSet(mine,showJ);
+ const seg=partner?`<div class="segwrap" role="tablist" aria-label="Whose planner"><button type="button" data-pp="mine" aria-pressed="${mine}">Mine</button><button type="button" data-pp="partner" aria-pressed="${!mine}">${E(pp.name)}</button></div>`:'';
+ $('#main').innerHTML=`<h1>Planner</h1>${seg}<div class="tabsrow" role="tablist">${tabs.map(([k,l])=>`<button class="chip" role="tab" data-tb="${k}" aria-pressed="${tab==k}">${l}</button>`).join('')}</div><div id="pb" style="margin-top:12px"></div>`;
+ document.querySelectorAll('[data-tb]').forEach(b=>b.onclick=()=>{tab=b.dataset.tb;planner()});
+ document.querySelectorAll('[data-pp]').forEach(b=>b.onclick=()=>setPlanPanel(b.dataset.pp));
+ attachPanelSwipe(document.getElementById('main'));
+ if(!partner){({day:()=>pDay(D,RO),week:()=>pWeek(D,RO),meals:()=>pMeals(D,RO),journal:()=>pJournal(D,RO)})[tab]();return}
+ if(!mine&&!src){
+  if(!RO&&!peekDoc)loadPeek(true);
+  $('#pb').innerHTML='<div class="card"><p class="meta" style="margin:0">Loading\u2026</p></div>';return}
+ if(!mine&&!flags.tasks){
+  $('#pb').innerHTML=`<div class="card"><div class="card-h"><h3>Private</h3></div><p class="meta" style="margin:0">Planner is private. Cycle stays shared.</p></div>`;return}
+ const ro=!mine;
+ ({day:()=>pDay(src,ro),week:()=>pWeek(src,ro),meals:()=>pMeals(src,ro),journal:()=>pJournal(src,ro)})[tab]();
+}
+function pDay(src,ro){const doc=src||D,only=ro==null?RO:ro;const d=today(),ts=tasksFor(d,doc);$('#pb').innerHTML=`<div class="card"><div class="card-h"><h3>Today</h3></div><div style="margin-top:6px">${ts.length?ts.map(t=>only?`<div class="taskrow"><span class="ckt" style="${isDone(t.id,d,doc)?'opacity:.55':''}">${isDone(t.id,d,doc)?'&#10003;':''} ${E(t.t)}</span></div>`:`<div class="taskrow">${ck(t,d)}<button class="btn ghost sm del" data-del="${t.id}" aria-label="Delete ${E(t.t)}"></button></div>`).join(''):'<p class="meta">No tasks yet.'+(only?'':' Add one below.')+'</p>'}</div>
+${only?'':`<form id="af" style="margin-top:14px"><input id="nt" maxlength="80" placeholder="Add a task" aria-label="New task" style="width:100%;margin:0 0 10px">${chipField('rp','Repeat',[['all','Every day'],['wk','Weekdays'],['one','Today only']],'all')}<button class="btn" type="submit" style="width:100%;margin-top:12px">Add task</button></form><div class="err" id="er"></div>`}</div>`;
  bindCk(d,planner);bindFields();
+ if(only)return;
  const afForm=document.getElementById('af');if(afForm)afForm.onsubmit=e=>{e.preventDefault();const t=$('#nt').value.trim();if(!t)return $('#er').textContent='Please type a task.';const r=$('#rp').value;D.tasks.push({id:uid(),t,days:r=='wk'?[1,2,3,4,5]:r=='one'?[new Date().getDay()]:undefined,once:r=='one'?d:undefined});save();planner()};
  document.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{D.tasks=D.tasks.filter(t=>t.id!=b.dataset.del);save();planner()})}
-function pWeek(){const days=[...Array(7)].map((_,i)=>addD(today(),i-new Date().getDay()+0));$('#pb').innerHTML=`<div class="weekgrid">`+days.map(d=>{const ts=tasksFor(d),n=ts.filter(t=>isDone(t.id,d)).length;return`<div class="card"><div class="card-h"><h3 style="font-size:1rem">${fmt(d,{weekday:'long',day:'numeric'})}${d==today()?'  today':''}</h3><span class="meta">${n}/${ts.length}</span></div><div style="margin-top:6px">${ts.map(t=>`<div class="meta">${isDone(t.id,d)?'':''} ${E(t.t)}</div>`).join('')||'<span class="meta">Rest day</span>'}</div></div>`}).join('')+`</div>`}
-function pMeals(){const d=today(),m=D.meals[d]||[],bud=D.p.bud||999;
+function pWeek(src,ro){const doc=src||D,only=ro==null?RO:ro;const days=[...Array(7)].map((_,i)=>addD(today(),i-new Date().getDay()+0));$('#pb').innerHTML=`<div class="weekgrid">`+days.map(d=>{const ts=tasksFor(d,doc),n=ts.filter(t=>isDone(t.id,d,doc)).length;return`<div class="card"><div class="card-h"><h3 style="font-size:1rem">${fmt(d,{weekday:'long',day:'numeric'})}${d==today()?'  today':''}</h3><span class="meta">${n}/${ts.length}</span></div><div style="margin-top:6px">${ts.map(t=>`<div class="meta">${isDone(t.id,d,doc)?'':''} ${E(t.t)}</div>`).join('')||'<span class="meta">Rest day</span>'}</div></div>`}).join('')+`</div>`}
+function pMeals(src,ro){const doc=src||D,only=ro==null?RO:ro;const d=today(),m=doc.meals[d]||[],bud=doc.p.bud||999;
  const fi=(foodPos+FOOD.length)%FOOD.length;
  const pool=t=>MEALS.filter(x=>x.t==t&&x.c<=bud);
- const wk=D.plan.week||null;
- $('#pb').innerHTML=`<div class="card"><div class="card-h"><h3>Todays meals</h3><span class="meta">${m.length}</span></div>${m.length?m.map((x,i)=>`<div class="row sp ck"><span class="ckt">${E(TN[x.t]||'Meal')}: ${E(x.n)}${x.q&&x.q!==1?' \u00d7'+x.q:''}</span>${RO?'':`<button class="btn ghost sm" data-rm="${i}" aria-label="Remove" style="flex:0 0 auto"></button>`}</div>`).join(''):'<p class="meta">None logged</p>'}
-${RO?'':`<div class="lbl">Add a meal</div><div class="row" id="mtRow" role="group" aria-label="Meal type" style="flex-wrap:wrap;gap:8px;margin:0 0 14px">${MEAL_TYPES.map(([k,v])=>`<button type="button" class="chip" data-mt="${k}" aria-pressed="${k===mealTypeNow()}">${v}</button>`).join('')}</div><button type="button" class="field-btn" id="mlBtn"><span id="mlLabel">Choose a meal</span><span class="chev">\u25be</span></button><input type="hidden" id="ml" value=""><input type="hidden" id="mlQ" value="1"><label for="mc">Or type your own</label><input id="mc" maxlength="60" placeholder="Paksiw na bangus"><button class="btn" id="la" style="width:100%">Add</button>`}</div>
-<div class="card"><div class="card-h"><h3>Weekly plan</h3></div>${RO?'':`${chipField('bd','Budget per meal (\u20b1)',[['','Any'],['50','up to \u20b150'],['80','up to \u20b180'],['100','up to \u20b1100'],['130','up to \u20b1130']],String(D.p.bud||''))}<button class="btn pink" id="gw" style="width:100%">Build my week</button>`}
+ const wk=doc.plan.week||null;
+ $('#pb').innerHTML=`<div class="card"><div class="card-h"><h3>Todays meals</h3><span class="meta">${m.length}</span></div>${m.length?m.map((x,i)=>`<div class="row sp ck"><span class="ckt">${E(TN[x.t]||'Meal')}: ${E(x.n)}${x.q&&x.q!==1?' \u00d7'+x.q:''}</span>${only?'':`<button class="btn ghost sm" data-rm="${i}" aria-label="Remove" style="flex:0 0 auto"></button>`}</div>`).join(''):'<p class="meta">None logged</p>'}
+${only?'':`<div class="lbl">Add a meal</div><div class="row" id="mtRow" role="group" aria-label="Meal type" style="flex-wrap:wrap;gap:8px;margin:0 0 14px">${MEAL_TYPES.map(([k,v])=>`<button type="button" class="chip" data-mt="${k}" aria-pressed="${k===mealTypeNow()}">${v}</button>`).join('')}</div><button type="button" class="field-btn" id="mlBtn"><span id="mlLabel">Choose a meal</span><span class="chev">\u25be</span></button><input type="hidden" id="ml" value=""><input type="hidden" id="mlQ" value="1"><label for="mc">Or type your own</label><input id="mc" maxlength="60" placeholder="Paksiw na bangus"><button class="btn" id="la" style="width:100%">Add</button>`}</div>
+<div class="card"><div class="card-h"><h3>Weekly plan</h3></div>${only?'':`${chipField('bd','Budget per meal (\u20b1)',[['','Any'],['50','up to \u20b150'],['80','up to \u20b180'],['100','up to \u20b1100'],['130','up to \u20b1130']],String(D.p.bud||''))}<button class="btn pink" id="gw" style="width:100%">Build my week</button>`}
 ${wk?`<div class="divider"></div>`+wk.map((r,i)=>`<div class="kv"><span>Day ${i+1}</span><b style="font-size:.85rem;font-family:inherit;font-weight:400;text-align:right">${r.map(x=>E(x.n)).join('  ')}</b></div>`).join('')+`<h3 style="margin-top:14px">Grocery list</h3><p class="meta">${[...new Set(wk.flat().flatMap(x=>x.ing))].sort().join(', ')}</p>`:''}</div>
  <div class="card fun"><span class="lbl" style="margin:0 0 2px">Food tip</span><p class="funtext" id="foodText">${E(foodQueue()[0].b)}</p></div>
  `;
- if(!RO)$('#mlBtn').onclick=()=>sheetPick('Choose a meal',MEALS.map(x=>({t:TN[x.t]+' \u00b7 '+x.n,sub:'\u20b1'+x.c})),it=>{
+ if(!only)$('#mlBtn').onclick=()=>sheetPick('Choose a meal',MEALS.map(x=>({t:TN[x.t]+' \u00b7 '+x.n,sub:'\u20b1'+x.c})),it=>{
   const i=MEALS.findIndex(x=>x.n===it.t.split(' \u00b7 ')[1]&&TN[x.t]===it.t.split(' \u00b7 ')[0]);
   if(i<0)return;
   amountSheet(it.t,q=>{$('#ml').value=i;$('#mlQ').value=q;const lb=document.getElementById('mlLabel');if(lb)lb.textContent=it.t+(q===1?'':' \u00d7'+q);const mc=document.getElementById('mc');if(mc)mc.value=''});
  },'Search meals\u2026');
- if(!RO){const mc=document.getElementById('mc');if(mc)mc.oninput=()=>{if(!mc.value.trim())return;$('#ml').value='';const lb=document.getElementById('mlLabel');if(lb)lb.textContent='Choose a meal'}}
- if(!RO)document.querySelectorAll('#mtRow .chip').forEach(c=>c.onclick=()=>{document.querySelectorAll('#mtRow .chip').forEach(x=>x.setAttribute('aria-pressed',x===c))});
- if(!RO)$('#la').onclick=()=>{const i=$('#ml').value,c=$('#mc').value.trim(),q=+$('#mlQ').value||1;
+ if(!only){const mc=document.getElementById('mc');if(mc)mc.oninput=()=>{if(!mc.value.trim())return;$('#ml').value='';const lb=document.getElementById('mlLabel');if(lb)lb.textContent='Choose a meal'}}
+ if(!only)document.querySelectorAll('#mtRow .chip').forEach(c=>c.onclick=()=>{document.querySelectorAll('#mtRow .chip').forEach(x=>x.setAttribute('aria-pressed',x===c))});
+ if(!only)$('#la').onclick=()=>{const i=$('#ml').value,c=$('#mc').value.trim(),q=+$('#mlQ').value||1;
   const sel=document.querySelector('#mtRow .chip[aria-pressed=true]');
   let it=null;
   if(i!=='')it={n:MEALS[i].n,t:MEALS[i].t,q:q};
@@ -2067,36 +2177,36 @@ ${wk?`<div class="divider"></div>`+wk.map((r,i)=>`<div class="kv"><span>Day ${i+
    it={n:n,t:t,q:q}}
   if(!it)return toast('Choose or type a meal');
   D.meals[d]=[...m,it];save();pMeals()};
- document.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{if(RO)return;m.splice(+b.dataset.rm,1);D.meals[d]=m;save();pMeals()});
+ document.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{if(only)return;m.splice(+b.dataset.rm,1);D.meals[d]=m;save();pMeals()});
  bindFields();
  // the budget chips must stick: commit the choice immediately, not only on Build my week
- if(!RO){const bdRow=document.querySelector('[data-fg="bd"]');
+ if(!only){const bdRow=document.querySelector('[data-fg="bd"]');
   if(bdRow&&!bdRow.dataset.bound){bdRow.dataset.bound='1';bdRow.addEventListener('click',e=>{const c=e.target.closest('.chip');if(!c)return;
    const v=c.dataset.v;if(v){D.p.bud=+v;save()}else{delete D.p.bud;save()}})}}
  if(foodTimer)clearInterval(foodTimer);foodTimer=setInterval(()=>{foodPos=(foodPos+1)%foodQueue().length;paintFood()},10000);
- if(!RO)$('#gw').onclick=()=>{D.p.bud=+$('#bd').value||0;const b=D.p.bud||999;const pk=t=>{const p=MEALS.filter(x=>x.t==t&&x.c<=b);return p.length?p:MEALS.filter(x=>x.t==t)};
+ if(!only)$('#gw').onclick=()=>{D.p.bud=+$('#bd').value||0;const b=D.p.bud||999;const pk=t=>{const p=MEALS.filter(x=>x.t==t&&x.c<=b);return p.length?p:MEALS.filter(x=>x.t==t)};
   D.plan.week=[...Array(7)].map((_,i)=>['b','l','d','s'].map(t=>{const p=pk(t);return p[(i+Math.floor(Math.random()*p.length))%p.length]}));save();pMeals()}}
-function pJournal(){if(RO)return;const J=D.journal||[];
+function pJournal(src,ro){const doc=src||D,only=ro==null?RO:ro;
+ if(only){
+  $('#pb').innerHTML=`<div class="card" style="gap:6px"><h2 style="margin:0;font-size:1.35rem">Journal</h2><p class="meta" style="margin:0">Shared with you \u00b7 read-only</p></div>
+ <div class="card" style="gap:8px;margin-top:4px"><input id="jsrch" type="search" placeholder="Search entries" aria-label="Search entries" value="${E(window.journalSearch||'')}"></div>
+ <div id="jEntries"></div>`;
+  const srch=document.getElementById('jsrch');if(srch)srch.oninput=e=>{window.journalSearch=e.target.value;renderJournalEntries(doc,true)};
+  renderJournalEntries(doc,true);return}
  const prompts=['What\u2019s been weighing on your heart?','What do you wish someone understood about you?','Is there something you need to let out?','What do you need right now?','Write about something you haven\u2019t said out loud.'];
  const promptHtml=prompts.map((p,i)=>`<button class="chip" data-pr="${i}" style="text-align:left;white-space:normal">${E(p)}</button>`).join('');
  $('#pb').innerHTML=`<div class="card" style="gap:10px">
   <h2 style="margin:0;font-size:1.35rem">Journal</h2>
   <p class="meta" style="margin:0">Your space, your pace.</p>
-  <label for="jtTitle" class="lbl" style="margin-top:8px">Title (optional)</label>
-  <input id="jtTitle" maxlength="80" placeholder="Optional title">
-  <label for="jt" class="lbl">Entry</label>
-  <textarea id="jt" rows="4" placeholder="Write something..."></textarea>
-  <label for="jtTags" class="lbl">Tags (optional)</label>
-  <input id="jtTags" maxlength="80" placeholder="Optional, comma separated">
+  <textarea id="jt" rows="5" placeholder="Write something..." aria-label="Journal entry"></textarea>
   <div class="err" id="er"></div>
   <button class="btn" id="js" style="width:100%">Save entry</button>
  </div>
- <details style="border:0;padding:0;margin:4px 0 0"><summary class="meta" style="cursor:pointer;font-weight:700">Writing inspiration (optional)</summary>
+ <details style="border:0;padding:0;margin:4px 0 0"><summary class="meta" style="cursor:pointer;font-weight:700">Writing inspiration</summary>
   <div class="row" style="gap:8px;margin-top:8px;flex-wrap:wrap">${promptHtml}</div>
  </details>
  <div class="card" style="gap:8px;margin-top:4px">
-  <label for="jsrch" class="lbl" style="margin:0">Search</label>
-  <input id="jsrch" type="search" placeholder="Search title or content" value="${E(window.journalSearch||'')}">
+  <input id="jsrch" type="search" placeholder="Search entries" aria-label="Search entries" value="${E(window.journalSearch||'')}">
  </div>
  <div id="jEntries"></div>`;
  growAll($('#pb'));
@@ -2106,11 +2216,10 @@ function pJournal(){if(RO)return;const J=D.journal||[];
   const p=prompts[+b.dataset.pr];const ta=document.getElementById('jt');if(ta){ta.value=(ta.value?ta.value+'\n\n':'')+p+'\n';ta.focus();growAll($('#pb'))}});
  $('#js').onclick=()=>{
   const t=$('#jt').value.trim();if(!t)return $('#er').textContent='Write something first.';
-  const title=$('#jtTitle').value.trim();const tags=$('#jtTags').value.split(',').map(s=>s.trim()).filter(Boolean).slice(0,8);
-  D.journal=D.journal||[];D.journal.push({id:uid(),d:today(),t,title:title||undefined,tags:tags.length?tags:undefined});save();window.journalSearch='';if(srch)srch.value='';pJournal()};
+  D.journal=D.journal||[];D.journal.push({id:uid(),d:today(),t});save();window.journalSearch='';if(srch)srch.value='';pJournal()};
  bindJournalEntries();
  renderJournalEntries()}
-function renderJournalEntries(){const J=D.journal||[];const q=(window.journalSearch||'').trim().toLowerCase();
+function renderJournalEntries(src,readOnly){const doc=src||D;const J=doc.journal||[];const q=(window.journalSearch||'').trim().toLowerCase();
  const filtered=J.filter(j=>{if(!q)return true;const title=(j.title||'').toLowerCase(),body=(j.t||'').toLowerCase();return title.includes(q)||body.includes(q)});
  const pinned=filtered.filter(j=>j.pinned).sort((a,b)=>(b.d||'').localeCompare(a.d||''));
  const rest=filtered.filter(j=>!j.pinned).sort((a,b)=>(b.d||'').localeCompare(a.d||''));
@@ -2119,28 +2228,28 @@ function renderJournalEntries(){const J=D.journal||[];const q=(window.journalSea
   <div class="meta">${fmt(j.d,{weekday:'short',month:'short',day:'numeric',year:'numeric'})}${j.tags&&j.tags.length?' \u00b7 '+j.tags.map(E).join(', '):''}</div>
   ${j.title?`<h3 style="margin:0;font-size:1.05rem">${E(j.title)}</h3>`:''}
   <p style="white-space:pre-wrap;margin:0;line-height:1.6">${E(j.t)}</p>
-  <div class="row" style="gap:8px;margin-top:6px">
+  ${readOnly?'':`<div class="row" style="gap:8px;margin-top:6px">
    <button class="btn ghost sm" data-e="${j.id}">Edit</button>
    <button class="btn ghost sm" data-pin="${j.id}">${j.pinned?'Unpin':'Pin'}</button>
    <button class="btn ghost sm" data-x="${j.id}">Delete</button>
-  </div>
+  </div>`}
  </div>`;
  const el=document.getElementById('jEntries');if(!el)return;
  const hasEntries=J.length>0;
- if(!hasEntries){el.innerHTML='<p class="meta" style="text-align:center;padding:18px">No entries yet. Write something above.</p>';bindJournalEntries();return}
- if(!filtered.length){el.innerHTML='<p class="meta" style="text-align:center;padding:18px">No matching entries found.</p>';bindJournalEntries();return}
+ if(!hasEntries){el.innerHTML='<p class="meta" style="text-align:center;padding:18px">'+(readOnly?'Nothing shared yet.':'No entries yet. Write something above.')+'</p>';bindJournalEntries(doc,readOnly);return}
+ if(!filtered.length){el.innerHTML='<p class="meta" style="text-align:center;padding:18px">No matching entries found.</p>';bindJournalEntries(doc,readOnly);return}
  el.innerHTML=(pinned.length?`<div class="lbl" style="margin:8px 0 4px">Pinned</div>`+pinned.map(entryCard).join(''):'')+
   (rest.length?`<div class="lbl" style="margin:8px 0 4px">Entries</div>`+rest.map(entryCard).join(''):'');
- bindJournalEntries()}
-function bindJournalEntries(){
+ bindJournalEntries(doc,readOnly)}
+function bindJournalEntries(src,readOnly){if(readOnly)return;const doc=src||D;
  document.querySelectorAll('[data-x]').forEach(b=>b.onclick=()=>{if(confirm('Delete this entry?')){D.journal=(D.journal||[]).filter(j=>j.id!=b.dataset.x);save();renderJournalEntries()}});
- document.querySelectorAll('[data-pin]').forEach(b=>b.onclick=()=>{const j=(D.journal||[]).find(x=>x.id==b.dataset.pin);if(j){j.pinned=!j.pinned;save();renderJournalEntries()}});
+ document.querySelectorAll('[data-pin]').forEach(b=>b.onclick=()=>{const j=(doc.journal||[]).find(x=>x.id==b.dataset.pin);if(j){j.pinned=!j.pinned;save();renderJournalEntries()}});
  document.querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>{
-  const j=(D.journal||[]).find(x=>x.id==b.dataset.e);
+  const j=(doc.journal||[]).find(x=>x.id==b.dataset.e);
   sheet(`<h2>Edit entry</h2>
-   <label for="etTitle" class="lbl">Title (optional)</label><input id="etTitle" maxlength="80" value="${E(j.title||'')}">
+   <label for="etTitle" class="lbl">Title</label><input id="etTitle" maxlength="80" value="${E(j.title||'')}">
    <label for="et" class="lbl" style="margin-top:8px">Entry</label><textarea id="et" rows="6">${E(j.t)}</textarea>
-   <label for="etTags" class="lbl" style="margin-top:8px">Tags (optional)</label><input id="etTags" maxlength="80" value="${E((j.tags||[]).join(', '))}">
+   <label for="etTags" class="lbl" style="margin-top:8px">Tags</label><input id="etTags" maxlength="80" value="${E((j.tags||[]).join(', '))}">
    <div class="row sp" style="margin-top:14px;gap:10px"><button class="btn ghost" id="c2" style="flex:1">Cancel</button><button class="btn" id="s2" style="flex:1">Save</button></div>`);
   growAll();
   $('#c2').onclick=()=>sheet();
@@ -3737,6 +3846,30 @@ async function reminderSync(quiet){
  }catch(e){
   if(!quiet)toast('Could not set the reminder');
   return {native:true,error:String((e&&e.message)||e)}}}
+const WATER_BASE=1200;
+const WATER_IDS=[...Array(14)].map((_,i)=>WATER_BASE+8+i);
+async function waterReminderSync(quiet){
+ const LN=notifPlugin();if(!LN)return;
+ const on=!!(D&&D.rem&&D.rem.water&&!RO);
+ try{await LN.cancel({notifications:WATER_IDS.map(id=>({id}))})}catch(e){}
+ if(!on)return;
+ try{
+  let p=await LN.checkPermissions();
+  if(p.display!=='granted'){if(quiet)return;p=await LN.requestPermissions()}
+  if(p.display!=='granted'){if(!quiet)toast('Allow notifications for Bloom in Android settings');return}
+  try{await LN.createChannel({id:'bloom_reminders',name:'Bloom reminders',description:'Logging reminders',sound:'beep.wav',importance:4})}catch(e){}
+  const d=today();
+  if((((D.logs||{})[d]||{}).water||0)>0)return;
+  const now=new Date(),items=[];
+  for(let h=8;h<=21;h++){
+   if(h<=now.getHours())continue;
+   items.push({id:WATER_BASE+h,title:'Bloom',body:'No water logged yet \u2014 time for a glass.',channelId:'bloom_reminders',sound:'beep.wav',schedule:{on:{hour:h,minute:0},allowWhileIdle:true},smallIcon:'ic_stat_bloom',iconColor:'#2A8A87'});
+  }
+  if(items.length){await LN.schedule({notifications:items});if(!quiet)toast('Water reminders on for today')}
+  else if(!quiet)toast('Water reminders start tomorrow morning');
+ }catch(e){reportErr('reminder.water',e);if(!quiet)toast('Could not set water reminders')}
+}
+
 // ---------- data deletion
 function deleteAllData(){
  const yes=confirm('Delete all your Bloom data?\n\nEvery log, meal, task and journal entry will be erased from this phone and from the cloud. Your account stays, so you can start fresh. This cannot be undone.');
@@ -3796,11 +3929,20 @@ async function ownerPairing(){
 async function loadPairCard(){
  const box=document.getElementById('pairCard');if(!box||RO)return;
  const st=await ownerPairing();
+ pairInfo=st||false;
  if(!st||!document.body.contains(box))return;
   const nm=(st.prof&&st.prof.name)||'Your follower',av=(st.prof&&st.prof.avatar)||null;
+  const sh=shareFlags(D||{});
   box.innerHTML=`<div class="card-h"><h3>Follower</h3></div>
-  <button class="pairrow" id="folRow" aria-label="Stop sharing with ${E(nm)}">${av?`<span class="avatar-wrap" style="width:56px;height:56px"><img class="avatar" src="${E(av)}" alt=""></span>`:`<span class="avatar-fb" style="width:56px;height:56px;font-size:20px">${E(nm.charAt(0).toUpperCase())}</span>`}<div style="min-width:0"><b style="display:block">${E(nm)}</b></div><span class="chev" aria-hidden="true">\u203a</span></button>`;
+  <button class="pairrow" id="folRow" aria-label="Stop sharing with ${E(nm)}">${av?`<span class="avatar-wrap" style="width:56px;height:56px"><img class="avatar" src="${E(av)}" alt=""></span>`:`<span class="avatar-fb" style="width:56px;height:56px;font-size:20px">${E(nm.charAt(0).toUpperCase())}</span>`}<div style="min-width:0"><b style="display:block">${E(nm)}</b></div><span class="chev" aria-hidden="true">\u203a</span></button>
+  <label class="row sp" style="color:var(--ink);cursor:pointer;margin-top:14px"><span style="min-width:0"><b style="display:block">Share my planner</b><span class="meta">${sh.state==='private'?'Private \u00b7 cycle only':sh.state==='shared'?'Tasks, meals and journal':'Tasks and meals \u00b7 journal private'}</span></span><input type="checkbox" id="ownShare" style="width:22px;margin:0;flex:0 0 auto" ${sh.state!=='private'?'checked':''}></label>`;
  const row=document.getElementById('folRow');if(row)row.onclick=()=>stopShareSheet(nm);
+ const os=document.getElementById('ownShare');
+ if(os)os.onchange=e=>{
+  D.p=D.p||{};D.p.share=e.target.checked?'shared':'private';save();
+  toast(e.target.checked?'Sharing on':'Sharing private');
+  if(view==='me')loadPairCard();
+ };
 }
 function stopShareSheet(name){
  const who=name?E(name)+' will lose access right away.':'That code stops working right away.';
@@ -3813,7 +3955,7 @@ async function stopShareRun(){
  if(!cl||!sbUser){toast('Could not stop sharing \u2014 check your connection');return}
  try{const {error}=await cl.rpc('bloom_revoke_partner_codes');if(error)throw error}
  catch(e){toast('Could not stop sharing \u2014 try again');return}
- D.partner={code:'',on:false};save();
+ D.partner={code:'',on:false};save();pairInfo=null;
  await shareEndAnim();
  toast('Sharing stopped');
  if(view!=='me'){view='me';shell()}else me();
@@ -4025,6 +4167,7 @@ function settingsPage(){
    </div>
    <div class="card"><div class="card-h"><h3>Sync</h3></div><p class="meta" id="syncLine" style="margin:0 0 10px">${E(syncLineText())}</p><div class="row" style="gap:10px"><button class="btn ghost" id="syncNow" style="flex:1">Sync now</button><button class="btn ghost" id="syncCopy" style="flex:1">Copy diagnostics</button></div></div>
     ${RO?'<div class="card"><div class="card-h"><h3>Your data</h3></div><p class="meta" style="margin:0 0 10px">Delete your sign-in account and your profile copy. The person you follow keeps everything.</p><button class="btn pink" id="sDelAcct" style="width:100%">Delete my account</button></div>':'<div class="card"><div class="card-h"><h3>Your data</h3></div><p class="meta" style="margin:0 0 10px">Erase all your logs, meals, tasks and journal from this phone and the cloud. Your partner loses access. Your sign-in account itself is not deleted.</p><button class="btn pink" id="sDel" style="width:100%">Delete all my data</button><button class="btn ghost" id="sDelAcct" style="width:100%">Delete my account</button><button class="btn ghost" id="sExp" style="width:100%">Export backup</button><button class="btn ghost" id="sImp" style="width:100%">Import backup</button>'+bkRestore+'</div>'}
+   ${widgetSupported()?`<div class="card"><div class="card-h"><h3>Home-screen widget</h3></div><p class="meta" style="margin:0 0 12px">Today\u2019s tasks, water and mood, one tap away.</p><button class="btn ghost" id="wPin" style="width:100%">Add Bloom widget</button><p class="meta" id="wNote" style="margin:10px 0 0"></p></div>`:''}
    <div class="card"><div class="card-h"><h3>App</h3><span class="meta" id="appVer">\u2014</span></div><button class="btn ghost" id="chkUp" style="width:100%">Check for updates</button><p class="meta" style="margin:10px 0 0">Bloom shows patterns from your logs. It is not medical advice.</p></div>`;
  $('#bk').onclick=()=>{view='me';shell()};
  $('#sChg').onclick=()=>changeNameSheet(nm,async v=>{
@@ -4050,6 +4193,11 @@ function settingsPage(){
    if(document.getElementById('syncNow'))$('#syncNow').onclick=()=>{sbPush();setTimeout(updateSyncLine,200)};
    if(document.getElementById('syncCopy'))$('#syncCopy').onclick=async()=>{const txt='sync: '+syncLineText()+'\nrev: '+sbRev+'\nfails: '+SYNC.fails+'\nlast: '+(SYNC.last?new Date(SYNC.last).toISOString():'none')+'\nlogs:\n'+errLog().map(e=>new Date(e.t).toISOString()+' ['+e.ctx+'] '+e.msg).join('\n');try{await navigator.clipboard.writeText(txt);toast('Copied')}catch(e){toast('Copy failed')}};
   if(document.getElementById('chkUp'))$('#chkUp').onclick=()=>checkUpdate(true);
+  if(document.getElementById('wPin'))$('#wPin').onclick=async()=>{
+   const n=widgetNative(),note=document.getElementById('wNote');
+   let r={};try{r=await n.requestPin()}catch(e){}
+   if(note)note.textContent=(r&&r.pinned)?'Added to your home screen.':'Long-press your home screen, open Widgets and pick Bloom.';
+  };
   (async()=>{const up=updater();if(!up)return;try{const v=await up.getVersion();const el=document.getElementById('appVer');if(el)el.textContent='v'+v.versionName+' ('+v.versionCode+')'}catch(e){}})()
 }
 function mePartner(){const p=D.p||{};
@@ -4078,13 +4226,13 @@ $('#main').innerHTML=`<h1>Profile</h1>
  ${hasCode?`<p class="meta" style="margin:0 0 12px">Read-only access for one person. Stop sharing any time.</p><div class="syncbox"><span class="synccode">${E(D.partner.code)}</span><button class="btn ghost sm" id="cp">Copy</button></div><div class="linkrow"><button class="linkbtn" id="pg">New code</button><span class="linkdot">\u00b7</span><button class="linkbtn" id="pv">Stop sharing</button></div>`
  :`<p class="meta" style="margin:0 0 12px">Let one person follow your cycle read-only.</p><button class="btn" id="gc" style="width:100%">Create pairing code</button>`}
 </div>
-<div class="card"><div class="card-h"><h3>Reminder</h3></div><label class="row" style="color:var(--ink)"><input type="checkbox" id="rm" style="width:22px;margin:0" ${D.rem.on?'checked':''}> Daily logging reminder</label><label for="rt">Time</label><input id="rt" type="time" value="${D.rem.time}"><button class="btn ghost" id="rs" style="width:100%;margin-top:4px">Save reminder</button></div>
+<div class="card"><div class="card-h"><h3>Reminder</h3></div><label class="row" style="color:var(--ink)"><input type="checkbox" id="rm" style="width:22px;margin:0" ${D.rem.on?'checked':''}> Daily logging reminder</label><label for="rt">Time</label><input id="rt" type="time" value="${D.rem.time}"><label class="row" style="color:var(--ink);margin-top:12px"><input type="checkbox" id="wm" style="width:22px;margin:0" ${D.rem.water?'checked':''}> Hourly water reminder <span class="meta" style="margin-left:4px">8:00\u201322:00</span></label><button class="btn ghost" id="rs" style="width:100%;margin-top:4px">Save reminders</button><p class="meta" id="remNote" style="margin:10px 0 0"></p></div>
   <div class="card"><button class="btn ghost" id="stg" style="width:100%">Settings</button></div>
   <button class="btn ghost" id="lo" style="width:100%">Log out</button>`;
  document.querySelectorAll('#goals .chip').forEach(c=>c.onclick=()=>c.setAttribute('aria-pressed',c.getAttribute('aria-pressed')!=='true'));
-  $('#sv').onclick=()=>{p.goals=[...document.querySelectorAll('#goals .chip[aria-pressed=true]')].map(c=>c.textContent);D.rem={on:$('#rm').checked,time:$('#rt').value||'20:00'};save();applyTheme();toast('Saved');shell()};
+  $('#sv').onclick=()=>{p.goals=[...document.querySelectorAll('#goals .chip[aria-pressed=true]')].map(c=>c.textContent);D.rem={on:$('#rm').checked,time:$('#rt').value||'20:00',water:$('#wm').checked};save();applyTheme();waterReminderSync(true);toast('Saved');shell()};
  $('#av').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f)pickAvatar(f)};
- const saveRem=async()=>{D.rem={on:$('#rm').checked,time:$('#rt').value||'20:00'};save();
+ const saveRem=async()=>{D.rem={on:$('#rm').checked,time:$('#rt').value||'20:00',water:$('#wm').checked};save();try{waterReminderSync(true)}catch(e){}
   const r=await reminderSync(),note=document.getElementById('remNote');
   if(!r.native){toast('Saved');return}
   if(r.blocked){if(note)note.textContent='Notifications are blocked. Allow them in Android Settings \u203a Apps \u203a Bloom \u203a Notifications.'}
