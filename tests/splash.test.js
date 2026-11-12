@@ -134,3 +134,17 @@ test('repeated splashPlay calls do not overlap after completion', (t) => {
     t.mock.timers.reset();
   }
 });
+
+test('petals play inside both the full and the resume splash window', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const code = extract(html, 'splash');
+  const { sandbox } = makeEnv(null);
+  vm.runInNewContext(code, sandbox, { filename: 'splash.js' });
+  for (const min of [1800, 2600]) {
+    const t = sandbox.splashPetalTiming(min);
+    const startsLast = Math.round(t.spread * 1.0);
+    const endsLast = startsLast + Math.round(t.dur * 1.2);
+    assert.ok(startsLast < min, 'petals must start before the splash hides');
+    assert.ok(endsLast <= min + 300, 'petals must finish around hide time, not long after');
+  }
+});

@@ -1,7 +1,7 @@
 {
-    "versionCode": 76,
-    "versionName": "1.2.61",
-    "notes": "Fixed: Mine now stays on the same page as your partner's view, and the Planner shows the other person's real name. New: two home-screen widgets - Tasks, and Water & mood.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.61/bloom-1.2.61.apk",
+    "versionCode": 77,
+    "versionName": "1.2.62",
+    "notes": "Journal notes now live in the Journal, the task widget scrolls through every task due today, tasks and meals can be renamed by holding them, delete buttons no longer break the meal row, and the app keeps showing your saved logs when you are offline.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.62/bloom-1.2.62.apk",
     "publishedAt": "2026-11-12"
 }
