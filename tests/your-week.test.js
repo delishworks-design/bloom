@@ -196,7 +196,7 @@ test('Your week template is deterministic for the same facts', () => {
   assert.ok(mod.smartWeekValidate(a, facts));
 });
 
-test('Your week card renders, escapes, and sits after cycle before focus', () => {
+test('Your week card renders, escapes, and sits before focus', () => {
   const mod = ctx();
   const extras = {
     week: [{ key: 'energy', label: 'Energy', now: 3.2, prev: 2.8, arrow: '↑' }],
@@ -214,11 +214,11 @@ test('Your week card renders, escapes, and sits after cycle before focus', () =>
   assert.ok(!/Next 3 days/.test(html));
   assert.ok(!html.includes('<up>'));
   assert.ok(!/Log a few more days/.test(html));
-  const cycleIdx = html.indexOf('smart-cycle-title');
   const weekIdx = html.indexOf('id="smart-week"');
   const focusIdx = html.indexOf('id="smart-focus"');
-  assert.ok(cycleIdx !== -1 && weekIdx !== -1 && focusIdx !== -1);
-  assert.ok(cycleIdx < weekIdx && weekIdx < focusIdx, 'order cycle < week < focus');
+  assert.ok(weekIdx !== -1 && focusIdx !== -1);
+  assert.ok(weekIdx < focusIdx, 'order week < focus');
+  assert.equal(html.indexOf('smart-cycle-title'), -1, 'no cycle block in Smart Insights');
 
 
   const ro = mod.smartInsightsHTML({ state: 'single-start' }, { state: 'single-start' }, [], 'Alex', null, Object.assign({}, extras, { ro: true, focus: null }));

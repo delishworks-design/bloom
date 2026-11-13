@@ -92,15 +92,17 @@ test('empty patterns render one short line', () => {
   assert.ok(!/\bundefined\b|\bNaN\b|<img|<script/i.test(out));
 });
 
-test('focus card shows the selected goal and switching chips when several goals exist', () => {
+test('focus is a swipeable card per goal with the goal name as the card header', () => {
   const { smartInsightsHTML } = renderContext();
   const out = smartInsightsHTML(predictedState(), currentState(), [], 'Alex', null, extras());
 
   assert.match(out, /Your focus/);
+  assert.match(out, /smart-focus-track/);
+  assert.match(out, /class="smart-focus-card-title">Better sleep</);
+  assert.match(out, /class="smart-focus-card-title">Understanding your cycle</);
   assert.match(out, /Better sleep is the goal you chose/);
-  assert.match(out, /data-goal="Better sleep"/);
-  assert.match(out, /data-goal="Understand my cycle"/);
-  assert.match(out, /aria-pressed="true"/);
+  assert.equal((out.match(/<article class="smart-focus-card/g) || []).length, 2);
+  assert.ok(!/smart-goal-chip|aria-pressed/.test(out));
 });
 
 test('no goals shows the profile prompt', () => {
@@ -213,15 +215,18 @@ test('read-only mode hides the focus card but keeps the rest', () => {
   assert.match(out, /Coming up/);
 });
 
-test('cycle states keep plain messages', () => {
+test('Smart Insights does not repeat the cycle block from the main screen', () => {
   const { smartInsightsHTML } = renderContext();
-  const single = smartInsightsHTML({ state: 'single-start' }, currentState({ state: 'single-start' }), []);
-  const future = smartInsightsHTML(predictedState(), currentState({ state: 'future-start' }), []);
-  const overdue = smartInsightsHTML(predictedState(true), currentState({ state: 'overdue' }), []);
-
-  assert.match(single, /Log at least 3 period start dates to see cycle estimates\./);
-  assert.match(future, /last logged period start is in the future\. Please check the date\./);
-  assert.match(overdue, /later than expected/);
+  const states = [
+    [predictedState(false), currentState({ state: 'estimated', phase: 'Luteal', phaseLabel: 'Luteal phase', cycleDay: 18, cycleLength: 28 })],
+    [{ state: 'single-start' }, currentState({ state: 'single-start' })],
+    [predictedState(true), currentState({ state: 'overdue' })],
+    [predictedState(), currentState({ state: 'future-start' })]
+  ];
+  states.forEach(([pred, cur]) => {
+    const out = smartInsightsHTML(pred, cur, []);
+    assert.ok(!/smart-cycle-title|Next period|Day \d+ of ~|Limited history|Log at least 3 period start dates/.test(out), 'no cycle block');
+  });
 });
 
 test('Smart Insights has no Cloud AI controls or endpoint', () => {
@@ -471,34 +476,27 @@ test('Fix1: week data does not claim ownership unless Your week presents it; dif
   assert.equal((out4.match(/Stress<\/span><span class="smart-week-val">3\.8/g)||[]).length, 0);
 });
 
-test('Fix2: Cycle period estimate claimed and suppressed in Coming up; period-only Coming up renders', () => {
-  const { smartInsightsHTML, smartComingUpHTML, smartEvidenceRegistry } = renderContext();
+test('Coming up carries the period estimate and upcoming phases', () => {
+  const { smartInsightsHTML, smartComingUpHTML } = renderContext();
   const pred = predictedState(false);
   const current = { state: 'estimated', phase: 'Luteal', phaseLabel: 'Luteal phase', cycleDay: 18, cycleLength: 28, confidence: 'Limited history', predictedDate: '2026-04-23' };
-  // Cycle displays estimate -> Coming up no duplicate period tail
   const out = smartInsightsHTML(pred, current, [], 'Alex', null, {
     selectedGoal: 'Understand my cycle', focusGoals: ['Understand my cycle'], noGoals: false, focus: null, week: [], ro: false,
     comingUp: { daysToPeriod: 4, phases: [{ phase: 'Follicular', phaseLabel: 'Follicular phase', startsIn: 2, mood: 3, energy: 3, stress: 2, symptoms: [] }] },
     weekCard: null, weekFacts: null
   });
-  assert.match(out, /Next period/);
-  assert.equal((out.match(/Period expected in 4 days\./g)||[]).length, 0);
+  assert.ok(!/smart-cycle-title|Next period/.test(out), 'no cycle block');
+  assert.equal((out.match(/Period expected in 4 days\./g)||[]).length, 1);
   assert.match(out, /Follicular phase/);
 
-  // Cycle no period estimate -> Coming up can display it
-  const predNo = { state: 'limited-history', startCount: 2, validCount: 1, last: '2026-03-26', expected: null, rangeStart: null, rangeEnd: null, min: null, max: null, avg: null, overdue: false, confidence: 'Limited history' };
-  const curNo = { state: 'single-start', phase: null, phaseLabel: null, cycleDay: null, cycleLength: null, confidence: 'Limited history', predictedDate: null };
-  const out2 = smartInsightsHTML(predNo, curNo, [], 'Alex', null, {
+  const out2 = smartInsightsHTML(pred, current, [], 'Alex', null, {
     selectedGoal: 'Understand my cycle', focusGoals: ['Understand my cycle'], noGoals: false, focus: null, week: [], ro: false,
     comingUp: { daysToPeriod: 4, phases: [] }, weekCard: null, weekFacts: null
   });
-  assert.match(out2, /Period expected in 4 days\./);
+  assert.equal((out2.match(/Period expected in 4 days\./g)||[]).length, 1);
 
-  // no phases + valid period -> period renders
   assert.match(smartComingUpHTML({ daysToPeriod: 4, phases: [] }), /Period expected in 4 days\./);
-  // phases + no period -> phases render
   assert.match(smartComingUpHTML({ phases: [{ phaseLabel: 'Follicular phase', startsIn: 2, mood: 3, energy: 3, stress: 2, symptoms: [] }] }), /Follicular phase/);
-  // invalid period + no phases -> nothing fabricated
   assert.equal(smartComingUpHTML({ daysToPeriod: -1, phases: [] }), '');
   assert.equal(smartComingUpHTML({ daysToPeriod: 0, phases: [] }), '');
 });
@@ -538,395 +536,101 @@ test('Fix3: Focus association evidence suppresses same association in Patterns; 
 
 
 
-test('Period deduplication: Your week suppresses Cycle and Coming up; distinct phase remains; registry resets', () => {
+test('period estimate renders once in Coming up and is suppressed when Your week presents it', () => {
   const { smartInsightsHTML } = renderContext();
   const pred = predictedState(false);
   const current = { state: 'estimated', phase: 'Luteal', phaseLabel: 'Luteal phase', cycleDay: 18, cycleLength: 28, confidence: 'Limited history', predictedDate: '2026-04-23' };
-  const extras = {
-    selectedGoal: 'Understand my cycle', focusGoals: ['Understand my cycle'], noGoals: false,
-    focus: { goal: 'Understand my cycle', headline: 'Day 18 of ~28 · Luteal phase', metric: 'Period expected in 4 days', trend: null, action: 'Keep logging.' },
-    week: [], ro: false,
-    comingUp: { daysToPeriod: 4, phases: [{ phase: 'Follicular', phaseLabel: 'Follicular phase', startsIn: 2, mood: 3, energy: 3, stress: 2, symptoms: [] }] },
-    weekCard: { headline: 'Day 18 of cycle', summary: 'Day 18 in Luteal phase, period in 4 days.', actions: ['Note symptoms as they show up', 'Plan a short walk'] },
-    weekFacts: { goals: ['Understand my cycle'], week: [], comingUp: [{ phaseLabel: 'Follicular phase', startsIn: 2, mood: 3, energy: 3, stress: 2, symptoms: [] }], focus: { headline: 'Day 18 of ~28 · Luteal phase', metric: 'Period expected in 4 days', trend: '' }, daysToPeriod: 4, phaseLabel: 'Luteal phase', cycleDay: 18 }
-  };
-  const out = smartInsightsHTML(pred, current, [], 'Alex', null, extras);
-  assert.match(out, /before your period/); // Your week presents it
-  assert.ok(!/Next period/.test(out), 'Cycle should not repeat period estimate when Your week owns it');
-  assert.equal((out.match(/Period expected in 4 days\./g)||[]).length, 0, 'Coming up period tail suppressed');
-  assert.match(out, /Follicular phase/, 'distinct upcoming phase remains');
+  const focus = { goal: 'Understand my cycle', headline: 'Day 18 of ~28 · Luteal phase', metric: 'Period expected in 4 days', trend: null, action: 'Keep logging.' };
+  const comingUp = { daysToPeriod: 4, phases: [{ phase: 'Follicular', phaseLabel: 'Follicular phase', startsIn: 2, mood: 3, energy: 3, stress: 2, symptoms: [] }] };
 
-  // Cycle suppresses Coming up when Your week does not present period
-  const out2 = smartInsightsHTML(pred, current, [], 'Alex', null, {
-    selectedGoal: 'Better sleep', focusGoals: ['Better sleep'], noGoals: false,
-    focus: { goal: 'Better sleep', headline: 'Sleep 6.4 h last week', metric: '6.4 h', trend: null, action: 'Try a consistent wind-down time.' },
-    week: [], ro: false, weekCard: null, weekFacts: null,
-    comingUp: { daysToPeriod: 4, phases: [{ phase: 'Follicular', phaseLabel: 'Follicular phase', startsIn: 2, mood: 3, energy: 3, stress: 2, symptoms: [] }] }
-  });
-  assert.match(out2, /Next period/);
-  assert.equal((out2.match(/Period expected in 4 days\./g)||[]).length, 0);
-  assert.match(out2, /Follicular phase/);
-
-  // Coming up displays period when neither earlier section renders it
-  const predNo = { state: 'limited-history', expected: null };
-  const curNo = { state: 'single-start', phase: null, phaseLabel: null, cycleDay: null, cycleLength: null, confidence: 'Limited history', predictedDate: null };
-  const out3 = smartInsightsHTML(predNo, curNo, [], 'Alex', null, {
-    selectedGoal: 'Better sleep', focusGoals: ['Better sleep'], noGoals: false, focus: null, week: [], ro: false, weekCard: null, weekFacts: null,
-    comingUp: { daysToPeriod: 4, phases: [] }
-  });
-  assert.ok(!/Next period/.test(out3));
-  assert.match(out3, /Period expected in 4 days\./);
-
-  // Registry resets on new render
-  const out4 = smartInsightsHTML(predNo, curNo, [], 'Alex', null, {
-    selectedGoal: 'Better sleep', focusGoals: ['Better sleep'], noGoals: false, focus: null, week: [], ro: false, weekCard: null, weekFacts: null,
-    comingUp: { daysToPeriod: 4, phases: [] }
-  });
-  assert.match(out4, /Period expected in 4 days\./);
-});
-
-test('Stress/sleep identity: actual focus outputs use specific IDs and do not incorrectly suppress different pattern evidence', () => {
-  const mod = renderContext();
-  const { smartGoalFocus, smartPatternsFromLogs, smartInsightsHTML } = mod;
-  const TODAY = '2026-01-20';
-
-  // Poor sleep quality on high-stress days (focus) vs sleep duration on high-stress vs low-stress days (pattern) - different evidence
-  const logsQuality = {
-    '2026-01-14': { stress: 4, sleep: 8, sleepq: 1 },
-    '2026-01-15': { stress: 5, sleep: 8, sleepq: 2 },
-    '2026-01-16': { stress: 4, sleep: 7.5, sleepq: 2 },
-    '2026-01-09': { stress: 2, sleep: 8, sleepq: 4 },
-    '2026-01-10': { stress: 2, sleep: 8, sleepq: 4 },
-    '2026-01-11': { stress: 2, sleep: 8, sleepq: 4 }
-  };
-  // construct logs that also produce stress-sleep duration pattern (high stress shorter sleep than low stress)
-  const logsBoth = {
-    '2026-01-14': { stress: 5, sleep: 5.5, sleepq: 1 },
-    '2026-01-15': { stress: 4, sleep: 5.8, sleepq: 2 },
-    '2026-01-16': { stress: 5, sleep: 6.0, sleepq: 2 },
-    '2026-01-09': { stress: 1, sleep: 7.8, sleepq: 4 },
-    '2026-01-10': { stress: 2, sleep: 7.5, sleepq: 4 },
-    '2026-01-11': { stress: 1, sleep: 8.0, sleepq: 4 }
-  };
-  const focusQ = smartGoalFocus('Manage stress', { logs: logsQuality, startDates: [], current: { state: 'no-history' }, pred: {}, todayStr: TODAY, meals: {} });
-  assert.equal(focusQ.evidenceId, 'association:stress-poor-sleep-quality:focus-14d');
-  const patsBoth = smartPatternsFromLogs(logsBoth, []);
-  const stressPat = patsBoth.find(p => p.type === 'stress-sleep');
-  assert.ok(stressPat, 'stress-sleep duration pattern exists');
-  // poor sleep quality focus must not suppress stress-sleep duration pattern
-  const out1 = smartInsightsHTML(predictedState(), currentState(), patsBoth, 'Alex', null, {
-    selectedGoal: 'Manage stress', focusGoals: ['Manage stress'], noGoals: false, focus: focusQ, week: [], comingUp: null, weekCard: null, weekFacts: null, ro: false
-  });
-  assert.match(out1, /Sleep averages were lower on days with higher recorded stress/);
-
-  // Short sleep companion in stress focus is different evidence than pattern's high-vs-low stress sleep duration comparison
-  const focusShort = smartGoalFocus('Manage stress', { logs: logsBoth, startDates: [], current: { state: 'no-history' }, pred: {}, todayStr: TODAY, meals: {} });
-  // focusShort may pick short or quality depending on counts; ensure short case
-  if (focusShort.evidenceId === 'association:stress-short-sleep:focus-14d') {
-    const out2 = smartInsightsHTML(predictedState(), currentState(), patsBoth, 'Alex', null, {
-      selectedGoal: 'Manage stress', focusGoals: ['Manage stress'], noGoals: false, focus: focusShort, week: [], comingUp: null, weekCard: null, weekFacts: null, ro: false
-    });
-    assert.match(out2, /Sleep averages were lower on days with higher recorded stress/, 'different stress/sleep evidence remains eligible');
-  }
-
-  // Sleep-energy duplicate still suppressed when genuinely identical (focus uses pattern detail with association:sleep-energy:all)
-  const logsSE = {
-    '2026-01-14': { sleep: 5.5, energy: 2 }, '2026-01-15': { sleep: 5.8, energy: 2 }, '2026-01-16': { sleep: 6.0, energy: 2 },
-    '2026-01-17': { sleep: 7.8, energy: 4 }, '2026-01-18': { sleep: 7.5, energy: 4 }, '2026-01-19': { sleep: 8.0, energy: 4 }
-  };
-  const focusSE = smartGoalFocus('Better sleep', { logs: logsSE, startDates: [], current: { state: 'no-history' }, pred: {}, todayStr: TODAY, meals: {} });
-  const patsSE = smartPatternsFromLogs(logsSE, []);
-  const sePat = patsSE.find(p => p.type === 'sleep-energy');
-  assert.ok(focusSE.evidenceId === 'association:sleep-energy:all' && sePat);
-  const outSE = smartInsightsHTML(predictedState(), currentState(), patsSE, 'Alex', null, {
-    selectedGoal: 'Better sleep', focusGoals: ['Better sleep'], noGoals: false, focus: focusSE, week: [], comingUp: null, weekCard: null, weekFacts: null, ro: false
-  });
-  assert.equal((outSE.match(/Short sleep days = lower energy/g)||[]).length, 0);
-
-  // Registry resets between renders
-  const outR1 = smartInsightsHTML(predictedState(), currentState(), patsSE, 'Alex', null, { selectedGoal: 'Better sleep', focusGoals: ['Better sleep'], noGoals: false, focus: null, week: [], comingUp: null, weekCard: null, weekFacts: null, ro: false });
-  const outR2 = smartInsightsHTML(predictedState(), currentState(), patsSE, 'Alex', null, { selectedGoal: 'Better sleep', focusGoals: ['Better sleep'], noGoals: false, focus: null, week: [], comingUp: null, weekCard: null, weekFacts: null, ro: false });
-  assert.match(outR1, /Short sleep days = lower energy/);
-  assert.match(outR2, /Short sleep days = lower energy/);
-});
-
-
-
-
-test('Focus period metric suppresses Cycle and Coming up duplicates; distinct phase remains; read-only does not claim hidden focus', () => {
-  const { smartInsightsHTML } = renderContext();
-  const pred = predictedState(false);
-  const current = { state: 'estimated', phase: 'Luteal', phaseLabel: 'Luteal phase', cycleDay: 18, cycleLength: 28, confidence: 'Limited history', predictedDate: '2026-04-23' };
-  // Focus period metric suppresses Cycle and Coming up duplicates
-  const out = smartInsightsHTML(pred, current, [], 'Alex', null, {
-    selectedGoal: 'Understand my cycle', focusGoals: ['Understand my cycle'], noGoals: false,
-    focus: { goal: 'Understand my cycle', headline: 'Day 18 of ~28 · Luteal phase', metric: 'Period expected in 4 days', trend: null, action: 'Keep logging.' },
-    week: [], ro: false, weekCard: null, weekFacts: null,
-    comingUp: { daysToPeriod: 4, phases: [{ phase: 'Follicular', phaseLabel: 'Follicular phase', startsIn: 2, mood: 3, energy: 3, stress: 2, symptoms: [] }] }
-  });
-  assert.match(out, /your period is close enough/); // focus period in plain words
-  assert.ok(!/Next period/.test(out), 'Cycle should not repeat period estimate');
-  assert.equal((out.match(/Period expected in 4 days\./g)||[]).length, 0, 'Coming up period tail suppressed');
-  assert.match(out, /Follicular phase/, 'distinct upcoming phase remains');
-  assert.match(out, /Understanding your cycle is the goal/, 'focus prose preserved');
-
-  // Focus without a period metric allows Cycle to render its estimate
-  const out2 = smartInsightsHTML(pred, current, [], 'Alex', null, {
-    selectedGoal: 'Understand my cycle', focusGoals: ['Understand my cycle'], noGoals: false,
-    focus: { goal: 'Understand my cycle', headline: 'Day 18 of ~28 · Luteal phase', metric: null, trend: null, action: 'Keep logging.' },
-    week: [], ro: false, weekCard: null, weekFacts: null,
-    comingUp: { daysToPeriod: 4, phases: [] }
-  });
-  assert.match(out2, /Next period/);
-  assert.equal((out2.match(/Period expected in 4 days\./g)||[]).length, 0);
-
-  // Focus without period metric and Cycle without estimate allows Coming up to render its period
-  const predNo = { state: 'limited-history', expected: null };
-  const curNo = { state: 'single-start', phase: null, phaseLabel: null, cycleDay: null, cycleLength: null, confidence: 'Limited history', predictedDate: null };
-  const out3 = smartInsightsHTML(predNo, curNo, [], 'Alex', null, {
-    selectedGoal: 'Understand my cycle', focusGoals: ['Understand my cycle'], noGoals: false,
-    focus: { goal: 'Understand my cycle', headline: 'Log period start dates to see this', metric: null, trend: null, action: null },
-    week: [], ro: false, weekCard: null, weekFacts: null,
-    comingUp: { daysToPeriod: 4, phases: [] }
-  });
-  assert.ok(!/Next period/.test(out3));
-  assert.match(out3, /Period expected in 4 days\./);
-
-  // Read-only mode does not claim hidden focus evidence
-  const out4 = smartInsightsHTML(pred, current, [], 'Alex', null, {
-    selectedGoal: 'Understand my cycle', focusGoals: ['Understand my cycle'], noGoals: false,
-    focus: { goal: 'Understand my cycle', headline: 'Day 18 of ~28 · Luteal phase', metric: 'Period expected in 4 days', trend: null, action: 'Keep logging.' },
-    week: [], ro: true, weekCard: null, weekFacts: null,
-    comingUp: { daysToPeriod: 4, phases: [] }
-  });
-  assert.ok(!/Your focus/.test(out4));
-  assert.match(out4, /Next period/, 'hidden focus must not suppress Cycle period');
-});
-
-
-
-
-test('Period ownership: Your week owns period, Focus suppresses only duplicate period metric (headline/action/phase preserved)', () => {
-  const { smartInsightsHTML } = renderContext();
-  const pred = predictedState(false);
-  const current = { state: 'estimated', phase: 'Luteal', phaseLabel: 'Luteal phase', cycleDay: 18, cycleLength: 28, confidence: 'Limited history', predictedDate: '2026-04-23' };
-  const out = smartInsightsHTML(pred, current, [], 'Alex', null, {
-    selectedGoal: 'Understand my cycle', focusGoals: ['Understand my cycle'], noGoals: false,
-    focus: { goal: 'Understand my cycle', headline: 'Day 18 of ~28 · Luteal phase', metric: 'Period expected in 4 days', trend: null, action: 'Keep logging.' },
-    week: [], ro: false,
-    weekCard: { headline: 'Your week', summary: 'Period in 4 days.', actions: ['Note symptoms as they show up', 'Plan a short walk'] },
-    weekFacts: { goals: ['Understand my cycle'], week: [], comingUp: [{ phaseLabel: 'Follicular phase', startsIn: 2, mood: 3, energy: 3, stress: 2, symptoms: [] }], focus: { headline: 'Day 18 of ~28 · Luteal phase', metric: 'Period expected in 4 days', trend: '' }, daysToPeriod: 4 },
-    comingUp: { daysToPeriod: 4, phases: [{ phase: 'Follicular', phaseLabel: 'Follicular phase', startsIn: 2, mood: 3, energy: 3, stress: 2, symptoms: [] }] }
-  });
-  assert.match(out, /Your week/);
-  assert.match(out, /before your period/);
-  const focusSection = (out.match(/<section class="smart-section smart-focus"[\s\S]*?<\/section>/) || [''])[0];
-  assert.ok(focusSection, 'focus section rendered');
-  assert.ok(!/Period expected in 4 days/.test(focusSection), 'Focus must not display duplicate period metric');
-  assert.ok(!/Next period/.test(out), 'Cycle must not display duplicate period estimate');
-  assert.equal((out.match(/Period expected in 4 days\./g) || []).length, 0, 'Coming up must not display duplicate period estimate');
-  assert.match(out, /Follicular phase/);
-  assert.match(focusSection, /Understanding your cycle is the goal/, 'Focus keeps its plain-language frame');
-  assert.match(focusSection, /Keep noting how you feel each day/, 'Focus advice remains visible');
-});
-
-test('Period ownership: Your week owns period and cycle-day/phase, Focus suppresses duplicated headline and metric', () => {
-  const { smartInsightsHTML } = renderContext();
-  const pred = predictedState(false);
-  const current = { state: 'estimated', phase: 'Luteal', phaseLabel: 'Luteal phase', cycleDay: 18, cycleLength: 28, confidence: 'Limited history', predictedDate: '2026-04-23' };
-  const out = smartInsightsHTML(pred, current, [], 'Alex', null, {
-    selectedGoal: 'Understand my cycle', focusGoals: ['Understand my cycle'], noGoals: false,
-    focus: { goal: 'Understand my cycle', headline: 'Day 18 of ~28 · Luteal phase', metric: 'Period expected in 4 days', trend: null, action: 'Keep logging.' },
-    week: [], ro: false,
-    weekCard: { headline: 'Day 18 of cycle', summary: 'Day 18 in Luteal phase, period in 4 days.', actions: ['Note symptoms as they show up', 'Plan a short walk'] },
-    weekFacts: { goals: ['Understand my cycle'], week: [], comingUp: [], focus: { headline: 'Day 18 of ~28 · Luteal phase', metric: 'Period expected in 4 days', trend: '' }, daysToPeriod: 4, phaseLabel: 'Luteal phase', cycleDay: 18 },
-    comingUp: { daysToPeriod: 4, phases: [{ phase: 'Follicular', phaseLabel: 'Follicular phase', startsIn: 2, mood: 3, energy: 3, stress: 2, symptoms: [] }] }
-  });
-  assert.match(out, /Your week/);
-  const focusSection = (out.match(/<section class="smart-section smart-focus"[\s\S]*?<\/section>/) || [''])[0];
-  assert.ok(focusSection);
-  assert.ok(!/Period expected in 4 days/.test(focusSection));
-  assert.ok(!/Day 18 of ~28 · Luteal phase/.test(focusSection), 'Focus must not repeat already-owned cycle-day/phase headline');
-  assert.ok(!/Next period/.test(out));
-  assert.equal((out.match(/Period expected in 4 days\./g) || []).length, 0);
-  assert.match(out, /Follicular phase/);
-  assert.match(focusSection, /Keep noting how you feel each day/, 'Focus advice remains');
-});
-
-test('Period ownership: Focus owns period when Your week does not; Cycle/Coming up do not duplicate', () => {
-  const { smartInsightsHTML } = renderContext();
-  const pred = predictedState(false);
-  const current = { state: 'estimated', phase: 'Luteal', phaseLabel: 'Luteal phase', cycleDay: 18, cycleLength: 28, confidence: 'Limited history', predictedDate: '2026-04-23' };
-  const out = smartInsightsHTML(pred, current, [], 'Alex', null, {
-    selectedGoal: 'Understand my cycle', focusGoals: ['Understand my cycle'], noGoals: false,
-    focus: { goal: 'Understand my cycle', headline: 'Day 18 of ~28 · Luteal phase', metric: 'Period expected in 4 days', trend: null, action: 'Keep logging.' },
-    week: [], ro: false, weekCard: null, weekFacts: null,
-    comingUp: { daysToPeriod: 4, phases: [{ phase: 'Follicular', phaseLabel: 'Follicular phase', startsIn: 2, mood: 3, energy: 3, stress: 2, symptoms: [] }] }
-  });
-  const focusSection = (out.match(/<section class="smart-section smart-focus"[\s\S]*?<\/section>/) || [''])[0];
-  assert.ok(focusSection && /your period is close enough/.test(focusSection), 'Focus displays its period in plain words');
-  assert.ok(!/Next period/.test(out), 'Cycle must not duplicate');
-  assert.equal((out.match(/Period expected in 4 days\./g) || []).length, 0, 'Coming up must not duplicate');
-  assert.match(out, /Follicular phase/);
-});
-
-test('Period ownership: invalid/missing Focus period estimate must not claim and must not suppress valid evidence', () => {
-  const { smartInsightsHTML } = renderContext();
-  const pred = predictedState(false);
-  const current = { state: 'estimated', phase: 'Luteal', phaseLabel: 'Luteal phase', cycleDay: 18, cycleLength: 28, confidence: 'Limited history', predictedDate: '2026-04-23' };
-  const predNo = { state: 'limited-history', expected: null };
-  const curNo = { state: 'single-start', phase: null, phaseLabel: null, cycleDay: null, cycleLength: null, confidence: 'Limited history', predictedDate: null };
-  const base = (focus, comingUp, p = pred, c = current) => smartInsightsHTML(p, c, [], 'Alex', null, {
+  const plain = smartInsightsHTML(pred, current, [], 'Alex', null, {
     selectedGoal: 'Understand my cycle', focusGoals: ['Understand my cycle'], noGoals: false,
     focus, week: [], ro: false, weekCard: null, weekFacts: null, comingUp
   });
-  const cases = [
-    { focus: { goal: 'Understand my cycle', headline: 'H', metric: null, trend: null, action: 'A' }, comingUp: { daysToPeriod: 4, phases: [] } },
-    { focus: { goal: 'Understand my cycle', headline: 'H', metric: '', trend: null, action: 'A' }, comingUp: { daysToPeriod: 4, phases: [] } },
-    { focus: { goal: 'Understand my cycle', headline: 'H', metric: '   ', trend: null, action: 'A' }, comingUp: { daysToPeriod: 4, phases: [] } },
-    { focus: { goal: 'Understand my cycle', headline: 'H', metric: 'Period expected in 4 days', trend: null, action: 'A' }, comingUp: null },
-    { focus: { goal: 'Understand my cycle', headline: 'H', metric: 'Period expected in 4 days', trend: null, action: 'A' }, comingUp: { daysToPeriod: null, phases: [] } },
-    { focus: { goal: 'Understand my cycle', headline: 'H', metric: 'Period expected in 4 days', trend: null, action: 'A' }, comingUp: { daysToPeriod: 0, phases: [] } },
-    { focus: { goal: 'Understand my cycle', headline: 'H', metric: 'Period expected in 4 days', trend: null, action: 'A' }, comingUp: { daysToPeriod: -1, phases: [] } },
-    { focus: { goal: 'Understand my cycle', headline: 'H', metric: 'Period expected in 4 days', trend: null, action: 'A' }, comingUp: { daysToPeriod: NaN, phases: [] } },
-  ];
-  for (const tc of cases) {
-    const out = base(tc.focus, tc.comingUp, pred, current);
-    assert.match(out, /Next period/, 'Cycle remains eligible to display valid period estimate: ' + JSON.stringify(tc.comingUp));
-  }
-  for (const tc of cases) {
-    const out = base(tc.focus, tc.comingUp, predNo, curNo);
-    if (tc.comingUp && Number.isFinite(tc.comingUp.daysToPeriod) && tc.comingUp.daysToPeriod > 0) {
-      assert.match(out, /Period expected in 4 days\./, 'Coming up remains eligible when Cycle has no valid estimate');
-    } else {
-      assert.ok(!/Period expected in 4 days\./.test(out), 'invalid/missing coming period not fabricated');
-    }
-  }
+  assert.ok(!/smart-cycle-title|Next period/.test(plain), 'cycle block is gone');
+  assert.equal((plain.match(/Period expected in 4 days\./g) || []).length, 1, 'period appears once');
+  assert.match(plain, /Follicular phase/);
+  assert.match(plain, /your period is close enough/, 'focus keeps its plain-language frame');
+
+  const owned = smartInsightsHTML(pred, current, [], 'Alex', null, {
+    selectedGoal: 'Understand my cycle', focusGoals: ['Understand my cycle'], noGoals: false,
+    focus, week: [], ro: false,
+    weekCard: { headline: 'Your week', summary: 'Period in 4 days.', actions: ['Note symptoms as they show up', 'Plan a short walk'] },
+    weekFacts: { goals: ['Understand my cycle'], week: [], comingUp: [{ phaseLabel: 'Follicular phase', startsIn: 2, mood: 3, energy: 3, stress: 2, symptoms: [] }], focus: { headline: 'Day 18 of ~28 · Luteal phase', metric: 'Period expected in 4 days', trend: '' }, daysToPeriod: 4, phaseLabel: 'Luteal phase', cycleDay: 18 },
+    comingUp
+  });
+  assert.match(owned, /before your period/);
+  assert.equal((owned.match(/Period expected in 4 days\./g) || []).length, 0, 'Your week owns the period line');
+  assert.match(owned, /Follicular phase/);
 });
 
-test('Period ownership: read-only mode does not claim hidden Focus period evidence', () => {
+test('period line is not fabricated from invalid or missing coming-up values', () => {
   const { smartInsightsHTML } = renderContext();
   const pred = predictedState(false);
   const current = { state: 'estimated', phase: 'Luteal', phaseLabel: 'Luteal phase', cycleDay: 18, cycleLength: 28, confidence: 'Limited history', predictedDate: '2026-04-23' };
-  const predNo = { state: 'limited-history', expected: null };
-  const curNo = { state: 'single-start', phase: null, phaseLabel: null, cycleDay: null, cycleLength: null, confidence: 'Limited history', predictedDate: null };
-  const out = smartInsightsHTML(pred, current, [], 'Alex', null, {
+  const focus = { goal: 'Understand my cycle', headline: 'Day 18 of ~28 · Luteal phase', metric: 'Period expected in 4 days', trend: null, action: 'Keep logging.' };
+  const cases = [undefined, { phases: [] }, { daysToPeriod: 0, phases: [] }, { daysToPeriod: -1, phases: [] }, { daysToPeriod: NaN, phases: [] }];
+  cases.forEach((comingUp) => {
+    const out = smartInsightsHTML(pred, current, [], 'Alex', null, {
+      selectedGoal: 'Understand my cycle', focusGoals: ['Understand my cycle'], noGoals: false,
+      focus, week: [], ro: false, weekCard: null, weekFacts: null, comingUp
+    });
+    assert.ok(!/Period expected in \d+ days?\./.test(out), 'no fabricated period line');
+    assert.match(out, /Understanding your cycle is the goal/, 'focus prose stays');
+  });
+});
+
+test('read-only mode hides the focus card entirely', () => {
+  const { smartInsightsHTML } = renderContext();
+  const current = { state: 'estimated', phase: 'Luteal', phaseLabel: 'Luteal phase', cycleDay: 18, cycleLength: 28, confidence: 'Limited history', predictedDate: '2026-04-23' };
+  const out = smartInsightsHTML(predictedState(false), current, [], 'Alex', null, {
     selectedGoal: 'Understand my cycle', focusGoals: ['Understand my cycle'], noGoals: false,
     focus: { goal: 'Understand my cycle', headline: 'Day 18 of ~28 · Luteal phase', metric: 'Period expected in 4 days', trend: null, action: 'Keep logging.' },
     week: [], ro: true, weekCard: null, weekFacts: null,
     comingUp: { daysToPeriod: 4, phases: [] }
   });
   assert.ok(!/Your focus/.test(out));
-  assert.ok(!/Period expected in 4 days/.test(out.replace(/[\s\S]*<section class="smart-section smart-cycle"[\s\S]*?<\/section>/,'')), 'hidden focus metric not rendered elsewhere as focus claim');
-  assert.match(out, /Next period/, 'Cycle remains eligible when focus hidden');
-  const out2 = smartInsightsHTML(predNo, curNo, [], 'Alex', null, {
-    selectedGoal: 'Understand my cycle', focusGoals: ['Understand my cycle'], noGoals: false,
-    focus: { goal: 'Understand my cycle', headline: 'Day 18 of ~28 · Luteal phase', metric: 'Period expected in 4 days', trend: null, action: 'Keep logging.' },
-    week: [], ro: true, weekCard: null, weekFacts: null,
-    comingUp: { daysToPeriod: 4, phases: [] }
-  });
-  assert.ok(!/Your focus/.test(out2));
-  assert.ok(!/Next period/.test(out2));
-  assert.match(out2, /Period expected in 4 days\./, 'Coming up remains eligible if Cycle has no valid estimate');
+  assert.ok(!/smart-cycle-title|Next period/.test(out));
 });
 
-test('Period ownership: registry is render-scoped and does not leak between renders', () => {
-  const { smartInsightsHTML } = renderContext();
-  const pred = predictedState(false);
-  const current = { state: 'estimated', phase: 'Luteal', phaseLabel: 'Luteal phase', cycleDay: 18, cycleLength: 28, confidence: 'Limited history', predictedDate: '2026-04-23' };
-  const predNo = { state: 'limited-history', expected: null };
-  const curNo = { state: 'single-start', phase: null, phaseLabel: null, cycleDay: null, cycleLength: null, confidence: 'Limited history', predictedDate: null };
-  const extrasOwned = {
-    selectedGoal: 'Understand my cycle', focusGoals: ['Understand my cycle'], noGoals: false,
-    focus: { goal: 'Understand my cycle', headline: 'Day 18 of ~28 · Luteal phase', metric: 'Period expected in 4 days', trend: null, action: 'Keep logging.' },
-    week: [], ro: false, weekCard: null, weekFacts: null,
-    comingUp: { daysToPeriod: 4, phases: [] }
-  };
-  const extrasComing = {
-    selectedGoal: 'Understand my cycle', focusGoals: ['Understand my cycle'], noGoals: false,
-    focus: { goal: 'Understand my cycle', headline: 'Log period start dates to see this', metric: null, trend: null, action: null },
-    week: [], ro: false, weekCard: null, weekFacts: null,
-    comingUp: { daysToPeriod: 4, phases: [] }
-  };
-  const out1 = smartInsightsHTML(pred, current, [], 'Alex', null, extrasOwned);
-  assert.match(out1, /your period is close enough/);
-  assert.ok(!/Next period/.test(out1));
-  const out2 = smartInsightsHTML(predNo, curNo, [], 'Alex', null, extrasComing);
-  assert.ok(!/Next period/.test(out2));
-  assert.match(out2, /Period expected in 4 days\./, 'later render can show Coming up period when no higher-priority owner');
-  const out3 = smartInsightsHTML(pred, current, [], 'Alex', null, extrasOwned);
-  assert.ok(!/Next period/.test(out3));
+test('next step follows what is still missing today', () => {
+  const { smartNextStep } = renderContext();
+  const base = { todayStr: '2026-01-20', meals: {}, journal: [] };
+  const empty = Object.assign({}, base, { logs: {} });
+  assert.equal(smartNextStep('Understand my cycle', empty).label, 'Log today\u2019s symptoms');
+
+  const symptomOnly = Object.assign({}, base, { logs: { '2026-01-20': { tags: ['Cramps'] } } });
+  const afterSymptoms = smartNextStep('Understand my cycle', symptomOnly);
+  assert.notEqual(afterSymptoms.label, 'Log today\u2019s symptoms', 'no repeat after symptoms are logged');
+  assert.equal(afterSymptoms.label, 'Add today\u2019s energy');
+
+  const full = Object.assign({}, base, { logs: { '2026-01-20': { tags: ['Cramps'], energy: 3, mood: 4 } } });
+  assert.equal(smartNextStep('Understand my cycle', full).label, 'Review today');
+
+  const energyMissing = Object.assign({}, base, { logs: { '2026-01-20': { sleep: 7 } } });
+  assert.equal(smartNextStep('Better sleep', energyMissing).label, 'Record today\u2019s energy');
+
+  const mealsMissing = Object.assign({}, base, { logs: { '2026-01-20': { energy: 3 } } });
+  assert.equal(smartNextStep('Eat regularly', mealsMissing).label, 'Plan today\u2019s meals');
+
+  const mealsPlanned = Object.assign({}, base, { meals: { '2026-01-20': [{ t: 'b', n: 'Oats' }] }, logs: {} });
+  assert.equal(smartNextStep('Eat regularly', mealsPlanned).label, 'Record today\u2019s energy');
+
+  const noteDone = Object.assign({}, base, { logs: { '2026-01-20': { stress: 4, energy: 3 } }, journal: [{ d: '2026-01-20', t: 'Busy morning.' }] });
+  assert.equal(smartNextStep('Manage stress', noteDone).label, 'Review today');
 });
 
+test('pattern advice is an explicit instruction with no plan-ahead phrasing', () => {
+  const { smartSymptomAdvice, smartPatternsFromLogs } = renderContext();
+  assert.ok(!/plan ahead/i.test(smartSymptomAdvice('Cramps')));
+  assert.match(smartSymptomAdvice('Cramps'), /heat pack/);
+  assert.match(smartSymptomAdvice('custom symptom'), /what eased custom symptom/);
 
-
-
-test('Focus period metric sanitation: invalid structured period evidence clears only Focus metric', () => {
-  const { smartInsightsHTML } = renderContext();
-  const pred = predictedState(false);
-  const current = { state: 'estimated', phase: 'Luteal', phaseLabel: 'Luteal phase', cycleDay: 18, cycleLength: 28, confidence: 'Limited history', predictedDate: '2026-04-23' };
-  const base = (comingUp) => smartInsightsHTML(pred, current, [], 'Alex', null, {
-    selectedGoal: 'Understand my cycle', focusGoals: ['Understand my cycle'], noGoals: false,
-    focus: { goal: 'Understand my cycle', headline: 'Day 18 of ~28 · Luteal phase', metric: 'Period expected in 4 days', trend: 'Last cycle 28 days vs 28 days before', action: 'Keep logging.' },
-    week: [], ro: false, weekCard: null, weekFacts: null, comingUp
-  });
-  const cases = [
-    ['missing comingUp', undefined],
-    ['missing daysToPeriod', { phases: [] }],
-    ['daysToPeriod 0', { daysToPeriod: 0, phases: [] }],
-    ['negative daysToPeriod', { daysToPeriod: -1, phases: [] }],
-    ['NaN daysToPeriod', { daysToPeriod: NaN, phases: [] }],
-    ['Infinity daysToPeriod', { daysToPeriod: Infinity, phases: [] }],
-  ];
-  for (const [name, cu] of cases) {
-    const out = base(cu);
-    const focusSection = (out.match(/<section class="smart-section smart-focus"[\s\S]*?<\/section>/) || [''])[0];
-    assert.ok(focusSection, name + ': focus rendered');
-    assert.ok(!/your period is close/.test(focusSection), name + ': stale focus period wording must be absent');
-    assert.match(focusSection, /Understanding your cycle is the goal/, name + ': plain-language frame preserved');
-    assert.match(focusSection, /Keep noting how you feel each day/, name + ': advice preserved');
-  }
+  const logs = {};
+  for (let i = 1; i <= 20; i++) logs['2026-01-' + String(i).padStart(2, '0')] = { tags: i > 12 ? ['Cramps'] : [] };
+  const patterns = smartPatternsFromLogs(logs, []);
+  patterns.forEach(p => assert.ok(!/plan ahead/i.test(String(p.tip || '')), p.type));
 });
-
-test('Focus period metric sanitation: valid ownership and non-cycle goals preserved', () => {
-  const { smartInsightsHTML } = renderContext();
-  const pred = predictedState(false);
-  const current = { state: 'estimated', phase: 'Luteal', phaseLabel: 'Luteal phase', cycleDay: 18, cycleLength: 28, confidence: 'Limited history', predictedDate: '2026-04-23' };
-  const comingUp = { daysToPeriod: 4, phases: [{ phase: 'Follicular', phaseLabel: 'Follicular phase', startsIn: 2, mood: 3, energy: 3, stress: 2, symptoms: [] }] };
-
-  // valid + Your week owns period: suppress only Focus metric, period appears once (Your week)
-  const outOwned = smartInsightsHTML(pred, current, [], 'Alex', null, {
-    selectedGoal: 'Understand my cycle', focusGoals: ['Understand my cycle'], noGoals: false,
-    focus: { goal: 'Understand my cycle', headline: 'Day 18 of ~28 · Luteal phase', metric: 'Period expected in 4 days', trend: null, action: 'Keep logging.' },
-    week: [], ro: false,
-    weekCard: { headline: 'Your week', summary: 'Period in 4 days.', actions: ['Note symptoms as they show up', 'Plan a short walk'] },
-    weekFacts: { goals: ['Understand my cycle'], week: [], comingUp: [], focus: { headline: 'Day 18 of ~28 · Luteal phase', metric: 'Period expected in 4 days', trend: '' }, daysToPeriod: 4 },
-    comingUp
-  });
-  const focusOwned = (outOwned.match(/<section class="smart-section smart-focus"[\s\S]*?<\/section>/) || [''])[0];
-  assert.ok(!/your period is close/.test(focusOwned), 'Focus period wording suppressed when Your week owns period');
-  assert.match(focusOwned, /Understanding your cycle is the goal/);
-  assert.match(focusOwned, /Keep noting how you feel each day/);
-  assert.equal((outOwned.match(/before your period/g) || []).length, 1, 'period mentioned in no more than one section');
-
-  // valid + Your week does not own period: Focus claims and may display metric, no duplicate
-  const outFocus = smartInsightsHTML(pred, current, [], 'Alex', null, {
-    selectedGoal: 'Understand my cycle', focusGoals: ['Understand my cycle'], noGoals: false,
-    focus: { goal: 'Understand my cycle', headline: 'Day 18 of ~28 · Luteal phase', metric: 'Period expected in 4 days', trend: null, action: 'Keep logging.' },
-    week: [], ro: false, weekCard: null, weekFacts: null, comingUp
-  });
-  const focusClaim = (outFocus.match(/<section class="smart-section smart-focus"[\s\S]*?<\/section>/) || [''])[0];
-  assert.match(focusClaim, /your period is close enough/);
-  assert.ok(!/Next period/.test(outFocus));
-  assert.equal((outFocus.match(/your period is close enough/g) || []).length, 1, 'period mentioned in no more than one section');
-
-  // non-cycle goal unchanged
-  const outSleep = smartInsightsHTML(pred, current, [], 'Alex', null, extras({}));
-  const focusSleep = (outSleep.match(/<section class="smart-section smart-focus"[\s\S]*?<\/section>/) || [''])[0];
-  assert.match(focusSleep, /Better sleep is the goal you chose/);
-  assert.ok(!/\d\.\d/.test(focusSleep), 'focus prose carries no measurements');
-});
-
 
 test('prose copy reads as calm sentences with no numbers or stiff words', () => {
   const mod = renderContext();

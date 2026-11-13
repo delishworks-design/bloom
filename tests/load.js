@@ -47,21 +47,23 @@ function load() {
   sandbox.tasksFor=function(d,doc){return ((doc||sandbox.D).tasks||[]).filter(t=>!t.once||t.once===d)};
   sandbox.widgetNative=function(){return null};
   sandbox.clearSession=function(){}; sandbox.setRoleFlag=function(){}; sandbox.today=function(){return '2026-01-20'}; sandbox.reminderCancel=function(){}; sandbox.sb=null; sandbox.sbUser=null; sandbox.cloudTimer=null; sandbox.hideUpdateBanner=function(){}; sandbox.authView=function(){};
+  sandbox.navigator={onLine:true};
 
   const exportsByName = {
     esc: ['E'],
     sync: ['isPlainObject', 'mergeDocs', 'chooseLoginDoc', 'docHasContent'],
+    netmsg: ['errText', 'isOffline', 'OFFLINE_MSG'],
     roWho: ['roWho'],
     sxmig: ['migrateCustomSymptoms'],
     backup: ['makeBackup', 'validateBackup'],
     phases: ['phaseInfo'],
-    smart: ['smartPredictionHistory', 'smartCurrentCycle', 'smartCurrentCycleFromHistory', 'smartHistoricalPhaseFor', 'smartPatternsFromLogs', 'smartInsightsHTML', 'smartPatternsHTML', 'smartPhaseInsight', 'smartProgress', 'smartInsightsExtras', 'smartComingUp', 'smartWeekCompare', 'smartActiveGoals', 'smartGoalFocus', 'smartWeekFacts', 'smartWeekTemplate', 'smartWeekValidate', 'smartWeekAllowedNumbers', 'smartWeekHTML', 'smartWeekCompareHTML', 'smartComingUpHTML', 'dashboardCycle', 'clearLegacySmartAIStorage', 'smartCTAFor', 'smartCTALabel', 'smartKnowledgeFor', 'smartWeekVariantIndex', 'smartEvidenceRegistry', 'smartWeekProse', 'smartFocusProse', 'smartKnowledgeProse', 'smartNextProse', 'smartEmptyPatternLine', 'smartPlainPhase'],
+    smart: ['smartPredictionHistory', 'smartCurrentCycle', 'smartCurrentCycleFromHistory', 'smartHistoricalPhaseFor', 'smartPatternsFromLogs', 'smartInsightsHTML', 'smartPatternsHTML', 'smartPhaseInsight', 'smartProgress', 'smartInsightsExtras', 'smartComingUp', 'smartWeekCompare', 'smartActiveGoals', 'smartGoalFocus', 'smartWeekFacts', 'smartWeekTemplate', 'smartWeekValidate', 'smartWeekAllowedNumbers', 'smartWeekHTML', 'smartWeekCompareHTML', 'smartComingUpHTML', 'dashboardCycle', 'clearLegacySmartAIStorage', 'smartCTAFor', 'smartCTALabel', 'smartKnowledgeFor', 'smartWeekVariantIndex', 'smartEvidenceRegistry', 'smartWeekProse', 'smartFocusProse', 'smartFocusName', 'smartKnowledgeProse', 'smartNextProse', 'smartNextStep', 'smartSymptomAdvice', 'smartEmptyPatternLine', 'smartPlainPhase'],
     auth: ['logout', 'wipeLocalData'],
     ownmode: ['seedOwnDoc'],
     widget: ['ownWidgetDoc', 'widgetSnapshot', 'widgetSync', 'widgetReset'],
     planui: ['shareFlags', 'plannerTabSet', 'ringPillBare', 'peerLabel']
   };
-  for (const name of ['phases', 'esc', 'sync', 'roWho', 'sxmig', 'backup', 'smart', 'auth', 'ownmode', 'widget', 'planui']) {
+  for (const name of ['phases', 'esc', 'sync', 'netmsg', 'roWho', 'sxmig', 'backup', 'smart', 'auth', 'ownmode', 'widget', 'planui']) {
     let code;
     try{ code = extract(html, name); }catch(e){ if(name==='auth') continue; throw e; }
     const names = exportsByName[name];
