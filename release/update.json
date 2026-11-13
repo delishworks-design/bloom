@@ -1,7 +1,7 @@
 {
-    "versionCode": 82,
-    "versionName": "1.2.67",
-    "notes": "Smart Insights no longer repeats your cycle. Your focus is now a swipeable card, your next step follows what is still missing today, and pattern tips give a clear instruction instead of saying plan ahead. Sign-in also tells you plainly when you are offline.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.67/bloom-1.2.67.apk",
+    "versionCode": 83,
+    "versionName": "1.2.68",
+    "notes": "Home-screen widgets now render in Bloom fonts, clearer checkmarks, and taps work again. The hold-to-rename hints are gone.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.68/bloom-1.2.68.apk",
     "publishedAt": "2026-11-13"
 }

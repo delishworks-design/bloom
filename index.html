@@ -1534,7 +1534,7 @@ async function fetchManifest(){const bust='?t='+Date.now();
  const r=await fetch(UPDATE_MANIFEST+bust,{cache:'no-store'});if(!r.ok)throw new Error('manifest '+r.status);
  return await r.json()}
 // Baked-in build identity. Keep in sync with android/app/build.gradle (versionCode/versionName).
-const APP_VERSION={code:82,name:'1.2.67'};
+const APP_VERSION={code:83,name:'1.2.68'};
 const UPD_SKIP_KEY='bloom_upd_skip';
 const updater=()=>{const C=window.Capacitor;if(!C)return null;
  const P=C.Plugins&&C.Plugins.BloomUpdater;
@@ -2318,15 +2318,13 @@ ${only?'':`<form id="af" style="margin-top:14px"><input id="nt" maxlength="80" p
  bindCk(d,planner);bindFields();
  if(only)return;
  bindLongPress(document.getElementById('pb'),'task','[data-task]',el=>editTask(el.dataset.task));
- if(ts.length){const ch=$('#pb').querySelector('.card');if(ch)ch.insertAdjacentHTML('beforeend','<p class="meta" style="margin:8px 0 0">Hold a task to rename it.</p>')}
- const afForm=document.getElementById('af');if(afForm)afForm.onsubmit=e=>{e.preventDefault();const t=$('#nt').value.trim();if(!t)return $('#er').textContent='Please type a task.';const r=$('#rp').value;D.tasks.push({id:uid(),t,days:r=='wk'?[1,2,3,4,5]:r=='one'?[new Date().getDay()]:undefined,once:r=='one'?d:undefined});save();planner()};
+  const afForm=document.getElementById('af');if(afForm)afForm.onsubmit=e=>{e.preventDefault();const t=$('#nt').value.trim();if(!t)return $('#er').textContent='Please type a task.';const r=$('#rp').value;D.tasks.push({id:uid(),t,days:r=='wk'?[1,2,3,4,5]:r=='one'?[new Date().getDay()]:undefined,once:r=='one'?d:undefined});save();planner()};
  document.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{D.tasks=D.tasks.filter(t=>t.id!=b.dataset.del);save();planner()})}
 function pWeek(src,ro){const doc=src||D,only=ro==null?RO:ro;const days=[...Array(7)].map((_,i)=>addD(today(),i-new Date().getDay()+0));$('#pb').innerHTML=`<div class="weekgrid">`+days.map(d=>{const ts=tasksFor(d,doc),n=ts.filter(t=>isDone(t.id,d,doc)).length;return`<div class="card"><div class="card-h"><h3 style="font-size:1rem">${fmt(d,{weekday:'long',day:'numeric'})}${d==today()?'  today':''}</h3><span class="meta">${n}/${ts.length}</span></div><div style="margin-top:6px">${ts.map(t=>`<div class="meta">${isDone(t.id,d,doc)?'':''} ${E(t.t)}</div>`).join('')||'<span class="meta">Rest day</span>'}</div></div>`}).join('')+`</div>`}
 function pMeals(src,ro){const doc=src||D,only=ro==null?RO:ro;const d=today(),m=doc.meals[d]||[],bud=doc.p.bud||999;
  const pool=t=>MEALS.filter(x=>x.t==t&&x.c<=bud);
  const wk=doc.plan.week||null;
  $('#pb').innerHTML=`<div class="card"><div class="card-h"><h3>Todays meals</h3><span class="meta">${m.length}</span></div>${m.length?m.map((x,i)=>`<div class="mealrow"><span class="ckt" data-meal="${i}">${E(TN[x.t]||'Meal')}: ${E(x.n)}${x.q&&x.q!==1?' \u00d7'+x.q:''}</span>${only?'':`<button class="btn ghost sm del" data-rm="${i}" aria-label="Remove ${E(x.n)}">\u00d7</button>`}</div>`).join(''):'<p class="meta">None logged</p>'}
-${m.length&&!only?'<p class="meta" style="margin:8px 0 0">Hold a meal to rename it.</p>':''}
 ${only?'':`<div class="lbl">Add a meal</div><div class="row" id="mtRow" role="group" aria-label="Meal type" style="flex-wrap:wrap;gap:8px;margin:0 0 14px">${MEAL_TYPES.map(([k,v])=>`<button type="button" class="chip" data-mt="${k}" aria-pressed="${k===mealTypeNow()}">${v}</button>`).join('')}</div><button type="button" class="field-btn" id="mlBtn"><span id="mlLabel">Choose a meal</span><span class="chev">\u25be</span></button><input type="hidden" id="ml" value=""><input type="hidden" id="mlQ" value="1"><label for="mc">Or type your own</label><input id="mc" maxlength="60" placeholder="Paksiw na bangus"><button class="btn" id="la" style="width:100%">Add</button>`}</div>
 <div class="card"><div class="card-h"><h3>Weekly plan</h3></div>${only?'':`${chipField('bd','Budget per meal (\u20b1)',[['','Any'],['50','up to \u20b150'],['80','up to \u20b180'],['100','up to \u20b1100'],['130','up to \u20b1130']],String(D.p.bud||''))}<button class="btn pink" id="gw" style="width:100%">Build my week</button>`}
 ${wk?`<div class="divider"></div>`+wk.map((r,i)=>`<div class="kv"><span>Day ${i+1}</span><b style="font-size:.85rem;font-family:inherit;font-weight:400;text-align:right">${r.map(x=>E(x.n)).join('  ')}</b></div>`).join('')+`<h3 style="margin-top:14px">Grocery list</h3><p class="meta">${[...new Set(wk.flat().flatMap(x=>x.ing))].sort().join(', ')}</p>`:''}</div>
@@ -4752,14 +4750,14 @@ function splashPlay(replay){
  stage.onclick=()=>{if(splashDone)return;splashPlay(false)};
 }
 // called by the native layer when the app comes back to the foreground
-window.__bloomResume=(awayMs)=>{if(splashPlaying||!splashShouldShow(awayMs))return;splashPlay(true)};
+window.__bloomResume=(awayMs)=>{try{widgetConsume()}catch(e){}if(splashPlaying||!splashShouldShow(awayMs))return;splashPlay(true)};
 window.addEventListener('online',()=>{sbInit().then(()=>{if(sbUser&&!RO){sbPush();sbPull()}});setTimeout(()=>checkUpdate(false),800)});
 window.addEventListener('offline',()=>{if(!document.getElementById('authForm'))return;const e=document.getElementById('err');if(e&&!e.textContent){e.textContent=OFFLINE_MSG;e.classList.add('on')}});
 window.addEventListener('online',()=>{const e=document.getElementById('err');if(document.getElementById('authForm')&&e&&e.textContent===OFFLINE_MSG){e.textContent='';e.classList.remove('on')}});
 // called by the native layer when the app goes to the background
 window.__bloomBg=()=>splashBgMark();
 // @test-end splash
-document.addEventListener('visibilitychange',()=>{if(document.hidden){splashBgMark();try{saveNav()}catch(e){}}else if(sbUser&&!RO)sbPull()});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){splashBgMark();try{saveNav()}catch(e){}}else{try{widgetConsume()}catch(e){}if(sbUser&&!RO)sbPull()}});
 window.addEventListener('pagehide',()=>splashBgMark());
 window.addEventListener('beforeunload',()=>splashBgMark());
 
