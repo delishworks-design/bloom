@@ -155,11 +155,11 @@ body.reader-open{overflow:hidden}
 .bookmenu{display:flex;flex-direction:column;gap:6px}
 .bookmenu-item{display:flex;align-items:center;gap:12px;padding:13px 12px;border:1.5px solid var(--line);border-radius:12px;background:#FFFBF5;font:inherit;color:var(--ink);text-align:left;cursor:pointer}
 .bookmenu-item.danger{color:#B8456B;border-color:rgba(184,69,107,.35)}
-.reader-top[data-theme="dark"],.reader-bottom[data-theme="dark"],.reader-prog[data-theme="dark"],.reader-body[data-theme="dark"]{background:#1F191C !important;color:#E7D9DC !important;border-color:rgba(255,255,255,.09) !important}
-.reader-body[data-theme="dark"] .reader-article-body{color:#E7D9DC}
-.reader-body[data-theme="dark"] h3,.reader-body[data-theme="dark"] .reader-article-body h3{color:#F1E2E5 !important}
-.reader-top[data-theme="dark"] button,.reader-bottom[data-theme="dark"] button{color:#E7D9DC !important}
-.reader-prog[data-theme="dark"] i{background:#FBF4EA !important}
+.reader[data-theme="dark"] .reader-top,.reader[data-theme="dark"] .reader-bottom,.reader[data-theme="dark"] .reader-prog,.reader[data-theme="dark"] .reader-body{background:#1F191C !important;color:#E7D9DC !important;border-color:rgba(255,255,255,.09) !important}
+.reader[data-theme="dark"] .reader-body,.reader[data-theme="dark"] .reader-article-body{background:#1F191C !important;color:#E7D9DC !important}
+.reader[data-theme="dark"] h3,.reader[data-theme="dark"] .reader-article-body h3{color:#F1E2E5 !important}
+.reader[data-theme="dark"] .reader-top button,.reader[data-theme="dark"] .reader-bottom button{color:#E7D9DC !important}
+.reader[data-theme="dark"] .reader-prog i{background:#FBF4EA !important}
 .readrow-check{flex:0 0 auto;width:40px;min-height:40px;display:grid;place-items:center;background:none;border:0;padding:0;cursor:pointer;align-self:center;border-radius:50%;border:1.5px solid var(--line);color:var(--mut);transition:all .15s}
 .readrow-check.on{background:var(--rose);border-color:var(--rose);color:#FBF4EA}
 .readrow.done{opacity:.72}
@@ -1758,7 +1758,7 @@ async function fetchManifest(){const bust='?t='+Date.now();
  const r=await fetch(UPDATE_MANIFEST+bust,{cache:'no-store'});if(!r.ok)throw new Error('manifest '+r.status);
  return await r.json()}
 // Baked-in build identity. Keep in sync with android/app/build.gradle (versionCode/versionName).
-const APP_VERSION={code:104,name:'1.2.89'};
+const APP_VERSION={code:105,name:'1.2.90'};
 const UPD_SKIP_KEY='bloom_upd_skip';
 const updater=()=>{const C=window.Capacitor;if(!C)return null;
  const P=C.Plugins&&C.Plugins.BloomUpdater;
@@ -4607,7 +4607,7 @@ function libBook(id){
  return L.books[id];
 }
 function libEntry(id){return (D.library&&D.library.books&&D.library.books[id])||null}
-function libAddBook(id){const b=libBook(id);b.added=b.added||Date.now();b.lastRead=b.lastRead||Date.now();save();return b}
+function libAddBook(id){const b=libBook(id);b.added=b.added||Date.now();save();return b}
 function libToggleFavorite(id){const b=libBook(id);b.favorite=!b.favorite;save();return b.favorite}
 function libMarkDl(id,v){const b=libBook(id);b.dl=!!v;save()}
 function libMarkFinished(id,v){const b=libBook(id);b.finished=!!v;if(v){b.pct=100}save()}
@@ -4648,7 +4648,7 @@ function renderBookList(){const el=document.getElementById('lb');
  const head=q?'':libContinueHTML();
  const filters=nAll?`<div class="lib-chips">${libFilterChip('all','All')}${libFilterChip('favorites','Favorites',nFav)}${libFilterChip('reading','Reading',nRead)}${libFilterChip('finished','Finished',nFin)}</div>`:'';
  const filtered=applyLibFilter(inLib,L);
- const mineHTML=filtered.length?`<p class="lib-sub">${libFilterLabel()}</p><div class="bookgrid">${filtered.map(b=>bookcardHTML(b,L.books[b.id],false)).join('')}</div>`:q?'<p class="meta" style="text-align:center;padding:22px">Nothing matches that search.</p>':'<div class="libempty"><p>Nothing in your library yet</p><p class="meta" style="margin:2px 0 0">Tap “Add to library” on any book below.</p></div>';
+ const mineHTML=filtered.length?`<p class="lib-sub">${libFilterLabel()}</p><div class="bookgrid">${filtered.map(b=>bookcardHTML(b,L.books[b.id],false)).join('')}</div>`:q?'<p class="meta" style="text-align:center;padding:18px">Nothing found</p>':(libFilter==='all'?'<div class="libempty"><p>Your library is empty</p><p class="meta">Add a book below</p></div>':'<div class="libempty"><p>'+(libFilter==='favorites'?'No favorites yet':libFilter==='reading'?'Nothing in progress':'No finished books yet')+'</p></div>');
  const exploreHTML=all.length?`<p class="lib-sub">Explore</p><div class="bookgrid">${all.map(b=>bookcardHTML(b,L.books[b.id]||null,true)).join('')}</div>`:'';
  el.innerHTML=head+filters+mineHTML+exploreHTML;
  el.querySelectorAll('.lib-chip').forEach(b=>b.onclick=()=>{libFilter=b.dataset.lf;library()});
@@ -4676,12 +4676,12 @@ function bookcardHTML(b,entry,isExplore){
  const sizeTxt=b.sizeMB?b.sizeMB+' MB':'Free';
  if(isExplore){
   const added=entry!=null;
-  return `<button class="bookcard" data-bid="${E(b.id)}" aria-label="${added?'Read '+E(b.title):'Add '+E(b.title)+' to your library'}"><span class="bookcard-cover" style="background-image:url(${escCssUrl(b.cover||'')})"></span><span class="bookcard-meta"><span class="bookcard-title">${E(b.title)}</span><span class="bookcard-author">${E(b.author||'')}</span></span><span class="bookcard-foot"><span>${pages}</span><span>${sizeTxt}</span><span class="bookcard-add">${added?'Read now':'Add to library'}</span></span></button>`
+  return `<button class="bookcard" data-bid="${E(b.id)}" aria-label="${added?'Read '+E(b.title):'Add '+E(b.title)+' to your library'}"><span class="bookcard-cover" style="background-image:url(${escCssUrl(b.cover||'')})"><span class="bookcard-dl${added&&entry.dl?' on-device':''}" title="${added&&entry.dl?'On this device':(added?'Tap to open':'Tap to add')}" aria-hidden="true">${libDlSVG(18,added&&entry.dl)}</span></span><span class="bookcard-meta"><span class="bookcard-title">${E(b.title)}</span><span class="bookcard-author">${E(b.author||'')}</span></span><span class="bookcard-foot"><span>${pages}</span><span>${sizeTxt}</span><span class="bookcard-add">${added?'Read now':'Add to library'}</span></span></button>`
  }
  const finished=!!entry.finished, pct=Math.min(100,Math.max(0,+entry.pct||0));
  const overlay=finished?`<span class="bookcard-finished" aria-hidden="true"><span class="bookcard-finished-badge">${libCheckSVG(18)}</span><span class="bookcard-finished-label">Finished</span></span>`:'';
  const star=entry.favorite?`<span class="bookcard-star fav" aria-hidden="true">${libStarSVG(16,true)}</span>`:'';
- const dl=entry.dl?`<span class="bookcard-dl on-device" title="On device" aria-label="On device">${libDlSVG(16,true)}</span>`:'';
+ const dl=(entry.dl!==false)?`<span class="bookcard-dl${entry.dl?' on-device':' download'}" title="${entry.dl?'Saved on device':'Tap to download'}" aria-hidden="true">${libDlSVG(16,entry.dl)}</span>`:'';
  const prog=pct>0&&!finished?`<span class="bookcard-progress"><i style="width:${pct}%"></i></span>`:'';
  return `<button class="bookcard" data-bid="${E(b.id)}"><span class="bookcard-cover" style="background-image:url(${escCssUrl(b.cover||'')})">${overlay}${star}${dl}</span>${prog}<span class="bookcard-meta"><span class="bookcard-title">${E(b.title)}</span><span class="bookcard-author">${E(b.author||'')}</span></span><span class="bookcard-foot"><span>${pages}</span><span>${sizeTxt}</span></span></button>`}
 function renderArticleList(){const el=document.getElementById('lb');
@@ -4899,10 +4899,10 @@ async function openBook(id){
  const b=libCached().find(x=>x.id===id);if(!b)return;
  if(!libEntry(id)){libAddBook(id)}
  pdfBookId=id;pdfMode=ST.get('bloom_lib_view')||'text';
- showReader(`<div class="reader-top" data-theme="${readerTheme()}"><button class="rt-back" id="readerBack" aria-label="Close">${IC.chevL(22)}</button><div class="rt-title">${E(b.title)}</div><button class="rt-theme" id="readerTheme" aria-label="Toggle theme">${readerTheme()==='dark'?sunSVG():moonSVG()}</button><button class="rt-modes" id="readerMode" aria-label="Toggle text/original" aria-pressed="true">Text</button><button class="rt-bm" id="readerBm" aria-label="Bookmark" aria-pressed="false">${IC.bookmark(20)}</button></div>
- <div class="reader-body reader-article" id="readerBody" data-theme="${readerTheme()}"><article id="readerText" class="reader-article-body"></article><canvas id="bookCanvas"></canvas><div class="reader-load" id="readerLoad"><div class="reader-spin"><div class="spinner"></div><span>Loading…</span></div></div></div>
- <div class="reader-bottom" data-theme="${readerTheme()}"><button class="rb-font" id="fDec" aria-label="Smaller text">A−</button><button class="rb-font" id="fInc" aria-label="Larger text">A+</button><span class="reader-page-pill" id="readerPage">— / —</span></div>
- <div class="reader-prog" data-theme="${readerTheme()}"><i id="readerProgBar" style="width:0%"></i></div>`);
+ showReader(`<div class="reader-top"><button class="rt-back" id="readerBack" aria-label="Close">${IC.chevL(22)}</button><div class="rt-title">${E(b.title)}</div><button class="rt-theme" id="readerTheme" aria-label="Toggle theme">${readerTheme()==='dark'?sunSVG():moonSVG()}</button><button class="rt-modes" id="readerMode" aria-label="Toggle text/original" aria-pressed="true">Text</button><button class="rt-bm" id="readerBm" aria-label="Bookmark" aria-pressed="false">${IC.bookmark(20)}</button></div>
+ <div class="reader-body reader-article" id="readerBody"><article id="readerText" class="reader-article-body"></article><canvas id="bookCanvas"></canvas><div class="reader-load" id="readerLoad"><div class="reader-spin"><div class="spinner"></div><span>Loading…</span></div></div></div>
+ <div class="reader-bottom"><button class="rb-font" id="fDec" aria-label="Smaller text">A−</button><button class="rb-font" id="fInc" aria-label="Larger text">A+</button><span class="reader-page-pill" id="readerPage">— / —</span></div>
+ <div class="reader-prog"><i id="readerProgBar" style="width:0%"></i></div>`);
  document.getElementById('readerBack').onclick=closeReader;
  document.getElementById('readerMode').onclick=()=>{pdfMode=pdfMode==='text'?'canvas':'text';ST.set('bloom_lib_view',pdfMode);renderBookPage()};
  document.getElementById('fDec').onclick=()=>{const cur=textSize();const next=Math.max(.78,+(cur-.13).toFixed(2));ST.set('bloom_lib_fs',String(next));renderBookPage()};
