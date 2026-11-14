@@ -1,7 +1,7 @@
 {
-    "versionCode": 100,
-    "versionName": "1.2.85",
-    "notes": "Books & update download progress bars, My Library vs Explore, jump-back-in strip. Book reader: reflowed text with A\u2212/A+, highlight, original-page toggle.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.85/bloom-1.2.85.apk",
+    "versionCode": 101,
+    "versionName": "1.2.86",
+    "notes": "Explore downloads work now (missing function restored), justified text in the reader, bookmark fills rose when saved, 'Continue reading' strip, icon-only On device badge.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.86/bloom-1.2.86.apk",
     "publishedAt": "2026-11-14"
 }

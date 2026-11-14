@@ -98,7 +98,7 @@ p{margin:0;line-height:1.5}
 .recentcard-sub{font-size:.58rem;color:var(--mut)}
 .recentcard-prog{height:2px;border-radius:2px;background:#EFE4DC;overflow:hidden;margin-top:2px}
 .recentcard-prog i{display:block;height:100%;background:var(--rose);border-radius:2px}
-.bookcard-dl.on-device{color:var(--teal);font-size:.62rem;letter-spacing:.05em;display:inline-flex;align-items:center;gap:3px;text-transform:uppercase}
+.bookcard-dl.on-device{color:var(--teal);display:inline-flex;align-items:center;padding:2px}
 .bookcard-dl.download{color:var(--mut);font-size:.62rem;letter-spacing:.05em;display:inline-flex;align-items:center;gap:3px;text-transform:uppercase;font-weight:800}
 .bookcard-dl svg{width:12px;height:12px}
 .bookcard-foot:empty{display:none}
@@ -109,6 +109,7 @@ body.reader-open{overflow:hidden}
 .rt-back,.rt-share,.rt-bm{background:none;border:0;padding:8px;margin:0;color:#8C7A80;cursor:pointer;line-height:0}
 .rt-title{flex:1;min-width:0;text-align:center;font-size:.84rem;font-weight:700;color:#3A2E33;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rt-bm.on,.rt-share{color:var(--rose)}
+.rt-bm[aria-pressed="true"] svg path{fill:currentColor}
 .rt-bm[hidden]{visibility:hidden}
 .reader-body{flex:1;min-height:0;overflow-y:auto;position:relative}
 .reader-pdf{overflow:hidden;display:flex;align-items:center;justify-content:center;background:#FFF9F0}
@@ -119,7 +120,7 @@ body.reader-open{overflow:hidden}
 .reader-article{padding:18px 22px 44px;max-width:680px;margin:0 auto;font-size:1.05rem;line-height:1.68;color:#4A3D42}
 .reader-article-body{padding:0 22px 60px;max-width:680px;margin:0 auto;font-family:'Playfair Display',Georgia,serif;line-height:1.65;color:#4A3D42;transition:font-size .2s ease}
 .reader-article-body h3{font-size:1.18em;margin:1.35em 0 .35em;color:var(--ink);line-height:1.25;letter-spacing:-.01em}
-.reader-article-body p{margin:0 0 1em;font-size:1em}
+.reader-article-body p{margin:0 0 1em;font-size:1em;text-align:justify}
 .lib-hl{background:#FFD966;border-radius:2px;color:#3A2E33}
 .rb-font{background:none;border:0;padding:6px 8px;font-size:.78rem;font-weight:700;color:var(--mut);cursor:pointer}
 .rt-modes{background:none;border:0;padding:6px 8px;font-size:.66rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--mut);cursor:pointer}
@@ -1658,7 +1659,7 @@ async function fetchManifest(){const bust='?t='+Date.now();
  const r=await fetch(UPDATE_MANIFEST+bust,{cache:'no-store'});if(!r.ok)throw new Error('manifest '+r.status);
  return await r.json()}
 // Baked-in build identity. Keep in sync with android/app/build.gradle (versionCode/versionName).
-const APP_VERSION={code:100,name:'1.2.85'};
+const APP_VERSION={code:101,name:'1.2.86'};
 const UPD_SKIP_KEY='bloom_upd_skip';
 const updater=()=>{const C=window.Capacitor;if(!C)return null;
  const P=C.Plugins&&C.Plugins.BloomUpdater;
@@ -4510,7 +4511,7 @@ function library(){
  if(libTab==='books')renderBookList();else renderArticleList()}
 function recentReads(){try{const j=JSON.parse(ST.get('bloom_recent_reads')||'[]');return Array.isArray(j)?j:[]}catch(e){return []}}
 function recentReadPush(id,page){const list=recentReads().filter(r=>r.id!==id);list.unshift({id,page:Math.max(1,+page||1),ts:Date.now()});while(list.length>5)list.pop();try{ST.set('bloom_recent_reads',JSON.stringify(list))}catch(e){}}
-function recentReadsHTML(){const list=recentReads();if(!list.length)return '';const map=new Map(libCached().map(b=>[b.id,b]));const items=list.map(r=>{const b=map.get(r.id);if(!b)return '';const pct=b.pages?Math.min(100,Math.round(100*r.page/Math.max(1,b.pages))):0;return `<button class="recentcard" data-bid="${E(b.id)}"><span class="recentcard-cover" style="background-image:url(${escCssUrl(b.cover||'')})"></span><span class="recentcard-meta"><span class="recentcard-title">${E(b.title)}</span><span class="recentcard-sub">Resume · Page ${r.page}/${b.pages||'?'}</span><span class="recentcard-prog"><i style="width:${pct}%"></i></span></span></button>`}).filter(Boolean);if(!items.length)return '';return `<div class="lib-recent"><p class="lib-sub">Jump back in</p><div class="recentrow">${items.join('')}</div></div>`}
+function recentReadsHTML(){const list=recentReads();if(!list.length)return '';const map=new Map(libCached().map(b=>[b.id,b]));const items=list.map(r=>{const b=map.get(r.id);if(!b)return '';const pct=b.pages?Math.min(100,Math.round(100*r.page/Math.max(1,b.pages))):0;return `<button class="recentcard" data-bid="${E(b.id)}"><span class="recentcard-cover" style="background-image:url(${escCssUrl(b.cover||'')})"></span><span class="recentcard-meta"><span class="recentcard-title">${E(b.title)}</span><span class="recentcard-sub">Resume · Page ${r.page}/${b.pages||'?'}</span><span class="recentcard-prog"><i style="width:${pct}%"></i></span></span></button>`}).filter(Boolean);if(!items.length)return '';return `<div class="lib-recent"><p class="lib-sub">Continue reading</p><div class="recentrow">${items.join('')}</div></div>`}
 function renderBookList(){const el=document.getElementById('lb');
  const q=libSearch.trim().toLowerCase();
  const all=libCached().filter(b=>!q||[b.title,b.author,b.category||''].join(' ').toLowerCase().includes(q));
@@ -4525,7 +4526,7 @@ function bookcardHTML(b,downloaded){
  return `<button class="bookcard" data-bid="${E(b.id)}">
    <span class="bookcard-cover" style="background-image:url(${escCssUrl(b.cover||'')})"></span>
    <span class="bookcard-meta"><span class="bookcard-title">${E(b.title)}</span><span class="bookcard-author">${E(b.author||'')}</span></span>
-   <span class="bookcard-foot"><span>${b.pages?b.pages+' pages':'Bloom'}</span><span>${b.sizeMB?b.sizeMB+' MB':'Free'}</span>${downloaded?`<span class="bookcard-dl on-device">${IC.check(11)}On device</span>`:`<span class="bookcard-dl download">${IC.download(11)}Download</span>`}${bm?`<span class="bookcard-bm">Page ${+bm}</span>`:''}</span>
+   <span class="bookcard-foot"><span>${b.pages?b.pages+' pages':'Bloom'}</span><span>${b.sizeMB?b.sizeMB+' MB':'Free'}</span>${downloaded?`<span class="bookcard-dl on-device" aria-label="On device" title="On device">${IC.check(14)}</span>`:`<span class="bookcard-dl download">${IC.download(11)}Download</span>`}${bm?`<span class="bookcard-bm">Page ${+bm}</span>`:''}</span>
   </button>`}
 function renderArticleList(){const el=document.getElementById('lb');
  const all=ARTICLES.map((_,i)=>i).filter(i=>{if(!libSearch)return true;const a=ARTICLES[i];return (a[3]+' '+a[4]+' '+a[0]).toLowerCase().includes(libSearch)});
@@ -4580,6 +4581,35 @@ function articleHTML(items){
 }
 function escHTML(t){return String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function highlightMarkup(text,id){return '<mark class="lib-hl" data-hid="'+id+'">'+text+'</mark>'}
+function confirmBookDownload(b){
+ if(isOffline()){toast('Connect to the internet to download this book.');return}
+ sheet(`<h2>Download book</h2><p class="meta" style="margin:0 0 4px">${E(b.title)}</p><p class="meta" style="margin:0 0 12px">${E(b.author||'')} · ${b.pages||'?'} pages · ${b.sizeMB||'?'} MB</p>
+ <div class="upbar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Download progress"><i style="width:2%"></i></div>
+ <div class="row sp upblk" style="gap:10px;margin-top:8px"><span class="upstate">Ready to download</span><span class="upbytes meta"></span></div>
+ <div class="row" style="gap:10px;margin-top:16px"><button class="btn ghost" id="bdCancel" style="flex:1">Later</button><button class="btn" id="bdGo" style="flex:1">Download</button></div>`);
+ const state=()=>document.querySelector('.upstate'),bytes=()=>document.querySelector('.upbytes'),fill=()=>document.querySelector('.upbar i');
+ const bar=()=>document.querySelector('.upbar');
+ const setP=(txt,pct,sub)=>{if(state())state().textContent=txt;if(fill())fill().style.width=pct+'%';if(bar())bar().setAttribute('aria-valuenow',String(Math.round(pct)));if(bytes())bytes().textContent=sub||'';const bd=document.getElementById('bdGo');if(bd)bd.disabled=pct>0&&pct<100};
+ document.getElementById('bdCancel').onclick=()=>sheet();
+ document.getElementById('bdGo').onclick=async()=>{
+  const bd=document.getElementById('bdGo');bd.disabled=true;bd.textContent='Downloading\u2026';setP('Downloading\u2026',2);
+  try{await downloadBook(b,(done,total)=>{const pct=total>0?Math.min(99,Math.round(100*done/total)):2;setP('Downloading\u2026 '+pct+'%',pct,fmtBytes(done)+' / '+fmtBytes(total))});
+   setP('Saved',100,'Saved for offline reading');bd.textContent='Saved';toast('Saved for offline reading');sheet();openBook(b.id)}
+  catch(e){reportErr('book.download',e);setP('Download failed',0,String(e&&e.message||e||'Unknown error').slice(0,80));bd.textContent='Retry';bd.disabled=false}}}
+async function downloadBook(b,onProgress){
+ const resp=await fetch(b.url);if(!resp.ok)throw new Error('HTTP '+resp.status);
+ const cl=+(resp.headers.get('content-length')||0);
+ const est=(+b.sizeMB||0)>0?Math.round(b.sizeMB*1024*1024):0;
+ const totalHint=cl||est;
+ if(resp.body){
+  const rd=resp.body.getReader();const chunks=[];let done=0;
+  for(;;){const {done:rdl,value}=await rd.read();if(rdl)break;chunks.push(value);done+=value.length;if(onProgress)onProgress(done,totalHint)}
+  const merged=new Uint8Array(done);let off=0;for(const c of chunks){merged.set(c,off);off+=c.length}await idbPut(b.id,merged.buffer)
+ }else{
+  if(onProgress)onProgress(0,totalHint||1);
+  const ab=await resp.arrayBuffer();await idbPut(b.id,ab);if(onProgress)onProgress(ab.byteLength,totalHint||ab.byteLength)
+ }
+ libMarkDownloaded(b.id)}
 async function openPdf(b){
  let ab=null;
  try{ab=await idbGet(b.id)}catch(e){}
