@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "books": [
+    {
+      "id": "pcos101",
+      "title": "PCOS/PMOS 101",
+      "author": "Bloom Health",
+      "pages": 88,
+      "sizeMB": 2.4,
+      "category": "PCOS",
+      "cover": "assets/library/pcos101.jpg",
+      "url": ""
+    },
+    {
+      "id": "pelvicpain",
+      "title": "Pelvic Pain",
+      "author": "Bloom Health",
+      "pages": 76,
+      "sizeMB": 1.9,
+      "category": "Pain",
+      "cover": "assets/library/pelvicpain.jpg",
+      "url": ""
+    },
+    {
+      "id": "endocrine",
+      "title": "Endocrine Basics",
+      "author": "Bloom Health",
+      "pages": 64,
+      "sizeMB": 1.6,
+      "category": "Endocrine",
+      "cover": "assets/library/endocrine.jpg",
+      "url": ""
+    }
+  ]
+}

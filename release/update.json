@@ -1,7 +1,7 @@
 {
-    "versionCode": 92,
-    "versionName": "1.2.77",
-    "notes": "Focus cards show a progress bar and 'details' hint, cards are narrower so the next one peeks (swipeable). Follower card hidden offline. Logout wording aligned with Log in.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.77/bloom-1.2.77.apk",
+    "versionCode": 93,
+    "versionName": "1.2.78",
+    "notes": "Learn is now Library: full redesign. Books tab with cover cards (uploadable via library.json) and PDF reader with bookmarks. Articles tab with search.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.78/bloom-1.2.78.apk",
     "publishedAt": "2026-11-14"
 }
