@@ -1626,7 +1626,7 @@ async function fetchManifest(){const bust='?t='+Date.now();
  const r=await fetch(UPDATE_MANIFEST+bust,{cache:'no-store'});if(!r.ok)throw new Error('manifest '+r.status);
  return await r.json()}
 // Baked-in build identity. Keep in sync with android/app/build.gradle (versionCode/versionName).
-const APP_VERSION={code:96,name:'1.2.81'};
+const APP_VERSION={code:97,name:'1.2.82'};
 const UPD_SKIP_KEY='bloom_upd_skip';
 const updater=()=>{const C=window.Capacitor;if(!C)return null;
  const P=C.Plugins&&C.Plugins.BloomUpdater;
@@ -4449,6 +4449,11 @@ function libDl(){try{const j=JSON.parse(ST.get('bloom_library_dl')||'[]');return
 function libIsDownloaded(id){return libDl().indexOf(id)>=0}
 function libMarkDownloaded(id){const ids=libDl();if(ids.indexOf(id)<0){ids.push(id);try{ST.set('bloom_library_dl',JSON.stringify(ids))}catch(e){}}}
 function libUnmarkDownloaded(id){const ids=libDl().filter(x=>x!==id);try{ST.set('bloom_library_dl',JSON.stringify(ids))}catch(e){}}
+function idbPromise(req){return new Promise((res,rej)=>{req.onsuccess=()=>res(req.result);req.onerror=()=>rej(req.error)})}
+async function idbDB(){const req=indexedDB.open('bloom',1);req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains('books'))db.createObjectStore('books')};return idbPromise(req)}
+async function idbGet(id){const db=await idbDB();const tx=db.transaction('books','readonly');const st=tx.objectStore('books');return idbPromise(st.get(id))}
+async function idbPut(id,buf){const db=await idbDB();const tx=db.transaction('books','readwrite');const st=tx.objectStore('books');st.put(buf,id);return new Promise((res,rej)=>{tx.oncomplete=res;tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error)})}
+async function idbDelete(id){const db=await idbDB();const tx=db.transaction('books','readwrite');const st=tx.objectStore('books');st.delete(id);return new Promise((res)=>{tx.oncomplete=res;tx.onerror=res})}
 async function refreshLibrary(){try{const r=await fetch(LIB_REMOTE+'?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const j=await r.json();if(j&&Array.isArray(j.books)&&j.books.length){ST.set('bloom_library',JSON.stringify(j));if(view==='library'&&libTab==='books')library()}}catch(e){}}
 let libTab='books',pdfDoc=null,pdfPage=1,pdfPages=0,pdfBookId=null;
 function library(){
@@ -4497,7 +4502,7 @@ async function openBook(id){
  <div class="reader-bottom"><span id="readerPage">— / —</span></div>
  <div class="reader-prog"><i id="readerProgBar" style="width:0%"></i></div>`);
  document.getElementById('readerBack').onclick=closeReader;
- try{await openPdf(b)}catch(e){const l=document.getElementById('readerLoad');if(l)l.innerHTML='<div class="ra-foot">Could not open this book. '+E(e&&e.message||e)+'</div>'}}
+ try{await openPdf(b)}catch(e){const l=document.getElementById('readerLoad');if(l)l.innerHTML='<div class="ra-foot">This book isn\'t on this device anymore. <button class="btn" id="reDl" style="margin:12px auto 0;width:100%">Download again</button></div>';const rb=document.getElementById('reDl');if(rb)rb.onclick=()=>{sheet();downloadBook(b).then(()=>{toast('Saved for offline reading');openBook(b.id)}).catch(()=>toast('Download failed'))}}}
 function confirmBookDownload(b){
  if(isOffline()){toast('Connect to the internet to download this book.');return}
  sheet(`<h2>Download book</h2><p class="meta" style="margin:0 0 4px">${E(b.title)}</p><p class="meta" style="margin:0 0 14px">${E(b.author||'')} · ${b.pages||'?'} pages · ${b.sizeMB||'?'} MB</p><p class="meta" style="margin:0">Save once, then read offline.</p><div class="row" style="gap:10px;margin-top:16px"><button class="btn ghost" id="bdCancel" style="flex:1">Later</button><button class="btn" id="bdGo" style="flex:1">Download</button></div>`);
@@ -4505,18 +4510,16 @@ function confirmBookDownload(b){
  $('#bdGo').onclick=async()=>{sheet();toast('Downloading '+(b.title||'book')+'…');
   try{await downloadBook(b);toast('Saved for offline reading');openBook(b.id)}catch(e){reportErr('book.download',e);toast('Download failed')}}}
 async function downloadBook(b){
- const FS=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Filesystem;
  const resp=await fetch(b.url);if(!resp.ok)throw new Error('HTTP '+resp.status);
  const ab=await resp.arrayBuffer();
- if(FS){try{await FS.writeFile({directory:'Data',path:'library/'+b.id+'.pdf',data:abToB64(ab),recursive:true})}catch(e){reportErr('book.fs',e)}}
+ await idbPut(b.id,ab);
  libMarkDownloaded(b.id)}
 function b64ToAB(b64){const bin=atob(b64),n=bin.length,u=new Uint8Array(n);for(let i=0;i<n;i++)u[i]=bin.charCodeAt(i);return u.buffer}
 function abToB64(ab){let bin='';const u=new Uint8Array(ab);const CH=0x8000;for(let i=0;i<u.length;i+=CH){bin+=String.fromCharCode.apply(null,u.subarray(i,i+CH))}return btoa(bin)}
 async function openPdf(b){
- const FS=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Filesystem;
  let ab=null;
- if(FS){try{const got=await FS.readFile({directory:'Data',path:'library/'+b.id+'.pdf'});if(got&&got.data)ab=b64ToAB(got.data)}catch(e){libUnmarkDownloaded(b.id);throw new Error('not on device')}}
- if(!ab){throw new Error('not on device')}
+ try{ab=await idbGet(b.id)}catch(e){}
+ if(!ab){libUnmarkDownloaded(b.id);throw new Error('not on device')}
  const js=window.pdfjsLib;if(!js)throw new Error('PDF engine missing');
  pdfDoc=await js.getDocument({data:ab}).promise;pdfPages=pdfDoc.numPages;
  pdfPage=parseInt(ST.get('bloom_library_bk_'+b.id)||'1',10)||1;if(pdfPage<1||pdfPage>pdfPages)pdfPage=1;
