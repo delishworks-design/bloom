@@ -1,7 +1,7 @@
 {
-    "versionCode": 101,
-    "versionName": "1.2.86",
-    "notes": "Explore downloads work now (missing function restored), justified text in the reader, bookmark fills rose when saved, 'Continue reading' strip, icon-only On device badge.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.86/bloom-1.2.86.apk",
+    "versionCode": 102,
+    "versionName": "1.2.87",
+    "notes": "Library now syncs with your Bloom account: books added/downloads/progress/highlights follow you across devices (killered books reset per-device). Explore tab with library/download states, finished overlay, long-press menu, dark reader toggle, unread-first articles.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.87/bloom-1.2.87.apk",
     "publishedAt": "2026-11-14"
 }

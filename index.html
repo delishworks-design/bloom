@@ -138,6 +138,34 @@ body.reader-open{overflow:hidden}
 .reader-prog i{display:block;height:100%;background:var(--rose);width:0%;transition:width .25s ease}
 .spinner{width:26px;height:26px;border-radius:50%;border:2.5px solid rgba(184,69,107,.25);border-top-color:var(--rose);animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+.bookcard-cover{position:relative;overflow:hidden}
+.bookcard-star{position:absolute;top:6px;right:6px;z-index:2;color:rgba(255,255,255,.9);width:24px;height:24px;display:grid;place-items:center;border-radius:50%;background:rgba(0,0,0,.42)}
+.bookcard-star.fav{color:#F8E7A4}
+.bookcard-dl.on-device{position:absolute;bottom:6px;right:6px;z-index:2;color:#FBF4EA;width:24px;height:24px;display:grid;place-items:center;border-radius:50%;background:rgba(0,0,0,.42)}
+.bookcard-progress{display:block;height:3px;background:rgba(0,0,0,.07);overflow:hidden;position:relative}
+.bookcard-progress i{display:block;height:100%;background:var(--rose);width:0%}
+.bookcard-finished{position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;justify-content:flex-end;padding:8px;pointer-events:none;background:linear-gradient(180deg,rgba(20,20,20,0) 55%,rgba(20,20,20,.62))}
+.bookcard-finished-badge{width:30px;height:30px;border-radius:50%;background:var(--rose);color:#FBF4EA;display:grid;place-items:center;align-self:flex-end}
+.bookcard-finished-label{color:#FBF4EA;font-size:.66rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;text-shadow:0 1px 4px rgba(0,0,0,.4);align-self:flex-end;margin-top:4px}
+.bookcard-add{margin-left:auto;color:var(--teal);font-weight:800;letter-spacing:.04em}
+.lib-chips{display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 12px}
+.lib-chip{border:1.5px solid var(--line);background:#FFFBF5;border-radius:999px;padding:7px 12px;font:inherit;font-size:.82rem;color:var(--mut);font-weight:700;cursor:pointer}
+.lib-chip.on{background:var(--rose);border-color:var(--rose);color:#FBF4EA}
+.lib-chip-n{font-size:.72rem;opacity:.85;margin-left:4px}
+.bookmenu{display:flex;flex-direction:column;gap:6px}
+.bookmenu-item{display:flex;align-items:center;gap:12px;padding:13px 12px;border:1.5px solid var(--line);border-radius:12px;background:#FFFBF5;font:inherit;color:var(--ink);text-align:left;cursor:pointer}
+.bookmenu-item.danger{color:#B8456B;border-color:rgba(184,69,107,.35)}
+.reader-top[data-theme="dark"],.reader-bottom[data-theme="dark"],.reader-prog[data-theme="dark"],.reader-body[data-theme="dark"]{background:#1F191C !important;color:#E7D9DC !important;border-color:rgba(255,255,255,.09) !important}
+.reader-body[data-theme="dark"] .reader-article-body{color:#E7D9DC}
+.reader-body[data-theme="dark"] h3,.reader-body[data-theme="dark"] .reader-article-body h3{color:#F1E2E5 !important}
+.reader-top[data-theme="dark"] button,.reader-bottom[data-theme="dark"] button{color:#E7D9DC !important}
+.reader-prog[data-theme="dark"] i{background:#FBF4EA !important}
+.readrow-check{flex:0 0 auto;width:40px;min-height:40px;display:grid;place-items:center;background:none;border:0;padding:0;cursor:pointer;align-self:center;border-radius:50%;border:1.5px solid var(--line);color:var(--mut);transition:all .15s}
+.readrow-check.on{background:var(--rose);border-color:var(--rose);color:#FBF4EA}
+.readrow.done{opacity:.72}
+.readrow.done .readrow-txt{opacity:.85}
+.rt-theme{background:none;border:0;padding:6px 8px;color:#8C7A80;cursor:pointer;line-height:0}
+
 
 .statcard{background:#FFFBF5;border:1.5px solid #EADFD2;border-radius:14px;padding:16px 12px;text-align:center}
 .statnum{display:block;font-size:1.8rem;font-weight:800;color:#B8456B;line-height:1.2;font-family:'Playfair Display',serif}
@@ -661,7 +689,7 @@ const J=(k,d)=>{try{return JSON.parse(ST.get(k))??d}catch(e){return d}};
 const iso=d=>{d=new Date(d);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const today=()=>iso(new Date());const addD=(s,n)=>{const d=new Date(s+'T12:00');d.setDate(d.getDate()+n);return iso(d)};
 const fmt=(s,o)=>new Date(s+'T12:00').toLocaleDateString(undefined,o||{month:'short',day:'numeric'});
-let user=null,D=null,view='cycle',tab='',calM=today().slice(0,7),range=14,onbStep=0,learnTab='today',foodCat='All',tipCat='All',libSearch='';
+let user=null,D=null,view='cycle',tab='',calM=today().slice(0,7),range=14,onbStep=0,learnTab='today',foodCat='All',tipCat='All';
 const GOALS=['Understand my cycle','Steadier energy','Better sleep','Move more','Eat regularly','Manage stress','Prepare for doctor visits'];
 const TAGS=['Acne','Hair changes','Bloating','Cramps','Fatigue','Cravings','Headache','Low mood','Anxious','Breast tenderness'];
 // partner-mode care notes, keyed by cycle phase. Short, practical, non-prescriptive.
@@ -934,6 +962,77 @@ function mergeDocs(local,remote){
  return out;
 }
 // @test-end sync
+// @test-begin library
+// Account-bound library state lives in D.library so it syncs with the rest of the user doc.
+function libEnsure(doc){
+  doc = doc || {};
+  const L = doc.library || (doc.library = {});
+  L.books = L.books || {};
+  L.articles = L.articles || {};
+  return L;
+}
+function libBookEntry(doc, id){
+  const L = libEnsure(doc);
+  if (!L.books[id]) L.books[id] = { added: Date.now(), page: 1, pct: 0, finished: false, favorite: false, dl: false, hl: [], lastRead: 0 };
+  return L.books[id];
+}
+function libBlank(){
+  return { books: {}, articles: {} };
+}
+// Filter visible library books by tab: all / favorites / reading / finished
+function libVisibleIds(lib, filter){
+  const ids = Object.keys((lib && lib.books) || {});
+  if (filter === 'favorites') return ids.filter(id => !!lib.books[id].favorite);
+  if (filter === 'reading')   return ids.filter(id => !lib.books[id].finished);
+  if (filter === 'finished')  return ids.filter(id => !!lib.books[id].finished);
+  return ids;
+}
+// Recently-read books, last touched first, exclude finished.
+function libRecentList(lib, n){
+  n = Math.max(1, +n || 5);
+  return Object.keys((lib && lib.books) || {})
+    .filter(id => !lib.books[id].finished && (+lib.books[id].lastRead || 0) > 0)
+    .sort((a, b) => (+lib.books[b].lastRead || 0) - (+lib.books[a].lastRead || 0))
+    .slice(0, n);
+}
+// Per-article read state, by article index.
+function libArticleRead(lib, i){
+  return !!((lib && lib.articles) || {})[String(i)];
+}
+// One-time migration from localStorage keys shipped in older builds.
+function migrateLibrary(D, readFn, delFn){
+  if (!D) return D;
+  readFn = readFn || function(k){ try { return localStorage.getItem(k); } catch (e) { return null; } };
+  delFn = delFn || function(k){ try { localStorage.removeItem(k); } catch (e) {} };
+  const L = libEnsure(D);
+  // bloom_library_dl was the prior "downloaded" flag
+  const dl = readFn('bloom_library_dl');
+  if (dl) { try { JSON.parse(dl).forEach(id => { if (id) libBookEntry(D, id).dl = true; }); } catch (e) {} delFn('bloom_library_dl'); }
+  // bloom_library_bk_<id> was the prior bookmark page
+  // We iterate via localStorage key scan only when caller provides keys; keep simple here.
+  // Id numbers arrive as strings from storage APIs.
+  const keys = [];
+  try { const s = localStorage; for (let i = 0; i < s.length; i++) { const k = s.key(i); if (k) keys.push(k); } } catch (e) {}
+  keys.forEach(k => {
+    const m = /^bloom_library_bk_(.+)$/.exec(k);
+    if (m) { const id = m[1]; const v = parseInt((readFn(k) || '1'), 10); if (id && !isNaN(v)) { libBookEntry(D, id).page = v; libBookEntry(D, id).lastRead = Date.now(); } delFn(k); }
+    const m2 = /^bloom_hl_(.+)$/.exec(k);
+    if (m2) { try { const arr = JSON.parse(readFn(k) || '[]'); if (Array.isArray(arr) && arr.length) libBookEntry(D, m2[1]).hl = arr; } catch (e) {} delFn(k); }
+  });
+  const recent = readFn('bloom_recent_reads');
+  if (recent) { try {
+    const arr = JSON.parse(recent);
+    if (Array.isArray(arr)) arr.forEach(r => {
+      if (!r || !r.id) return;
+      const b = libBookEntry(D, r.id);
+      b.pct = Math.max(+b.pct || 0, +r.pct || 0);
+      b.page = Math.max(+b.page || 1, +r.page || 1);
+      if (+r.ts) b.lastRead = Math.max(+b.lastRead || 0, +r.ts);
+    });
+  } catch (e) {} delFn('bloom_recent_reads'); }
+  return D;
+}
+// @test-end library
 // @test-begin ownmode
 function seedOwnDoc(ownDoc,cachedDoc,pname,pavatar){
  const src=ownDoc||cachedDoc||{};
@@ -1160,7 +1259,7 @@ async function sbSignUp(email,pw){await sbInit();if(!sb)return 'offline';
  if(data.session)await sbAfterLogin(data.session.user);else return 'confirm_pending';return null}
 // ---------- storage
 const key=u=>'bloom_d_'+u;
-const blank=()=>({p:{},logs:{},tasks:[],done:{},meals:{},journal:[],plan:{},games:{},cons:true,rem:{on:false,time:'20:00'}});
+const blank=()=>({p:{},logs:{},tasks:[],done:{},meals:{},journal:[],plan:{},games:{},cons:true,rem:{on:false,time:'20:00'},library:{books:{},articles:{}}});
 function save(){if(RO||!user)return;if(D&&D._uid&&sbUser&&D._uid!==sbUser.id){reportErr('save.guard','doc belongs to another account');return}D.savedAt=Date.now();try{ST.set('bloom_dirty_'+user,'1')}catch(e){};ST.set(key(user),JSON.stringify(D));sbPushSoon()}
 // session must survive an app kill -> localStorage, not sessionStorage
 const setSession=v=>{try{ST.set('bloom_s',v);sessionStorage.setItem('bloom_s',v)}catch(e){}};
@@ -1659,7 +1758,7 @@ async function fetchManifest(){const bust='?t='+Date.now();
  const r=await fetch(UPDATE_MANIFEST+bust,{cache:'no-store'});if(!r.ok)throw new Error('manifest '+r.status);
  return await r.json()}
 // Baked-in build identity. Keep in sync with android/app/build.gradle (versionCode/versionName).
-const APP_VERSION={code:101,name:'1.2.86'};
+const APP_VERSION={code:102,name:'1.2.87'};
 const UPD_SKIP_KEY='bloom_upd_skip';
 const updater=()=>{const C=window.Capacitor;if(!C)return null;
  const P=C.Plugins&&C.Plugins.BloomUpdater;
@@ -4487,57 +4586,116 @@ const LIB_BOOKS=[
 ];
 const LIB_REMOTE='https://raw.githubusercontent.com/delishworks-design/bloom/main/library.json';
 function libCached(){try{const j=JSON.parse(ST.get('bloom_library')||'null');if(j&&Array.isArray(j.books)&&j.books.length)return j.books}catch(e){}return LIB_BOOKS}
-function libDl(){try{const j=JSON.parse(ST.get('bloom_library_dl')||'[]');return Array.isArray(j)?j:[]}catch(e){return []}}
-function libIsDownloaded(id){return libDl().indexOf(id)>=0}
-function libMarkDownloaded(id){const ids=libDl();if(ids.indexOf(id)<0){ids.push(id);try{ST.set('bloom_library_dl',JSON.stringify(ids))}catch(e){}}}
-function libUnmarkDownloaded(id){const ids=libDl().filter(x=>x!==id);try{ST.set('bloom_library_dl',JSON.stringify(ids))}catch(e){}}
+async function refreshLibrary(){try{const r=await fetch(LIB_REMOTE+'?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const j=await r.json();if(j&&Array.isArray(j.books)&&j.books.length){ST.set('bloom_library',JSON.stringify(j));if(view==='library'&&libTab==='books')library()}}catch(e){}}
 function idbPromise(req){return new Promise((res,rej)=>{req.onsuccess=()=>res(req.result);req.onerror=()=>rej(req.error)})}
-async function idbDB(){const req=indexedDB.open('bloom',1);req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains('books'))db.createObjectStore('books')};return idbPromise(req)}
+async function idbDB(){const req=indexedDB.open('bloom',1);req.onupgradeneeded=()=>{try{if(!req.result.objectStoreNames.contains('books'))req.result.createObjectStore('books')}catch(e){}};return idbPromise(req)}
 async function idbGet(id){const db=await idbDB();const tx=db.transaction('books','readonly');const st=tx.objectStore('books');return idbPromise(st.get(id))}
 async function idbPut(id,buf){const db=await idbDB();const tx=db.transaction('books','readwrite');const st=tx.objectStore('books');st.put(buf,id);return new Promise((res,rej)=>{tx.oncomplete=res;tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error)})}
 async function idbDelete(id){const db=await idbDB();const tx=db.transaction('books','readwrite');const st=tx.objectStore('books');st.delete(id);return new Promise((res)=>{tx.oncomplete=res;tx.onerror=res})}
-async function refreshLibrary(){try{const r=await fetch(LIB_REMOTE+'?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const j=await r.json();if(j&&Array.isArray(j.books)&&j.books.length){ST.set('bloom_library',JSON.stringify(j));if(view==='library'&&libTab==='books')library()}}catch(e){}}
-let libTab='books',pdfDoc=null,pdfPage=1,pdfPages=0,pdfBookId=null;
+
+// account-bound library state lives in D.library and syncs with the user doc
+function libEnsure(){
+ const L=D.library||(D.library={books:{},articles:{}});
+ if(!L.books)L.books={};if(!L.articles)L.articles={};
+ return L;
+}
+function libBook(id){
+ const L=libEnsure();
+ if(!L.books[id])L.books[id]={added:Date.now(),page:1,pct:0,finished:false,favorite:false,dl:false,hl:[],lastRead:0};
+ return L.books[id];
+}
+function libEntry(id){return (D.library&&D.library.books&&D.library.books[id])||null}
+function libAddBook(id){const b=libBook(id);b.added=b.added||Date.now();b.lastRead=b.lastRead||Date.now();save();return b}
+function libToggleFavorite(id){const b=libBook(id);b.favorite=!b.favorite;save();return b.favorite}
+function libMarkDl(id,v){const b=libBook(id);b.dl=!!v;save()}
+function libMarkFinished(id,v){const b=libBook(id);b.finished=!!v;if(v){b.pct=100}save()}
+function libTouchPage(id,page,total){
+ const b=libBook(id);b.page=Math.max(1,+page||1);b.pct=Math.min(100,Math.max(0,Math.round(100*(b.page/Math.max(1,+total||1)))));b.lastRead=Date.now();save()}
+function libStarSVG(size,on){return '<svg viewBox="0 0 24 24" width="'+size+'" height="'+size+'" aria-hidden="true" fill="'+(on?'currentColor':'none')+'" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>'}
+function libDlSVG(size,on){return '<svg viewBox="0 0 24 24" width="'+size+'" height="'+size+'" aria-hidden="true" fill="'+(on?'currentColor':'none')+'" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M8 11.5l4 4l4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>'}
+function libCheckSVG(size){return '<svg viewBox="0 0 24 24" width="'+size+'" height="'+size+'" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5l10-10"/></svg>'}
+let libTab='books',libFilter='all',libSearch='',pdfDoc=null,pdfPage=1,pdfPages=0,pdfBookId=null,pdfMode='text';
 function library(){
- const cats=[...new Set(ARTICLES.map(a=>a[0]))].sort();
+ const tabLabel=libTab==='books'?'Books':'Articles';
  $('#main').innerHTML=`<h1>Library</h1>
  <div class="lib-tabs" role="tablist"><button class="chip${libTab==='books'?' on':''}" role="tab" data-lt="books" aria-pressed="${libTab==='books'}">Books</button><button class="chip${libTab==='articles'?' on':''}" role="tab" data-lt="articles" aria-pressed="${libTab==='articles'}">Articles</button></div>
- <div class="dr-search"><input id="ls" type="search" placeholder="Search ${libTab}" value="${E(libSearch)}" autocomplete="off"></div>
+ <div class="dr-search"><input id="ls" type="search" placeholder="Search ${tabLabel}" value="${E(libSearch)}" autocomplete="off"></div>
  <div id="lb"></div>
  <p class="dr-warn">Educational content only. Not personal medical advice. Severe pelvic pain, soaking through a pad every hour, fainting, or sudden severe symptoms need urgent care.</p>`;
- document.querySelectorAll('[data-lt]').forEach(b=>b.onclick=()=>{libTab=b.dataset.lt;libSearch='';library()});
+ document.querySelectorAll('[data-lt]').forEach(b=>b.onclick=()=>{libTab=b.dataset.lt;libSearch='';libFilter='all';library()});
  const ls=document.getElementById('ls');
- if(ls)ls.oninput=e=>{libSearch=e.target.value.trim().toLowerCase();library()};
+ if(ls)ls.oninput=e=>{libSearch=e.target.value;library()};
  if(libTab==='books')renderBookList();else renderArticleList()}
-function recentReads(){try{const j=JSON.parse(ST.get('bloom_recent_reads')||'[]');return Array.isArray(j)?j:[]}catch(e){return []}}
-function recentReadPush(id,page){const list=recentReads().filter(r=>r.id!==id);list.unshift({id,page:Math.max(1,+page||1),ts:Date.now()});while(list.length>5)list.pop();try{ST.set('bloom_recent_reads',JSON.stringify(list))}catch(e){}}
-function recentReadsHTML(){const list=recentReads();if(!list.length)return '';const map=new Map(libCached().map(b=>[b.id,b]));const items=list.map(r=>{const b=map.get(r.id);if(!b)return '';const pct=b.pages?Math.min(100,Math.round(100*r.page/Math.max(1,b.pages))):0;return `<button class="recentcard" data-bid="${E(b.id)}"><span class="recentcard-cover" style="background-image:url(${escCssUrl(b.cover||'')})"></span><span class="recentcard-meta"><span class="recentcard-title">${E(b.title)}</span><span class="recentcard-sub">Resume · Page ${r.page}/${b.pages||'?'}</span><span class="recentcard-prog"><i style="width:${pct}%"></i></span></span></button>`}).filter(Boolean);if(!items.length)return '';return `<div class="lib-recent"><p class="lib-sub">Continue reading</p><div class="recentrow">${items.join('')}</div></div>`}
+function libContinueHTML(){
+ const L=libEnsure();
+ const entries=Object.keys(L.books).map(id=>({id,b:L.books[id]})).filter(e=>!e.b.finished&&(+e.b.lastRead||0)>0);
+ if(!entries.length)return '';
+ entries.sort((a,b)=>(+b.b.lastRead||0)-(+a.b.lastRead||0));
+ const m=libCached(),byId={};m.forEach(x=>byId[x.id]=x);
+ const items=entries.slice(0,5).map(e=>{const b=byId[e.id];if(!b)return '';const pct=Math.min(100,Math.max(0,+e.b.pct||0));return `<button class="recentcard" data-bid="${E(e.id)}"><span class="recentcard-cover" style="background-image:url(${escCssUrl(b.cover||'')})"></span><span class="recentcard-meta"><span class="recentcard-title">${E(b.title)}</span><span class="recentcard-sub">Page ${e.b.page||1}/${b.pages||'?'}</span><span class="recentcard-prog"><i style="width:${pct}%"></i></span></span></button>`}).filter(Boolean);
+ if(!items.length)return '';
+ return `<div class="lib-recent"><p class="lib-sub">Continue reading</p><div class="recentrow">${items.join('')}</div></div>`}
+function libFilterChip(id,label,count){return `<button class="lib-chip${libFilter===id?' on':''}" role="tab" data-lf="${id}" aria-pressed="${libFilter===id}">${label}${count!=null?' <span class="lib-chip-n">'+count+'</span>':''}</button>`}
 function renderBookList(){const el=document.getElementById('lb');
- const q=libSearch.trim().toLowerCase();
+ if(!el)return;
+ const q=String(libSearch||'').trim().toLowerCase();
+ const L=libEnsure();
  const all=libCached().filter(b=>!q||[b.title,b.author,b.category||''].join(' ').toLowerCase().includes(q));
- const mine=all.filter(b=>libIsDownloaded(b.id)),explore=all.filter(b=>!libIsDownloaded(b.id));
- const head=recentReadsHTML();
- const mineHTML=mine.length?`<p class="lib-sub">My library</p><div class="bookgrid">${mine.map(b=>bookcardHTML(b,true)).join('')}</div>`:`<div class="libempty"><p>Nothing in your library yet</p><p class="meta" style="margin:2px 0 0">Books you download appear here.</p></div>`;
- const exploreHTML=explore.length?`<p class="lib-sub">Explore</p><div class="bookgrid">${explore.map(b=>bookcardHTML(b,false)).join('')}</div>`:'';
- el.innerHTML=head+mineHTML+exploreHTML+(all.length?'':'<p class="meta" style="text-align:center;padding:22px">No books match that search.</p>');
- el.querySelectorAll('[data-bid]').forEach(b=>b.onclick=()=>openBook(b.dataset.bid))}
-function bookcardHTML(b,downloaded){
- const bm=(ST.get('bookmark_'+b.id)||0);
- return `<button class="bookcard" data-bid="${E(b.id)}">
-   <span class="bookcard-cover" style="background-image:url(${escCssUrl(b.cover||'')})"></span>
-   <span class="bookcard-meta"><span class="bookcard-title">${E(b.title)}</span><span class="bookcard-author">${E(b.author||'')}</span></span>
-   <span class="bookcard-foot"><span>${b.pages?b.pages+' pages':'Bloom'}</span><span>${b.sizeMB?b.sizeMB+' MB':'Free'}</span>${downloaded?`<span class="bookcard-dl on-device" aria-label="On device" title="On device">${IC.check(14)}</span>`:`<span class="bookcard-dl download">${IC.download(11)}Download</span>`}${bm?`<span class="bookcard-bm">Page ${+bm}</span>`:''}</span>
-  </button>`}
+ const inLib=all.filter(b=>L.books[b.id]);
+ const outLib=all.filter(b=>!L.books[b.id]);
+ const nAll=inLib.length,nFav=inLib.filter(b=>L.books[b.id].favorite).length,nRead=inLib.filter(b=>!L.books[b.id].finished).length,nFin=nAll-nRead;
+ const head=q?'':libContinueHTML();
+ const filters=nAll?`<div class="lib-chips">${libFilterChip('all','All')}${libFilterChip('favorites','Favorites',nFav)}${libFilterChip('reading','Reading',nRead)}${libFilterChip('finished','Finished',nFin)}</div>`:'';
+ const filtered=applyLibFilter(inLib,L);
+ const mineHTML=filtered.length?`<p class="lib-sub">${libFilterLabel()}</p><div class="bookgrid">${filtered.map(b=>bookcardHTML(b,L.books[b.id],false)).join('')}</div>`:q?'<p class="meta" style="text-align:center;padding:22px">Nothing matches that search.</p>':'<div class="libempty"><p>Nothing in your library yet</p><p class="meta" style="margin:2px 0 0">Tap “Add to library” on any book below.</p></div>';
+ const exploreHTML=outLib.length?`<p class="lib-sub">Explore</p><div class="bookgrid">${outLib.map(b=>bookcardHTML(b,null,true)).join('')}</div>`:'';
+ el.innerHTML=head+filters+mineHTML+exploreHTML;
+ el.querySelectorAll('.lib-chip').forEach(b=>b.onclick=()=>{libFilter=b.dataset.lf;library()});
+ el.querySelectorAll('.bookcard[data-bid]').forEach(b=>{
+  const id=b.dataset.bid;const added=!!L.books[id];
+  const holdMs=450,move=14;let timer=0,sx=0,sy=0;
+  const down=e=>{const t=e.changedTouches?e.changedTouches[0]:e;sx=t.clientX;sy=t.clientY;
+   clearTimeout(timer);timer=setTimeout(()=>{timer=0;if(added)showBookMenu(id)},holdMs)};
+  const up=()=>{clearTimeout(timer);timer=0};
+  const moveH=e=>{const t=e.changedTouches?e.changedTouches[0]:e;if(!timer)return;if(Math.abs(t.clientX-sx)>move||Math.abs(t.clientY-sy)>move)clearTimeout(timer)};
+  b.addEventListener('pointerdown',down);
+  b.addEventListener('pointermove',moveH,{passive:true});
+  b.addEventListener('pointerup',up);
+  b.addEventListener('pointercancel',up);
+  b.addEventListener('contextmenu',e=>e.preventDefault());
+  b.addEventListener('click',()=>{clearTimeout(timer);if(added)openBook(id);else libAddBook(id),library()})})}
+function libFilterLabel(){return libFilter==='favorites'?'Favorites':libFilter==='reading'?'Reading':libFilter==='finished'?'Finished':'My library'}
+function applyLibFilter(inLib,L){
+ if(libFilter==='favorites')return inLib.filter(b=>L.books[b.id].favorite);
+ if(libFilter==='reading')return inLib.filter(b=>!L.books[b.id].finished);
+ if(libFilter==='finished')return inLib.filter(b=>L.books[b.id].finished);
+ return inLib}
+function bookcardHTML(b,entry,isExplore){
+ const pages=b.pages?b.pages+' pages':'Bloom';
+ const sizeTxt=b.sizeMB?b.sizeMB+' MB':'Free';
+ if(isExplore){
+  return `<button class="bookcard" data-bid="${E(b.id)}" aria-label="Add ${E(b.title)} to your library"><span class="bookcard-cover" style="background-image:url(${escCssUrl(b.cover||'')})"></span><span class="bookcard-meta"><span class="bookcard-title">${E(b.title)}</span><span class="bookcard-author">${E(b.author||'')}</span></span><span class="bookcard-foot"><span>${pages}</span><span>${sizeTxt}</span><span class="bookcard-add">Add to library</span></span></button>`
+ }
+ const finished=!!entry.finished, pct=Math.min(100,Math.max(0,+entry.pct||0));
+ const overlay=finished?`<span class="bookcard-finished" aria-hidden="true"><span class="bookcard-finished-badge">${libCheckSVG(18)}</span><span class="bookcard-finished-label">Finished</span></span>`:'';
+ const star=entry.favorite?`<span class="bookcard-star fav" aria-hidden="true">${libStarSVG(16,true)}</span>`:'';
+ const dl=entry.dl?`<span class="bookcard-dl on-device" title="On device" aria-label="On device">${libDlSVG(16,true)}</span>`:'';
+ const prog=pct>0&&!finished?`<span class="bookcard-progress"><i style="width:${pct}%"></i></span>`:'';
+ return `<button class="bookcard" data-bid="${E(b.id)}"><span class="bookcard-cover" style="background-image:url(${escCssUrl(b.cover||'')})">${overlay}${star}${dl}</span>${prog}<span class="bookcard-meta"><span class="bookcard-title">${E(b.title)}</span><span class="bookcard-author">${E(b.author||'')}</span></span><span class="bookcard-foot"><span>${pages}</span><span>${sizeTxt}</span></span></button>`}
 function renderArticleList(){const el=document.getElementById('lb');
- const all=ARTICLES.map((_,i)=>i).filter(i=>{if(!libSearch)return true;const a=ARTICLES[i];return (a[3]+' '+a[4]+' '+a[0]).toLowerCase().includes(libSearch)});
- el.innerHTML=all.map(i=>{const a=ARTICLES[i];return `<div class="readrow"><button class="readrow-txt" data-idx="${i}"><span class="readrow-title">${E(a[3])}</span><span class="readrow-meta">${E(a[0])} · ${E(a[1])}</span></button></div>`}).join('')+(all.length?'':'<p class="meta" style="text-align:center;padding:22px">Nothing matches that search.</p>');
- el.querySelectorAll('.readrow-txt').forEach(b=>b.onclick=()=>openArticleReader(+b.dataset.idx))}
-function escCss(u){return String(u||'').replace(/["'\)\s]/g,'')}
-function escCssUrl(u){return String(u||'').replace(/["'\)\s]/g,'')}
+ const q=String(libSearch||'').trim().toLowerCase();
+ const L=libEnsure();const all=ARTICLES.map((_,i)=>i).filter(i=>{if(!q)return true;const a=ARTICLES[i];return (a[3]+' '+a[4]+' '+a[0]).toLowerCase().includes(q)});
+ // unread first, finished at the end
+ const unread=all.filter(i=>!L.articles[i]),fin=all.filter(i=>L.articles[i]);
+ const ordered=unread.concat(fin);
+ el.innerHTML=(ordered.length?ordered.map(i=>{const a=ARTICLES[i];const done=!!L.articles[i];return `<div class="readrow${done?' done':''}"><button class="readrow-txt" data-idx="${i}"><span class="readrow-title">${E(a[3])}</span><span class="readrow-meta">${E(a[0])} · ${E(a[1])}</span></button><button class="readrow-check${done?' on':''}" data-tg="${i}" aria-label="${done?'Mark unread':'Mark as read'}">${libCheckSVG(18)}</button></div>`}).join(''):'<p class="meta" style="text-align:center;padding:22px">Nothing matches that search.</p>');
+ el.querySelectorAll('.readrow-txt').forEach(b=>b.onclick=()=>openArticleReader(+b.dataset.idx));
+ el.querySelectorAll('.readrow-check').forEach(b=>b.onclick=e=>{e.stopPropagation();const i=+b.dataset.tg;const L2=libEnsure();if(L2.articles[i]){delete L2.articles[i]}else{L2.articles[i]=true};save();library()})}
 function openArticleReader(i){
  const a=ARTICLES[i],paras=a[4].split(/\n\s*\n+/).map(p=>p.trim()).filter(Boolean);
- const body=paras.length?paras.map(p=>`<p>${E(p)}</p>`).join(''):`<p>${E(a[4])}</p>`;
- showReader(`<div class="reader-top"><button class="rt-back" id="readerBack" aria-label="Close">${IC.chevL(22)}</button><div class="rt-title">${E(a[3])}</div><button class="rt-share" id="readerShare" aria-label="Share">${IC.share(18)}</button></div>
+ const body=paras.length?paras.map(p=>'<p>'+E(p)+'</p>').join(''):'<p>'+E(a[4])+'</p>';
+ const L=libEnsure();const read=!!L.articles[i];
+ showReader(`<div class="reader-top"><button class="rt-back" id="readerBack" aria-label="Close">${IC.chevL(22)}</button><div class="rt-title">${E(a[3])}</div><button class="rt-share" id="readerShare" aria-label="Share">${IC.share(18)}</button><button class="rt-bm${read?' on':''}" id="rtRead" aria-label="${read?'Mark unread':'Mark as read'}" aria-pressed="${read?'true':'false'}">${libCheckSVG(18)}</button></div>
  <div class="reader-body reader-article" role="article">
   <div class="ra-cat">${E(a[0])} · ${E(a[1])}${a[2]?' · '+E(a[2]):''}</div>
   <h1 class="ra-title">${E(a[3])}</h1>
@@ -4545,10 +4703,36 @@ function openArticleReader(i){
   <div class="ra-foot">Educational content only. Not personal medical advice.</div>
  </div>`);
  document.getElementById('readerBack').onclick=closeReader;
- document.getElementById('readerShare').onclick=()=>shareArticle(a[3],a[4])}
-let pdfMode='text';
+ document.getElementById('readerShare').onclick=()=>shareArticle(a[3],a[4]);
+ document.getElementById('rtRead').onclick=()=>{const L2=libEnsure();if(L2.articles[i])delete L2.articles[i];else L2.articles[i]=true;save();const on=!!L2.articles[i];const btn=document.getElementById('rtRead');if(btn){btn.classList.toggle('on',on);btn.setAttribute('aria-pressed',String(on));btn.setAttribute('aria-label',on?'Mark unread':'Mark as read')}}}
+function showBookMenu(id){
+ const L=libEnsure();const b=L.books[id];if(!b)return;
+ const m=libCached().find(x=>x.id===id);if(!m)return;
+ const fav=!!b.favorite;const dl=!!b.dl;const fin=!!b.finished;
+ sheet(`<h2>Book balak</h2><p class="meta" style="margin:0 0 10px">${E(m.title)}</p>
+  <div class="bookmenu">
+   <button class="bookmenu-item" id="bmFav">${libStarSVG(18,fav)}<span>${fav?'Unfavorite':'Add to favorites'}</span></button>
+   <button class="bookmenu-item" id="bmDl">${libDlSVG(18,dl)}<span>${dl?'Remove download':'Download for offline'}</span></button>
+   <button class="bookmenu-item" id="bmFin">${libCheckSVG(18)}<span>${fin?'Mark as unfinished':'Mark as finished'}</span></button>
+   <button class="bookmenu-item danger" id="bmDel"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 7h16"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><path d="M7 7l1 14a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2l1-14"/></svg><span>Remove from library</span></button>
+  </div>
+  <button class="btn ghost" id="bmClose" style="width:100%;margin-top:10px">Close</button>`);
+ document.getElementById('bmFav').onclick=()=>{libToggleFavorite(id);sheet();library()};
+ document.getElementById('bmDl').onclick=()=>{
+  const next=!b.dl;
+  if(next&&isOffline()){toast('Needs an internet connection to download');sheet();return}
+  if(!next){idbDelete(id).catch(()=>{});libMarkDl(id,false);sheet();library();return}
+  sheet(); // download flow
+  downloadBook(m,(done,total)=>{},()=>openBook(id)).catch(e=>{reportErr('book.download',e);toast('Download failed')})};
+ document.getElementById('bmFin').onclick=()=>{libMarkFinished(id,!fin);sheet();library()};
+ document.getElementById('bmDel').onclick=()=>{libDel(id);idbDelete(id).catch(()=>{});sheet();library()};
+ document.getElementById('bmClose').onclick=()=>sheet()}
 function textSize(){return +(ST.get('bloom_lib_fs')||1.02)}
 function fmtFS(v){return v.toFixed(2)+'rem'}
+function readerTheme(){try{const v=ST.get('bloom_reader_theme');if(v==='dark'||v==='light')return v}catch(e){}try{if(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)return 'dark'}catch(e){}return 'light'}
+function readerSetTheme(v){try{ST.set('bloom_reader_theme',v)}catch(e){}const r=document.getElementById('reader');if(r)r.setAttribute('data-theme',v);const btn=document.getElementById('readerTheme');if(btn)btn.textContent=v==='dark'?'☾ Dark':'☀ Light'}
+function sunSVG(){return '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M6.34 17.66l-1.41 1.41"/><path d="M19.07 4.93l-1.41 1.41"/></svg>'}
+function moonSVG(){return '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/></svg>'}
 function lineGroup(items){
  const arr=items.filter(i=>i.str&&i.str.trim()).slice();
  arr.sort((a,b)=>{const dy=b.transform[5]-a.transform[5];if(Math.abs(dy)>5)return dy>0?1:-1;return a.transform[4]-b.transform[4]});
@@ -4560,7 +4744,7 @@ function lineGroup(items){
   const y=it.transform[5];
   const text=it.str.replace(/\s+/g,' ').trim();if(!text)continue;
   if(cur&&Math.abs(y-cur.y)<=6){cur.items.push(it);cur.text+=(cur.text?' ':'')+text}
-  else{if(cur)lines.push(cur);cur={y:y,items:[it],text:text,hMax:Math.abs(it.transform[3])||it.height||10}}
+  else{if(cur)lines.push(cur);cur={y:y,items:[it],text:text,hMax:Math.abs(it.transform[3])||10}}
  }
  if(cur)lines.push(cur);
  return {lines,headCut,lineH:h};
@@ -4568,88 +4752,21 @@ function lineGroup(items){
 function articleHTML(items){
  const g=lineGroup(items);if(!g.lines.length)return '<p class="ra-foot">Nothing readable on this page.</p>';
  const gapCut=g.lineH*1.85;let html='',para=[],lastY=null;
- const flushP=()=>{if(!para.length)return;html+='<p>'+para.map(escHTML).join(' ')+'</p>';para=[]};
+ const flushP=()=>{if(!para.length)return;html+='<p>'+para.map(escText).join(' ')+'</p>';para=[]};
  for(const ln of g.lines){
   const gap=lastY==null?Infinity:Math.abs(lastY-ln.y);lastY=ln.y;
   const isHead=ln.hMax>=g.headCut;
-  if(isHead){flushP();html+='<h3>'+escHTML(ln.text)+'</h3>';continue}
+  if(isHead){flushP();html+='<h3>'+escText(ln.text)+'</h3>';continue}
   if(gap>gapCut){flushP()}
   para.push(ln.text)
  }
  flushP();
  return html;
 }
-function escHTML(t){return String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
-function highlightMarkup(text,id){return '<mark class="lib-hl" data-hid="'+id+'">'+text+'</mark>'}
-function confirmBookDownload(b){
- if(isOffline()){toast('Connect to the internet to download this book.');return}
- sheet(`<h2>Download book</h2><p class="meta" style="margin:0 0 4px">${E(b.title)}</p><p class="meta" style="margin:0 0 12px">${E(b.author||'')} · ${b.pages||'?'} pages · ${b.sizeMB||'?'} MB</p>
- <div class="upbar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Download progress"><i style="width:2%"></i></div>
- <div class="row sp upblk" style="gap:10px;margin-top:8px"><span class="upstate">Ready to download</span><span class="upbytes meta"></span></div>
- <div class="row" style="gap:10px;margin-top:16px"><button class="btn ghost" id="bdCancel" style="flex:1">Later</button><button class="btn" id="bdGo" style="flex:1">Download</button></div>`);
- const state=()=>document.querySelector('.upstate'),bytes=()=>document.querySelector('.upbytes'),fill=()=>document.querySelector('.upbar i');
- const bar=()=>document.querySelector('.upbar');
- const setP=(txt,pct,sub)=>{if(state())state().textContent=txt;if(fill())fill().style.width=pct+'%';if(bar())bar().setAttribute('aria-valuenow',String(Math.round(pct)));if(bytes())bytes().textContent=sub||'';const bd=document.getElementById('bdGo');if(bd)bd.disabled=pct>0&&pct<100};
- document.getElementById('bdCancel').onclick=()=>sheet();
- document.getElementById('bdGo').onclick=async()=>{
-  const bd=document.getElementById('bdGo');bd.disabled=true;bd.textContent='Downloading\u2026';setP('Downloading\u2026',2);
-  try{await downloadBook(b,(done,total)=>{const pct=total>0?Math.min(99,Math.round(100*done/total)):2;setP('Downloading\u2026 '+pct+'%',pct,fmtBytes(done)+' / '+fmtBytes(total))});
-   setP('Saved',100,'Saved for offline reading');bd.textContent='Saved';toast('Saved for offline reading');sheet();openBook(b.id)}
-  catch(e){reportErr('book.download',e);setP('Download failed',0,String(e&&e.message||e||'Unknown error').slice(0,80));bd.textContent='Retry';bd.disabled=false}}}
-async function downloadBook(b,onProgress){
- const resp=await fetch(b.url);if(!resp.ok)throw new Error('HTTP '+resp.status);
- const cl=+(resp.headers.get('content-length')||0);
- const est=(+b.sizeMB||0)>0?Math.round(b.sizeMB*1024*1024):0;
- const totalHint=cl||est;
- if(resp.body){
-  const rd=resp.body.getReader();const chunks=[];let done=0;
-  for(;;){const {done:rdl,value}=await rd.read();if(rdl)break;chunks.push(value);done+=value.length;if(onProgress)onProgress(done,totalHint)}
-  const merged=new Uint8Array(done);let off=0;for(const c of chunks){merged.set(c,off);off+=c.length}await idbPut(b.id,merged.buffer)
- }else{
-  if(onProgress)onProgress(0,totalHint||1);
-  const ab=await resp.arrayBuffer();await idbPut(b.id,ab);if(onProgress)onProgress(ab.byteLength,totalHint||ab.byteLength)
- }
- libMarkDownloaded(b.id)}
-async function openPdf(b){
- let ab=null;
- try{ab=await idbGet(b.id)}catch(e){}
- if(!ab){toggleDownloaded(b.id,false);throw new Error('not on device')}
- const js=window.pdfjsLib;if(!js)throw new Error('PDF engine missing');
- pdfDoc=await js.getDocument({data:ab}).promise;pdfPages=pdfDoc.numPages;
- pdfPage=parseInt(ST.get('bloom_library_bk_'+b.id)||'1',10)||1;if(pdfPage<1||pdfPage>pdfPages)pdfPage=1;
- recentReadPush(b.id,pdfPage);
- await renderBookPage()}
-async function renderBookPage(){
- if(!pdfDoc)return;
- const canvas=document.getElementById('bookCanvas'),txtHost=document.getElementById('readerText'),load=document.getElementById('readerLoad');
- const page=await pdfDoc.getPage(pdfPage);
- const saved=getHighlights(pdfBookId);
- // text mode: reflowed article html
- if(pdfMode!=='canvas'){
-  const tc=await page.getTextContent();
-  const frag=articleHTML(tc.items);
-  txtHost.innerHTML=frag;
-  // apply stored highlights
-  applyHighlights(txtHost,saved);
-  if(canvas)canvas.hidden=true;txtHost.hidden=false;
- }else{
-  if(canvas)canvas.hidden=false;txtHost.hidden=true;
-  const dpr=Math.min(2,window.devicePixelRatio||1);const vw=Math.min(document.getElementById('readerBody').clientWidth,760);
-  const scale=vw/page.getViewport({scale:1}).width;const vp=page.getViewport({scale:scale*dpr});
-  canvas.width=vp.width;canvas.height=vp.height;canvas.style.height=vp.height/dpr+'px';canvas.style.width='100%';
-  const ctx=canvas.getContext('2d');await page.render({canvasContext:ctx,viewport:vp}).promise;
- }
- if(load)load.hidden=true;
- document.getElementById('readerPage').textContent='Page '+pdfPage+' of '+pdfPages;
- document.getElementById('readerProgBar').style.width=(100*pdfPage/pdfPages)+'%';
- document.getElementById('readerText').style.fontSize=fmtFS(textSize());
- const mode=document.getElementById('readerMode');if(mode)mode.setAttribute('aria-pressed',String(pdfMode!=='canvas'))
-}
-function getHighlights(bookId){try{const j=JSON.parse(ST.get('bloom_hl_'+bookId)||'[]');return Array.isArray(j)?j:[]}catch(e){return []}}
-function setHighlights(bookId,list){try{ST.set('bloom_hl_'+bookId,JSON.stringify(list))}catch(e){}}
+function escText(t){return String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function applyHighlights(root,hl){
- const marks=[];const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let off=0,n;
- while(n=walker.nextNode()){
+ if(!hl||!hl.length)return;
+ const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let off=0,n;while(n=walker.nextNode()){
   const len=n.nodeValue.length;const start=off,end=off+len;
   for(const h of hl){
    if(end<=h.start||start>=h.end)continue;
@@ -4662,46 +4779,136 @@ function applyHighlights(root,hl){
   off+=len
  }
 }
+function getHighlights(id){const b=libEnsure().books[id];return (b&&Array.isArray(b.hl)?b.hl:[]).slice()}
+function setHighlights(id,list){const b=libBook(id);b.hl=list;save()}
 function addHighlight(color){
  const sel=window.getSelection();if(!sel||sel.isCollapsed)return;const body=document.getElementById('readerText');if(!body)return;
  const range=sel.getRangeAt(0);if(!body.contains(range.commonAncestorContainer))return;
- // compute offset
  const pre=document.createRange();pre.selectNodeContents(body);pre.setEnd(range.startContainer,range.startOffset);
- const start=pre.toString().length;const text=range.toString();const end=start+text.length;
+ const start=pre.toString().length,text=range.toString();const end=start+text.length;
  const list=getHighlights(pdfBookId);const id='h'+Date.now().toString(36);
- list.push({id,start,end,text,color:color||'#FFD966'});setHighlights(pdfBookId,list);sel.removeAllRanges();
- // re-render current page so highlight shows
- renderBookPage();
+ list.push({id,start,end,text,color:color||'#FFD966'});setHighlights(pdfBookId,list);sel.removeAllRanges();renderBookPage()
 }
 function removeHighlight(id){const list=getHighlights(pdfBookId).filter(h=>h.id!==id);setHighlights(pdfBookId,list);renderBookPage()}
-function pdfNext() {if(pdfPage<pdfPages){pdfPage++;ST.set('bloom_library_bk_'+pdfBookId,String(pdfPage));recentReadPush(pdfBookId,pdfPage);renderBookPage()}}
-function pdfPrev() {if(pdfPage>1){pdfPage--;ST.set('bloom_library_bk_'+pdfBookId,String(pdfPage));recentReadPush(pdfBookId,pdfPage);renderBookPage()}}
+function maybeOfferFinished(id,totalPages){
+ try{const key='bloom_finish_'+id,seen=sessionStorage.getItem(key);if(seen)return}catch(e){}
+ if(pdfPage<totalPages)return;
+ const b=libEnsure().books[id];if(!b||b.finished)return;
+ try{sessionStorage.setItem('bloom_finish_'+id,'1')}catch(e){}
+ sheet(`<h2>You finished this book</h2><p class="meta" style="margin:0 0 12px">Mark it as finished? It’ll show the cover as complete and jump out of Continue reading.</p><div class="row" style="gap:10px;margin-top:16px"><button class="btn ghost" id="finCancel" style="flex:1">Not yet</button><button class="btn" id="finGo" style="flex:1">Yes</button></div>`);
+ document.getElementById('finCancel').onclick=()=>sheet();
+ document.getElementById('finGo').onclick=()=>{libMarkFinished(id,true);sheet();toast('Marked as finished')}}
+async function openPdf(b){
+ pdfBookId=b.id;
+ const existing=await idbGet(b.id);
+ if(!existing){
+  try{ST.del('bloom_finish_'+b.id)}catch(e){}
+  return await streamBook(b)
+ }
+ pdfDoc=await window.pdfjsLib.getDocument({data:existing}).promise;
+ pdfPages=pdfDoc.numPages;
+ const entry=libBook(b.id);
+ pdfPage=Math.min(Math.max(1,+pdfPage||+entry.page||1),pdfPages);
+ libTouchPage(b.id,pdfPage,pdfPages);
+ renderBookPage()
+}
+async function streamBook(b,onDone){
+ const L=libEnsure();const url=b.url;
+ if(!url||isOffline()){toast('Needs an internet connection to load this book');return}
+ const load=document.getElementById('readerLoad');if(!load){const wrap=document.getElementById('readerText')||document.body;}
+ sheet(`<h2>Reading</h2><p class="meta" style="margin:0 0 4px">${E(b.title)}</p>
+ <div class="upbar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Download progress"><i style="width:2%"></i></div>
+ <div class="row sp upblk" style="gap:10px;margin-top:8px"><span class="upstate">Loading…</span><span class="upbytes meta">0 MB</span></div>
+ <div class="row" style="gap:10px;margin-top:16px"><button class="btn ghost" id="sbCancel" style="flex:1">Cancel</button></div>`);
+ const bar=()=>document.querySelector('.upbar i'),upBytes=()=>document.querySelector('.upbytes'),upState=()=>document.querySelector('.upstate');
+ const cancel={aborted:false};
+ document.getElementById('sbCancel').onclick=()=>{cancel.aborted=true;sheet()};
+ const resp=await fetch(url);
+ if(!resp.ok){sheet();toast('Could not download this book');return}
+ const cl=+(resp.headers.get('content-length')||0);
+ const expected=cl||Math.round(100*1024*1024);
+ const rd=resp.body.getReader();const chunks=[];let done=0;
+ while(true){
+  const {done:rdl,value}=await rd.read();
+  if(rdl)break;
+  if(cancel.aborted)return;
+  chunks.push(value);done+=value.length;
+  const total=cl||expected;const pct=Math.min(99,Math.round(100*done/total));
+  if(bar())bar().style.width=pct+'%';if(upState())upState().textContent='Reading… '+pct+'%';if(upBytes())upBytes().textContent=(done/1048576).toFixed(1)+' MB';
+ }
+ const merged=new Uint8Array(done);let off=0;for(const c of chunks){merged.set(c,off);off+=c.length}
+ await idbPut(b.id,merged.buffer);
+ libMarkDl(b.id,true);
+ sheet();
+ await openPdf(b)
+}
+async function downloadBook(b,onProgress,onDone){
+ const url=b.url;if(!url||isOffline()){toast('Needs an internet connection to download');return}
+ const resp=await fetch(url);if(!resp.ok)throw new Error('HTTP '+resp.status);
+ const cl=+(resp.headers.get('content-length')||0);
+ const est=(+b.sizeMB||0)>0?Math.round(b.sizeMB*1024*1024):0;
+ const total=cl||est;
+ const rd=resp.body?resp.body.getReader():null;
+ let done=0;
+ if(rd){
+  const chunks=[];
+  for(;;){const {done:rdl,value}=await rd.read();if(rdl)break;chunks.push(value);done+=value.length;if(onProgress)onProgress(done,total||done)}
+  const merged=new Uint8Array(done);let off=0;for(const c of chunks){merged.set(c,off);off+=c.length}
+  await idbPut(b.id,merged.buffer)
+ }else{
+  const ab=await resp.arrayBuffer();await idbPut(b.id,ab)
+ }
+ libMarkDl(b.id,true);if(onDone)onDone()
+}
+async function renderBookPage(){
+ if(!pdfDoc)return;
+ const page=await pdfDoc.getPage(pdfPage);
+ const txt=document.getElementById('readerText'),canvas=document.getElementById('bookCanvas'),load=document.getElementById('readerLoad');
+ const saved=getHighlights(pdfBookId);
+ if(pdfMode!=='canvas'){
+  const tc=await page.getTextContent();txt.innerHTML=articleHTML(tc.items);applyHighlights(txt,saved);
+  if(canvas)canvas.hidden=true;if(txt)txt.hidden=false;
+ }else{
+  if(canvas){canvas.hidden=false;}if(txt)txt.hidden=true;
+  const dpr=Math.min(2,window.devicePixelRatio||1);const vw=Math.min(document.getElementById('readerBody').clientWidth,760);
+  const scale=vw/page.getViewport({scale:1}).width;const vp=page.getViewport({scale:scale*dpr});
+  canvas.width=vp.width;canvas.height=vp.height;canvas.style.height=vp.height/dpr+'px';canvas.style.width='100%';
+  const ctx=canvas.getContext('2d');await page.render({canvasContext:ctx,viewport:vp}).promise;
+ }
+ if(load)load.hidden=true;
+ libTouchPage(pdfBookId,pdfPage,pdfPages);
+ document.getElementById('readerPage').textContent='Page '+pdfPage+' of '+pdfPages;
+ const prog=document.getElementById('readerProgBar');if(prog)prog.style.width=(100*pdfPage/pdfPages)+'%';
+ const fs=document.getElementById('readerText');if(fs)fs.style.fontSize=fmtFS(textSize());
+ const bm=document.getElementById('readerBm');if(bm)bm.setAttribute('aria-pressed',String(!!libEnsure().books[pdfBookId]&&libEntry(pdfBookId).bookmarked===true));
+ maybeOfferFinished(pdfBookId,pdfPages)
+}
+function pdfNext(){if(pdfPage<pdfPages){pdfPage++;renderBookPage()}}
+function pdfPrev(){if(pdfPage>1){pdfPage--;renderBookPage()}}
 function showReader(html){
  const r=document.getElementById('reader');r.innerHTML=html;r.hidden=false;document.body.classList.add('reader-open');
  const body=r.querySelector('.reader-body');let x0=0,y0=0;
  body.addEventListener('touchstart',e=>{const t=e.changedTouches[0];x0=t.clientX;y0=t.clientY},{passive:true});
  body.addEventListener('touchend',e=>{const t=e.changedTouches[0];const dx=t.clientX-x0,dy=t.clientY-y0;
   if(Math.abs(dx)>44&&Math.abs(dx)>Math.abs(dy)*1.4){if(dx<0)pdfNext();else pdfPrev()}},{passive:true});
- const bm=document.getElementById('readerBm');if(bm)bm.onclick=()=>{const cur=ST.get('bloom_library_bk_'+pdfBookId);const on=cur&&+cur===pdfPage;
-  if(on)ST.del('bloom_library_bk_'+pdfBookId);else ST.set('bloom_library_bk_'+pdfBookId,String(pdfPage));
-  bm.setAttribute('aria-pressed',String(!on));toast(!on?'Bookmarked · Page '+pdfPage:'Bookmark removed')}}
+ const bm=document.getElementById('readerBm');if(bm)bm.onclick=()=>{const b=libBook(pdfBookId);const on=!b.bookmarked;b.bookmarked=on;save();bm.classList.toggle('on',on);bm.setAttribute('aria-pressed',String(on));toast(on?'Bookmarked':'Bookmark removed')}}
 function closeReader(){const r=document.getElementById('reader');r.hidden=true;r.innerHTML='';document.body.classList.remove('reader-open');pdfDoc=null;pdfPage=1;pdfPages=0;pdfBookId=null}
 async function openBook(id){
  const b=libCached().find(x=>x.id===id);if(!b)return;
- if(!libIsDownloaded(b.id)){confirmBookDownload(b);return}
- pdfBookId=b.id;
- pdfMode=ST.get('bloom_lib_view')||'text';
- showReader(`<div class="reader-top"><button class="rt-back" id="readerBack" aria-label="Close">${IC.chevL(22)}</button><div class="rt-title">${E(b.title)}</div><button class="rt-modes" id="readerMode" aria-label="Toggle text/original" aria-pressed="true">Text</button><button class="rt-bm" id="readerBm" aria-label="Bookmark" aria-pressed="false">${IC.bookmark(18)}</button></div>
- <div class="reader-body reader-article" id="readerBody"><article id="readerText" class="reader-article-body"></article><canvas id="bookCanvas"></canvas><div class="reader-load" id="readerLoad"><div class="reader-spin"><div class="spinner"></div><span>Opening\u2026</span></div></div></div>
- <div class="reader-bottom"><button class="rb-font" id="fDec" aria-label="Smaller text">A\u2212</button><button class="rb-font" id="fInc" aria-label="Larger text">A+</button><span class="reader-page-pill" id="readerPage">\u2014 / \u2014</span></div>
- <div class="reader-prog"><i id="readerProgBar" style="width:0%"></i></div>`);
+ if(!libEntry(id)){libAddBook(id)}
+ pdfBookId=id;pdfMode=ST.get('bloom_lib_view')||'text';
+ showReader(`<div class="reader-top" data-theme="${readerTheme()}"><button class="rt-back" id="readerBack" aria-label="Close">${IC.chevL(22)}</button><div class="rt-title">${E(b.title)}</div><button class="rt-theme" id="readerTheme" aria-label="Toggle theme">${readerTheme()==='dark'?sunSVG():moonSVG()}</button><button class="rt-modes" id="readerMode" aria-label="Toggle text/original" aria-pressed="true">Text</button><button class="rt-bm" id="readerBm" aria-label="Bookmark" aria-pressed="false">${IC.bookmark(20)}</button></div>
+ <div class="reader-body reader-article" id="readerBody" data-theme="${readerTheme()}"><article id="readerText" class="reader-article-body"></article><canvas id="bookCanvas"></canvas><div class="reader-load" id="readerLoad"><div class="reader-spin"><div class="spinner"></div><span>Loading…</span></div></div></div>
+ <div class="reader-bottom" data-theme="${readerTheme()}"><button class="rb-font" id="fDec" aria-label="Smaller text">A−</button><button class="rb-font" id="fInc" aria-label="Larger text">A+</button><span class="reader-page-pill" id="readerPage">— / —</span></div>
+ <div class="reader-prog" data-theme="${readerTheme()}"><i id="readerProgBar" style="width:0%"></i></div>`);
  document.getElementById('readerBack').onclick=closeReader;
  document.getElementById('readerMode').onclick=()=>{pdfMode=pdfMode==='text'?'canvas':'text';ST.set('bloom_lib_view',pdfMode);renderBookPage()};
  document.getElementById('fDec').onclick=()=>{const cur=textSize();const next=Math.max(.78,+(cur-.13).toFixed(2));ST.set('bloom_lib_fs',String(next));renderBookPage()};
  document.getElementById('fInc').onclick=()=>{const cur=textSize();const next=Math.min(1.42,+(cur+.13).toFixed(2));ST.set('bloom_lib_fs',String(next));renderBookPage()};
+ document.getElementById('readerTheme').onclick=()=>{const cur=readerTheme();const next=cur==='dark'?'light':'dark';readerSetTheme(next)};
  document.getElementById('readerBody').addEventListener('click',e=>{const mark=e.target.closest('mark.lib-hl');if(mark&&mark.dataset.hid)removeHighlight(mark.dataset.hid)});
  document.getElementById('readerBody').addEventListener('mouseup',()=>{setTimeout(()=>{const sel=window.getSelection();if(!sel||sel.isCollapsed)return;const body=document.getElementById('readerText');if(!body.contains(sel.anchorNode))return;document.querySelectorAll('.lib-hl-bubble').forEach(b=>b.remove());const btn=document.createElement('button');btn.className='lib-hl-bubble';btn.textContent='Highlight';btn.onclick=ev=>{ev.stopPropagation();addHighlight('#FFD966');btn.remove()};document.body.appendChild(btn);const anchor=sel.getRangeAt(0);const rect=anchor.getBoundingClientRect();btn.style.left=(rect.left+rect.width/2)+'px';btn.style.top=(rect.top-36)+'px'},60)});
- try{await openPdf(b)}catch(e){const l=document.getElementById('readerLoad');if(l)l.innerHTML='<div class="ra-foot">This book isn\'t on this device anymore. <button class="btn" id="reDl" style="margin:12px auto 0;width:100%">Download again</button></div>';const rb=document.getElementById('reDl');if(rb)rb.onclick=()=>{sheet();downloadBook(b).then(()=>{toast('Saved for offline reading');openBook(b.id)}).catch(()=>toast('Download failed'))}}}
+ try{await openPdf(b)}catch(e){const l=document.getElementById('readerLoad');if(l)l.innerHTML='<div class="ra-foot">Could not open this book. '+E(e&&e.message||e)+'</div>'}}
 // ---------- daily reminder (native local notification)
 const REM_ID=1001;
 const notifPlugin=()=>{const C=window.Capacitor;return (C&&C.Plugins&&C.Plugins.LocalNotifications)||null};
@@ -5325,7 +5532,7 @@ if(splashShouldShow())splashPlay();else splashSkip();  // only after 3 minutes a
 (async()=>{const s=getSession();
  // update check runs for everyone, signed in or not
  setTimeout(()=>{try{checkUpdate(false)}catch(e){}},2400);
- setTimeout(()=>{try{if(!ST.get('bloom_lib_dl_v2')){ST.del('bloom_library_dl');ST.set('bloom_lib_dl_v2','1')}}catch(e){}},1200);
+ setTimeout(()=>{try{if(!ST.get('bloom_lib_sync_v1')){migrateLibrary(D);ST.set('bloom_lib_sync_v1','1')}}catch(e){}},1200);
  setTimeout(()=>{try{refreshLibrary()}catch(e){}},1500);
  if(isOffline()){
   if(localSessionBoot(s))return;

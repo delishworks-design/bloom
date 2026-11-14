@@ -52,6 +52,7 @@ function load() {
   const exportsByName = {
     esc: ['E'],
     sync: ['isPlainObject', 'mergeDocs', 'chooseLoginDoc', 'docHasContent'],
+    library: ['libEnsure', 'libBookEntry', 'libBlank', 'libVisibleIds', 'libRecentList', 'libArticleRead', 'migrateLibrary'],
     netmsg: ['errText', 'isOffline', 'OFFLINE_MSG'],
     roWho: ['roWho'],
     sxmig: ['migrateCustomSymptoms'],
@@ -63,7 +64,7 @@ function load() {
     widget: ['ownWidgetDoc', 'widgetSnapshot', 'widgetSync', 'widgetReset'],
     planui: ['shareFlags', 'plannerTabSet', 'ringPillBare', 'peerLabel']
   };
-  for (const name of ['phases', 'esc', 'sync', 'netmsg', 'roWho', 'sxmig', 'backup', 'smart', 'auth', 'ownmode', 'widget', 'planui']) {
+  for (const name of ['phases', 'esc', 'sync', 'netmsg', 'roWho', 'sxmig', 'backup', 'smart', 'auth', 'ownmode', 'widget', 'planui', 'library']) {
     let code;
     try{ code = extract(html, name); }catch(e){ if(name==='auth') continue; throw e; }
     const names = exportsByName[name];
