@@ -381,6 +381,7 @@ details{border-bottom:1px solid #EADFD2;padding:14px 0}summary{cursor:pointer;fo
 .smart-focus-dot{width:7px;height:7px;border-radius:50%;border:0;background:var(--line);padding:0;cursor:pointer;transition:background .2s ease}
 .smart-focus-dot.on{background:var(--rose)}
 @media (prefers-reduced-motion:reduce){.smart-card *,.smart-focus-card *{animation:none !important;transition:none !important}}
+.focusdiag{font-size:.7rem;color:var(--mut);opacity:.9;padding:8px 2px 2px;line-height:1.4;user-select:text}
 .smart-week-row{display:flex;align-items:baseline;gap:8px;margin-top:8px;font-size:.86rem}
 .smart-week-label{font-weight:800;color:var(--ink);min-width:56px}
 .smart-week-val{font-weight:800;color:var(--rose)}
@@ -1565,7 +1566,7 @@ async function fetchManifest(){const bust='?t='+Date.now();
  const r=await fetch(UPDATE_MANIFEST+bust,{cache:'no-store'});if(!r.ok)throw new Error('manifest '+r.status);
  return await r.json()}
 // Baked-in build identity. Keep in sync with android/app/build.gradle (versionCode/versionName).
-const APP_VERSION={code:87,name:'1.2.72'};
+const APP_VERSION={code:88,name:'1.2.73'};
 const UPD_SKIP_KEY='bloom_upd_skip';
 const updater=()=>{const C=window.Capacitor;if(!C)return null;
  const P=C.Plugins&&C.Plugins.BloomUpdater;
@@ -3808,38 +3809,43 @@ function smartEmptyPatternLine(logs){
 
 
 function wireSmartFocus(root){
- if(!root)return;
- if(smartFocusTimer){clearInterval(smartFocusTimer);smartFocusTimer=null}
- const track=root.querySelector('.smart-focus-track');if(!track)return;
- const dots=[...root.querySelectorAll('.smart-focus-dot')];
- const count=root.querySelector('.smart-focus-count');
- if(!track.children.length)return;
- const reduced=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
- let resumeTimer=null;
- const stop=()=>{if(smartFocusTimer){clearInterval(smartFocusTimer);smartFocusTimer=null}if(resumeTimer){clearTimeout(resumeTimer);resumeTimer=null}};
- const scheduleResume=()=>{stop();resumeTimer=setTimeout(()=>{resumeTimer=null;auto()},6000)};
- const cards=()=>[...track.children];
- const step=()=>Math.max(1,track.clientWidth);
- const at=()=>Math.max(0,Math.min(cards().length-1,Math.round(track.scrollLeft/step())));
- const sync=()=>{if(count)count.textContent=`${Math.min(cards().length,at()+1)} of ${cards().length}`;const i=at();dots.forEach((d,j)=>d.classList.toggle('on',j===i))};
- const goTo=i=>{const c=cards()[i];if(!c)return;try{c.scrollIntoView({behavior:reduced?'auto':'smooth',block:'nearest',inline:'start'})}catch(e){track.scrollLeft=i*step()}};
- const advance=()=>{const n=cards().length;if(!n)return;const next=at()+1>=n?0:at()+1;goTo(next)};
- const auto=()=>{stop();sync();smartFocusTimer=setInterval(advance,4000)};
- root.addEventListener('click',e=>{
-  const dot=e.target.closest('.smart-focus-dot');
-  if(!dot)return;
-  const i=dots.indexOf(dot);if(i<0)return;
-  goTo(i);scheduleResume();
- });
- dots.forEach((d,i)=>d.setAttribute('aria-label',`Go to focus ${i+1}`));
- track.addEventListener('scroll',sync,{passive:true});
- track.addEventListener('pointerdown',stop,{passive:true});
- root.addEventListener('focusin',stop);
- root.addEventListener('pointerup',scheduleResume,{passive:true});
- root.addEventListener('pointercancel',scheduleResume,{passive:true});
- root.addEventListener('pointerleave',scheduleResume,{passive:true});
- root.addEventListener('focusout',e=>{if(!root.contains(e.relatedTarget))scheduleResume()});
- auto();
+ const ua=(typeof navigator!=='undefined'&&String(navigator.userAgent).match(/Android ([0-9.]+)/)||['','?'])[1];
+ const setDiag=(msg,bad)=>{try{const diag=document.getElementById('focusdiag');if(diag){diag.textContent=msg;diag.style.color=bad?'var(--rose)':''}}catch(e){}};
+ try{
+  if(!root){setDiag('focus wiring FAILED: root missing · bloom '+APP_VERSION.name+' · Android '+ua,true);return}
+  if(smartFocusTimer){clearInterval(smartFocusTimer);smartFocusTimer=null}
+  const track=root.querySelector('.smart-focus-track');if(!track){setDiag('focus wiring FAILED: track missing · bloom '+APP_VERSION.name+' · Android '+ua,true);return}
+  const dots=[...root.querySelectorAll('.smart-focus-dot')];
+  const count=root.querySelector('.smart-focus-count');
+  if(!track.children.length){setDiag('focus wiring FAILED: no cards · bloom '+APP_VERSION.name+' · Android '+ua,true);return}
+  const reduced=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  let resumeTimer=null;
+  const stop=()=>{if(smartFocusTimer){clearInterval(smartFocusTimer);smartFocusTimer=null}if(resumeTimer){clearTimeout(resumeTimer);resumeTimer=null}};
+  const scheduleResume=()=>{stop();resumeTimer=setTimeout(()=>{resumeTimer=null;auto()},6000)};
+  const cards=()=>[...track.children];
+  const step=()=>Math.max(1,track.clientWidth);
+  const at=()=>Math.max(0,Math.min(cards().length-1,Math.round(track.scrollLeft/step())));
+  const sync=()=>{if(count)count.textContent=`${Math.min(cards().length,at()+1)} of ${cards().length}`;const i=at();dots.forEach((d,j)=>d.classList.toggle('on',j===i))};
+  const goTo=i=>{const c=cards()[i];if(!c)return;try{c.scrollIntoView({behavior:reduced?'auto':'smooth',block:'nearest',inline:'start'})}catch(e){track.scrollLeft=i*step()}};
+  const advance=()=>{const n=cards().length;if(!n)return;const next=at()+1>=n?0:at()+1;goTo(next)};
+  const auto=()=>{stop();sync();smartFocusTimer=setInterval(advance,4000)};
+  root.addEventListener('click',e=>{
+   const dot=e.target.closest('.smart-focus-dot');
+   if(!dot)return;
+   const i=dots.indexOf(dot);if(i<0)return;
+   goTo(i);scheduleResume();
+  });
+  dots.forEach((d,i)=>d.setAttribute('aria-label',`Go to focus ${i+1}`));
+  track.addEventListener('scroll',sync,{passive:true});
+  track.addEventListener('pointerdown',stop,{passive:true});
+  root.addEventListener('focusin',stop);
+  root.addEventListener('pointerup',scheduleResume,{passive:true});
+  root.addEventListener('pointercancel',scheduleResume,{passive:true});
+  root.addEventListener('pointerleave',scheduleResume,{passive:true});
+  root.addEventListener('focusout',e=>{if(!root.contains(e.relatedTarget))scheduleResume()});
+  auto();
+  setDiag('Bloom '+APP_VERSION.name+' · focus ok · '+cards().length+' cards'+(reduced?' · reduced':'')+' · Android '+ua);
+ }catch(e){try{setDiag('focus wiring FAILED: '+String(e&&e.message||e).slice(0,180)+' · Android '+ua,true)}catch(_){}}
 }
 function insights(){const n=range,days=[...Array(n)].map((_,i)=>addD(today(),i-n+1)),c=cycleStats();const tg={};days.forEach(d=>(L(d).tags||[]).concat(L(d).customSx||[]).forEach(t=>tg[t]=(tg[t]||0)+1));const tk=Object.entries(tg).sort((a,b)=>b[1]-a[1]).slice(0,6),mx=tk[0]?.[1]||1;
  const hab=days.map(d=>{const t=tasksFor(d);return t.length?t.filter(x=>isDone(x.id,d)).length/t.length:null}).filter(x=>x!=null);const ha=hab.length?Math.round(hab.reduce((a,b)=>a+b,0)/hab.length*100):null;
@@ -3851,7 +3857,7 @@ function insights(){const n=range,days=[...Array(n)].map((_,i)=>addD(today(),i-n
 <div class="card"><div class="card-h"><h3>Symptoms</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Recorded</span></div>${tk.length?tk.map(([t,v])=>`<div class="row sp"><span>${E(t)}</span><span class="meta">${v} d</span></div><div class="bar"><i style="width:${v/mx*100}%"></i></div>`).join(''):'<p class="meta">None logged</p>'}</div>
 <div class="card"><div class="card-h"><h3>Habit completion</h3><span class="meta">${ha==null?'':ha+'%'}</span></div>${ha==null?'<p class="meta">No planned tasks</p>':`<div class="bar"><i style="width:${ha}%"></i></div>`}</div>
 <div class="card"><div class="card-h"><h3>Cycle length</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Calculated</span></div>${c.len.length?`<div class="row" style="align-items:end;height:90px">${c.len.slice(-10).map(v=>`<div style="flex:1;text-align:center"><div style="height:${Math.min(v,90)}px;background:var(--pink);border-radius:6px 6px 0 0"></div><span class="meta" style="font-size:.7rem">${v}</span></div>`).join('')}</div>`:'<p class="meta">Needs 2 logged starts</p>'}</div>
-${RO?'':'<div class="card"><div class="card-h"><h3>Appointment summary</h3></div><button class="btn" id="ex" style="width:100%">Export summary</button></div>'}`;
+${RO?'':'<div class="card"><div class="card-h"><h3>Appointment summary</h3></div><button class="btn" id="ex" style="width:100%">Export summary</button></div>'}<div id="focusdiag" class="focusdiag" role="status"></div>`;
   document.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{range=+b.dataset.r;insights()});if(!RO)$('#ex').onclick=()=>exportSum(days);const ctaBtn=document.getElementById('smart-cta');if(ctaBtn&&!RO){ctaBtn.onclick=()=>{const a=ctaBtn.dataset.action;if(a==='meals'){view='planner';tab='meals';shell()}else if(a==='journal'){view='planner';tab='journal';shell()}else if(a==='export'){exportSum(days)}else dayLog(today())};}};wireSmartFocus(document.getElementById('smart-focus'))
 async function saveFile(name,data){try{const dl=await claude.use('downloads');if(dl){await dl.save({filename:name,data});return}}catch(e){}try{await navigator.clipboard.writeText(data);toast('Copied to clipboard')}catch(e){sheet(`<h2>${E(name)}</h2><textarea rows="10" readonly>${E(data)}</textarea><button class="btn" id="c3">Close</button>`);$('#c3').onclick=()=>sheet()}}
 function exportSum(days){const c=cycleStats();let t=`Health summary for ${D.p.name||user}  ${days[0]} to ${days[days.length-1]}\nThis is self-recorded data, not a medical record.\n\nPeriod starts (recorded): ${starts().join(', ')||'none'}\n${c.n>=2?`Cycle length (calculated): ${c.min}${c.max} days, avg ${c.avg}\n`:''}\nDaily logs:\n`;days.forEach(d=>{const l=L(d);if(Object.keys(l).some(k=>k!='water'))t+=`${d}: ${[l.flow&&'bleeding '+l.flow,l.mood&&'mood '+l.mood+'/5',l.energy&&'energy '+l.energy+'/5',l.sleep&&'sleep '+l.sleep+'h',(l.tags||[]).concat(l.customSx||[]).join('/')].filter(Boolean).join('; ')}\n`});
@@ -4926,6 +4932,8 @@ function splashPlay(replay){
 // called by the native layer when the app comes back to the foreground
 window.__bloomResume=(awayMs)=>{try{widgetConsume()}catch(e){}try{widgetSync()}catch(e){}if(splashPlaying||!splashShouldShow(awayMs))return;splashPlay(true)};
 window.addEventListener('online',()=>{sbInit().then(()=>{if(sbUser&&!RO){sbPush();sbPull()}});setTimeout(()=>checkUpdate(false),800)});
+window.addEventListener('error',e=>{try{const el=document.getElementById('focusdiag');if(el){el.textContent='err: '+String(e&&e.message||e).slice(0,220);el.style.color='var(--rose)'}}catch(_){}},true)
+window.addEventListener('unhandledrejection',e=>{const r=e&&e.reason;try{const el=document.getElementById('focusdiag');if(el){el.textContent='err: '+String(r&&r.message||r).slice(0,220);el.style.color='var(--rose)'}}catch(_){}})
 window.addEventListener('offline',()=>{if(!document.getElementById('authForm'))return;const e=document.getElementById('err');if(e&&!e.textContent){e.textContent=OFFLINE_MSG;e.classList.add('on')}});
 window.addEventListener('online',()=>{const e=document.getElementById('err');if(document.getElementById('authForm')&&e&&e.textContent===OFFLINE_MSG){e.textContent='';e.classList.remove('on')}});
 // called by the native layer when the app goes to the background
