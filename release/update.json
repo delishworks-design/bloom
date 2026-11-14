@@ -1,7 +1,7 @@
 {
-    "versionCode": 103,
-    "versionName": "1.2.88",
-    "notes": "Explore now shows every available book (downloads gone \u2192 user taps to add, then reads). No more hidden books after migration.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.88/bloom-1.2.88.apk",
+    "versionCode": 104,
+    "versionName": "1.2.89",
+    "notes": "Fix: restore escaped-cover functions that got deleted during the Library rewrite \u2014 book cards render again.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.89/bloom-1.2.89.apk",
     "publishedAt": "2026-11-14"
 }
