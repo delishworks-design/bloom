@@ -30,3 +30,15 @@ test('isOffline follows navigator.onLine', () => {
   sandbox.navigator.onLine = false;
   assert.equal(sandbox.isOffline(), true);
 });
+
+test('password policy rejects weak choices and accepts a solid one', () => {
+  const { pwIssue } = load();
+  assert.match(pwIssue('short1'), /at least 8/);
+  assert.match(pwIssue('abcdefgh'), /letter and one number/);
+  assert.match(pwIssue('12345678'), /letter and one number/);
+  assert.match(pwIssue('password1'), /too common/);
+  assert.match(pwIssue('x'.repeat(71) + 'a1'), /under 72/);
+  assert.match(pwIssue('alex2024pw', 'alex@example.com'), /email address/);
+  assert.equal(pwIssue('Bloom2026garden', 'alex@example.com'), '');
+  assert.equal(pwIssue('   pass1   '), '');
+});

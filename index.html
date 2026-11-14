@@ -251,12 +251,12 @@ label{display:block;font-size:.86rem;color:#7C6B71 !important;margin-top:16px !i
 .auth .field.invalid input{border-color:var(--rose) !important;box-shadow:0 0 0 3px rgba(184,69,107,.12) !important}
 .auth .hint{display:none;margin:7px 0 0;font-size:.8rem;line-height:1.35;color:var(--rose)}
 .auth .field.invalid .hint{display:block}
-.auth .pwwrap{position:relative}
-.auth .pwwrap input{padding-right:66px !important}
+.pwwrap{position:relative}
+.pwwrap input{padding-right:66px !important}
 .auth .field input.code{text-align:center;text-transform:uppercase;letter-spacing:.22em;text-indent:.22em;font-size:1.3rem;font-weight:700;padding:16px 15px !important}
-.auth .reveal{position:absolute;right:5px;top:50%;transform:translateY(-50%);height:34px;padding:0 10px;border:0;background:transparent;color:var(--teal);font:inherit;font-size:.8rem;font-weight:700;cursor:pointer;border-radius:10px}
-.auth .reveal:hover{background:var(--tealS)}
-.auth .reveal:focus-visible{outline:2px solid var(--teal);outline-offset:1px}
+.reveal{position:absolute;right:5px;top:50%;transform:translateY(-50%);height:34px;padding:0 10px;border:0;background:transparent;color:var(--teal);font:inherit;font-size:.8rem;font-weight:700;cursor:pointer;border-radius:10px}
+.reveal:hover{background:var(--tealS)}
+.reveal:focus-visible{outline:2px solid var(--teal);outline-offset:1px}
 .auth .rule{display:flex;align-items:center;gap:8px;margin:10px 0 0;font-size:.8rem;line-height:1.3;color:var(--mut)}
 .auth .rule::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--line);flex:0 0 auto;transition:background .15s}
 .auth .rule.ok{color:var(--teal)}
@@ -920,7 +920,7 @@ async function sbInit(){if(sb)return sb;
  try{const m=window.supabase;
   if(!m)return null;
   sb=m.createClient(SB.url,SB.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-  try{sb.auth.onAuthStateChange((ev,sess)=>{if((ev==='SIGNED_IN'||ev==='TOKEN_REFRESHED')&&sess&&sess.user){sbUser=sess.user;try{if(/[#?].*(access_token|refresh_token|code=|error=)/.test(location.href))history.replaceState(null,'',location.pathname+location.search)}catch(e){};if(!RO&&!ownMode)sbAfterLogin(sess.user).catch(e=>reportErr('login.after',e))}})}catch(e){}
+  try{sb.auth.onAuthStateChange((ev,sess)=>{if(pwReauthing)return;if((ev==='SIGNED_IN'||ev==='TOKEN_REFRESHED')&&sess&&sess.user){sbUser=sess.user;try{if(/[#?].*(access_token|refresh_token|code=|error=)/.test(location.href))history.replaceState(null,'',location.pathname+location.search)}catch(e){};if(!RO&&!ownMode)sbAfterLogin(sess.user).catch(e=>reportErr('login.after',e))}})}catch(e){}
  }catch(e){return null}
  // a broken/expired stored session must never kill the client
  try{const {data}=await sb.auth.getSession();
@@ -1245,7 +1245,7 @@ function roPage(){
   [['myShareTasks','tasks'],['myShareMeals','meals'],['myShareJournal','journal']].forEach(([id,key])=>{const el=document.getElementById(id);if(el)el.onchange=e=>setFollowerShareFlag(key,e.target.checked)});
   $('#stg').onclick=()=>{view='settings';shell()};
   $('#rpav').onchange=e=>{const f=e.target.files&&e.target.files[0];e.target.value='';if(f)roPickAvatar(f)};
-  $('#lo').onclick=logout;}
+  $('#lo').onclick=confirmLogout;}
 
 async function setFollowerShareFlag(key,val){
  if(!sbUser)return;
@@ -1335,7 +1335,7 @@ function authView(mode){mode=mode||'in';try{fabSync()}catch(e){}document.body.cl
     <input id="u" type="email" inputmode="email" autocomplete="email" maxlength="80" placeholder="you@example.com" autocapitalize="none" spellcheck="false" aria-describedby="e-u">
     <p class="hint" id="e-u"></p></div>
    ${pwBlock('pw','Password',up?'new-password':'current-password')}
-   ${up?pwBlock('pw2','Confirm password','new-password')+`<p class="rule" id="pwRule">At least 6 characters</p>
+   ${up?pwBlock('pw2','Confirm password','new-password')+`<p class="rule" id="pwRule">At least 8 characters, with a letter and a number</p>
    <label class="cons"><input id="cons" type="checkbox"><span>I agree to store my health notes on this account.</span></label>`:''}
    <div class="err" id="err" role="alert"></div>
    <button class="btn" type="submit" id="go">${up?'Create account':'Log in'}</button>
@@ -1359,7 +1359,7 @@ function authView(mode){mode=mode||'in';try{fabSync()}catch(e){}document.body.cl
  // clear an error as soon as the person starts fixing it
  ['u','pw','pw2'].forEach(id=>{const el=g(id);if(el)el.addEventListener('input',()=>{setFieldErr(id,'');formErr('')})});
  const consEl=g('cons');if(consEl)consEl.addEventListener('change',()=>formErr(''));
- if(up){const r=g('pwRule'),pwEl=g('pw'),sync=()=>r.classList.toggle('ok',pwEl.value.length>=6);pwEl.addEventListener('input',sync);sync()}
+ if(up){const r=g('pwRule'),pwEl=g('pw'),sync=()=>r.classList.toggle('ok',!pwIssue(pwEl.value,g('u').value));pwEl.addEventListener('input',sync);sync()}
  let busy=false;
  const sub=async()=>{
   if(busy)return;
@@ -1368,7 +1368,7 @@ function authView(mode){mode=mode||'in';try{fabSync()}catch(e){}document.body.cl
   const u=g('u').value.trim().toLowerCase(),pw=g('pw').value;
   let bad=false;
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(u)){setFieldErr('u','Enter a valid email address.');bad=true}
-  if(pw.length<6){setFieldErr('pw','Use at least 6 characters.');bad=true}
+  const pwBad=pwIssue(pw,u);if(pwBad){setFieldErr('pw',pwBad);bad=true}
   if(up&&g('pw2').value!==pw){setFieldErr('pw2','Passwords don\u2019t match.');bad=true}
   if(up&&!g('cons').checked){formErr('Please give consent to continue.');bad=true}
   if(bad){const first=document.querySelector('.auth .field.invalid input');if(first)first.focus();return}
@@ -1430,7 +1430,7 @@ function showCheckEmail(email){
  };
 }
 function forgotPasswordSheet(){
- let sends=0,cooldownUntil=0;
+ let sends=0,cooldownUntil=0,tries=0;
  sheet(`<h2>Reset your password</h2><p class="meta" style="margin:0 0 12px" id="fpMsg">Enter your account email to get a 6-digit code.</p><label for="fpEmail">Email</label><input id="fpEmail" type="email" inputmode="email" autocomplete="email" maxlength="80" autocapitalize="none" spellcheck="false"><div class="err" id="fpErr"></div><div class="row" style="gap:10px;margin-top:16px"><button class="btn ghost" id="fpCancel" style="flex:1">Cancel</button><button class="btn" id="fpSend" style="flex:1">Send code</button></div>`);
  $('#fpCancel').onclick=()=>sheet();
  $('#fpSend').onclick=async()=>{
@@ -1448,13 +1448,14 @@ function forgotPasswordSheet(){
    $('#fpResend').onclick=async()=>{if(sends>=5){$('#fpErr2').textContent='Resend limit reached.';return}if(Date.now()<cooldownUntil){$('#fpErr2').textContent='Wait a moment before sending again.';return}try{await cl.auth.resetPasswordForEmail(email);sends++;cooldownUntil=Date.now()+60000;$('#fpErr2').textContent='Code sent. Check your email.'}catch(e){$('#fpErr2').textContent=errText(e&&e.message||e)}};
    $('#fpReset').onclick=async()=>{
     const code=$('#fpCode').value.trim(),a=$('#fpPw').value,b=$('#fpPw2').value,er2=$('#fpErr2');
+    if(tries>=5){er2.textContent='Too many attempts. Request a new code.';return}
     if(!/^\d{6}$/.test(code)){er2.textContent='Enter the 6-digit code.';return}
-    if(a.length<6){er2.textContent='Use at least 6 characters.';return}
+    const pi=pwIssue(a,email);if(pi){er2.textContent=pi;return}
     if(a!==b){er2.textContent='Passwords don\u2019t match.';return}
     er2.textContent='';
     try{
      const {error}=await cl.auth.verifyOtp({email,token:code,type:'recovery'});
-     if(error){er2.textContent='That code is wrong or expired.';return}
+     if(error){tries++;er2.textContent='That code is wrong or expired.';return}
      const up=await cl.auth.updateUser({password:a});
      if(up&&up.error){er2.textContent=errText(up.error.message||up.error);return}
      const {data}=await cl.auth.getSession();
@@ -1471,6 +1472,24 @@ function login(u){user=u;D=Object.assign(blank(),J(key(u),{}));loadRev(u);setSes
 function logout(){try{widgetReset()}catch(e){}RO=false;ROcloud=false;ROowner=null;roHash='';ownMode=false;ownStash=null;user=null;D=null;clearSession();planPanel='mine';peekDoc=null;peekAt=0;pairInfo=null;setRoleFlag('');sbLastPush='';sbRev=0;
  view='cycle';tab='';onbStep=0;calM=today().slice(0,7);try{window.__navReady=false}catch(e){}try{ST.del('bloom_nav')}catch(e){}
  try{ST.del('bloom_own')}catch(e){}try{clearLegacySmartAIStorage()}catch(e){}try{reminderCancel()}catch(e){}if(sb){sb.auth.signOut().catch(()=>{});sbUser=null}if(cloudTimer){clearInterval(cloudTimer);cloudTimer=null}hideUpdateBanner();authView('in')}
+let pwReauthing=false;
+function pwIssue(pw,email){
+ const v=String(pw==null?'':pw);
+ if(v.length<8)return 'Use at least 8 characters.';
+ if(v.length>72)return 'Keep it under 72 characters.';
+ if(!/[A-Za-z]/.test(v)||!/[0-9]/.test(v))return 'Include at least one letter and one number.';
+ const common=['password','password1','password12','12345678','123456789','qwerty','qwerty123','letmein','iloveyou','welcome1','abc12345','bloom123'];
+ if(common.includes(v.toLowerCase()))return 'That password is too common. Choose another.';
+ const mail=String(email||'').trim().toLowerCase();
+ if(mail){const local=mail.split('@')[0];if(local&&local.length>=4&&v.toLowerCase().includes(local))return 'Do not use your email address.';}
+ return '';
+}
+function confirmLogout(){
+ const following=RO;
+ sheet(`<h2>Sign out?</h2><p class="meta" style="margin:0 0 4px">${following?'You will stop following and need their code again.':'Your logs stay saved on this phone. Sign in again to continue.'}</p><div class="row" style="gap:10px;margin-top:14px"><button class="btn ghost" id="loCancel" style="flex:1">Cancel</button><button class="btn pink" id="loGo" style="flex:1">Sign out</button></div>`);
+ $('#loCancel').onclick=()=>sheet();
+ $('#loGo').onclick=()=>{sheet();logout()};
+}
 function wipeLocalData(){
   try{widgetReset()}catch(e){}
   try{clearLegacySmartAIStorage()}catch(e){}
@@ -1546,7 +1565,7 @@ async function fetchManifest(){const bust='?t='+Date.now();
  const r=await fetch(UPDATE_MANIFEST+bust,{cache:'no-store'});if(!r.ok)throw new Error('manifest '+r.status);
  return await r.json()}
 // Baked-in build identity. Keep in sync with android/app/build.gradle (versionCode/versionName).
-const APP_VERSION={code:84,name:'1.2.69'};
+const APP_VERSION={code:85,name:'1.2.70'};
 const UPD_SKIP_KEY='bloom_upd_skip';
 const updater=()=>{const C=window.Capacitor;if(!C)return null;
  const P=C.Plugins&&C.Plugins.BloomUpdater;
@@ -3795,25 +3814,35 @@ function wireSmartFocus(root){
  const cards=[...track.children],dots=[...root.querySelectorAll('.smart-focus-dot')];
  if(!cards.length)return;
  const prefersReduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
- const pause=()=>{if(smartFocusTimer){clearInterval(smartFocusTimer);smartFocusTimer=null}};
- const nearest=()=>{const tl=track.scrollLeft;let best=0,bd=Infinity;cards.forEach((c,i)=>{const d=Math.abs(c.offsetLeft-tl);if(d<bd){bd=d;best=i}});return best};
- const count=root.querySelector('.smart-focus-count');const syncDots=()=>{const i=nearest();dots.forEach((d,j)=>d.classList.toggle('on',j===i));if(count)count.textContent=`${i+1} of ${cards.length}`};
+ let resumeTimer=null;
+ const pause=()=>{if(smartFocusTimer){clearInterval(smartFocusTimer);smartFocusTimer=null}if(resumeTimer){clearTimeout(resumeTimer);resumeTimer=null}};
+ const leftOf=i=>{const tr=track.getBoundingClientRect(),cr=cards[i].getBoundingClientRect();return Math.round(cr.left-tr.left+track.scrollLeft)};
+ const nearest=()=>{const tl=track.scrollLeft;let best=0,bd=Infinity;cards.forEach((_,i)=>{const d=Math.abs(leftOf(i)-tl);if(d<bd){bd=d;best=i}});return best};
+ const isExpanded=()=>cards.some(c=>c.classList.contains('is-expanded'));
+ const count=root.querySelector('.smart-focus-count');
+ const syncDots=()=>{const i=nearest();dots.forEach((d,j)=>d.classList.toggle('on',j===i));if(count)count.textContent=`${i+1} of ${cards.length}`};
+ const go=i=>track.scrollTo({left:leftOf(i),behavior:'smooth'});
+ const scheduleResume=()=>{pause();if(prefersReduced||isExpanded())return;resumeTimer=setTimeout(()=>{resumeTimer=null;auto()},6000)};
  syncDots();
- dots.forEach((d,i)=>d.addEventListener('click',()=>{track.scrollTo({left:cards[i].offsetLeft,behavior:'smooth'})}));
+ dots.forEach((d,i)=>d.addEventListener('click',()=>{go(i);scheduleResume()}));
  track.addEventListener('scroll',syncDots,{passive:true});
  track.addEventListener('pointerdown',pause,{passive:true});
  track.addEventListener('focusin',pause);
  root.addEventListener('pointerenter',pause);
+ root.addEventListener('pointerup',scheduleResume,{passive:true});
+ root.addEventListener('pointercancel',scheduleResume,{passive:true});
+ root.addEventListener('pointerleave',scheduleResume,{passive:true});
+ root.addEventListener('focusout',e=>{if(!root.contains(e.relatedTarget))scheduleResume()});
  cards.forEach(c=>{
   c.addEventListener('click',e=>{
    if(e.target.closest('a,button.smart-focus-dot'))return;
    c.classList.toggle('is-expanded');
    const exp=c.classList.contains('is-expanded');
    const tap=c.querySelector('.smart-focus-tap');if(tap)tap.setAttribute('aria-expanded',exp?'true':'false');
-   pause();
+   if(exp)pause();else scheduleResume();
   });
  });
- const auto=()=>{if(prefersReduced)return;pause();smartFocusTimer=setInterval(()=>{const max=track.scrollWidth-track.clientWidth;if(max<=0){pause();return}const i=nearest();const n=i+1>=cards.length?0:i+1;track.scrollTo({left:cards[n].offsetLeft,behavior:n===0?'auto':'smooth'})},4000)};
+ const auto=()=>{if(prefersReduced||isExpanded())return;pause();smartFocusTimer=setInterval(()=>{const max=track.scrollWidth-track.clientWidth;if(max<=0){pause();return}const i=nearest();const n=i+1>=cards.length?0:i+1;track.scrollTo({left:leftOf(n),behavior:n===0?'auto':'smooth'})},4000)};
  auto();
 }
 function insights(){const n=range,days=[...Array(n)].map((_,i)=>addD(today(),i-n+1)),c=cycleStats();const tg={};days.forEach(d=>(L(d).tags||[]).concat(L(d).customSx||[]).forEach(t=>tg[t]=(tg[t]||0)+1));const tk=Object.entries(tg).sort((a,b)=>b[1]-a[1]).slice(0,6),mx=tk[0]?.[1]||1;
@@ -3826,7 +3855,7 @@ function insights(){const n=range,days=[...Array(n)].map((_,i)=>addD(today(),i-n
 <div class="card"><div class="card-h"><h3>Symptoms</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Recorded</span></div>${tk.length?tk.map(([t,v])=>`<div class="row sp"><span>${E(t)}</span><span class="meta">${v} d</span></div><div class="bar"><i style="width:${v/mx*100}%"></i></div>`).join(''):'<p class="meta">None logged</p>'}</div>
 <div class="card"><div class="card-h"><h3>Habit completion</h3><span class="meta">${ha==null?'':ha+'%'}</span></div>${ha==null?'<p class="meta">No planned tasks</p>':`<div class="bar"><i style="width:${ha}%"></i></div>`}</div>
 <div class="card"><div class="card-h"><h3>Cycle length</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Calculated</span></div>${c.len.length?`<div class="row" style="align-items:end;height:90px">${c.len.slice(-10).map(v=>`<div style="flex:1;text-align:center"><div style="height:${Math.min(v,90)}px;background:var(--pink);border-radius:6px 6px 0 0"></div><span class="meta" style="font-size:.7rem">${v}</span></div>`).join('')}</div>`:'<p class="meta">Needs 2 logged starts</p>'}</div>
-<div class="card"><div class="card-h"><h3>Appointment summary</h3></div>${RO?'':'<button class="btn" id="ex" style="width:100%">Export summary</button>'}</div>`;
+${RO?'':'<div class="card"><div class="card-h"><h3>Appointment summary</h3></div><button class="btn" id="ex" style="width:100%">Export summary</button></div>'}`;
   document.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{range=+b.dataset.r;insights()});if(!RO)$('#ex').onclick=()=>exportSum(days);const ctaBtn=document.getElementById('smart-cta');if(ctaBtn&&!RO){ctaBtn.onclick=()=>{const a=ctaBtn.dataset.action;if(a==='meals'){view='planner';tab='meals';shell()}else if(a==='journal'){view='planner';tab='journal';shell()}else if(a==='export'){exportSum(days)}else dayLog(today())};}};wireSmartFocus(document.getElementById('smart-focus'))
 async function saveFile(name,data){try{const dl=await claude.use('downloads');if(dl){await dl.save({filename:name,data});return}}catch(e){}try{await navigator.clipboard.writeText(data);toast('Copied to clipboard')}catch(e){sheet(`<h2>${E(name)}</h2><textarea rows="10" readonly>${E(data)}</textarea><button class="btn" id="c3">Close</button>`);$('#c3').onclick=()=>sheet()}}
 function exportSum(days){const c=cycleStats();let t=`Health summary for ${D.p.name||user}  ${days[0]} to ${days[days.length-1]}\nThis is self-recorded data, not a medical record.\n\nPeriod starts (recorded): ${starts().join(', ')||'none'}\n${c.n>=2?`Cycle length (calculated): ${c.min}${c.max} days, avg ${c.avg}\n`:''}\nDaily logs:\n`;days.forEach(d=>{const l=L(d);if(Object.keys(l).some(k=>k!='water'))t+=`${d}: ${[l.flow&&'bleeding '+l.flow,l.mood&&'mood '+l.mood+'/5',l.energy&&'energy '+l.energy+'/5',l.sleep&&'sleep '+l.sleep+'h',(l.tags||[]).concat(l.customSx||[]).join('/')].filter(Boolean).join('; ')}\n`});
@@ -4650,23 +4679,47 @@ function deleteAccountSheet(){
   };
 }
 function changePasswordSheet(){
- sheet(`<h2>Change password</h2><p class="meta" style="margin:0 0 12px">Use at least 6 characters.</p><label for="pw1">New password</label><input id="pw1" type="password" autocomplete="new-password"><label for="pw2" style="margin-top:10px;display:block">Confirm password</label><input id="pw2" type="password" autocomplete="new-password"><p class="hint" id="pwErr"></p><div class="row" style="gap:10px;margin-top:16px"><button class="btn ghost" id="pwCancel" style="flex:1">Cancel</button><button class="btn" id="pwSave" style="flex:1">Save</button></div>`);
+ let tries=0,coolUntil=0;
+ const mail=((sbUser&&sbUser.email)||user||'').toLowerCase();
+ let hasEmail=true;try{const ids=(sbUser&&sbUser.identities)||[];if(ids.length)hasEmail=ids.some(x=>x&&x.provider==='email')}catch(e){}
+ sheet(`<h2>${hasEmail?'Change password':'Set a password'}</h2><p class="meta" style="margin:0 0 12px">${hasEmail?'Enter your current password, then choose a new one.':'Add a password so you can also sign in with email.'}</p>`+
+  (hasEmail?`<label for="pw0">Current password</label><div class="pwwrap"><input id="pw0" type="password" autocomplete="current-password"><button type="button" class="reveal" data-for="pw0" aria-label="Show password">Show</button></div>`:'')+
+  `<label for="pw1" style="margin-top:10px;display:block">New password</label><div class="pwwrap"><input id="pw1" type="password" autocomplete="new-password"><button type="button" class="reveal" data-for="pw1" aria-label="Show password">Show</button></div>
+  <label for="pw2" style="margin-top:10px;display:block">Confirm new password</label><div class="pwwrap"><input id="pw2" type="password" autocomplete="new-password"><button type="button" class="reveal" data-for="pw2" aria-label="Show password">Show</button></div>
+  <p class="hint" id="pwRule">At least 8 characters, with a letter and a number.</p>
+  <p class="hint" id="pwErr"></p>
+  <div class="row" style="gap:10px;margin-top:16px"><button class="btn ghost" id="pwCancel" style="flex:1">Cancel</button><button class="btn" id="pwSave" style="flex:1">${hasEmail?'Save':'Set password'}</button></div>`);
  $('#pwCancel').onclick=()=>sheet();
+ document.querySelectorAll('#sheet .reveal').forEach(b=>{
+  b.onclick=()=>{const inp=document.getElementById(b.dataset.for);if(!inp)return;const show=inp.type==='password';inp.type=show?'text':'password';b.textContent=show?'Hide':'Show';b.setAttribute('aria-label',show?'Hide password':'Show password');inp.focus()};
+ });
  $('#pwSave').onclick=async()=>{
-  const a=$('#pw1').value,b=$('#pw2').value,er=$('#pwErr');
-  if(a.length<6){er.textContent='Use at least 6 characters.';return}
+  const a=$('#pw1').value,b=$('#pw2').value,er=$('#pwErr'),bt=$('#pwSave');
+  const pi=pwIssue(a,mail);if(pi){er.textContent=pi;return}
   if(a!==b){er.textContent='Passwords do not match.';return}
-  er.textContent='';const bt=$('#pwSave');bt.disabled=true;bt.textContent='Saving…';
+  if(hasEmail&&!$('#pw0').value){er.textContent='Enter your current password.';return}
+  if(Date.now()<coolUntil){er.textContent='Too many attempts. Wait a minute.';return}
+  if(isOffline()){er.textContent=OFFLINE_MSG;return}
+  er.textContent='';bt.disabled=true;bt.textContent='Saving…';
   try{
    const cl=await sbInit();
    if(!cl){er.textContent='Could not start the cloud service.';return}
+   if(hasEmail&&mail){
+    const cur=$('#pw0').value;
+    if(cur===a){er.textContent='Choose a password you have not used here.';return}
+    pwReauthing=true;
+    let ve=null;try{const r=await cl.auth.signInWithPassword({email:mail,password:cur});ve=r.error}catch(e){ve=e}
+    pwReauthing=false;
+    if(ve){tries++;if(tries>=5){coolUntil=Date.now()+60000;tries=0;er.textContent='Too many attempts. Wait a minute.'}else er.textContent='Current password is incorrect.';return}
+    tries=0;
+   }
    const {error}=await cl.auth.updateUser({password:a});
    if(error){er.textContent=errText(error.message);return}
-   sheet();toast('Password updated');
-  }finally{bt.disabled=false;bt.textContent='Save'}
+   let others=false;try{const r=await cl.auth.signOut({scope:'others'});others=!r.error}catch(e){}
+   sheet();toast(others?'Password updated. Other devices signed out.':'Password updated');
+  }catch(e){er.textContent=errText(e&&e.message||e)}finally{bt.disabled=false;bt.textContent=hasEmail?'Save':'Set password'}
  };
-}
-function settingsPage(){
+}function settingsPage(){
  const cur=currentAccountType();
  const nm=RO?(ST.get('bloom_pname')||''):((D&&D.p&&D.p.name)||'');
  const bkMail=user||(sbUser&&sbUser.email&&sbUser.email.toLowerCase());
@@ -4742,7 +4795,7 @@ function mePartner(){const p=D.p||{};
   $('#av').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f)pickAvatar(f)};
   $('#gFollow').onclick=()=>partnerOnboard();
   $('#stg').onclick=()=>{view='settings';shell()};
-  $('#lo').onclick=logout;}
+  $('#lo').onclick=confirmLogout;}
 function me(){const p=D.p;
 $('#main').innerHTML=`<h1>Profile</h1>
 <div class="card">
@@ -4767,7 +4820,7 @@ $('#main').innerHTML=`<h1>Profile</h1>
   else if(r.error){if(note)note.textContent='The reminder could not be scheduled. Try again.'}
   else if(note)note.textContent='One reminder a day at '+D.rem.time+'.'};
  $('#rs').onclick=saveRem;$('#rt').onchange=saveRem;$('#rm').onchange=saveRem;
- $('#lo').onclick=logout;loadPairCard();
+ $('#lo').onclick=confirmLogout;loadPairCard();
  syncPartnerCode().then(ch=>{if(ch&&view==='me'&&!RO)me()});
   $('#stg').onclick=()=>{view='settings';shell()};}
 
