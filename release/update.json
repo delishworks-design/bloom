@@ -1,7 +1,7 @@
 {
-    "versionCode": 91,
-    "versionName": "1.2.76",
-    "notes": "Offline-safe boot: opens instantly with no internet, syncs in background when online, no more stuck splash or surprise login loop.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.76/bloom-1.2.76.apk",
+    "versionCode": 92,
+    "versionName": "1.2.77",
+    "notes": "Focus cards show a progress bar and 'details' hint, cards are narrower so the next one peeks (swipeable). Follower card hidden offline. Logout wording aligned with Log in.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.77/bloom-1.2.77.apk",
     "publishedAt": "2026-11-14"
 }

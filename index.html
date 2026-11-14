@@ -374,9 +374,9 @@ details{border-bottom:1px solid #EADFD2;padding:14px 0}summary{cursor:pointer;fo
 .appt-foot .btn{flex:1}
 .smart-focus-now{padding:16px 18px}
 .smart-focus-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
-.smart-focus-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding-bottom:2px;scrollbar-width:none}
+.smart-focus-track{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding-bottom:2px;scrollbar-width:none}
 .smart-focus-track::-webkit-scrollbar{display:none}
-.smart-focus-card{flex:0 0 100%;scroll-snap-align:start;border:1px solid rgba(232,160,180,.4);border-radius:18px;padding:14px 16px;background:#FFF9F5;min-width:0;display:flex;flex-direction:column}
+.smart-focus-card{flex:0 0 86%;scroll-snap-align:start;border:1px solid rgba(232,160,180,.4);border-radius:18px;padding:14px 16px;background:#FFF9F5;min-width:0;display:flex;flex-direction:column}
 .smart-focus-card-title{font-size:.66rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--rose);margin:0}
 .smart-focus-tap{flex:1;display:grid;grid-template-columns:96px 1fr;align-items:center;gap:14px;width:100%;text-align:left;background:transparent;border:0;padding:10px 4px 2px;cursor:pointer;font:inherit}
 .smart-focus-meter{width:96px;height:96px}
@@ -388,6 +388,13 @@ details{border-bottom:1px solid #EADFD2;padding:14px 0}summary{cursor:pointer;fo
 .smart-focus-detail{display:block;max-height:0;overflow:hidden;margin-top:0;transition:max-height .3s ease}
 .smart-focus-detail-in{overflow:hidden;min-height:0}
 .smart-focus-card.is-expanded .smart-focus-detail{max-height:320px;margin-top:8px}
+.smart-focus-hint{display:inline-flex;align-items:center;gap:4px;margin-top:7px;font-size:.56rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--faded)}
+.smart-focus-hint i{font-style:normal;font-size:.7rem;line-height:1;transform:rotate(90deg);transition:transform .25s ease}
+.smart-focus-card.is-expanded .smart-focus-hint{color:var(--rose)}
+.smart-focus-card.is-expanded .smart-focus-hint i{transform:rotate(-90deg)}
+.smart-focus-prog{height:2px;border-radius:2px;background:rgba(184,69,107,.12);margin:10px 2px 0;overflow:hidden}
+.smart-focus-prog i{display:block;height:100%;border-radius:2px;background:var(--rose);opacity:.4;transition:transform .3s ease,width .3s ease}
+.smart-focus-prog[data-n="1"]{display:none}
 .smart-focus-reason{font-size:.82rem;line-height:1.45;color:var(--ink);margin:0;padding-top:8px;border-top:1px dashed var(--line)}
 .smart-focus-motivator{font-size:.8rem;line-height:1.45;color:var(--mut);margin:6px 0 0}
 @media (prefers-reduced-motion:reduce){.smart-card *,.smart-focus-card *{animation:none !important;transition:none !important}}
@@ -407,7 +414,7 @@ details{border-bottom:1px solid #EADFD2;padding:14px 0}summary{cursor:pointer;fo
 .smart-ai-label{font-size:.76rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--mut)}
 .smart-ai-toggle{align-self:center}
 .smart-ai-toggle{align-self:flex-start}
-@media (max-width:430px){.smart-section{padding:16px 18px}.smart-focus-now{padding:14px 14px}.smart-focus-card{flex-basis:100%}.smart-focus-tap{grid-template-columns:84px 1fr;gap:12px}.smart-focus-meter,.smart-focus-meter svg{width:84px;height:84px}}
+@media (max-width:430px){.smart-section{padding:16px 18px}.smart-focus-now{padding:14px 14px}.smart-focus-tap{grid-template-columns:84px 1fr;gap:12px}.smart-focus-meter,.smart-focus-meter svg{width:84px;height:84px}}
 .faces{display:flex;gap:8px;justify-content:space-between;margin:8px 0}
 .facebtn{flex:1;background:#FFFBF5 !important;border:1.5px solid #EADFD2 !important;padding:8px 4px !important;border-radius:16px !important;opacity:.55;min-height:58px !important;display:grid !important;place-items:center !important}
 .facebtn.on{opacity:1 !important;transform:translateY(-2px);border-color:#B8456B !important;background:#F9DDE5 !important;box-shadow:0 2px 8px rgba(120,70,80,.08) !important}
@@ -1251,7 +1258,7 @@ function roPage(){
   </div>
  </div>
    <div class="card"><button class="btn ghost" id="stg" style="width:100%">Settings</button></div>
-   <button class="btn ghost" id="lo" style="width:100%">Sign out</button>`;
+   <button class="btn ghost" id="lo" style="width:100%">Log out</button>`;
   $('#exv').onclick=exitPartner;
   [['myShareTasks','tasks'],['myShareMeals','meals'],['myShareJournal','journal']].forEach(([id,key])=>{const el=document.getElementById(id);if(el)el.onchange=e=>setFollowerShareFlag(key,e.target.checked)});
   $('#stg').onclick=()=>{view='settings';shell()};
@@ -1498,7 +1505,7 @@ function pwIssue(pw,email){
 }
 function confirmLogout(){
  const following=RO;
- sheet(`<h2>Sign out?</h2><p class="meta" style="margin:0 0 4px">${following?'You will stop following and need their code again.':'Your logs stay saved on this phone. Sign in again to continue.'}</p><div class="row" style="gap:10px;margin-top:14px"><button class="btn ghost" id="loCancel" style="flex:1">Cancel</button><button class="btn pink" id="loGo" style="flex:1">Sign out</button></div>`);
+ sheet(`<h2>Log out?</h2><p class="meta" style="margin:0 0 4px">${following?'You will stop following and need their code again.':'Your logs stay saved on this phone. Log in again to continue.'}</p><div class="row" style="gap:10px;margin-top:14px"><button class="btn ghost" id="loCancel" style="flex:1">Cancel</button><button class="btn pink" id="loGo" style="flex:1">Log out</button></div>`);
  $('#loCancel').onclick=()=>sheet();
  $('#loGo').onclick=()=>{sheet();logout()};
 }
@@ -1577,7 +1584,7 @@ async function fetchManifest(){const bust='?t='+Date.now();
  const r=await fetch(UPDATE_MANIFEST+bust,{cache:'no-store'});if(!r.ok)throw new Error('manifest '+r.status);
  return await r.json()}
 // Baked-in build identity. Keep in sync with android/app/build.gradle (versionCode/versionName).
-const APP_VERSION={code:91,name:'1.2.76'};
+const APP_VERSION={code:92,name:'1.2.77'};
 const UPD_SKIP_KEY='bloom_upd_skip';
 const updater=()=>{const C=window.Capacitor;if(!C)return null;
  const P=C.Plugins&&C.Plugins.BloomUpdater;
@@ -3399,6 +3406,7 @@ function smartFocusHTML(goal,goals,noGoals,cards){
      <span class="smart-focus-stage">${E(prog.stageName)}</span>
      <h3 class="smart-focus-card-title">${E(prog.name||c.name||c.goal)}</h3>
      <span class="smart-focus-caption">${E(prog.caption)}</span>
+     <span class="smart-focus-hint" aria-hidden="true">details <i>\u203a</i></span>
     </span>
    </button>
    <div class="smart-focus-detail" id="smart-focus-detail-${i}"><div class="smart-focus-detail-in">
@@ -3407,7 +3415,7 @@ function smartFocusHTML(goal,goals,noGoals,cards){
    </div></div>
   </article>`;
  }).join('');
- return `<section class="card smart-focus-now" id="smart-focus" aria-labelledby="smart-focus-title">${kicker}</div><div class="smart-focus-track" role="list" tabindex="0">${html}</div></section>`;
+ return `<section class="card smart-focus-now" id="smart-focus" aria-labelledby="smart-focus-title">${kicker}</div><div class="smart-focus-track" role="list" tabindex="0">${html}</div><div class="smart-focus-prog" data-n="${list.length}" aria-hidden="true"><i></i></div></section>`;
 }
 function smartFocusName(goal){
  const names={'Understand my cycle':'Understanding your cycle','Steadier energy':'Steadier energy','Better sleep':'Better sleep','Move more':'Moving more','Eat regularly':'Eating regularly','Manage stress':'Keeping stress steady'};
@@ -3839,12 +3847,14 @@ function wireSmartFocus(root){
  const stop=()=>{if(smartFocusTimer){clearInterval(smartFocusTimer);smartFocusTimer=null}if(resumeTimer){clearTimeout(resumeTimer);resumeTimer=null}};
  const scheduleResume=()=>{stop();resumeTimer=setTimeout(()=>{resumeTimer=null;auto()},6000)};
  const cards=()=>[...track.children];
- const step=()=>Math.max(1,track.clientWidth);
+ const step=()=>{const k=track.children;return k.length>1?Math.max(1,k[1].offsetLeft-k[0].offsetLeft):Math.max(1,track.clientWidth)};
  const at=()=>Math.max(0,Math.min(cards().length-1,Math.round(track.scrollLeft/step())));
  const goTo=i=>{const c=cards()[i];if(!c)return;try{c.scrollIntoView({behavior:reduced?'auto':'smooth',block:'nearest',inline:'start'})}catch(e){track.scrollLeft=i*step()}};
  const collapseExpanded=()=>{track.querySelectorAll('.smart-focus-card.is-expanded').forEach(c=>{c.classList.remove('is-expanded');const tap=c.querySelector('.smart-focus-tap');if(tap)tap.setAttribute('aria-expanded','false');const detail=c.querySelector('.smart-focus-detail');if(detail)detail.style.maxHeight='0px'})};
+ const prog=root.querySelector('.smart-focus-prog i');
+ const setProg=()=>{if(!prog)return;const n=cards().length;prog.style.width=(100/Math.max(1,n))+'%';prog.style.transform='translateX('+(at()*100)+'%)'};
  const advance=()=>{const n=cards().length;if(!n)return;const next=at()+1>=n?0:at()+1;goTo(next)};
- const auto=()=>{stop();smartFocusTimer=setInterval(advance,4000)};
+ const auto=()=>{stop();setProg();smartFocusTimer=setInterval(advance,4000)};
  let swipe=null;
  track.addEventListener('pointerdown',e=>{swipe={x:e.clientX,closed:false};stop()},{passive:true});
  track.addEventListener('pointermove',e=>{if(swipe&&!swipe.closed&&Math.abs(e.clientX-swipe.x)>10){collapseExpanded();swipe.closed=true}},{passive:true});
@@ -3852,6 +3862,7 @@ function wireSmartFocus(root){
  track.addEventListener('pointerup',()=>{endSwipe();scheduleResume()},{passive:true});
  track.addEventListener('pointercancel',()=>{endSwipe();scheduleResume()},{passive:true});
  track.addEventListener('pointerleave',()=>{endSwipe();scheduleResume()},{passive:true});
+ track.addEventListener('scroll',setProg,{passive:true});
  root.addEventListener('focusin',stop);
  root.addEventListener('focusout',e=>{if(!root.contains(e.relatedTarget))scheduleResume()});
  auto();
@@ -4621,6 +4632,7 @@ function bindPairActions(){
 }
 async function loadPairCard(){
  const box=document.getElementById('pairCard');if(!box||RO)return;
+ if(isOffline()){box.hidden=true;return}
  const st=await ownerPairing();
  pairInfo=st||false;
  if(!document.body.contains(box))return;
@@ -4943,7 +4955,7 @@ $('#main').innerHTML=`<h1>Profile</h1>
  <label>Goals</label><div class="row" id="goals">${GOALS.map(g=>`<button class="chip" aria-pressed="${(p.goals||[]).includes(g)}">${g}</button>`).join('')}</div>
  <button class="btn" id="sv" style="width:100%;margin-top:12px">Save</button>
 </div>
-<div class="card" id="pairCard"><p class="meta" style="margin:0">Loading\u2026</p></div>
+${isOffline()?'':'<div class="card" id="pairCard"><p class="meta" style="margin:0">Loading\u2026</p></div>'}
 <div class="card"><div class="card-h"><h3>Reminder</h3></div><label class="row" style="color:var(--ink)"><input type="checkbox" id="rm" style="width:22px;margin:0" ${D.rem.on?'checked':''}> Daily logging reminder</label><label for="rt">Time</label><input id="rt" type="time" value="${D.rem.time}"><label class="row" style="color:var(--ink);margin-top:12px"><input type="checkbox" id="wm" style="width:22px;margin:0" ${D.rem.water?'checked':''}> Hourly water reminder <span class="meta" style="margin-left:4px">8:00\u201322:00</span></label><button class="btn ghost" id="rs" style="width:100%;margin-top:4px">Save reminders</button><p class="meta" id="remNote" style="margin:10px 0 0"></p></div>
   <div class="card"><button class="btn ghost" id="stg" style="width:100%">Settings</button></div>
   <button class="btn ghost" id="lo" style="width:100%">Log out</button>`;
@@ -5090,7 +5102,7 @@ function localSessionBoot(sess){
  let cached=null;try{cached=J(key(mail),null)}catch(e){}
  if(!cached||typeof cached!=='object')return false;
  user=mail;D=Object.assign(blank(),cached);loadRev(mail);applyTheme();restoreNav();shell();
- try{toast('Offline \u00b7 showing saved data')}catch(e){}
+
  setTimeout(()=>{try{sbInit().then(()=>{if(sbUser)sbPull()}).catch(()=>{})}catch(e){}},1500);
  return true}
 // @test-end boot
