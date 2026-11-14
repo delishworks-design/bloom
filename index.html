@@ -1758,7 +1758,7 @@ async function fetchManifest(){const bust='?t='+Date.now();
  const r=await fetch(UPDATE_MANIFEST+bust,{cache:'no-store'});if(!r.ok)throw new Error('manifest '+r.status);
  return await r.json()}
 // Baked-in build identity. Keep in sync with android/app/build.gradle (versionCode/versionName).
-const APP_VERSION={code:102,name:'1.2.87'};
+const APP_VERSION={code:103,name:'1.2.88'};
 const UPD_SKIP_KEY='bloom_upd_skip';
 const updater=()=>{const C=window.Capacitor;if(!C)return null;
  const P=C.Plugins&&C.Plugins.BloomUpdater;
@@ -4642,13 +4642,12 @@ function renderBookList(){const el=document.getElementById('lb');
  const L=libEnsure();
  const all=libCached().filter(b=>!q||[b.title,b.author,b.category||''].join(' ').toLowerCase().includes(q));
  const inLib=all.filter(b=>L.books[b.id]);
- const outLib=all.filter(b=>!L.books[b.id]);
  const nAll=inLib.length,nFav=inLib.filter(b=>L.books[b.id].favorite).length,nRead=inLib.filter(b=>!L.books[b.id].finished).length,nFin=nAll-nRead;
  const head=q?'':libContinueHTML();
  const filters=nAll?`<div class="lib-chips">${libFilterChip('all','All')}${libFilterChip('favorites','Favorites',nFav)}${libFilterChip('reading','Reading',nRead)}${libFilterChip('finished','Finished',nFin)}</div>`:'';
  const filtered=applyLibFilter(inLib,L);
  const mineHTML=filtered.length?`<p class="lib-sub">${libFilterLabel()}</p><div class="bookgrid">${filtered.map(b=>bookcardHTML(b,L.books[b.id],false)).join('')}</div>`:q?'<p class="meta" style="text-align:center;padding:22px">Nothing matches that search.</p>':'<div class="libempty"><p>Nothing in your library yet</p><p class="meta" style="margin:2px 0 0">Tap “Add to library” on any book below.</p></div>';
- const exploreHTML=outLib.length?`<p class="lib-sub">Explore</p><div class="bookgrid">${outLib.map(b=>bookcardHTML(b,null,true)).join('')}</div>`:'';
+ const exploreHTML=all.length?`<p class="lib-sub">Explore</p><div class="bookgrid">${all.map(b=>bookcardHTML(b,L.books[b.id]||null,true)).join('')}</div>`:'';
  el.innerHTML=head+filters+mineHTML+exploreHTML;
  el.querySelectorAll('.lib-chip').forEach(b=>b.onclick=()=>{libFilter=b.dataset.lf;library()});
  el.querySelectorAll('.bookcard[data-bid]').forEach(b=>{
@@ -4674,7 +4673,8 @@ function bookcardHTML(b,entry,isExplore){
  const pages=b.pages?b.pages+' pages':'Bloom';
  const sizeTxt=b.sizeMB?b.sizeMB+' MB':'Free';
  if(isExplore){
-  return `<button class="bookcard" data-bid="${E(b.id)}" aria-label="Add ${E(b.title)} to your library"><span class="bookcard-cover" style="background-image:url(${escCssUrl(b.cover||'')})"></span><span class="bookcard-meta"><span class="bookcard-title">${E(b.title)}</span><span class="bookcard-author">${E(b.author||'')}</span></span><span class="bookcard-foot"><span>${pages}</span><span>${sizeTxt}</span><span class="bookcard-add">Add to library</span></span></button>`
+  const added=entry!=null;
+  return `<button class="bookcard" data-bid="${E(b.id)}" aria-label="${added?'Read '+E(b.title):'Add '+E(b.title)+' to your library'}"><span class="bookcard-cover" style="background-image:url(${escCssUrl(b.cover||'')})"></span><span class="bookcard-meta"><span class="bookcard-title">${E(b.title)}</span><span class="bookcard-author">${E(b.author||'')}</span></span><span class="bookcard-foot"><span>${pages}</span><span>${sizeTxt}</span><span class="bookcard-add">${added?'Read now':'Add to library'}</span></span></button>`
  }
  const finished=!!entry.finished, pct=Math.min(100,Math.max(0,+entry.pct||0));
  const overlay=finished?`<span class="bookcard-finished" aria-hidden="true"><span class="bookcard-finished-badge">${libCheckSVG(18)}</span><span class="bookcard-finished-label">Finished</span></span>`:'';

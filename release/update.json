@@ -1,7 +1,7 @@
 {
-    "versionCode": 102,
-    "versionName": "1.2.87",
-    "notes": "Library now syncs with your Bloom account: books added/downloads/progress/highlights follow you across devices (killered books reset per-device). Explore tab with library/download states, finished overlay, long-press menu, dark reader toggle, unread-first articles.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.87/bloom-1.2.87.apk",
+    "versionCode": 103,
+    "versionName": "1.2.88",
+    "notes": "Explore now shows every available book (downloads gone \u2192 user taps to add, then reads). No more hidden books after migration.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.88/bloom-1.2.88.apk",
     "publishedAt": "2026-11-14"
 }
