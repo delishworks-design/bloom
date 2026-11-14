@@ -1,7 +1,7 @@
 {
-    "versionCode": 98,
-    "versionName": "1.2.83",
-    "notes": "One-time cleanup: resets stale 'downloaded' flags left by 1.2.81 so book cards show the Download button correctly again.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.83/bloom-1.2.83.apk",
+    "versionCode": 99,
+    "versionName": "1.2.84",
+    "notes": "Reader spinner rule fixed \u2014 books actually open now (canvas was painted but the loading overlay kept covering it).",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.84/bloom-1.2.84.apk",
     "publishedAt": "2026-11-14"
 }
