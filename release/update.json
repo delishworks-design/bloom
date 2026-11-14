@@ -1,7 +1,7 @@
 {
-    "versionCode": 93,
-    "versionName": "1.2.78",
-    "notes": "Learn is now Library: full redesign. Books tab with cover cards (uploadable via library.json) and PDF reader with bookmarks. Articles tab with search.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.78/bloom-1.2.78.apk",
+    "versionCode": 94,
+    "versionName": "1.2.79",
+    "notes": "Library reader: top bar no longer overlaps the status bar; bookmark hidden for coming-soon books.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.79/bloom-1.2.79.apk",
     "publishedAt": "2026-11-14"
 }

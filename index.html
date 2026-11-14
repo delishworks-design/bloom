@@ -89,10 +89,11 @@ p{margin:0;line-height:1.5}
 #reader{position:fixed;inset:0;z-index:200;background:#FFF9F0;display:flex;flex-direction:column}
 #reader[hidden]{display:none}
 body.reader-open{overflow:hidden}
-.reader-top{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #EFE4DC;flex:0 0 auto;background:#FFF9F0}
+.reader-top{display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px;border-bottom:1px solid #EFE4DC;flex:0 0 auto;background:#FFF9F0}
 .rt-back,.rt-share,.rt-bm{background:none;border:0;padding:8px;margin:0;color:#8C7A80;cursor:pointer;line-height:0}
 .rt-title{flex:1;min-width:0;text-align:center;font-size:.84rem;font-weight:700;color:#3A2E33;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rt-bm.on,.rt-share{color:var(--rose)}
+.rt-bm[hidden]{visibility:hidden}
 .reader-body{flex:1;min-height:0;overflow-y:auto;position:relative}
 .reader-pdf{overflow:hidden;display:flex;align-items:center;justify-content:center;background:#FFF9F0}
 .reader-pdf canvas{max-width:100%;height:auto;box-shadow:0 4px 22px rgba(58,46,51,.22)}
@@ -104,7 +105,7 @@ body.reader-open{overflow:hidden}
 .reader-article p{margin:0 0 1.15em}
 .ra-foot{border-top:1px dashed #EADFD2;padding-top:12px;margin-top:6px;font-size:.74rem;color:var(--mut);font-style:italic}
 .reader-article .ra-foot{font-style:normal}
-.reader-bottom{flex:0 0 auto;display:flex;align-items:center;justify-content:center;padding:8px 14px 18px;color:var(--mut);font-size:.74rem;background:#FFF9F0}
+.reader-bottom{flex:0 0 auto;display:flex;align-items:center;justify-content:center;padding:8px 14px calc(18px + env(safe-area-inset-bottom,0px));color:var(--mut);font-size:.74rem;background:#FFF9F0}
 .reader-prog{flex:0 0 auto;height:2px;background:#EFE4DC}
 .reader-prog i{display:block;height:100%;background:var(--rose);width:0%;transition:width .25s ease}
 .spinner{width:26px;height:26px;border-radius:50%;border:2.5px solid rgba(184,69,107,.25);border-top-color:var(--rose);animation:spin 1s linear infinite}
@@ -1624,7 +1625,7 @@ async function fetchManifest(){const bust='?t='+Date.now();
  const r=await fetch(UPDATE_MANIFEST+bust,{cache:'no-store'});if(!r.ok)throw new Error('manifest '+r.status);
  return await r.json()}
 // Baked-in build identity. Keep in sync with android/app/build.gradle (versionCode/versionName).
-const APP_VERSION={code:93,name:'1.2.78'};
+const APP_VERSION={code:94,name:'1.2.79'};
 const UPD_SKIP_KEY='bloom_upd_skip';
 const updater=()=>{const C=window.Capacitor;if(!C)return null;
  const P=C.Plugins&&C.Plugins.BloomUpdater;
