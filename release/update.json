@@ -1,7 +1,7 @@
 {
-    "versionCode": 89,
-    "versionName": "1.2.74",
-    "notes": "Focus carousel reworked: full-width, tap expands one at a time, smooth animation, auto-close on swipe. New Appointment summary: doctor-ready PDF you can share.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.74/bloom-1.2.74.apk",
+    "versionCode": 90,
+    "versionName": "1.2.75",
+    "notes": "Appointment summary blank lines no longer overflow; rows wrap cleanly.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.75/bloom-1.2.75.apk",
     "publishedAt": "2026-11-14"
 }

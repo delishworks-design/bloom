@@ -364,11 +364,11 @@ details{border-bottom:1px solid #EADFD2;padding:14px 0}summary{cursor:pointer;fo
 .appt-ki{display:flex;justify-content:space-between;gap:10px;align-items:baseline;font-family:'Playfair Display',Georgia,serif;font-weight:700;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--rose);margin:14px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--line)}
 .appt-row{display:flex;gap:10px;align-items:baseline;margin:5px 0;font-size:.9rem}
 .appt-row b{color:var(--mut);font-weight:600;min-width:118px;flex:0 0 auto;font-size:.82rem}
-.appt-row span{font-weight:600;color:var(--ink)}
+.appt-row span{font-weight:600;color:var(--ink);flex:1;min-width:0;overflow-wrap:anywhere}
 .appt-list{margin:2px 0 8px;padding-left:22px;font-weight:600;font-size:.9rem}
 .appt-list li{margin:6px 0}
 .appt-line{border:0;border-top:1px dashed var(--line);margin:10px 0}
-.blank{display:inline-block;min-width:130px;border-bottom:1px solid #C7B6BB;height:1.05em;vertical-align:-2px}
+.blank{display:inline-block;width:170px;max-width:100%;border-bottom:1px solid #C7B6BB;height:1.05em;vertical-align:-2px}
 .appt-note{font-size:.78rem;color:var(--mut);font-style:italic;border-top:1px solid var(--line);margin-top:12px;padding-top:10px}
 .appt-foot{position:sticky;bottom:0;background:linear-gradient(180deg,rgba(251,244,234,0),#FBF4EA 40%);padding:12px 0 4px;display:flex;gap:10px}
 .appt-foot .btn{flex:1}
@@ -1575,7 +1575,7 @@ async function fetchManifest(){const bust='?t='+Date.now();
  const r=await fetch(UPDATE_MANIFEST+bust,{cache:'no-store'});if(!r.ok)throw new Error('manifest '+r.status);
  return await r.json()}
 // Baked-in build identity. Keep in sync with android/app/build.gradle (versionCode/versionName).
-const APP_VERSION={code:89,name:'1.2.74'};
+const APP_VERSION={code:90,name:'1.2.75'};
 const UPD_SKIP_KEY='bloom_upd_skip';
 const updater=()=>{const C=window.Capacitor;if(!C)return null;
  const P=C.Plugins&&C.Plugins.BloomUpdater;
@@ -3909,11 +3909,11 @@ function apptBlocks(k){
  const out=[];
  out.push({ki:'Patient',rows:[
   ['Name',esc(k.name)],
-  ['Date of birth','________________________'],
-  ['Height / weight','________________________'],
-  ['Allergies','________________________'],
-  ['Current medications','________________________'],
-  ['Reason for visit / main concerns','________________________'],
+  ['Date of birth','<span class="blank" aria-hidden="true"></span>'],
+  ['Height / weight','<span class="blank" aria-hidden="true"></span>'],
+  ['Allergies','<span class="blank" aria-hidden="true"></span>'],
+  ['Current medications','<span class="blank" aria-hidden="true"></span>'],
+  ['Reason for visit / main concerns','<span class="blank" aria-hidden="true"></span>'],
  ]});
  out.push({ki:'Cycle overview',rows:[
   ['Last recorded period',k.lastStart?fmt(k.lastStart,{day:'numeric',month:'long',year:'numeric'}):'None yet'],
