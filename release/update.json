@@ -1,7 +1,7 @@
 {
-    "versionCode": 99,
-    "versionName": "1.2.84",
-    "notes": "Reader spinner rule fixed \u2014 books actually open now (canvas was painted but the loading overlay kept covering it).",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.84/bloom-1.2.84.apk",
+    "versionCode": 100,
+    "versionName": "1.2.85",
+    "notes": "Books & update download progress bars, My Library vs Explore, jump-back-in strip. Book reader: reflowed text with A\u2212/A+, highlight, original-page toggle.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.85/bloom-1.2.85.apk",
     "publishedAt": "2026-11-14"
 }
