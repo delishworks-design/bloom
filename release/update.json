@@ -1,7 +1,7 @@
 {
-    "versionCode": 90,
-    "versionName": "1.2.75",
-    "notes": "Appointment summary blank lines no longer overflow; rows wrap cleanly.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.75/bloom-1.2.75.apk",
+    "versionCode": 91,
+    "versionName": "1.2.76",
+    "notes": "Offline-safe boot: opens instantly with no internet, syncs in background when online, no more stuck splash or surprise login loop.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.76/bloom-1.2.76.apk",
     "publishedAt": "2026-11-14"
 }

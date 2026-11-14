@@ -926,6 +926,7 @@ function whenSupabase(){
  return sbReady}
 const isNative=()=>{try{return !!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform())}catch(e){return false}};
 async function sbInit(){if(sb)return sb;
+ if(isOffline())return null;
  await whenSupabase();
  try{const m=window.supabase;
   if(!m)return null;
@@ -998,9 +999,9 @@ async function sbAfterLoginOnce(u){ownMode=false;ownStash=null;ownLoaded=false;o
   // never seed from the global D here: on a follower device D can hold the followed person's doc,
   // and copying it into this account's row is how one account's logs leaked into another's.
   const keep=Object.assign(blank(),JSON.parse(JSON.stringify(cached||blank())));
- const docP=sbFetchDocWithRev(u.id).catch(er=>{reportErr('login.doc',er);return null});
- const profP=Promise.resolve(sb.from('bloom_profiles').select('*').eq('id',u.id).maybeSingle()).catch(e=>{reportErr('profile.load',e);return {data:null}});
- const pairP=cloudPairing();
+ const docP=withTimeout(sbFetchDocWithRev(u.id),4000).catch(er=>{reportErr('login.doc',er);return null});
+ const profP=withTimeout(Promise.resolve(sb&&sb.from?sb.from('bloom_profiles').select('*').eq('id',u.id).maybeSingle():{data:null}),4000).then(r=>r||{data:null}).catch(e=>{reportErr('profile.load',e);return {data:null}});
+ const pairP=withTimeout(cloudPairing(),4000).then(q=>q||{ok:false}).catch(()=>({ok:false}));
  if(docHasContent(keep)){try{ST.set('bloom_backup_'+mail,JSON.stringify(keep))}catch(e){}}
  let row=null;try{row=await docP}catch(e){}
  const doc=row?row.doc:null;
@@ -1104,7 +1105,7 @@ async function enterPartnerMode(owner,code,quiet){
  // a different account on this phone must not inherit the last follower's name
  try{const pu=ST.get('bloom_puid');if(sbUser&&pu&&pu!==sbUser.id){ST.del('bloom_pname');ST.del('bloom_pavatar')}if(sbUser)ST.set('bloom_puid',sbUser.id)}catch(e){}
  // the follower's own name/photo live in their profile; pull them once
-  if(sbUser){try{const {data:prof}=await sb.from('bloom_profiles').select('name,avatar').eq('id',sbUser.id).maybeSingle();
+  if(sbUser){try{const {data:prof}=await withTimeout(sb.from('bloom_profiles').select('name,avatar').eq('id',sbUser.id).maybeSingle(),4000);
    const peer=((D.p&&D.p.name)||'');
    const local=(ST.get('bloom_pname')||'').trim();
    // the stored profile is the source of truth for identity: a local name that is empty or is
@@ -1113,7 +1114,7 @@ async function enterPartnerMode(owner,code,quiet){
    if(prof&&prof.avatar)ST.set('bloom_pavatar',JSON.stringify({a:prof.avatar,c:{z:1,x:0,y:0}}));
    else if(prof&&!prof.avatar){ST.del('bloom_pavatar')}
   }catch(e){reportErr('partner.profile',e)}}
- let doc=null;try{doc=await sbFetchDoc(owner)}catch(e){reportErr('partner.doc',e)}
+ let doc=null;try{doc=await withTimeout(sbFetchDoc(owner),4000)}catch(e){reportErr('partner.doc',e)}
  if(doc){D=Object.assign(blank(),doc);roHash=roHashOf(JSON.stringify(doc))}
  else{const cached=J(key(owner),null);if(cached)D=Object.assign(blank(),cached)}
  setSession('p:'+owner);
@@ -1271,6 +1272,7 @@ async function setFollowerShareFlag(key,val){
 // @test-begin netmsg
 const OFFLINE_MSG='You\u2019re offline. Reconnect, then try again.';
 function isOffline(){try{return navigator.onLine===false}catch(e){return false}}
+function withTimeout(p,ms){return new Promise(function(res,rej){var done=false;var t=setTimeout(function(){if(done)return;done=true;rej(new Error('timeout'))},ms==null?4000:ms);Promise.resolve(p).then(function(v){if(done)return;done=true;clearTimeout(t);res(v)},function(e){if(done)return;done=true;clearTimeout(t);rej(e)})})}
 function errText(e){const m=String(e||'');
  if(/^offline$/i.test(m)||/ERR_INTERNET_DISCONNECTED|ERR_NETWORK_CHANGED|net::ERR/i.test(m))return OFFLINE_MSG;
  if(/fetch|network|ENOTFOUND|ETIMEDOUT|timeout|Failed to fetch/i.test(m))return 'Could not reach the server. Check your connection.';
@@ -1330,7 +1332,7 @@ async function redeemCode(code,onErr){
  return true
 }
 let authPrefill='';
-function authView(mode){mode=mode||'in';try{fabSync()}catch(e){}document.body.classList.remove('ro');
+function authView(mode){try{splashSkip()}catch(e){}mode=mode||'in';try{fabSync()}catch(e){}document.body.classList.remove('ro');
  const up=mode=='up';
  const pwBlock=(id,label,ac)=>`<div class="field" id="f-${id}">
   <label for="${id}">${label}</label>
@@ -1575,7 +1577,7 @@ async function fetchManifest(){const bust='?t='+Date.now();
  const r=await fetch(UPDATE_MANIFEST+bust,{cache:'no-store'});if(!r.ok)throw new Error('manifest '+r.status);
  return await r.json()}
 // Baked-in build identity. Keep in sync with android/app/build.gradle (versionCode/versionName).
-const APP_VERSION={code:90,name:'1.2.75'};
+const APP_VERSION={code:91,name:'1.2.76'};
 const UPD_SKIP_KEY='bloom_upd_skip';
 const updater=()=>{const C=window.Capacitor;if(!C)return null;
  const P=C.Plugins&&C.Plugins.BloomUpdater;
@@ -5102,10 +5104,17 @@ if(splashShouldShow())splashPlay();else splashSkip();  // only after 3 minutes a
 (async()=>{const s=getSession();
  // update check runs for everyone, signed in or not
  setTimeout(()=>{try{checkUpdate(false)}catch(e){}},2400);
+ if(isOffline()){
+  if(localSessionBoot(s))return;
+  authView('in');
+  try{splashSkip()}catch(e){}
+  return;
+ }
  if(s&&String(s).indexOf('p:')===0){const owner=String(s).slice(2);
   RO=true;ROcloud=true;ROowner=owner;setRoleFlag('partner');planPanel='partner';
   const cached=J(key(owner),{});
   D=Object.assign(blank(),cached||{});backfillMeals();restoreNav();shell();
+  if(isOffline()){try{splashSkip()}catch(e){}return}
   sbInit().then(async()=>{try{
    if(sbUser){
     const q=await cloudPairing();
