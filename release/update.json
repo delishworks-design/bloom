@@ -1,7 +1,7 @@
 {
-    "versionCode": 95,
-    "versionName": "1.2.80",
-    "notes": "Books tab now ships real PDFs: PCOS/PMOS guideline (Monash/NHMRC 2023), RCOG chronic pelvic pain, Endocrine Society's Essential Guide to Hormones. Download on first open, then cached offline.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.80/bloom-1.2.80.apk",
+    "versionCode": 96,
+    "versionName": "1.2.81",
+    "notes": "Books are downloaded on demand (tap Download on the card, once, then read offline). Direct-download links fixed \u2014 previous 'could not open this book' error is gone.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.81/bloom-1.2.81.apk",
     "publishedAt": "2026-11-14"
 }

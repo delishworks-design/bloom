@@ -9,7 +9,7 @@
       "sizeMB": 12.6,
       "category": "PCOS/PMOS",
       "cover": "assets/library/pcos101.jpg",
-      "url": "https://github.com/delishworks-design/bloom/releases/download/library-books-1/pcos-guideline.pdf"
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/pcos-guideline.pdf"
     },
     {
       "id": "pelvicpain",
@@ -19,7 +19,7 @@
       "sizeMB": 0.2,
       "category": "Pain",
       "cover": "assets/library/pelvicpain.jpg",
-      "url": "https://github.com/delishworks-design/bloom/releases/download/library-books-1/pelvic-pain-rcog.pdf"
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/pelvic-pain-rcog.pdf"
     },
     {
       "id": "endocrine",
@@ -29,7 +29,7 @@
       "sizeMB": 1.5,
       "category": "Endocrine",
       "cover": "assets/library/endocrine.jpg",
-      "url": "https://github.com/delishworks-design/bloom/releases/download/library-books-1/endocrine-hormones.pdf"
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/endocrine-hormones.pdf"
     }
   ]
 }
