@@ -1,7 +1,7 @@
 {
-    "versionCode": 94,
-    "versionName": "1.2.79",
-    "notes": "Library reader: top bar no longer overlaps the status bar; bookmark hidden for coming-soon books.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.79/bloom-1.2.79.apk",
+    "versionCode": 95,
+    "versionName": "1.2.80",
+    "notes": "Books tab now ships real PDFs: PCOS/PMOS guideline (Monash/NHMRC 2023), RCOG chronic pelvic pain, Endocrine Society's Essential Guide to Hormones. Download on first open, then cached offline.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.80/bloom-1.2.80.apk",
     "publishedAt": "2026-11-14"
 }

@@ -3,33 +3,33 @@
   "books": [
     {
       "id": "pcos101",
-      "title": "PCOS/PMOS 101",
-      "author": "Bloom Health",
-      "pages": 88,
-      "sizeMB": 2.4,
-      "category": "PCOS",
+      "title": "PCOS / PMOS Guideline 2023",
+      "author": "International PCOS Network \u00b7 Monash University",
+      "pages": 261,
+      "sizeMB": 12.6,
+      "category": "PCOS/PMOS",
       "cover": "assets/library/pcos101.jpg",
-      "url": ""
+      "url": "https://github.com/delishworks-design/bloom/releases/download/library-books-1/pcos-guideline.pdf"
     },
     {
       "id": "pelvicpain",
-      "title": "Pelvic Pain",
-      "author": "Bloom Health",
-      "pages": 76,
-      "sizeMB": 1.9,
+      "title": "Chronic (Long-Term) Pelvic Pain",
+      "author": "Royal College of Obstetricians and Gynaecologists",
+      "pages": 4,
+      "sizeMB": 0.2,
       "category": "Pain",
       "cover": "assets/library/pelvicpain.jpg",
-      "url": ""
+      "url": "https://github.com/delishworks-design/bloom/releases/download/library-books-1/pelvic-pain-rcog.pdf"
     },
     {
       "id": "endocrine",
-      "title": "Endocrine Basics",
-      "author": "Bloom Health",
-      "pages": 64,
-      "sizeMB": 1.6,
+      "title": "The Essential Guide to Your Hormones",
+      "author": "Endocrine Society",
+      "pages": 2,
+      "sizeMB": 1.5,
       "category": "Endocrine",
       "cover": "assets/library/endocrine.jpg",
-      "url": ""
+      "url": "https://github.com/delishworks-design/bloom/releases/download/library-books-1/endocrine-hormones.pdf"
     }
   ]
 }
