@@ -1,7 +1,7 @@
 {
-    "versionCode": 97,
-    "versionName": "1.2.82",
-    "notes": "Books now store in IndexedDB (Capacitor Filesystem was never installed \u2014 that was the 'not on device' bug). Download once, read offline.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.82/bloom-1.2.82.apk",
+    "versionCode": 98,
+    "versionName": "1.2.83",
+    "notes": "One-time cleanup: resets stale 'downloaded' flags left by 1.2.81 so book cards show the Download button correctly again.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.83/bloom-1.2.83.apk",
     "publishedAt": "2026-11-14"
 }
