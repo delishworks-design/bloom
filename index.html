@@ -359,9 +359,9 @@ details{border-bottom:1px solid #EADFD2;padding:14px 0}summary{cursor:pointer;fo
 .smart-focus-now{padding:16px 18px}
 .smart-focus-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
 .smart-focus-count{font-size:.72rem;font-weight:700;color:var(--mut)}
-.smart-focus-track{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding-bottom:2px;scrollbar-width:none}
+.smart-focus-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding-bottom:2px;scrollbar-width:none}
 .smart-focus-track::-webkit-scrollbar{display:none}
-.smart-focus-card{flex:0 0 85%;scroll-snap-align:start;border:1px solid rgba(232,160,180,.4);border-radius:18px;padding:14px 16px;background:#FFF9F5;min-width:0;display:flex;flex-direction:column}
+.smart-focus-card{flex:0 0 100%;scroll-snap-align:start;border:1px solid rgba(232,160,180,.4);border-radius:18px;padding:14px 16px;background:#FFF9F5;min-width:0;display:flex;flex-direction:column}
 .smart-focus-card-title{font-size:.66rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--rose);margin:0}
 .smart-focus-tap{flex:1;display:grid;grid-template-columns:96px 1fr auto;align-items:center;gap:14px;width:100%;text-align:left;background:transparent;border:0;padding:10px 4px 2px;cursor:pointer;font:inherit}
 .smart-focus-meter{width:96px;height:96px}
@@ -372,9 +372,9 @@ details{border-bottom:1px solid #EADFD2;padding:14px 0}summary{cursor:pointer;fo
 .smart-focus-caret{color:var(--mut);font-size:1.1rem;line-height:1;transition:transform .25s ease}
 .smart-focus-card.is-expanded .smart-focus-tap{padding-bottom:6px}
 .smart-focus-card.is-expanded .smart-focus-caret{transform:rotate(90deg)}
-.smart-focus-detail{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s ease;margin-top:0}
+.smart-focus-detail{display:block;max-height:0;overflow:hidden;margin-top:0;transition:max-height .3s ease}
 .smart-focus-detail-in{overflow:hidden;min-height:0}
-.smart-focus-card.is-expanded .smart-focus-detail{grid-template-rows:1fr;margin-top:8px}
+.smart-focus-card.is-expanded .smart-focus-detail{max-height:320px;margin-top:8px}
 .smart-focus-reason{font-size:.82rem;line-height:1.45;color:var(--ink);margin:0;padding-top:8px;border-top:1px dashed var(--line)}
 .smart-focus-motivator{font-size:.8rem;line-height:1.45;color:var(--mut);margin:6px 0 0}
 .smart-focus-dots{display:flex;gap:6px;justify-content:center;margin-top:10px;padding:2px 0}
@@ -397,7 +397,7 @@ details{border-bottom:1px solid #EADFD2;padding:14px 0}summary{cursor:pointer;fo
 .smart-ai-label{font-size:.76rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--mut)}
 .smart-ai-toggle{align-self:center}
 .smart-ai-toggle{align-self:flex-start}
-@media (max-width:430px){.smart-section{padding:16px 18px}.smart-focus-now{padding:14px 14px}.smart-focus-card{flex-basis:88%}.smart-focus-tap{grid-template-columns:84px 1fr;gap:12px}.smart-focus-meter,.smart-focus-meter svg{width:84px;height:84px}}
+@media (max-width:430px){.smart-section{padding:16px 18px}.smart-focus-now{padding:14px 14px}.smart-focus-card{flex-basis:100%}.smart-focus-tap{grid-template-columns:84px 1fr;gap:12px}.smart-focus-meter,.smart-focus-meter svg{width:84px;height:84px}}
 .faces{display:flex;gap:8px;justify-content:space-between;margin:8px 0}
 .facebtn{flex:1;background:#FFFBF5 !important;border:1.5px solid #EADFD2 !important;padding:8px 4px !important;border-radius:16px !important;opacity:.55;min-height:58px !important;display:grid !important;place-items:center !important}
 .facebtn.on{opacity:1 !important;transform:translateY(-2px);border-color:#B8456B !important;background:#F9DDE5 !important;box-shadow:0 2px 8px rgba(120,70,80,.08) !important}
@@ -1565,7 +1565,7 @@ async function fetchManifest(){const bust='?t='+Date.now();
  const r=await fetch(UPDATE_MANIFEST+bust,{cache:'no-store'});if(!r.ok)throw new Error('manifest '+r.status);
  return await r.json()}
 // Baked-in build identity. Keep in sync with android/app/build.gradle (versionCode/versionName).
-const APP_VERSION={code:86,name:'1.2.71'};
+const APP_VERSION={code:87,name:'1.2.72'};
 const UPD_SKIP_KEY='bloom_upd_skip';
 const updater=()=>{const C=window.Capacitor;if(!C)return null;
  const P=C.Plugins&&C.Plugins.BloomUpdater;
@@ -3381,7 +3381,7 @@ function smartFocusHTML(goal,goals,noGoals,cards){
  const html=list.map((c,i)=>{
   const prog=smartGoalProgress(c.goal,c.ctx||{});
   return `<article class="smart-focus-card${i===0?' is-active':''}" data-goal="${E(c.goal)}" role="listitem">
-   <button class="smart-focus-tap" type="button" aria-expanded="false" aria-controls="smart-focus-detail-${i}">
+   <button class="smart-focus-tap" type="button" aria-expanded="false" aria-controls="smart-focus-detail-${i}" onclick="(function(b){var c=b.closest('.smart-focus-card');c.classList.toggle('is-expanded');b.setAttribute('aria-expanded',c.classList.contains('is-expanded'));})(this)">
     <span class="smart-focus-meter">${smartFlowerSVG(c.goal,prog.stage)}</span>
     <span class="smart-focus-copy">
      <span class="smart-focus-stage">${E(prog.stageName)}</span>
@@ -3817,35 +3817,28 @@ function wireSmartFocus(root){
  const reduced=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
  let resumeTimer=null;
  const stop=()=>{if(smartFocusTimer){clearInterval(smartFocusTimer);smartFocusTimer=null}if(resumeTimer){clearTimeout(resumeTimer);resumeTimer=null}};
- const step=()=>{const k=track.children;return k.length>1?Math.max(1,k[1].offsetLeft-k[0].offsetLeft):Math.max(1,track.clientWidth)};
+ const scheduleResume=()=>{stop();resumeTimer=setTimeout(()=>{resumeTimer=null;auto()},6000)};
  const cards=()=>[...track.children];
+ const step=()=>Math.max(1,track.clientWidth);
  const at=()=>Math.max(0,Math.min(cards().length-1,Math.round(track.scrollLeft/step())));
- const scrollToIndex=i=>{const x=Math.round(i*step());try{track.scrollTo({left:x,behavior:'smooth'})}catch(e){track.scrollLeft=x}};
- const isExpanded=()=>cards().some(c=>c.classList.contains('is-expanded'));
  const sync=()=>{if(count)count.textContent=`${Math.min(cards().length,at()+1)} of ${cards().length}`;const i=at();dots.forEach((d,j)=>d.classList.toggle('on',j===i))};
- const scheduleResume=()=>{stop();if(isExpanded())return;resumeTimer=setTimeout(()=>{resumeTimer=null;auto()},6000)};
- const advance=()=>{const n=cards().length;if(!n)return;const i=at();const next=i+1>=n?0:i+1;if(next===0){try{track.scrollTo({left:0,behavior:'auto'})}catch(e){track.scrollLeft=0}}else scrollToIndex(next)};
+ const goTo=i=>{const c=cards()[i];if(!c)return;try{c.scrollIntoView({behavior:reduced?'auto':'smooth',block:'nearest',inline:'start'})}catch(e){track.scrollLeft=i*step()}};
+ const advance=()=>{const n=cards().length;if(!n)return;const next=at()+1>=n?0:at()+1;goTo(next)};
  const auto=()=>{stop();sync();smartFocusTimer=setInterval(advance,4000)};
  root.addEventListener('click',e=>{
   const dot=e.target.closest('.smart-focus-dot');
-  if(dot){const i=dots.indexOf(dot);scrollToIndex(i);scheduleResume();return}
-  const card=e.target.closest('.smart-focus-card');
-  if(!card||!root.contains(card))return;
-  card.classList.toggle('is-expanded');
-  const exp=card.classList.contains('is-expanded');
-  const tap=card.querySelector('.smart-focus-tap');if(tap)tap.setAttribute('aria-expanded',exp?'true':'false');
-  if(exp)stop();else scheduleResume();
+  if(!dot)return;
+  const i=dots.indexOf(dot);if(i<0)return;
+  goTo(i);scheduleResume();
  });
  dots.forEach((d,i)=>d.setAttribute('aria-label',`Go to focus ${i+1}`));
  track.addEventListener('scroll',sync,{passive:true});
  track.addEventListener('pointerdown',stop,{passive:true});
- track.addEventListener('focusin',stop);
- root.addEventListener('pointerenter',stop);
+ root.addEventListener('focusin',stop);
  root.addEventListener('pointerup',scheduleResume,{passive:true});
  root.addEventListener('pointercancel',scheduleResume,{passive:true});
  root.addEventListener('pointerleave',scheduleResume,{passive:true});
  root.addEventListener('focusout',e=>{if(!root.contains(e.relatedTarget))scheduleResume()});
- if(reduced)track.style.scrollBehavior='auto';
  auto();
 }
 function insights(){const n=range,days=[...Array(n)].map((_,i)=>addD(today(),i-n+1)),c=cycleStats();const tg={};days.forEach(d=>(L(d).tags||[]).concat(L(d).customSx||[]).forEach(t=>tg[t]=(tg[t]||0)+1));const tk=Object.entries(tg).sort((a,b)=>b[1]-a[1]).slice(0,6),mx=tk[0]?.[1]||1;

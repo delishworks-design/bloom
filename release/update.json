@@ -1,7 +1,7 @@
 {
-    "versionCode": 86,
-    "versionName": "1.2.71",
-    "notes": "Focus carousel now advances, loops, and expands on tap. Widget text is larger with tighter spacing.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.71/bloom-1.2.71.apk",
+    "versionCode": 87,
+    "versionName": "1.2.72",
+    "notes": "Focus carousel reworked: full-width, tap expands, auto-advances and loops. Widget text much larger, refreshes on app open.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.72/bloom-1.2.72.apk",
     "publishedAt": "2026-11-14"
 }
