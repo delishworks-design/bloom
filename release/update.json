@@ -1,7 +1,7 @@
 {
-    "versionCode": 83,
-    "versionName": "1.2.68",
-    "notes": "Home-screen widgets now render in Bloom fonts, clearer checkmarks, and taps work again. The hold-to-rename hints are gone.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.68/bloom-1.2.68.apk",
-    "publishedAt": "2026-11-13"
+    "versionCode": 84,
+    "versionName": "1.2.69",
+    "notes": "Tasks widget no longer crashes on load. The water widget now shows your cycle phase and days to your period. Insights has a redesigned Your focus carousel with a flower that grows with your goal, plus a lighter header.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.69/bloom-1.2.69.apk",
+    "publishedAt": "2026-11-14"
 }

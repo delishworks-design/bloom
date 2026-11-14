@@ -215,14 +215,13 @@ test('Your week card renders, escapes, and sits before focus', () => {
   assert.ok(!html.includes('<up>'));
   assert.ok(!/Log a few more days/.test(html));
   const weekIdx = html.indexOf('id="smart-week"');
-  const focusIdx = html.indexOf('id="smart-focus"');
-  assert.ok(weekIdx !== -1 && focusIdx !== -1);
-  assert.ok(weekIdx < focusIdx, 'order week < focus');
+  assert.notEqual(weekIdx, -1);
+  assert.ok(!/Your focus/.test(html), 'focus does not live inside the Smart Insights card');
   assert.equal(html.indexOf('smart-cycle-title'), -1, 'no cycle block in Smart Insights');
 
 
-  const ro = mod.smartInsightsHTML({ state: 'single-start' }, { state: 'single-start' }, [], 'Alex', null, Object.assign({}, extras, { ro: true, focus: null }));
-  assert.ok(!ro.includes('id="smart-week"'));
+  const poor = mod.smartInsightsHTML({ state: 'single-start' }, { state: 'single-start' }, [], 'Alex', null, Object.assign({}, extras, { ro: true, focus: null }));
+  assert.ok(!poor.includes('Your focus'));
 });
 
 test('deterministic copy variation is stable and bounded', () => {

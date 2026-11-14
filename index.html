@@ -316,14 +316,7 @@ details{border-bottom:1px solid #EADFD2;padding:14px 0}summary{cursor:pointer;fo
 .kv.kvstack b{font-family:inherit;font-size:.95rem;font-weight:600;line-height:1.5;text-align:left;overflow-wrap:anywhere;max-width:100%}
 .divider{height:1px;background:#EADFD2;margin:16px 0}
 .smart-card{padding:0;gap:0;overflow:hidden}
-.smart-hero{padding:22px 20px 18px;display:flex;align-items:center;justify-content:space-between;gap:16px;background:#FFF6F1;border-bottom:1px solid var(--line)}
-.smart-hero-copy{min-width:0}
-.smart-title{font-family:'Playfair Display',serif;font-size:29px;line-height:1.08;font-weight:700;color:var(--ink);margin:4px 0 8px}
-.smart-subtitle{font-size:.88rem;line-height:1.45;color:var(--mut);max-width:280px}
-.smart-source-note{display:inline-flex;align-items:center;gap:7px;margin-top:10px;font-size:.74rem;font-weight:700;color:var(--mut)}
-.smart-source-dot{width:7px;height:7px;border-radius:50%;background:var(--teal);flex:0 0 auto}
-.smart-hero-art{flex:0 0 auto;width:64px;height:64px;color:var(--rose)}
-.smart-hero-art svg,.smart-icon svg,.smart-pattern-icon svg{width:100%;height:100%;display:block}
+.smart-icon svg,.smart-pattern-icon svg{width:100%;height:100%;display:block}
 .smart-section{padding:18px 20px;border-top:1px solid var(--line)}
 .smart-kicker{font-size:.72rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);margin-bottom:5px}
 .smart-prediction-head{display:flex;gap:13px;align-items:center}
@@ -363,11 +356,31 @@ details{border-bottom:1px solid #EADFD2;padding:14px 0}summary{cursor:pointer;fo
 .smart-pattern-text{font-size:.82rem;line-height:1.48;color:var(--mut);margin-top:4px}
 .smart-pattern-takeaway{font-size:.8rem;line-height:1.45;color:var(--ink);margin-top:5px}
 .smart-cycle .smart-copy{margin-top:4px}
-.smart-focus-track{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;margin-top:10px;padding-bottom:2px;scrollbar-width:none}
+.smart-focus-now{padding:16px 18px}
+.smart-focus-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.smart-focus-count{font-size:.72rem;font-weight:700;color:var(--mut)}
+.smart-focus-track{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding-bottom:2px;scrollbar-width:none}
 .smart-focus-track::-webkit-scrollbar{display:none}
-.smart-focus-card{flex:0 0 84%;scroll-snap-align:start;border:1px solid rgba(232,160,180,.38);border-radius:16px;padding:12px 14px;background:#FFF9F5;min-width:0}
-.smart-focus-card-title{font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--rose);margin:0}
-.smart-focus-card .smart-pattern-text{margin-top:6px}
+.smart-focus-card{flex:0 0 85%;scroll-snap-align:start;border:1px solid rgba(232,160,180,.4);border-radius:18px;padding:14px 16px;background:#FFF9F5;min-width:0;display:flex;flex-direction:column}
+.smart-focus-card-title{font-size:.66rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--rose);margin:0}
+.smart-focus-tap{flex:1;display:grid;grid-template-columns:96px 1fr auto;align-items:center;gap:14px;width:100%;text-align:left;background:transparent;border:0;padding:10px 4px 2px;cursor:pointer;font:inherit}
+.smart-focus-meter{width:96px;height:96px}
+.smart-focus-meter svg{width:100%;height:100%;display:block;overflow:visible}
+.smart-focus-copy{display:flex;flex-direction:column;gap:2px;min-width:0}
+.smart-focus-stage{font-size:.62rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--mut)}
+.smart-focus-caption{font-size:.82rem;line-height:1.32;color:var(--ink);margin-top:3px;font-weight:600}
+.smart-focus-caret{color:var(--mut);font-size:1.1rem;line-height:1;transition:transform .25s ease}
+.smart-focus-card.is-expanded .smart-focus-tap{padding-bottom:6px}
+.smart-focus-card.is-expanded .smart-focus-caret{transform:rotate(90deg)}
+.smart-focus-detail{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s ease;margin-top:0}
+.smart-focus-detail-in{overflow:hidden;min-height:0}
+.smart-focus-card.is-expanded .smart-focus-detail{grid-template-rows:1fr;margin-top:8px}
+.smart-focus-reason{font-size:.82rem;line-height:1.45;color:var(--ink);margin:0;padding-top:8px;border-top:1px dashed var(--line)}
+.smart-focus-motivator{font-size:.8rem;line-height:1.45;color:var(--mut);margin:6px 0 0}
+.smart-focus-dots{display:flex;gap:6px;justify-content:center;margin-top:10px;padding:2px 0}
+.smart-focus-dot{width:7px;height:7px;border-radius:50%;border:0;background:var(--line);padding:0;cursor:pointer;transition:background .2s ease}
+.smart-focus-dot.on{background:var(--rose)}
+@media (prefers-reduced-motion:reduce){.smart-card *,.smart-focus-card *{animation:none !important;transition:none !important}}
 .smart-week-row{display:flex;align-items:baseline;gap:8px;margin-top:8px;font-size:.86rem}
 .smart-week-label{font-weight:800;color:var(--ink);min-width:56px}
 .smart-week-val{font-weight:800;color:var(--rose)}
@@ -384,8 +397,7 @@ details{border-bottom:1px solid #EADFD2;padding:14px 0}summary{cursor:pointer;fo
 .smart-ai-label{font-size:.76rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--mut)}
 .smart-ai-toggle{align-self:center}
 .smart-ai-toggle{align-self:flex-start}
-@media (max-width:430px){.smart-hero{padding:20px 18px 16px}.smart-section{padding:16px 18px}.smart-hero-art{width:54px;height:54px}.smart-date{font-size:27px}.smart-cycle-layout{flex-direction:column;align-items:center}.smart-cycle-copy{text-align:center}.smart-timeline-dates,.smart-timeline-labels{gap:7px}.smart-metrics{grid-template-columns:1fr 1fr}}
-@media (prefers-reduced-motion:reduce){.smart-card *,.smart-hero-art svg,.smart-icon svg{animation:none !important;transition:none !important}}
+@media (max-width:430px){.smart-section{padding:16px 18px}.smart-focus-now{padding:14px 14px}.smart-focus-card{flex-basis:88%}.smart-focus-tap{grid-template-columns:84px 1fr;gap:12px}.smart-focus-meter,.smart-focus-meter svg{width:84px;height:84px}}
 .faces{display:flex;gap:8px;justify-content:space-between;margin:8px 0}
 .facebtn{flex:1;background:#FFFBF5 !important;border:1.5px solid #EADFD2 !important;padding:8px 4px !important;border-radius:16px !important;opacity:.55;min-height:58px !important;display:grid !important;place-items:center !important}
 .facebtn.on{opacity:1 !important;transform:translateY(-2px);border-color:#B8456B !important;background:#F9DDE5 !important;box-shadow:0 2px 8px rgba(120,70,80,.08) !important}
@@ -1534,7 +1546,7 @@ async function fetchManifest(){const bust='?t='+Date.now();
  const r=await fetch(UPDATE_MANIFEST+bust,{cache:'no-store'});if(!r.ok)throw new Error('manifest '+r.status);
  return await r.json()}
 // Baked-in build identity. Keep in sync with android/app/build.gradle (versionCode/versionName).
-const APP_VERSION={code:83,name:'1.2.68'};
+const APP_VERSION={code:84,name:'1.2.69'};
 const UPD_SKIP_KEY='bloom_upd_skip';
 const updater=()=>{const C=window.Capacitor;if(!C)return null;
  const P=C.Plugins&&C.Plugins.BloomUpdater;
@@ -1561,7 +1573,16 @@ function widgetSnapshot(src){
  const d=today(),l=(doc.logs||{})[d]||{},done=(doc.done&&doc.done[d])||{};
  let list=[];try{list=tasksFor(d,doc)}catch(e){list=doc.tasks||[]}
  const tasks=list.slice(0,100).map(t=>({id:t.id,t:t.t,done:!!done[t.id]}));
- return{d,uid:sbUser?sbUser.id:'',hasToday:!!(doc.logs&&doc.logs[d]),water:l.water||0,mood:l.mood||null,tasks};
+ const snap={d,uid:sbUser?sbUser.id:'',hasToday:!!(doc.logs&&doc.logs[d]),water:l.water||0,mood:l.mood||null,tasks};
+ try{
+  const cyc=dashboardCycle(starts(),d);
+  if(cyc&&cyc.state==='estimated'){
+   let daysToPeriod=null;
+   try{const pred=smartPredictionHistory(starts(),d);const exp=pred&&pred.expected;if(exp)daysToPeriod=spDayDiff(d,exp)}catch(e){}
+   snap.cycle={day:cyc.cycleDay,length:cyc.cycleLength,phaseLabel:String(cyc.phaseLabel||cyc.phase||'').slice(0,24),daysToPeriod,date:d};
+  }
+ }catch(e){}
+ return snap;
 }
 async function widgetSync(){const n=widgetNative();if(!n||!n.sync)return;
  const snap=widgetSnapshot();if(!snap)return;
@@ -2468,6 +2489,7 @@ function line(k,n,max,col){const s=series(k,n),W=320,H=110,x=i=>20+i*(W-36)/(n-1
  return s.some(p=>p.v!=null)?`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${k} over last ${n} days" style="overflow:visible"><line x1="20" x2="${W-16}" y1="${H-14}" y2="${H-14}" stroke="var(--line)"/><text x="8" y="${y(max)+3}">${max}</text><text x="8" y="${y(1)+3}">1</text><path d="${pts}" fill="none" stroke="${col}" stroke-width="2"/>${dots}<text x="20" y="${H-1}">${fmt(s[0].d)}</text><text x="${W-16}" y="${H-1}" text-anchor="end">${fmt(s[n-1].d)}</text></svg>`:'<p class="meta">No entries</p>'}
 // @test-begin smart
 let smartFocusGoal=null;
+let smartFocusTimer=null;
 function spValidPeriods(startDates){
  return [...new Set((startDates||[]).filter(d=>typeof d==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(d)))].sort();
 }
@@ -3001,17 +3023,6 @@ function smartPatterns(){
 function smartPrediction(){
  return smartPredictionHistory(starts(),today());
 }
-function smartArt(kind){
- const attrs=`width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"`;
- const paths={
-  insight:`<path d="M16 18a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm0 -12a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm-7 12a6 6 0 0 1 6 -6a6 6 0 0 1 -6 -6a6 6 0 0 1 -6 6a6 6 0 0 1 6 6z" />`,
-  calendar:`<path d="M4 5m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z" /><path d="M16 3l0 4" /><path d="M8 3l0 4" /><path d="M4 11l16 0" /><path d="M8 15h2v2h-2z" />`,
-  empty:`<path d="M6 20v-2a6 6 0 1 1 12 0v2a1 1 0 0 1 -1 1h-10a1 1 0 0 1 -1 -1z" /><path d="M6 4v2a6 6 0 1 0 12 0v-2a1 1 0 0 0 -1 -1h-10a1 1 0 0 0 -1 1z" />`,
-  data:`<path d="M4 19l16 0" /><path d="M4 15l4 -6l4 2l4 -5l4 4" />`,
-  info:`<path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /><path d="M12 9h.01" /><path d="M11 12h1v4h1" />`
- };
- return `<svg ${attrs}>${paths[kind]||paths.empty}</svg>`;
-}
 function smartPatternIcon(type){
  const paths={
   'sleep-energy':'<path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" /><path d="M17 4a2 2 0 0 0 2 2a2 2 0 0 0 -2 2a2 2 0 0 0 -2 -2a2 2 0 0 0 2 -2" /><path d="M19 11h2m-1 -1v2" />',
@@ -3245,11 +3256,129 @@ function smartComingUpHTML(cu,opts){
  if(!blocks&&!tail)return '';
  return `<section class="smart-section" aria-labelledby="smart-upcoming-title"><h3 class="smart-kicker" id="smart-upcoming-title">Coming up</h3>${blocks}${tail}</section>`;
 }
+function smartStage(pct){
+ const p=Math.max(0,Math.min(100,+pct||0));
+ return p<20?0:p<40?1:p<60?2:p<80?3:4;
+}
+const SMART_STAGE_NAMES=['Seed','Sprout','Bud','Blooming','In bloom'];
+const SMART_FLOWER_PALETTES={
+ 'Better sleep':{petal:'#B9A6D9',petal2:'#9C86C4',center:'#F4D58D',stem:'#5F8A6B',leaf:'#7BA887'},
+ 'Steadier energy':{petal:'#F2C46B',petal2:'#E0A93F',center:'#B8456B',stem:'#5F8A6B',leaf:'#7BA887'},
+ 'Manage stress':{petal:'#A9C6B0',petal2:'#87AA90',center:'#F4D58D',stem:'#4F7A5B',leaf:'#6E9B7C'},
+ 'Move more':{petal:'#F0B27A',petal2:'#DE9553',center:'#B8456B',stem:'#5F8A6B',leaf:'#7BA887'},
+ 'Eat regularly':{petal:'#F5B7A3',petal2:'#E89478',center:'#F4D58D',stem:'#5F8A6B',leaf:'#7BA887'},
+ 'Understand my cycle':{petal:'#E58FA6',petal2:'#C96B87',center:'#F4D58D',stem:'#5F8A6B',leaf:'#7BA887'},
+ 'Prepare for doctor visits':{petal:'#9DC3D9',petal2:'#79A8C4',center:'#F4D58D',stem:'#5F8A6B',leaf:'#7BA887'}
+};
+function smartFlowerSVG(goal,stage){
+ const p=SMART_FLOWER_PALETTES[goal]||SMART_FLOWER_PALETTES['Understand my cycle'];
+ const s=Math.max(0,Math.min(4,stage|0)),cx=36,baseY=64;
+ let out=`<svg viewBox="0 0 72 72" aria-hidden="true" focusable="false"><ellipse cx="${cx}" cy="${baseY+2}" rx="19" ry="4" fill="${p.stem}" opacity=".16"/>`;
+ if(s===0){
+  out+=`<ellipse cx="${cx}" cy="${baseY-1}" rx="6.5" ry="5" fill="${p.center}"/><ellipse cx="${cx}" cy="${baseY-2.5}" rx="3" ry="2" fill="${p.petal2}" opacity=".55"/>`;
+  return out+'</svg>';
+ }
+ const stemTop=s===1?baseY-14:s===2?baseY-24:s===3?baseY-30:baseY-34;
+ out+=`<path d="M${cx} ${baseY} C ${cx-2} ${baseY-8} ${cx-1.5} ${stemTop+8} ${cx} ${stemTop}" stroke="${p.stem}" stroke-width="2.6" stroke-linecap="round" fill="none"/>`;
+ out+=`<path d="M${cx-1} ${baseY-9} C ${cx-10} ${baseY-11} ${cx-13} ${baseY-19} ${cx-12} ${baseY-22} C ${cx-6} ${baseY-20} ${cx-2} ${baseY-15} ${cx-1} ${baseY-9} Z" fill="${p.leaf}"/>`;
+ if(s>=3) out+=`<path d="M${cx+1} ${baseY-14} C ${cx+9} ${baseY-15} ${cx+12} ${baseY-23} ${cx+11} ${baseY-26} C ${cx+5} ${baseY-24} ${cx+2} ${baseY-19} ${cx+1} ${baseY-14} Z" fill="${p.leaf}" opacity=".85"/>`;
+ const headY=stemTop+2;
+ if(s===1) return out+'</svg>';
+ const petal=(n,fill,scale,cy)=>`<g transform="translate(${cx} ${cy})">${Array.from({length:n},(_,i)=>`<path d="M0 0 C -6 -7 -5 -16 0 -21 C 5 -16 6 -7 0 0 Z" fill="${fill}" transform="rotate(${Math.round(i*360/n)}) scale(${scale})"/>`).join('')}</g>`;
+ if(s===2){
+  out+=`<path d="M${cx} ${headY-16} C ${cx+7} ${headY-12} ${cx+7} ${headY+1} ${cx} ${headY+4} C ${cx-7} ${headY+1} ${cx-7} ${headY-12} ${cx} ${headY-16} Z" fill="${p.petal2}"/><path d="M${cx} ${headY-11} C ${cx+3} ${headY-8} ${cx+3} ${headY} ${cx} ${headY+2} C ${cx-3} ${headY} ${cx-3} ${headY-8} ${cx} ${headY-11} Z" fill="${p.petal}" opacity=".7"/>`;
+ }else if(s===3){
+  out+=petal(5,p.petal,0.78,headY-4);
+  out+=`<circle cx="${cx}" cy="${headY-4}" r="4.2" fill="${p.center}"/>`;
+ }else{
+  out+=petal(8,p.petal,1,headY-6);
+  out+=petal(8,p.petal2,0.72,headY-6);
+  out+=`<circle cx="${cx}" cy="${headY-6}" r="5.2" fill="${p.center}"/>`;
+ }
+ return out+'</svg>';
+}
+function smartGoalProgress(goal,ctx){
+ ctx=ctx||{};
+ const logs=ctx.logs||{},meals=ctx.meals||{},starts=spValidPeriods(ctx.startDates||[]),todayStr=ctx.todayStr;
+ const rows=smartLogRows(logs);
+ const lastDays=n=>{const out=[];for(let i=0;i<n;i++)out.push(spAddDays(todayStr,-i));return out};
+ const mealTypes=d=>Array.isArray(meals[d])?meals[d].filter(m=>m&&m.t).map(m=>m.t):[];
+ const noData={
+  'Better sleep':'No sleep logged yet',
+  'Steadier energy':'No energy logged yet',
+  'Manage stress':'No stress logged yet',
+  'Move more':'No activity logged yet',
+  'Eat regularly':'No meals planned yet',
+  'Understand my cycle':'No cycle starts logged yet',
+  'Prepare for doctor visits':'No symptoms logged yet'
+ }[goal]||'Not enough logs yet';
+ const defs={
+  'Better sleep':{target:7,reason:'Seven hours or more is where most people start feeling steadier the next day.',motivator:'A steady wind-down time is what opens the next petal.'},
+  'Steadier energy':{target:9,reason:'Energy at 4 or 5 on most days is the benchmark you picked.',motivator:'Each logged day makes the pattern easier to trust.'},
+  'Manage stress':{target:5,reason:'Five calmer days a week is your chosen aim, not a rule.',motivator:'Small routines on hard days still count.'},
+  'Move more':{target:3,reason:'Twenty minutes of movement on three days is the baseline.',motivator:'Walks you already take count; nothing extra needed.'},
+  'Eat regularly':{target:5,reason:'Breakfast, lunch and dinner all planned is the aim.',motivator:'Planning tomorrow the night before makes the rest easier.'},
+  'Understand my cycle':{target:3,reason:'Three logged period starts is enough to trust the pattern.',motivator:'Every start you log sharpens the prediction.'},
+  'Prepare for doctor visits':{target:30,reason:'Thirty tracked days gives your visit something concrete to work from.',motivator:'Symptoms logged now save guesses at the appointment.'}
+ };
+ const def=defs[goal]||{target:7,reason:'Keep logging to see progress.',motivator:'Small steps add up.'};
+ let n=0,target=def.target,caption=noData,hasData=false;
+ if(typeof todayStr==='string'){
+  if(goal==='Better sleep'){
+   const days=lastDays(7),sl=days.filter(d=>{const v=spNum(L2(rows,d,'sleep'));return v!=null&&v>=7}).length;
+   hasData=days.some(d=>spNum(L2(rows,d,'sleep'))!=null);n=sl;caption=hasData?(sl?`${sl} of 7 nights at 7h+`:'No 7h+ nights this week'):noData;
+  }else if(goal==='Steadier energy'){
+   const days=lastDays(14),n2=days.filter(d=>{const v=spNum(L2(rows,d,'energy'));return v!=null&&v>=4}).length;
+   hasData=days.some(d=>spNum(L2(rows,d,'energy'))!=null);n=n2;target=9;caption=hasData?(n2?`${n2} of 9 days at 4+ energy`:'No 4+ energy days yet'):noData;
+  }else if(goal==='Manage stress'){
+   const days=lastDays(7),n2=days.filter(d=>{const v=spNum(L2(rows,d,'stress'));return v!=null&&v<=2}).length;
+   hasData=days.some(d=>spNum(L2(rows,d,'stress'))!=null);n=n2;target=5;caption=hasData?(n2?`${n2} of 5 calm days`:'No calm days logged yet'):noData;
+  }else if(goal==='Move more'){
+   const days=lastDays(7),n2=days.filter(d=>{const r=smartRowFor(rows,d);const m=r?spNum(r.log.exMin):null;return m!=null&&m>=20&&r.log.exercise!=='Rest'}).length;
+   hasData=days.some(d=>smartRowFor(rows,d));n=n2;target=3;caption=hasData?(n2?`${n2} of 3 active days`:'No active days this week'):noData;
+  }else if(goal==='Eat regularly'){
+   const days=lastDays(7),full=days.filter(d=>{const t=new Set(mealTypes(d));return t.has('b')&&t.has('l')&&t.has('d')}).length;
+   hasData=days.some(d=>mealTypes(d).length);n=full;target=5;caption=hasData?(full?`${full} of 5 full-meal days`:'No full-meal days in the plan'):noData;
+  }else if(goal==='Understand my cycle'){
+   n=starts.length;hasData=n>0;caption=hasData?`${n} of 3 cycles logged`:noData;
+  }else if(goal==='Prepare for doctor visits'){
+   const from=spAddDays(todayStr,-89),days=smartWindow(rows,from,todayStr);
+   const withSx=days.filter(r=>spSymptomNames(r.log).length).length;
+   hasData=withSx>0;n=withSx;target=30;caption=hasData?`${n} of 30 days tracked`:noData;
+  }
+ }
+ const pct=hasData?Math.max(0,Math.min(100,Math.round(n/target*100))):0;
+ const stage=smartStage(pct);
+ return {goal,pct,caption,reason:def.reason,motivator:def.motivator,name:smartFocusName(goal),stage,stageName:SMART_STAGE_NAMES[stage]};
+}
+function smartRowFor(rows,date){for(const r of rows)if(r.date===date)return r;return null}
+function L2(rows,date,key){const r=smartRowFor(rows,date);return r?r.log[key]:null}
 function smartFocusHTML(goal,goals,noGoals,cards){
- const list=noGoals?[]:(cards&&cards.length?cards:[{goal:goal,name:smartFocusName(goal),prose:''}]);
- const ordered=list.slice().sort((a,b)=>a.goal===goal?-1:b.goal===goal?1:0);
- const track=ordered.map(c=>`<article class="smart-focus-card${c.goal===goal?' is-active':''}" role="listitem" data-goal="${E(c.goal)}"><h4 class="smart-focus-card-title">${E(c.name)}</h4>${c.prose?`<p class="smart-pattern-text smart-focus-prose">${E(c.prose)}</p>`:'<p class="smart-copy">A few quiet notes are enough to begin.</p>'}</article>`).join('');
- return `<section class="smart-section smart-focus" id="smart-focus" aria-labelledby="smart-focus-title"><h3 class="smart-kicker" id="smart-focus-title">Your focus</h3>${noGoals?'<p class="smart-copy">Pick your goals in Profile to personalize this.</p>':`<div class="smart-focus-track" role="list" aria-label="Focus goals">${track}</div>`}</section>`;
+ const kicker=`<div class="smart-focus-head"><p class="smart-kicker" id="smart-focus-title">Your focus</p>`;
+ if(noGoals){
+  return `<section class="card smart-focus-now" id="smart-focus" aria-labelledby="smart-focus-title">${kicker}</div><p class="smart-copy" style="margin-top:2px">Pick your goals in Profile to personalize this.</p></section>`;
+ }
+ const list=Array.isArray(cards)&&cards.length?cards:(goals||[goal]).map(g=>({goal:g,name:smartFocusName(g),ctx:{}}));
+ const html=list.map((c,i)=>{
+  const prog=smartGoalProgress(c.goal,c.ctx||{});
+  return `<article class="smart-focus-card${i===0?' is-active':''}" data-goal="${E(c.goal)}" role="listitem">
+   <button class="smart-focus-tap" type="button" aria-expanded="false" aria-controls="smart-focus-detail-${i}">
+    <span class="smart-focus-meter">${smartFlowerSVG(c.goal,prog.stage)}</span>
+    <span class="smart-focus-copy">
+     <span class="smart-focus-stage">${E(prog.stageName)}</span>
+     <h3 class="smart-focus-card-title">${E(prog.name||c.name||c.goal)}</h3>
+     <span class="smart-focus-caption">${E(prog.caption)}</span>
+    </span>
+    <span class="smart-focus-caret" aria-hidden="true">\u203a</span>
+   </button>
+   <div class="smart-focus-detail" id="smart-focus-detail-${i}"><div class="smart-focus-detail-in">
+    <p class="smart-focus-reason">${E(prog.reason)}</p>
+    <p class="smart-focus-motivator">${E(prog.motivator)}</p>
+   </div></div>
+  </article>`;
+ }).join('');
+ const dots=list.map((_,i)=>`<button class="smart-focus-dot${i===0?' on':''}" type="button" aria-label="Go to focus ${i+1}"></button>`).join('');
+ return `<section class="card smart-focus-now" id="smart-focus" aria-labelledby="smart-focus-title">${kicker}<span class="smart-focus-count">1 of ${list.length}</span></div><div class="smart-focus-track" role="list" tabindex="0">${html}</div><div class="smart-focus-dots" role="tablist">${dots}</div></section>`;
 }
 function smartFocusName(goal){
  const names={'Understand my cycle':'Understanding your cycle','Steadier energy':'Steadier energy','Better sleep':'Better sleep','Move more':'Moving more','Eat regularly':'Eating regularly','Manage stress':'Keeping stress steady'};
@@ -3394,7 +3523,7 @@ function smartInsightsHTML(pred,current,patterns,viewerName,aiMap,extras){
  const proseExtras=Object.assign({},extras,{ctx:proseCtx});
  const weekProse=(extras.weekCard&&!extras.ro)?smartWeekProse(proseExtras):null;
  const weekHtml=weekProse&&weekProse.lead?`<section class="smart-section smart-week" id="smart-week" aria-labelledby="smart-week-title"><p class="smart-kicker" id="smart-week-title">Your week</p><p class="smart-week-lead">${E(weekProse.lead)}</p><p class="smart-week-body">${E([weekProse.body,weekProse.closer].filter(Boolean).join(' '))}</p></section>`:'';
- const focusCards=(focusRendered&&!noGoals)?goals.map(g=>({goal:g,name:smartFocusName(g),prose:smartFocusProse(g,proseExtras,g===goal?focusToShow||null:null)})):null;
+ const focusCards=(focusRendered&&!noGoals)?goals.map(g=>({goal:g,name:smartFocusName(g),ctx:proseCtx})):null;
  const knowProse=smartKnowledgeProse(goal,proseExtras);
  const next=extras.ro?null:smartNextStep(goal,proseCtx);
  const emptyHint=smartEmptyPatternLine((proseCtx&&proseCtx.logs)||{});
@@ -3408,15 +3537,7 @@ function smartInsightsHTML(pred,current,patterns,viewerName,aiMap,extras){
   return true;
  });
 
- return `<header class="smart-hero">
-  <div class="smart-hero-copy">
-   <h2 class="smart-title">Smart Insights</h2>
-   <p class="smart-subtitle">Patterns from your daily logs.</p>
-  </div>
-  <div class="smart-hero-art">${smartArt('insight')}</div>
- </header>
- ${weekHtml}
- ${extras.ro?'':smartFocusHTML(goal,goals,noGoals,focusCards)}
+ return `${weekHtml}
  ${sections}
  <section class="smart-section" aria-labelledby="smart-patterns-title"><h3 class="smart-kicker" id="smart-patterns-title">Patterns</h3>${smartPatternsHTML(patsToShow,emptyHint)}</section>
  ${knowProse?`<section class="smart-section" aria-labelledby="smart-know-title"><h3 class="smart-kicker" id="smart-know-title">Good to know</h3><p class="smart-copy">${E(knowProse)}</p></section>`:''}
@@ -3585,31 +3706,6 @@ function smartWeekProse(extras){
  }
  return {lead,body,closer};
 }
-function smartFocusProse(goal,extras,focus){
- extras=extras||{};
- const period=smartPeriodInfo(extras);
- const showsPeriod=!!(focus&&focus.metric);
- const name=smartFocusName(goal);
- if(goal==='Understand my cycle'){
-  if(period.state!=='estimated')return 'Understanding your cycle is the goal you chose, and the shape of it is still forming. Keep noting how you feel each day, and the weeks will fill in the rest.';
-  if(period.near&&showsPeriod)return 'Understanding your cycle is the goal you chose, and your period is close enough to watch for a rhythm. Keep noting how you feel each day, and let the timing settle on its own.';
-  return 'Understanding your cycle is the goal you chose, and the shape of it is beginning to show. Keep noting how you feel each day, and let the weeks fill in the rest.';
- }
- if(goal==='Prepare for doctor visits')return 'A clear visit summary is the goal you chose, and the pieces are already in place. Read it once before you go, and add anything the week brings.';
- const dir=goal==='Better sleep'?smartDirFromWeek(extras,'Sleep'):goal==='Steadier energy'?smartDirFromWeek(extras,'Energy'):goal==='Manage stress'?smartDirFromWeek(extras,'Stress'):(goal==='Move more'||goal==='Eat regularly')?smartDirFromFocus(extras):null;
- const stressGoal=goal==='Manage stress';
- const positive=stressGoal?dir==='down':dir==='up';
- const negative=stressGoal?dir==='up':dir==='down';
- const frame=positive?`${name} is the goal you chose, and this week leaned your way.`:negative?`${name} is the goal you chose, and this week asked more of you than it gave back.`:dir==='flat'?`${name} is the goal you chose, and this week held close to your usual.`:`${name} is the goal you chose, and the week is still taking shape.`;
- const advice={
-  'Steadier energy':'Plan the harder tasks for the hours that usually feel lighter, and let the quieter hours stay quiet.',
-  'Better sleep':'Choose one quiet cue before bed and repeat it for a week or two, then see what changes.',
-  'Move more':'Start with a walk you would take anyway, and let it count.',
-  'Eat regularly':'Fill the meal that keeps going missing, and let the rest stay simple.',
-  'Manage stress':'One small routine, kept on the hard days, does more than a big plan saved for later.'
- }[goal]||'Keep noting how you feel each day, and the picture will fill in.';
- return frame+' '+advice;
-}
 function smartKnowledgeProse(goal,extras){
  const pred=(extras&&extras.ctx&&extras.ctx.pred)||{};
  const steady=Number(pred.validCount)>=4;
@@ -3691,18 +3787,47 @@ function smartEmptyPatternLine(logs){
 }
 // @test-end smart
 
+
+function wireSmartFocus(root){
+ if(!root)return;
+ if(smartFocusTimer){clearInterval(smartFocusTimer);smartFocusTimer=null}
+ const track=root.querySelector('.smart-focus-track');if(!track)return;
+ const cards=[...track.children],dots=[...root.querySelectorAll('.smart-focus-dot')];
+ if(!cards.length)return;
+ const prefersReduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+ const pause=()=>{if(smartFocusTimer){clearInterval(smartFocusTimer);smartFocusTimer=null}};
+ const nearest=()=>{const tl=track.scrollLeft;let best=0,bd=Infinity;cards.forEach((c,i)=>{const d=Math.abs(c.offsetLeft-tl);if(d<bd){bd=d;best=i}});return best};
+ const count=root.querySelector('.smart-focus-count');const syncDots=()=>{const i=nearest();dots.forEach((d,j)=>d.classList.toggle('on',j===i));if(count)count.textContent=`${i+1} of ${cards.length}`};
+ syncDots();
+ dots.forEach((d,i)=>d.addEventListener('click',()=>{track.scrollTo({left:cards[i].offsetLeft,behavior:'smooth'})}));
+ track.addEventListener('scroll',syncDots,{passive:true});
+ track.addEventListener('pointerdown',pause,{passive:true});
+ track.addEventListener('focusin',pause);
+ root.addEventListener('pointerenter',pause);
+ cards.forEach(c=>{
+  c.addEventListener('click',e=>{
+   if(e.target.closest('a,button.smart-focus-dot'))return;
+   c.classList.toggle('is-expanded');
+   const exp=c.classList.contains('is-expanded');
+   const tap=c.querySelector('.smart-focus-tap');if(tap)tap.setAttribute('aria-expanded',exp?'true':'false');
+   pause();
+  });
+ });
+ const auto=()=>{if(prefersReduced)return;pause();smartFocusTimer=setInterval(()=>{const max=track.scrollWidth-track.clientWidth;if(max<=0){pause();return}const i=nearest();const n=i+1>=cards.length?0:i+1;track.scrollTo({left:cards[n].offsetLeft,behavior:n===0?'auto':'smooth'})},4000)};
+ auto();
+}
 function insights(){const n=range,days=[...Array(n)].map((_,i)=>addD(today(),i-n+1)),c=cycleStats();const tg={};days.forEach(d=>(L(d).tags||[]).concat(L(d).customSx||[]).forEach(t=>tg[t]=(tg[t]||0)+1));const tk=Object.entries(tg).sort((a,b)=>b[1]-a[1]).slice(0,6),mx=tk[0]?.[1]||1;
  const hab=days.map(d=>{const t=tasksFor(d);return t.length?t.filter(x=>isDone(x.id,d)).length/t.length:null}).filter(x=>x!=null);const ha=hab.length?Math.round(hab.reduce((a,b)=>a+b,0)/hab.length*100):null;
  const sl=days.map(d=>L(d).sleep).filter(Boolean);
  const smartStarts=starts(),smartPred=smartPredictionHistory(smartStarts,today()),smartCurrent=smartCurrentCycle(smartPred,today()),smartPats=smartPatternsFromLogs(D.logs,smartStarts,{ro:RO});const smartExtras=smartInsightsExtras(D.logs,smartStarts,smartCurrent,smartPred,today(),D.meals,RO?null:(D.p&&D.p.goals),smartFocusGoal,RO,RO?[]:(D.journal||[]));smartFocusGoal=smartExtras.selectedGoal;const viewerName=(RO?(ST.get('bloom_pname')||'friend'):(D.p.name||'friend')).split(' ')[0];if(!RO){const weekFacts=smartWeekFacts({logs:D.logs,startDates:smartStarts,current:smartCurrent,pred:smartPred,todayStr:today(),meals:D.meals,goals:D.p&&D.p.goals,ro:RO});if(weekFacts){smartExtras.weekFacts=weekFacts;const _wc=smartWeekTemplate(weekFacts);smartExtras.weekCard=_wc;if(!_wc)delete smartExtras.weekFacts;else smartExtras.weekOpts={showPrompt:false,exhausted:false};}}
  $('#main').innerHTML=`<h1>Insights</h1><div class="row">${[7,14,30,90].map(v=>`<button class="chip" data-r="${v}" aria-pressed="${range==v}">${v} days</button>`).join('')}</div>
-<div class="card smart-card" id="smart-card">${smartInsightsHTML(smartPred,smartCurrent,smartPats,viewerName,null,smartExtras)}</div><div class="card"><div class="card-h"><h3>Mood</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Recorded</span></div>${line('mood',n,5,'var(--rose)')}</div><div class="card"><div class="card-h"><h3>Energy</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Recorded</span></div>${line('energy',n,5,'var(--teal)')}</div>
+<div class="card smart-card" id="smart-card">${smartInsightsHTML(smartPred,smartCurrent,smartPats,viewerName,null,smartExtras)}</div>${RO?'':smartFocusHTML(smartExtras.selectedGoal,smartExtras.focusGoals||[smartExtras.selectedGoal],smartExtras.noGoals,(smartExtras.focusGoals||[smartExtras.selectedGoal]).map(g=>({goal:g,name:smartFocusName(g),ctx:smartExtras.ctx})))}<div class="card"><div class="card-h"><h3>Mood</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Recorded</span></div>${line('mood',n,5,'var(--rose)')}</div><div class="card"><div class="card-h"><h3>Energy</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Recorded</span></div>${line('energy',n,5,'var(--teal)')}</div>
 <div class="card"><div class="card-h"><h3>Sleep</h3><span class="meta">${sl.length?(sl.reduce((a,b)=>a+b,0)/sl.length).toFixed(1)+' h avg  '+sl.length+' nights':'\u2014'}</span></div>${line('sleep',n,12,'var(--teal)')}</div>
 <div class="card"><div class="card-h"><h3>Symptoms</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Recorded</span></div>${tk.length?tk.map(([t,v])=>`<div class="row sp"><span>${E(t)}</span><span class="meta">${v} d</span></div><div class="bar"><i style="width:${v/mx*100}%"></i></div>`).join(''):'<p class="meta">None logged</p>'}</div>
 <div class="card"><div class="card-h"><h3>Habit completion</h3><span class="meta">${ha==null?'':ha+'%'}</span></div>${ha==null?'<p class="meta">No planned tasks</p>':`<div class="bar"><i style="width:${ha}%"></i></div>`}</div>
 <div class="card"><div class="card-h"><h3>Cycle length</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Calculated</span></div>${c.len.length?`<div class="row" style="align-items:end;height:90px">${c.len.slice(-10).map(v=>`<div style="flex:1;text-align:center"><div style="height:${Math.min(v,90)}px;background:var(--pink);border-radius:6px 6px 0 0"></div><span class="meta" style="font-size:.7rem">${v}</span></div>`).join('')}</div>`:'<p class="meta">Needs 2 logged starts</p>'}</div>
 <div class="card"><div class="card-h"><h3>Appointment summary</h3></div>${RO?'':'<button class="btn" id="ex" style="width:100%">Export summary</button>'}</div>`;
-  document.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{range=+b.dataset.r;insights()});if(!RO)$('#ex').onclick=()=>exportSum(days);const ctaBtn=document.getElementById('smart-cta');if(ctaBtn&&!RO){ctaBtn.onclick=()=>{const a=ctaBtn.dataset.action;if(a==='meals'){view='planner';tab='meals';shell()}else if(a==='journal'){view='planner';tab='journal';shell()}else if(a==='export'){exportSum(days)}else dayLog(today())};}}
+  document.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{range=+b.dataset.r;insights()});if(!RO)$('#ex').onclick=()=>exportSum(days);const ctaBtn=document.getElementById('smart-cta');if(ctaBtn&&!RO){ctaBtn.onclick=()=>{const a=ctaBtn.dataset.action;if(a==='meals'){view='planner';tab='meals';shell()}else if(a==='journal'){view='planner';tab='journal';shell()}else if(a==='export'){exportSum(days)}else dayLog(today())};}};wireSmartFocus(document.getElementById('smart-focus'))
 async function saveFile(name,data){try{const dl=await claude.use('downloads');if(dl){await dl.save({filename:name,data});return}}catch(e){}try{await navigator.clipboard.writeText(data);toast('Copied to clipboard')}catch(e){sheet(`<h2>${E(name)}</h2><textarea rows="10" readonly>${E(data)}</textarea><button class="btn" id="c3">Close</button>`);$('#c3').onclick=()=>sheet()}}
 function exportSum(days){const c=cycleStats();let t=`Health summary for ${D.p.name||user}  ${days[0]} to ${days[days.length-1]}\nThis is self-recorded data, not a medical record.\n\nPeriod starts (recorded): ${starts().join(', ')||'none'}\n${c.n>=2?`Cycle length (calculated): ${c.min}${c.max} days, avg ${c.avg}\n`:''}\nDaily logs:\n`;days.forEach(d=>{const l=L(d);if(Object.keys(l).some(k=>k!='water'))t+=`${d}: ${[l.flow&&'bleeding '+l.flow,l.mood&&'mood '+l.mood+'/5',l.energy&&'energy '+l.energy+'/5',l.sleep&&'sleep '+l.sleep+'h',(l.tags||[]).concat(l.customSx||[]).join('/')].filter(Boolean).join('; ')}\n`});
  if(!RO){const q=(D.journal||[]).map(j=>j.t).join('\n- ');t+=`\nJournal notes / questions:\n- ${q||'none'}\n`}
@@ -4750,14 +4875,14 @@ function splashPlay(replay){
  stage.onclick=()=>{if(splashDone)return;splashPlay(false)};
 }
 // called by the native layer when the app comes back to the foreground
-window.__bloomResume=(awayMs)=>{try{widgetConsume()}catch(e){}if(splashPlaying||!splashShouldShow(awayMs))return;splashPlay(true)};
+window.__bloomResume=(awayMs)=>{try{widgetConsume()}catch(e){}try{widgetSync()}catch(e){}if(splashPlaying||!splashShouldShow(awayMs))return;splashPlay(true)};
 window.addEventListener('online',()=>{sbInit().then(()=>{if(sbUser&&!RO){sbPush();sbPull()}});setTimeout(()=>checkUpdate(false),800)});
 window.addEventListener('offline',()=>{if(!document.getElementById('authForm'))return;const e=document.getElementById('err');if(e&&!e.textContent){e.textContent=OFFLINE_MSG;e.classList.add('on')}});
 window.addEventListener('online',()=>{const e=document.getElementById('err');if(document.getElementById('authForm')&&e&&e.textContent===OFFLINE_MSG){e.textContent='';e.classList.remove('on')}});
 // called by the native layer when the app goes to the background
 window.__bloomBg=()=>splashBgMark();
 // @test-end splash
-document.addEventListener('visibilitychange',()=>{if(document.hidden){splashBgMark();try{saveNav()}catch(e){}}else{try{widgetConsume()}catch(e){}if(sbUser&&!RO)sbPull()}});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){splashBgMark();try{saveNav()}catch(e){}}else{try{widgetConsume()}catch(e){}try{widgetSync()}catch(e){}if(sbUser&&!RO)sbPull()}});
 window.addEventListener('pagehide',()=>splashBgMark());
 window.addEventListener('beforeunload',()=>splashBgMark());
 

@@ -73,7 +73,7 @@ test('single header and no disclaimer, badge, count or progress list in Insights
   const { smartInsightsHTML } = renderContext();
   const out = smartInsightsHTML(predictedState(), currentState(), [], 'Alex');
 
-  assert.equal((out.match(/Smart Insights/g) || []).length, 1);
+  assert.equal((out.match(/Smart Insights/g) || []).length, 0);
   assert.ok(!/smart-eyebrow/.test(out));
   assert.ok(!/Not medical advice/.test(out));
   assert.ok(!/How to read these insights/.test(out));
@@ -92,23 +92,29 @@ test('empty patterns render one short line', () => {
   assert.ok(!/\bundefined\b|\bNaN\b|<img|<script/i.test(out));
 });
 
-test('focus is a swipeable card per goal with the goal name as the card header', () => {
-  const { smartInsightsHTML } = renderContext();
-  const out = smartInsightsHTML(predictedState(), currentState(), [], 'Alex', null, extras());
+test('focus is a swipeable card per goal with the goal name as the card header, bloom meter and caption', () => {
+  const { smartFocusHTML } = renderContext();
+  const out = smartFocusHTML('Better sleep', ['Better sleep', 'Understand my cycle'], false, [
+    { goal: 'Better sleep', name: 'Better sleep', ctx: { logs: { '2026-01-14': { sleep: 7.5 }, '2026-01-15': { sleep: 8 }, '2026-01-16': { sleep: 6 }, '2026-01-17': { sleep: 7.2 }, '2026-01-18': { sleep: 7 }, '2026-01-19': { sleep: 6.5 }, '2026-01-20': { sleep: 8 } }, startDates: [], todayStr: '2026-01-20', meals: {} } },
+    { goal: 'Understand my cycle', name: 'Understanding your cycle', ctx: { logs: {}, startDates: ['2026-01-02', '2026-01-30'], todayStr: '2026-02-25', meals: {} } }
+  ]);
 
   assert.match(out, /Your focus/);
   assert.match(out, /smart-focus-track/);
+  assert.match(out, /data-goal="Better sleep"/);
+  assert.match(out, /data-goal="Understand my cycle"/);
   assert.match(out, /class="smart-focus-card-title">Better sleep</);
   assert.match(out, /class="smart-focus-card-title">Understanding your cycle</);
-  assert.match(out, /Better sleep is the goal you chose/);
-  assert.equal((out.match(/<article class="smart-focus-card/g) || []).length, 2);
+  assert.match(out, /Seed|Sprout|Bud|Blooming|In bloom/);
+  assert.match(out, /5 of 7 nights at 7h\+/);
+  assert.match(out, /smart-focus-detail/);
+  assert.ok(!/is the goal you chose/i.test(out));
   assert.ok(!/smart-goal-chip|aria-pressed/.test(out));
 });
 
 test('no goals shows the profile prompt', () => {
-  const { smartInsightsHTML } = renderContext();
-  const out = smartInsightsHTML(predictedState(), currentState(), [], undefined, null,
-    extras({ noGoals: true, focusGoals: ['Understand my cycle'], selectedGoal: 'Understand my cycle', focus: null }));
+  const { smartFocusHTML } = renderContext();
+  const out = smartFocusHTML('Understand my cycle', ['Understand my cycle'], true, [{ goal: 'Understand my cycle', name: 'Understanding your cycle', ctx: { logs: {}, startDates: [], todayStr: '2026-01-20', meals: {} } }]);
 
   assert.match(out, /Pick your goals in Profile to personalize this\./);
 });
@@ -348,7 +354,7 @@ test('Smart Insights deduplicates primary sleep evidence across sections', () =>
   );
   const sleepMetricOccurrences = (out.match(/6\.8 h/g) || []).length;
   assert.ok(sleepMetricOccurrences <= 1, 'sleep metric should not repeat');
-  assert.match(out, /Your focus/);
+  assert.ok(!/Your focus/.test(out), 'focus card no longer lives inside Smart Insights');
 });
 
 
@@ -429,7 +435,7 @@ test('Fix1: week data does not claim ownership unless Your week presents it; dif
     ro: false
   });
   // Stress presented by focus (not Your week) must still render; focus owns it so comparison does not duplicate
-  assert.match(out, /One small routine, kept on the hard days/);
+  assert.ok(!/Protect one small routine on high-stress days/.test(out), 'focus prose is not duplicated inside Smart Insights');
   assert.equal((out.match(/Stress<\/span><span class="smart-week-val">3\.8/g)||[]).length, 0);
 
   // selected Better sleep and Your week presents sleep -> duplicate suppressed in comparison/focus metric
@@ -550,7 +556,7 @@ test('period estimate renders once in Coming up and is suppressed when Your week
   assert.ok(!/smart-cycle-title|Next period/.test(plain), 'cycle block is gone');
   assert.equal((plain.match(/Period expected in 4 days\./g) || []).length, 1, 'period appears once');
   assert.match(plain, /Follicular phase/);
-  assert.match(plain, /your period is close enough/, 'focus keeps its plain-language frame');
+  assert.ok(!/is the goal you chose/.test(plain), 'no templated focus prose');
 
   const owned = smartInsightsHTML(pred, current, [], 'Alex', null, {
     selectedGoal: 'Understand my cycle', focusGoals: ['Understand my cycle'], noGoals: false,
@@ -576,7 +582,7 @@ test('period line is not fabricated from invalid or missing coming-up values', (
       focus, week: [], ro: false, weekCard: null, weekFacts: null, comingUp
     });
     assert.ok(!/Period expected in \d+ days?\./.test(out), 'no fabricated period line');
-    assert.match(out, /Understanding your cycle is the goal/, 'focus prose stays');
+    assert.ok(!/is the goal you chose/.test(out), 'no templated focus prose');
   });
 });
 
@@ -656,10 +662,9 @@ test('prose copy reads as calm sentences with no numbers or stiff words', () => 
     const extras = Object.assign({}, extrasBase, { selectedGoal: goal, focusGoals: [goal],
       focus: { goal, headline:'Headline', metric:'Metric', trend:'2 vs 4 the week before', action:'Action' } });
     const week = mod.smartWeekProse(extras);
-    const focus = mod.smartFocusProse(goal, extras, { metric: 'Metric' });
     const know = mod.smartKnowledgeProse(goal, extras);
     const next = mod.smartNextProse(goal);
-    const parts = [week.lead, week.body, week.closer, focus, know, next].filter(Boolean);
+    const parts = [week.lead, week.body, week.closer, know, next].filter(Boolean);
     const all = parts.join(' ');
     assert.ok(all.length > 40, goal + ': prose present');
     assert.ok(!/\d/.test(all), goal + ': no digits');
@@ -671,4 +676,16 @@ test('prose copy reads as calm sentences with no numbers or stiff words', () => 
       assert.ok(sentences.length <= 3, goal + ': at most three sentences');
     }
   }
+});
+
+test('flower stage follows progress in five steps and clamps empty data', () => {
+  const { smartStage, smartGoalProgress } = renderContext();
+  assert.deepEqual([0, 19, 20, 39, 40, 59, 60, 79, 80, 100].map(smartStage), [0, 0, 1, 1, 2, 2, 3, 3, 4, 4]);
+  const empty = smartGoalProgress('Better sleep', { logs: {}, meals: {}, startDates: [], todayStr: '2026-01-20' });
+  assert.equal(empty.pct, 0);
+  assert.equal(empty.stageName, 'Seed');
+  assert.match(empty.caption, /No sleep logged yet/);
+  const full = smartGoalProgress('Better sleep', { logs: { '2026-01-14': { sleep: 8 }, '2026-01-15': { sleep: 8 }, '2026-01-16': { sleep: 8 }, '2026-01-17': { sleep: 8 }, '2026-01-18': { sleep: 8 }, '2026-01-19': { sleep: 8 }, '2026-01-20': { sleep: 8 } }, meals: {}, startDates: [], todayStr: '2026-01-20' });
+  assert.equal(full.pct, 100);
+  assert.equal(full.stageName, 'In bloom');
 });
