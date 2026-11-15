@@ -173,24 +173,6 @@ body.reader-open{overflow:hidden}
 .bookcard-add{margin-left:auto;color:var(--teal);font-weight:800;letter-spacing:.04em}
 .card-genre{position:absolute;top:8px;left:8px;z-index:3;font-size:.5rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;padding:3px 9px;border-radius:999px;color:#3A2A28;background:#F4E3CB;box-shadow:0 1px 3px rgba(30,20,20,.2)}
 .g-PCOSPMOS{background:#F6D1C7}.g-Pain{background:#E6D6F0}.g-Endocrine{background:#D8E4D0}.g-Classic{background:#F4E3CB}.g-Gothic{background:#DDD3E0}.g-Horror{background:#E2D2CC}.g-Mystery{background:#D4E2E0}.g-Adventure{background:#F4DFC7}.g-ScienceFiction{background:#D3DEE8}.g-Children{background:#FBE4D0}.g-Fantasy{background:#E4D9EC}.g-Philosophy{background:#E1E6D2}.g-ShortStories{background:#EBDCDF}.g-Poetry{background:#EFE2C8}.g-Psychology{background:#D9E0E6}.g-EmotionalWellbeing{background:#F3D3D3}.g-WomensHealth{background:#F6C8D2}.g-Health{background:#D5E7D8}.g-Fiction{background:#F6E2CB}.g-Other{background:#E8E2DC}
-.healthfeat{margin:4px 0 16px;border-radius:22px;overflow:hidden;background:linear-gradient(135deg,#F9E2DC 0%,#F3C6D4 48%,#E4D4EE 100%);border:1.5px solid #E8C3CD;box-shadow:0 14px 34px rgba(120,60,80,.18)}
-.healthfeat-in{padding:16px 16px 14px}
-.hf-kicker{font-size:.58rem;font-weight:800;letter-spacing:.22em;text-transform:uppercase;color:#6E3B4A;opacity:.85;margin:0 0 4px;font-family:system-ui}
-.hf-title{font-family:'Playfair Display',Georgia,serif;font-size:1.42rem;line-height:1.15;color:#2E1C22;margin:0;letter-spacing:-.01em}
-.hf-title em{font-style:italic;color:#B8456B}
-.hf-lede{font-size:.78rem;line-height:1.45;margin:8px 0 0;color:#5A383F}
-.hf-row{display:flex;gap:11px;overflow-x:auto;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;padding:10px 4px 8px;margin:0 -4px;scrollbar-width:none}
-.hf-row::-webkit-scrollbar{display:none}
-.hf-card{scroll-snap-align:start;flex:0 0 108px;border:0;background:#FFFBF5;border-radius:14px;overflow:hidden;padding:0;cursor:pointer;box-shadow:0 10px 22px rgba(80,40,54,.28);text-align:left;font-family:inherit}
-.hf-card-cover{position:relative;aspect-ratio:2/2.6;display:block;background:#151011}
-.hf-card-cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.hf-card-cover::after{content:'';position:absolute;left:0;right:0;bottom:0;height:32px;background:linear-gradient(180deg,rgba(22,18,22,0),rgba(22,18,22,.55))}
-.hf-card-foot{padding:7px 8px 8px}
-.hf-card-title{font-size:.62rem;font-weight:700;color:var(--ink);line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:1.9em}
-.hf-card-author{font-size:.5rem;color:var(--mut);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hf-all{display:flex;align-items:center;justify-content:center;gap:6px;width:calc(100% - 32px);margin:8px 16px 14px;padding:10px;border:0;border-radius:999px;background:rgba(46,28,34,.88);color:#FCE8E4;font:inherit;font-size:.74rem;font-weight:800;letter-spacing:.06em;cursor:pointer;text-transform:uppercase}
-.hf-all:active{transform:scale(.98)}
-.hf-panel{margin:0 2px 20px}
 .ex-detail{display:flex;gap:14px;align-items:flex-start}
 .ex-cover{flex:0 0 96px;width:96px;aspect-ratio:2/2.6;border-radius:12px;overflow:hidden;background:#151011;box-shadow:0 8px 22px rgba(42,26,28,.38)}
 .ex-cover img{width:100%;height:100%;object-fit:cover}
@@ -4724,8 +4706,6 @@ function renderBookList(){const el=document.getElementById('lb');
  el.querySelectorAll('.lib-chip').forEach(b=>b.onclick=()=>{libFilter=b.dataset.lf;library()});
  el.querySelectorAll('.recentcard[data-bid]').forEach(b=>b.addEventListener('click',()=>{const id=b.dataset.bid;const e=libEntry(id);if(e)openBook(id);else{showExploreSheet(id);library()}}));
  el.querySelectorAll('[data-seeall]').forEach(b=>b.onclick=()=>{const g=b.dataset.seeall;exploreShown[g]=!exploreShown[g];library()});
- el.querySelectorAll('[data-healthall]').forEach(b=>b.onclick=()=>{healthFeatAll=!healthFeatAll;library()});
- el.querySelectorAll('.hf-card[data-bid]').forEach(b=>b.onclick=()=>{const id=b.dataset.bid;const added=!!libEntry(id);if(added)openBook(id);else showExploreSheet(id)});
  el.querySelectorAll('.bookcard[data-bid]').forEach(b=>{
   const id=b.dataset.bid;const added=!!L.books[id];
   const holdMs=450,move=14;let timer=0,sx=0,sy=0;
@@ -4761,21 +4741,16 @@ function bookcardHTML(b,entry,isExplore){
  return `<button class="bookcard" data-bid="${E(b.id)}"><span class="bookcard-cover"><img class="cover-img" loading="lazy" src="${escCssUrl(b.cover||'')}" alt="" onload="this.classList.add('done');this.parentNode.classList.add('done')" onerror="this.onerror=null;this.parentNode.classList.add('done','broken')">${genrePill(b.category)}${star}${chips}</span>${prog}<span class="bookcard-meta"><span class="bookcard-title">${E(b.title)}</span><span class="bookcard-author">${E(b.author||'')}</span></span><span class="bookcard-foot"><span>${pages}</span></span></button>`}
 const exploreShown={};
 const EXPLORE_GRID_MAX=10;
-const HEALTH_CATS=['Pcos/PMOS','PCOS/PMOS','Women\u2019s Health',"Women's Health",'Health','Endocrine','Pain'];
-const HEALTH_ORDER={"PCOS/PMOS":0,'Pcos/PMOS':0,"Women's Health":1,'Women\u2019s Health':1,Health:2,Endocrine:3,Pain:4};
-let healthFeatAll=false;
-function healthShelfHTML(all){
- const pick=all.filter(b=>HEALTH_CATS.includes(b.category||''));
- if(!pick.length)return '';
- pick.sort((a,b)=>{const r=(HEALTH_ORDER[a.category]||9)-(HEALTH_ORDER[b.category]||9);return r!==0?r:(a.title||'').localeCompare(b.title||'')});
- const shown=pick.slice(0,12);
- return `<div class="healthfeat" role="region" aria-label="Bloom clinic shelf: women's health"><div class="healthfeat-in"><p class="hf-kicker">Bloom Clinic · Featured</p><h2 class="hf-title">Women&rsquo;s health,<br><em>handpicked.</em></h2><p class="hf-lede">Pregnancy, cycle care, mood and everyday wellbeing — a handpicked shelf for the clinic.</p></div><div class="hf-row">${shown.map(b=>`<button class="hf-card" data-bid="${E(b.id)}" aria-label="${E(b.title)}"><span class="hf-card-cover"><img loading="lazy" src="${escCssUrl(b.cover||'')}" alt="" onerror="this.style.opacity=0"></span><span class="hf-card-foot"><span class="hf-card-title">${E(b.title)}</span><span class="hf-card-author">${E(b.author||'')}</span></span></button>`).join('')}</div><button class="hf-all" data-healthall="1">${healthFeatAll?'Hide the full shelf':'Browse all '+pick.length+' health books'}</button>${healthFeatAll?`<div class="bookgrid hf-panel">${pick.map(b=>bookcardHTML(b,libEntry(b.id),true)).join('')}</div>`:''}</div>`;
-}
 function exploreByGenreHTML(all){
  const groups=new Map();
  all.forEach(b=>{const g=(b.category||'Other').trim()||'Other';if(!groups.has(g))groups.set(g,[]);groups.get(g).push(b)});
- const order=[...groups.keys()].sort((a,b)=>groups.get(b).length-groups.get(a).length||a.localeCompare(b));
- return healthShelfHTML(all)+'<p class="lib-sub">Explore by genre</p>'+order.map(g=>{
+ const healthFirst={"PCOS/PMOS":0,"Women's Health":1,"Health":2,"Endocrine":3,"Pain":4};
+ const order=[...groups.keys()].sort((a,b)=>{
+  const r=(healthFirst[a]??99)-(healthFirst[b]??99);
+  if(r) return r;
+  return groups.get(b).length-groups.get(a).length||a.localeCompare(b)
+ });
+ return '<p class="lib-sub">Explore by category</p>'+order.map(g=>{
   const items=groups.get(g);
   const open=Object.prototype.hasOwnProperty.call(exploreShown,g)?!!exploreShown[g]:false;
   const slice=open?items:items.slice(0,EXPLORE_GRID_MAX);
