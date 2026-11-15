@@ -49,7 +49,161 @@
       "sizeMB": 0.7,
       "category": "Classic",
       "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/jane-eyre.jpg",
-      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/jane-eyre.pdf"
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/jane-eyre.pdf",
+      "chapters": [
+        {
+          "t": "CHAPTER I",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER II",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER III",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER V",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER X",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXIV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXVI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXVII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXVIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXIX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXXI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXXII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXXIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXXIV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXXV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXXVI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXXVII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXXVIII\u2014CONCLUSION",
+          "p": 1
+        }
+      ]
     },
     {
       "id": "frankenstein",
@@ -59,7 +213,121 @@
       "sizeMB": 0.3,
       "category": "Gothic",
       "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/frankenstein.jpg",
-      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/frankenstein.pdf"
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/frankenstein.pdf",
+      "chapters": [
+        {
+          "t": "Letter 1",
+          "p": 1
+        },
+        {
+          "t": "Letter 2",
+          "p": 1
+        },
+        {
+          "t": "Letter 3",
+          "p": 1
+        },
+        {
+          "t": "Letter 4",
+          "p": 1
+        },
+        {
+          "t": "Chapter 1",
+          "p": 1
+        },
+        {
+          "t": "Chapter 2",
+          "p": 1
+        },
+        {
+          "t": "Chapter 3",
+          "p": 1
+        },
+        {
+          "t": "Chapter 4",
+          "p": 1
+        },
+        {
+          "t": "Chapter 5",
+          "p": 1
+        },
+        {
+          "t": "Chapter 6",
+          "p": 1
+        },
+        {
+          "t": "Chapter 7",
+          "p": 1
+        },
+        {
+          "t": "Chapter 8",
+          "p": 1
+        },
+        {
+          "t": "Chapter 9",
+          "p": 1
+        },
+        {
+          "t": "Chapter 10",
+          "p": 1
+        },
+        {
+          "t": "Chapter 11",
+          "p": 1
+        },
+        {
+          "t": "Chapter 12",
+          "p": 1
+        },
+        {
+          "t": "Chapter 13",
+          "p": 1
+        },
+        {
+          "t": "Chapter 14",
+          "p": 1
+        },
+        {
+          "t": "Chapter 15",
+          "p": 1
+        },
+        {
+          "t": "Chapter 16",
+          "p": 1
+        },
+        {
+          "t": "Chapter 17",
+          "p": 1
+        },
+        {
+          "t": "Chapter 18",
+          "p": 1
+        },
+        {
+          "t": "Chapter 19",
+          "p": 1
+        },
+        {
+          "t": "Chapter 20",
+          "p": 1
+        },
+        {
+          "t": "Chapter 21",
+          "p": 1
+        },
+        {
+          "t": "Chapter 22",
+          "p": 1
+        },
+        {
+          "t": "Chapter 23",
+          "p": 1
+        },
+        {
+          "t": "Chapter 24",
+          "p": 1
+        }
+      ]
     },
     {
       "id": "dracula",
@@ -69,7 +337,117 @@
       "sizeMB": 0.6,
       "category": "Horror",
       "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/dracula.jpg",
-      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/dracula.pdf"
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/dracula.pdf",
+      "chapters": [
+        {
+          "t": "CHAPTER I JONATHAN HARKER\u2019S JOURNAL",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER II JONATHAN HARKER\u2019S JOURNAL--_continued_",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER III JONATHAN HARKER\u2019S JOURNAL--_continued_",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IV JONATHAN HARKER\u2019S JOURNAL--_continued_",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER V _Letter from Miss Mina Murray to Miss Lucy Westenra._",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VI MINA MURRAY\u2019S JOURNAL",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VII CUTTING FROM \u201cTHE DAILYGRAPH,\u201d 8 AUGUST",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VIII MINA MURRAY\u2019S JOURNAL",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IX _Letter, Mina Harker to Lucy Westenra._",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER X _Letter, Dr. Seward to Hon. Arthur Holmwood._",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XI _Lucy Westenra\u2019s Diary._",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XII DR. SEWARD\u2019S DIARY",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIV MINA HARKER\u2019S JOURNAL",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVI DR. SEWARD\u2019S DIARY--_continued_",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVII DR. SEWARD\u2019S DIARY--_continued_",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVIII DR. SEWARD\u2019S DIARY",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIX JONATHAN HARKER\u2019S JOURNAL",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XX JONATHAN HARKER\u2019S JOURNAL",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXI DR. SEWARD\u2019S DIARY",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXII JONATHAN HARKER\u2019S JOURNAL",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXIII DR. SEWARD\u2019S DIARY",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXIV DR. SEWARD\u2019S PHONOGRAPH DIARY, SPOKEN BY VAN HELSING",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXV DR. SEWARD\u2019S DIARY",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXVI DR. SEWARD\u2019S DIARY",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXVII MINA HARKER\u2019S JOURNAL",
+          "p": 1
+        }
+      ]
     },
     {
       "id": "houndofthebaskervilles",
@@ -79,7 +457,69 @@
       "sizeMB": 0.2,
       "category": "Mystery",
       "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/hound-of-the-baskervilles.jpg",
-      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/hound-of-the-baskervilles.pdf"
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/hound-of-the-baskervilles.pdf",
+      "chapters": [
+        {
+          "t": "Chapter 1",
+          "p": 1
+        },
+        {
+          "t": "Chapter 2",
+          "p": 1
+        },
+        {
+          "t": "Chapter 3",
+          "p": 1
+        },
+        {
+          "t": "Chapter 4",
+          "p": 1
+        },
+        {
+          "t": "Chapter 5",
+          "p": 1
+        },
+        {
+          "t": "Chapter 6",
+          "p": 1
+        },
+        {
+          "t": "Chapter 7",
+          "p": 1
+        },
+        {
+          "t": "Chapter 8",
+          "p": 1
+        },
+        {
+          "t": "Chapter 9",
+          "p": 1
+        },
+        {
+          "t": "Chapter 10",
+          "p": 1
+        },
+        {
+          "t": "Chapter 11",
+          "p": 1
+        },
+        {
+          "t": "Chapter 12",
+          "p": 1
+        },
+        {
+          "t": "Chapter 13",
+          "p": 1
+        },
+        {
+          "t": "Chapter 14",
+          "p": 1
+        },
+        {
+          "t": "Chapter 15",
+          "p": 1
+        }
+      ]
     },
     {
       "id": "treasureisland",
@@ -89,7 +529,145 @@
       "sizeMB": 0.3,
       "category": "Adventure",
       "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/treasure-island.jpg",
-      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/treasure-island.pdf"
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/treasure-island.pdf",
+      "chapters": [
+        {
+          "t": "I The Old Sea-dog at the Admiral Benbow",
+          "p": 1
+        },
+        {
+          "t": "II Black Dog Appears and Disappears",
+          "p": 1
+        },
+        {
+          "t": "III The Black Spot",
+          "p": 1
+        },
+        {
+          "t": "IV The Sea-chest",
+          "p": 1
+        },
+        {
+          "t": "V The Last of the Blind Man",
+          "p": 1
+        },
+        {
+          "t": "VI The Captain\u2019s Papers",
+          "p": 1
+        },
+        {
+          "t": "VII I Go to Bristol",
+          "p": 1
+        },
+        {
+          "t": "VIII At the Sign of the Spy-glass",
+          "p": 1
+        },
+        {
+          "t": "IX Powder and Arms",
+          "p": 1
+        },
+        {
+          "t": "X The Voyage",
+          "p": 1
+        },
+        {
+          "t": "XI What I Heard in the Apple-Barrel",
+          "p": 1
+        },
+        {
+          "t": "XII Council of War",
+          "p": 1
+        },
+        {
+          "t": "XIII How I Began My Shore Adventure",
+          "p": 1
+        },
+        {
+          "t": "XIV The First Blow",
+          "p": 1
+        },
+        {
+          "t": "XV The Man of the Island",
+          "p": 1
+        },
+        {
+          "t": "XVI Narrative Continued by the Doctor: How the Ship Was Abandoned",
+          "p": 1
+        },
+        {
+          "t": "XXVII Narrative Continued by the Doctor: The Jolly-boat\u2019s Last Trip",
+          "p": 1
+        },
+        {
+          "t": "XVIII Narrative Continued by the Doctor: End of the First Day\u2019s Fighting",
+          "p": 1
+        },
+        {
+          "t": "XIX Narrative Resumed by Jim Hawkins: The Garrison in the Stockade",
+          "p": 1
+        },
+        {
+          "t": "XX Silver\u2019s Embassy",
+          "p": 1
+        },
+        {
+          "t": "XXI The Attack",
+          "p": 1
+        },
+        {
+          "t": "XXII How I Began My Sea Adventure",
+          "p": 1
+        },
+        {
+          "t": "XXIII The Ebb-tide Runs",
+          "p": 1
+        },
+        {
+          "t": "XXIV The Cruise of the Coracle",
+          "p": 1
+        },
+        {
+          "t": "XXV I Strike the Jolly Roger",
+          "p": 1
+        },
+        {
+          "t": "XXVI Israel Hands",
+          "p": 1
+        },
+        {
+          "t": "XXVII",
+          "p": 1
+        },
+        {
+          "t": "XXVIII In the Enemy\u2019s Camp",
+          "p": 1
+        },
+        {
+          "t": "XXIX The Black Spot Again",
+          "p": 1
+        },
+        {
+          "t": "XXX On Parole",
+          "p": 1
+        },
+        {
+          "t": "XXXI The Treasure-hunt--Flint\u2019s Pointer",
+          "p": 1
+        },
+        {
+          "t": "XXXII The Treasure-hunt--The Voice Among the Trees",
+          "p": 1
+        },
+        {
+          "t": "XXXIII The Fall of a Chieftain",
+          "p": 1
+        },
+        {
+          "t": "XXXIV And Last",
+          "p": 1
+        }
+      ]
     },
     {
       "id": "thetimemachine",
@@ -99,7 +677,73 @@
       "sizeMB": 0.1,
       "category": "Science Fiction",
       "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-time-machine.jpg",
-      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-time-machine.pdf"
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-time-machine.pdf",
+      "chapters": [
+        {
+          "t": "I Introduction",
+          "p": 1
+        },
+        {
+          "t": "II The Machine",
+          "p": 1
+        },
+        {
+          "t": "III The Time Traveller Returns",
+          "p": 1
+        },
+        {
+          "t": "IV Time Travelling",
+          "p": 1
+        },
+        {
+          "t": "V In the Golden Age",
+          "p": 1
+        },
+        {
+          "t": "VI The Sunset of Mankind",
+          "p": 1
+        },
+        {
+          "t": "VII A Sudden Shock",
+          "p": 1
+        },
+        {
+          "t": "VIII Explanation",
+          "p": 1
+        },
+        {
+          "t": "IX The Morlocks",
+          "p": 1
+        },
+        {
+          "t": "X When Night Came",
+          "p": 1
+        },
+        {
+          "t": "XI The Palace of Green Porcelain",
+          "p": 1
+        },
+        {
+          "t": "XII In the Darkness",
+          "p": 1
+        },
+        {
+          "t": "XIII The Trap of the White Sphinx",
+          "p": 1
+        },
+        {
+          "t": "XIV The Further Vision",
+          "p": 1
+        },
+        {
+          "t": "XV The Time Traveller\u2019s Return",
+          "p": 1
+        },
+        {
+          "t": "XVI After the Story",
+          "p": 1
+        }
+      ]
     },
     {
       "id": "aliceinwonderland",
@@ -109,7 +753,57 @@
       "sizeMB": 0.1,
       "category": "Children",
       "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/alice-in-wonderland.jpg",
-      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/alice-in-wonderland.pdf"
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/alice-in-wonderland.pdf",
+      "chapters": [
+        {
+          "t": "CHAPTER I Down the Rabbit-Hole",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER II The Pool of Tears",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER III A Caucus-Race and a Long Tale",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IV The Rabbit Sends in a Little Bill",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER V Advice from a Caterpillar",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VI Pig and Pepper",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VII A Mad Tea-Party",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VIII The Queen\u2019s Croquet-Ground",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IX The Mock Turtle\u2019s Story",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER X The Lobster Quadrille",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XI Who Stole the Tarts?",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XII Alice\u2019s Evidence",
+          "p": 1
+        }
+      ]
     },
     {
       "id": "thewizardofoz",
@@ -119,7 +813,105 @@
       "sizeMB": 0.2,
       "category": "Fantasy",
       "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-wizard-of-oz.jpg",
-      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-wizard-of-oz.pdf"
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-wizard-of-oz.pdf",
+      "chapters": [
+        {
+          "t": "Chapter I The Cyclone",
+          "p": 1
+        },
+        {
+          "t": "Chapter II The Council with the Munchkins",
+          "p": 1
+        },
+        {
+          "t": "Chapter III How Dorothy Saved the Scarecrow",
+          "p": 1
+        },
+        {
+          "t": "Chapter IV The Road Through the Forest",
+          "p": 1
+        },
+        {
+          "t": "Chapter V The Rescue of the Tin Woodman",
+          "p": 1
+        },
+        {
+          "t": "Chapter VI The Cowardly Lion",
+          "p": 1
+        },
+        {
+          "t": "Chapter VII The Journey to the Great Oz",
+          "p": 1
+        },
+        {
+          "t": "Chapter VIII The Deadly Poppy Field",
+          "p": 1
+        },
+        {
+          "t": "Chapter IX The Queen of the Field Mice",
+          "p": 1
+        },
+        {
+          "t": "Chapter X The Guardian of the Gate",
+          "p": 1
+        },
+        {
+          "t": "Chapter XI The Wonderful City of Oz",
+          "p": 1
+        },
+        {
+          "t": "Chapter XII The Search for the Wicked Witch",
+          "p": 1
+        },
+        {
+          "t": "Chapter XIII The Rescue",
+          "p": 1
+        },
+        {
+          "t": "Chapter XIV The Winged Monkeys",
+          "p": 1
+        },
+        {
+          "t": "Chapter XV The Discovery of Oz, the Terrible",
+          "p": 1
+        },
+        {
+          "t": "Chapter XVI The Magic Art of the Great Humbug",
+          "p": 1
+        },
+        {
+          "t": "Chapter XVII How the Balloon Was Launched",
+          "p": 1
+        },
+        {
+          "t": "Chapter XVIII Away to the South",
+          "p": 1
+        },
+        {
+          "t": "Chapter XIX Attacked by the Fighting Trees",
+          "p": 1
+        },
+        {
+          "t": "Chapter XX The Dainty China Country",
+          "p": 1
+        },
+        {
+          "t": "Chapter XXI The Lion Becomes the King of Beasts",
+          "p": 1
+        },
+        {
+          "t": "Chapter XXII The Country of the Quadlings",
+          "p": 1
+        },
+        {
+          "t": "Chapter XXIII Glinda The Good Witch Grants Dorothy\u2019s Wish",
+          "p": 1
+        },
+        {
+          "t": "Chapter XXIV Home Again",
+          "p": 1
+        }
+      ]
     },
     {
       "id": "meditations",
@@ -129,7 +921,57 @@
       "sizeMB": 0.3,
       "category": "Philosophy",
       "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/meditations.jpg",
-      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/meditations.pdf"
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/meditations.pdf",
+      "chapters": [
+        {
+          "t": "THE FIRST BOOK",
+          "p": 1
+        },
+        {
+          "t": "THE SECOND BOOK",
+          "p": 1
+        },
+        {
+          "t": "THE THIRD BOOK",
+          "p": 1
+        },
+        {
+          "t": "THE FOURTH BOOK",
+          "p": 1
+        },
+        {
+          "t": "THE FIFTH BOOK",
+          "p": 1
+        },
+        {
+          "t": "THE SIXTH BOOK",
+          "p": 1
+        },
+        {
+          "t": "THE SEVENTH BOOK",
+          "p": 1
+        },
+        {
+          "t": "THE EIGHTH BOOK",
+          "p": 1
+        },
+        {
+          "t": "THE NINTH BOOK",
+          "p": 1
+        },
+        {
+          "t": "THE TENTH BOOK",
+          "p": 1
+        },
+        {
+          "t": "THE ELEVENTH BOOK",
+          "p": 1
+        },
+        {
+          "t": "THE TWELFTH BOOK",
+          "p": 1
+        }
+      ]
     },
     {
       "id": "sherlockholmes",
@@ -139,7 +981,5821 @@
       "sizeMB": 0.4,
       "category": "Short Stories",
       "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/sherlock-holmes.jpg",
-      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/sherlock-holmes.pdf"
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/sherlock-holmes.pdf",
+      "chapters": [
+        {
+          "t": "I A SCANDAL IN BOHEMIA",
+          "p": 1
+        },
+        {
+          "t": "II THE RED-HEADED LEAGUE",
+          "p": 1
+        },
+        {
+          "t": "III A CASE OF IDENTITY",
+          "p": 1
+        },
+        {
+          "t": "IV THE BOSCOMBE VALLEY MYSTERY",
+          "p": 1
+        },
+        {
+          "t": "V THE FIVE ORANGE PIPS",
+          "p": 1
+        },
+        {
+          "t": "VI THE MAN WITH THE TWISTED LIP",
+          "p": 1
+        },
+        {
+          "t": "VII THE ADVENTURE OF THE BLUE CARBUNCLE",
+          "p": 1
+        },
+        {
+          "t": "VIII THE ADVENTURE OF THE SPECKLED BAND",
+          "p": 1
+        },
+        {
+          "t": "IX THE ADVENTURE OF THE ENGINEER\u2019S THUMB",
+          "p": 1
+        },
+        {
+          "t": "X THE ADVENTURE OF THE NOBLE BACHELOR",
+          "p": 1
+        },
+        {
+          "t": "XI THE ADVENTURE OF THE BERYL CORONET",
+          "p": 1
+        },
+        {
+          "t": "XII THE ADVENTURE OF THE COPPER BEECHES",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "ataleoftwocities",
+      "title": "A Tale of Two Cities",
+      "author": "Charles Dickens",
+      "pages": 255,
+      "sizeMB": 0.5,
+      "category": "Classic",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/a-tale-of-two-cities.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/a-tale-of-two-cities.pdf",
+      "chapters": [
+        {
+          "t": "A Tale of Two Cities",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER II",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER III",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER V",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER I",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER II",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER III",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER V",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER X",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXIV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER I",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER II",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER III",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER V",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER X",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XV",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "middlemarch",
+      "title": "Middlemarch",
+      "author": "George Eliot",
+      "pages": 542,
+      "sizeMB": 1.3,
+      "category": "Classic",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/middlemarch.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/middlemarch.pdf",
+      "chapters": [
+        {
+          "t": "Middlemarch",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER I",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER II",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER III",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER V",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER X",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXIV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXVI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXVII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXVIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXIX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXXI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXXII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXXIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXXIV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXXV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXXVI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXXVII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXXVIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXXIX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XL",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XLI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XLII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XLIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XLIV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XLV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XLVI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XLVII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XLVIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XLIX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER L",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER LI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER LII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER LIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER LIV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER LV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER LVI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER LVII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER LVIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER LIX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER LX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER LXI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER LXII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER LXIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER LXIV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER LXV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER LXVI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER LXVII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER LXVIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER LXIX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER LXX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER LXXI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER LXXII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER LXXIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER LXXIV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER LXXV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER LXXVI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER LXXVII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER LXXVIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER LXXIX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER LXXX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER LXXXI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER LXXXII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER LXXXIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER LXXXIV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER LXXXV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER LXXXVI",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "wutheringheights",
+      "title": "Wuthering Heights",
+      "author": "Emily Bront\u00eb",
+      "pages": 200,
+      "sizeMB": 0.5,
+      "category": "Classic",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/wuthering-heights.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/wuthering-heights.pdf",
+      "chapters": [
+        {
+          "t": "CHAPTER I",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER II",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER III",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER V",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER X",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXIV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXVI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXVII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXVIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXIX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXXI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXXII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXXIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXXIV",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "persuasion",
+      "title": "Persuasion",
+      "author": "Jane Austen",
+      "pages": 144,
+      "sizeMB": 0.3,
+      "category": "Classic",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/persuasion.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/persuasion.pdf",
+      "chapters": [
+        {
+          "t": "CHAPTER I",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER II",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER III",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER V",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER X",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXIV",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "crimeandpunishment",
+      "title": "Crime and Punishment",
+      "author": "Fyodor Dostoyevsky",
+      "pages": 351,
+      "sizeMB": 0.8,
+      "category": "Classic",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/crime-and-punishment.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/crime-and-punishment.pdf",
+      "chapters": [
+        {
+          "t": "Crime and Punishment",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER I",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER II",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER III",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER V",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER I",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER II",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER III",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER V",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER I",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER II",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER III",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER V",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER I",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER II",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER III",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER V",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER I",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER II",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER III",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER V",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER I",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER II",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER III",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER V",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VIII",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "thepictureofdoriangray",
+      "title": "The Picture of Dorian Gray",
+      "author": "Oscar Wilde",
+      "pages": 139,
+      "sizeMB": 0.3,
+      "category": "Classic",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-picture-of-dorian-gray.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-picture-of-dorian-gray.pdf",
+      "chapters": [
+        {
+          "t": "The Picture of Dorian Gray",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER I",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER II",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER III",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER V",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER X",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XX",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "thescarletletter",
+      "title": "The Scarlet Letter",
+      "author": "Nathaniel Hawthorne",
+      "pages": 143,
+      "sizeMB": 0.3,
+      "category": "Classic",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-scarlet-letter.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-scarlet-letter.pdf",
+      "chapters": [
+        {
+          "t": "XXIV CONCLUSION",
+          "p": 1
+        },
+        {
+          "t": "I THE PRISON DOOR",
+          "p": 1
+        },
+        {
+          "t": "II THE MARKET-PLACE",
+          "p": 1
+        },
+        {
+          "t": "III THE RECOGNITION",
+          "p": 1
+        },
+        {
+          "t": "IV THE INTERVIEW",
+          "p": 1
+        },
+        {
+          "t": "V HESTER AT HER NEEDLE",
+          "p": 1
+        },
+        {
+          "t": "VI PEARL",
+          "p": 1
+        },
+        {
+          "t": "VII THE GOVERNOR\u2019S HALL",
+          "p": 1
+        },
+        {
+          "t": "VIII THE ELF-CHILD AND THE MINISTER",
+          "p": 1
+        },
+        {
+          "t": "IX THE LEECH",
+          "p": 1
+        },
+        {
+          "t": "X THE LEECH AND HIS PATIENT",
+          "p": 1
+        },
+        {
+          "t": "XI THE INTERIOR OF A HEART",
+          "p": 1
+        },
+        {
+          "t": "XII THE MINISTER\u2019S VIGIL",
+          "p": 1
+        },
+        {
+          "t": "XIII ANOTHER VIEW OF HESTER",
+          "p": 1
+        },
+        {
+          "t": "XIV HESTER AND THE PHYSICIAN",
+          "p": 1
+        },
+        {
+          "t": "XV HESTER AND PEARL",
+          "p": 1
+        },
+        {
+          "t": "XVI A FOREST WALK",
+          "p": 1
+        },
+        {
+          "t": "XVII THE PASTOR AND HIS PARISHIONER",
+          "p": 1
+        },
+        {
+          "t": "XVIII A FLOOD OF SUNSHINE",
+          "p": 1
+        },
+        {
+          "t": "XIX THE CHILD AT THE BROOKSIDE",
+          "p": 1
+        },
+        {
+          "t": "XX THE MINISTER IN A MAZE",
+          "p": 1
+        },
+        {
+          "t": "XXI THE NEW ENGLAND HOLIDAY",
+          "p": 1
+        },
+        {
+          "t": "XXII THE PROCESSION",
+          "p": 1
+        },
+        {
+          "t": "XXIII THE REVELATION OF THE SCARLET LETTER",
+          "p": 1
+        },
+        {
+          "t": "XXIV CONCLUSION",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "theturnofthescrew",
+      "title": "The Turn of the Screw",
+      "author": "Henry James",
+      "pages": 83,
+      "sizeMB": 0.2,
+      "category": "Gothic",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-turn-of-the-screw.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-turn-of-the-screw.pdf",
+      "chapters": [
+        {
+          "t": "The Turn of the Screw",
+          "p": 1
+        },
+        {
+          "t": "I",
+          "p": 1
+        },
+        {
+          "t": "II",
+          "p": 1
+        },
+        {
+          "t": "III",
+          "p": 1
+        },
+        {
+          "t": "IV",
+          "p": 1
+        },
+        {
+          "t": "V",
+          "p": 1
+        },
+        {
+          "t": "VI",
+          "p": 1
+        },
+        {
+          "t": "VII",
+          "p": 1
+        },
+        {
+          "t": "VIII",
+          "p": 1
+        },
+        {
+          "t": "IX",
+          "p": 1
+        },
+        {
+          "t": "X",
+          "p": 1
+        },
+        {
+          "t": "XI",
+          "p": 1
+        },
+        {
+          "t": "XII",
+          "p": 1
+        },
+        {
+          "t": "XIII",
+          "p": 1
+        },
+        {
+          "t": "XIV",
+          "p": 1
+        },
+        {
+          "t": "XV",
+          "p": 1
+        },
+        {
+          "t": "XVI",
+          "p": 1
+        },
+        {
+          "t": "XVII",
+          "p": 1
+        },
+        {
+          "t": "XVIII",
+          "p": 1
+        },
+        {
+          "t": "XIX",
+          "p": 1
+        },
+        {
+          "t": "XX",
+          "p": 1
+        },
+        {
+          "t": "XXI",
+          "p": 1
+        },
+        {
+          "t": "XXII",
+          "p": 1
+        },
+        {
+          "t": "XXIII",
+          "p": 1
+        },
+        {
+          "t": "XXIV",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "thephantomoftheopera",
+      "title": "The Phantom of the Opera",
+      "author": "Gaston Leroux",
+      "pages": 160,
+      "sizeMB": 0.3,
+      "category": "Gothic",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-phantom-of-the-opera.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-phantom-of-the-opera.pdf",
+      "chapters": [
+        {
+          "t": "Chapter I  Is it the Ghost?",
+          "p": 1
+        },
+        {
+          "t": "Chapter II  The New Margarita",
+          "p": 1
+        },
+        {
+          "t": "Chapter III The Mysterious Reason",
+          "p": 1
+        },
+        {
+          "t": "Chapter IV  Box Five",
+          "p": 1
+        },
+        {
+          "t": "Chapter V The Enchanted Violin",
+          "p": 1
+        },
+        {
+          "t": "Chapter VI  A Visit to Box Five",
+          "p": 1
+        },
+        {
+          "t": "Chapter VII  Faust and What Followed",
+          "p": 1
+        },
+        {
+          "t": "Chapter VIII  The Mysterious Brougham",
+          "p": 1
+        },
+        {
+          "t": "Chapter IX  At the Masked Ball",
+          "p": 1
+        },
+        {
+          "t": "Chapter X  Forget the Name of the Man's Voice",
+          "p": 1
+        },
+        {
+          "t": "Chapter XI  Above the Trap-Doors",
+          "p": 1
+        },
+        {
+          "t": "Chapter XII  Apollo's Lyre",
+          "p": 1
+        },
+        {
+          "t": "Chapter XIII  A Master-Stroke of the Trap-Door Lover",
+          "p": 1
+        },
+        {
+          "t": "Chapter XIV  The Singular Attitude of a Safety-Pin",
+          "p": 1
+        },
+        {
+          "t": "Chapter XV  Christine!  Christine!",
+          "p": 1
+        },
+        {
+          "t": "Chapter XVI  Mme Giry's Astounding Revelations as to Her Personal",
+          "p": 1
+        },
+        {
+          "t": "Chapter XVII  The Safety-Pin Again",
+          "p": 1
+        },
+        {
+          "t": "Chapter XVIII  The Commissary, The Viscount and the Persian",
+          "p": 1
+        },
+        {
+          "t": "Chapter XIX  The Viscount and the Persian",
+          "p": 1
+        },
+        {
+          "t": "Chapter XX  In the Cellars of the Opera",
+          "p": 1
+        },
+        {
+          "t": "Chapter XXI  Interesting and Instructive Vicissitudes of a Persian in",
+          "p": 1
+        },
+        {
+          "t": "Chapter XXII  In the Torture Chamber",
+          "p": 1
+        },
+        {
+          "t": "Chapter XXIII  The Tortures Begin",
+          "p": 1
+        },
+        {
+          "t": "Chapter XXIV  \"Barrels!  Barrels! ... Any Barrels to Sell?\"",
+          "p": 1
+        },
+        {
+          "t": "Chapter XXV  The Scorpion or the Grasshopper:  Which?",
+          "p": 1
+        },
+        {
+          "t": "Chapter XXVI  The End of the Ghost's Love Story",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "theyellowwallpaper",
+      "title": "The Yellow Wallpaper",
+      "author": "Charlotte Perkins Gilman",
+      "pages": 16,
+      "sizeMB": 0.0,
+      "category": "Gothic",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-yellow-wallpaper.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-yellow-wallpaper.pdf",
+      "chapters": [
+        {
+          "t": "The Yellow Wallpaper",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "thelegendofsleepyhollow",
+      "title": "The Legend of Sleepy Hollow",
+      "author": "Washington Irving",
+      "pages": 23,
+      "sizeMB": 0.1,
+      "category": "Gothic",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-legend-of-sleepy-hollow.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-legend-of-sleepy-hollow.pdf",
+      "chapters": [
+        {
+          "t": "The Legend of Sleepy Hollow",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "themoonstone",
+      "title": "The Moonstone",
+      "author": "Wilkie Collins",
+      "pages": 336,
+      "sizeMB": 0.8,
+      "category": "Mystery",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-moonstone.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-moonstone.pdf",
+      "chapters": [
+        {
+          "t": "The Moonstone",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER I",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER II",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER III",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER V",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER X",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER I",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER II",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER III",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER V",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER I",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER II",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER III",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER I",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER II",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER III",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER V",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER X",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER I",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "astudyinscarlet",
+      "title": "A Study in Scarlet",
+      "author": "Arthur Conan Doyle",
+      "pages": 81,
+      "sizeMB": 0.2,
+      "category": "Mystery",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/a-study-in-scarlet.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/a-study-in-scarlet.pdf",
+      "chapters": [
+        {
+          "t": "CHAPTER I MR. SHERLOCK HOLMES",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER II THE SCIENCE OF DEDUCTION",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER III THE LAURISTON GARDENS MYSTERY",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IV WHAT JOHN RANCE HAD TO TELL",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER V OUR ADVERTISEMENT BRINGS A VISITOR",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VI TOBIAS GREGSON SHOWS WHAT HE CAN DO",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VII LIGHT IN THE DARKNESS",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER I ON THE GREAT ALKALI PLAIN",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER II THE FLOWER OF UTAH",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER III JOHN FERRIER TALKS WITH THE PROPHET",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IV A FLIGHT FOR LIFE",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER V THE AVENGING ANGELS",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VI A CONTINUATION OF THE REMINISCENCES OF JOHN WATSON, M.D",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VII THE CONCLUSION",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "thesignofthefour",
+      "title": "The Sign of the Four",
+      "author": "Arthur Conan Doyle",
+      "pages": 78,
+      "sizeMB": 0.2,
+      "category": "Mystery",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-sign-of-the-four.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-sign-of-the-four.pdf",
+      "chapters": [
+        {
+          "t": "Chapter I The Science of Deduction",
+          "p": 1
+        },
+        {
+          "t": "Chapter II The Statement of the Case",
+          "p": 1
+        },
+        {
+          "t": "Chapter III In Quest of a Solution",
+          "p": 1
+        },
+        {
+          "t": "Chapter IV The Story of the Bald-Headed Man",
+          "p": 1
+        },
+        {
+          "t": "Chapter V The Tragedy of Pondicherry Lodge",
+          "p": 1
+        },
+        {
+          "t": "Chapter VI Sherlock Holmes Gives a Demonstration",
+          "p": 1
+        },
+        {
+          "t": "Chapter VII The Episode of the Barrel",
+          "p": 1
+        },
+        {
+          "t": "Chapter VIII The Baker Street Irregulars",
+          "p": 1
+        },
+        {
+          "t": "Chapter IX A Break in the Chain",
+          "p": 1
+        },
+        {
+          "t": "Chapter X The End of the Islander",
+          "p": 1
+        },
+        {
+          "t": "Chapter XI The Great Agra Treasure",
+          "p": 1
+        },
+        {
+          "t": "Chapter XII The Strange Story of Jonathan Small",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "thecountofmontecristo",
+      "title": "The Count of Monte Cristo",
+      "author": "Alexandre Dumas",
+      "pages": 900,
+      "sizeMB": 1.9,
+      "category": "Adventure",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-count-of-monte-cristo.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-count-of-monte-cristo.pdf",
+      "chapters": [
+        {
+          "t": "Chapter 1 Marseilles\u2014The Arrival",
+          "p": 1
+        },
+        {
+          "t": "Chapter 2 Father and Son",
+          "p": 1
+        },
+        {
+          "t": "Chapter 3 The Catalans",
+          "p": 1
+        },
+        {
+          "t": "Chapter 4 Conspiracy",
+          "p": 1
+        },
+        {
+          "t": "Chapter 5 The Marriage Feast",
+          "p": 1
+        },
+        {
+          "t": "Chapter 6 The Deputy Procureur du Roi",
+          "p": 1
+        },
+        {
+          "t": "Chapter 7 The Examination",
+          "p": 1
+        },
+        {
+          "t": "Chapter 8 The Ch\u00e2teau d\u2019If",
+          "p": 1
+        },
+        {
+          "t": "Chapter 9 The Evening of the Betrothal",
+          "p": 1
+        },
+        {
+          "t": "Chapter 10 The King\u2019s Closet at the Tuileries",
+          "p": 1
+        },
+        {
+          "t": "Chapter 11 The Corsican Ogre",
+          "p": 1
+        },
+        {
+          "t": "Chapter 12 Father and Son",
+          "p": 1
+        },
+        {
+          "t": "Chapter 13 The Hundred Days",
+          "p": 1
+        },
+        {
+          "t": "Chapter 14 The Two Prisoners",
+          "p": 1
+        },
+        {
+          "t": "Chapter 15 Number 34 and Number 27",
+          "p": 1
+        },
+        {
+          "t": "Chapter 16 A Learned Italian",
+          "p": 1
+        },
+        {
+          "t": "Chapter 17 The Abb\u00e9\u2019s Chamber",
+          "p": 1
+        },
+        {
+          "t": "Chapter 18 The Treasure",
+          "p": 1
+        },
+        {
+          "t": "Chapter 19 The Third Attack",
+          "p": 1
+        },
+        {
+          "t": "Chapter 20 The Cemetery of the Ch\u00e2teau d\u2019If",
+          "p": 1
+        },
+        {
+          "t": "Chapter 21 The Island of Tiboulen",
+          "p": 1
+        },
+        {
+          "t": "Chapter 22 The Smugglers",
+          "p": 1
+        },
+        {
+          "t": "Chapter 23 The Island of Monte Cristo",
+          "p": 1
+        },
+        {
+          "t": "Chapter 24 The Secret Cave",
+          "p": 1
+        },
+        {
+          "t": "Chapter 25 The Unknown",
+          "p": 1
+        },
+        {
+          "t": "Chapter 26 The Pont du Gard Inn",
+          "p": 1
+        },
+        {
+          "t": "Chapter 27 The Story",
+          "p": 1
+        },
+        {
+          "t": "Chapter 28 The Prison Register",
+          "p": 1
+        },
+        {
+          "t": "Chapter 29 The House of Morrel & Son",
+          "p": 1
+        },
+        {
+          "t": "Chapter 30 The Fifth of September",
+          "p": 1
+        },
+        {
+          "t": "Chapter 31 Italy: Sinbad the Sailor",
+          "p": 1
+        },
+        {
+          "t": "Chapter 32 The Waking",
+          "p": 1
+        },
+        {
+          "t": "Chapter 33 Roman Bandits",
+          "p": 1
+        },
+        {
+          "t": "Chapter 34 The Colosseum",
+          "p": 1
+        },
+        {
+          "t": "Chapter 35 La Mazzolata",
+          "p": 1
+        },
+        {
+          "t": "Chapter 36 The Carnival at Rome",
+          "p": 1
+        },
+        {
+          "t": "Chapter 37 The Catacombs of Saint Sebastian",
+          "p": 1
+        },
+        {
+          "t": "Chapter 38 The Rendezvous",
+          "p": 1
+        },
+        {
+          "t": "Chapter 39 The Guests",
+          "p": 1
+        },
+        {
+          "t": "Chapter 40 The Breakfast",
+          "p": 1
+        },
+        {
+          "t": "Chapter 41 The Presentation",
+          "p": 1
+        },
+        {
+          "t": "Chapter 42 Monsieur Bertuccio",
+          "p": 1
+        },
+        {
+          "t": "Chapter 43 The House at Auteuil",
+          "p": 1
+        },
+        {
+          "t": "Chapter 44 The Vendetta",
+          "p": 1
+        },
+        {
+          "t": "Chapter 45 The Rain of Blood",
+          "p": 1
+        },
+        {
+          "t": "Chapter 46 Unlimited Credit",
+          "p": 1
+        },
+        {
+          "t": "Chapter 47 The Dappled Grays",
+          "p": 1
+        },
+        {
+          "t": "Chapter 48 Ideology",
+          "p": 1
+        },
+        {
+          "t": "Chapter 49 Hayd\u00e9e",
+          "p": 1
+        },
+        {
+          "t": "Chapter 50 The Morrel Family",
+          "p": 1
+        },
+        {
+          "t": "Chapter 51 Pyramus and Thisbe",
+          "p": 1
+        },
+        {
+          "t": "Chapter 52 Toxicology",
+          "p": 1
+        },
+        {
+          "t": "Chapter 53 Robert le Diable",
+          "p": 1
+        },
+        {
+          "t": "Chapter 54 A Flurry in Stocks",
+          "p": 1
+        },
+        {
+          "t": "Chapter 55 Major Cavalcanti",
+          "p": 1
+        },
+        {
+          "t": "Chapter 56 Andrea Cavalcanti",
+          "p": 1
+        },
+        {
+          "t": "Chapter 57 In the Lucern Patch",
+          "p": 1
+        },
+        {
+          "t": "Chapter 58 M. Noirtier de Villefort",
+          "p": 1
+        },
+        {
+          "t": "Chapter 59 The Will",
+          "p": 1
+        },
+        {
+          "t": "Chapter 60 The Telegraph",
+          "p": 1
+        },
+        {
+          "t": "Chapter 61 How a Gardener May Get Rid of the Dormice that Eat His",
+          "p": 1
+        },
+        {
+          "t": "Chapter 62 Ghosts",
+          "p": 1
+        },
+        {
+          "t": "Chapter 63 The Dinner",
+          "p": 1
+        },
+        {
+          "t": "Chapter 64 The Beggar",
+          "p": 1
+        },
+        {
+          "t": "Chapter 65 A Conjugal Scene",
+          "p": 1
+        },
+        {
+          "t": "Chapter 66 Matrimonial Projects",
+          "p": 1
+        },
+        {
+          "t": "Chapter 67 The Office of the King\u2019s Attorney",
+          "p": 1
+        },
+        {
+          "t": "Chapter 68 A Summer Ball",
+          "p": 1
+        },
+        {
+          "t": "Chapter 69 The Inquiry",
+          "p": 1
+        },
+        {
+          "t": "Chapter 70 The Ball",
+          "p": 1
+        },
+        {
+          "t": "Chapter 71 Bread and Salt",
+          "p": 1
+        },
+        {
+          "t": "Chapter 72 Madame de Saint-M\u00e9ran",
+          "p": 1
+        },
+        {
+          "t": "Chapter 73 The Promise",
+          "p": 1
+        },
+        {
+          "t": "Chapter 74 The Villefort Family Vault",
+          "p": 1
+        },
+        {
+          "t": "Chapter 75 A Signed Statement",
+          "p": 1
+        },
+        {
+          "t": "Chapter 76 Progress of Cavalcanti the Younger",
+          "p": 1
+        },
+        {
+          "t": "Chapter 77 Hayd\u00e9e",
+          "p": 1
+        },
+        {
+          "t": "Chapter 78 We hear From Yanina",
+          "p": 1
+        },
+        {
+          "t": "Chapter 79 The Lemonade",
+          "p": 1
+        },
+        {
+          "t": "Chapter 80 The Accusation",
+          "p": 1
+        },
+        {
+          "t": "Chapter 81 The Room of the Retired Baker",
+          "p": 1
+        },
+        {
+          "t": "Chapter 82 The Burglary",
+          "p": 1
+        },
+        {
+          "t": "Chapter 83 The Hand of God",
+          "p": 1
+        },
+        {
+          "t": "Chapter 84 Beauchamp",
+          "p": 1
+        },
+        {
+          "t": "Chapter 85 The Journey",
+          "p": 1
+        },
+        {
+          "t": "Chapter 86 The Trial",
+          "p": 1
+        },
+        {
+          "t": "Chapter 87 The Challenge",
+          "p": 1
+        },
+        {
+          "t": "Chapter 88 The Insult",
+          "p": 1
+        },
+        {
+          "t": "Chapter 89 The Night",
+          "p": 1
+        },
+        {
+          "t": "Chapter 90 The Meeting",
+          "p": 1
+        },
+        {
+          "t": "Chapter 91 Mother and Son",
+          "p": 1
+        },
+        {
+          "t": "Chapter 92 The Suicide",
+          "p": 1
+        },
+        {
+          "t": "Chapter 93 Valentine",
+          "p": 1
+        },
+        {
+          "t": "Chapter 94 Maximilian\u2019s Avowal",
+          "p": 1
+        },
+        {
+          "t": "Chapter 95 Father and Daughter",
+          "p": 1
+        },
+        {
+          "t": "Chapter 96 The Contract",
+          "p": 1
+        },
+        {
+          "t": "Chapter 97 The Departure for Belgium",
+          "p": 1
+        },
+        {
+          "t": "Chapter 98 The Bell and Bottle Tavern",
+          "p": 1
+        },
+        {
+          "t": "Chapter 99 The Law",
+          "p": 1
+        },
+        {
+          "t": "Chapter 100 The Apparition",
+          "p": 1
+        },
+        {
+          "t": "Chapter 101 Locusta",
+          "p": 1
+        },
+        {
+          "t": "Chapter 102 Valentine",
+          "p": 1
+        },
+        {
+          "t": "Chapter 103 Maximilian",
+          "p": 1
+        },
+        {
+          "t": "Chapter 104 Danglars\u2019 Signature",
+          "p": 1
+        },
+        {
+          "t": "Chapter 105 The Cemetery of P\u00e8re-Lachaise",
+          "p": 1
+        },
+        {
+          "t": "Chapter 106 Dividing the Proceeds",
+          "p": 1
+        },
+        {
+          "t": "Chapter 107 The Lions\u2019 Den",
+          "p": 1
+        },
+        {
+          "t": "Chapter 108 The Judge",
+          "p": 1
+        },
+        {
+          "t": "Chapter 109 The Assizes",
+          "p": 1
+        },
+        {
+          "t": "Chapter 110 The Indictment",
+          "p": 1
+        },
+        {
+          "t": "Chapter 111 Expiation",
+          "p": 1
+        },
+        {
+          "t": "Chapter 112 The Departure",
+          "p": 1
+        },
+        {
+          "t": "Chapter 113 The Past",
+          "p": 1
+        },
+        {
+          "t": "Chapter 114 Peppino",
+          "p": 1
+        },
+        {
+          "t": "Chapter 115 Luigi Vampa\u2019s Bill of Fare",
+          "p": 1
+        },
+        {
+          "t": "Chapter 116 The Pardon",
+          "p": 1
+        },
+        {
+          "t": "Chapter 117 The Fifth of October",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "aroundtheworldineightydays",
+      "title": "Around the World in Eighty Days",
+      "author": "Jules Verne",
+      "pages": 134,
+      "sizeMB": 0.3,
+      "category": "Adventure",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/around-the-world-in-eighty-days.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/around-the-world-in-eighty-days.pdf",
+      "chapters": [
+        {
+          "t": "CHAPTER I",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER II",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER III",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER V",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER X",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXIV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXVI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXVII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXVIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXIX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXXI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXXII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXXIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXXIV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXXV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXXVI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXXVII",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "robinsoncrusoe",
+      "title": "Robinson Crusoe",
+      "author": "Daniel Defoe",
+      "pages": 172,
+      "sizeMB": 0.4,
+      "category": "Adventure",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/robinson-crusoe.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/robinson-crusoe.pdf",
+      "chapters": [
+        {
+          "t": "CHAPTER I START IN LIFE",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER II SLAVERY AND ESCAPE",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER III WRECKED ON A DESERT ISLAND",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IV FIRST WEEKS ON THE ISLAND",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER V BUILDS A HOUSE\u2014THE JOURNAL",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VI ILL AND CONSCIENCE-STRICKEN",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VII AGRICULTURAL EXPERIENCE",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VIII SURVEYS HIS POSITION",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IX A BOAT",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER X TAMES GOATS",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XI FINDS PRINT OF MAN\u2019S FOOT ON THE SAND",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XII A CAVE RETREAT",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIII WRECK OF A SPANISH SHIP",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIV A DREAM REALISED",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XV FRIDAY\u2019S EDUCATION",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVI RESCUE OF PRISONERS FROM CANNIBALS",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVII VISIT OF MUTINEERS",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVIII THE SHIP RECOVERED",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIX RETURN TO ENGLAND",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XX FIGHT BETWEEN FRIDAY AND A BEAR",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "twentythousandleagues",
+      "title": "Twenty Thousand Leagues Under the Sea",
+      "author": "Jules Verne",
+      "pages": 203,
+      "sizeMB": 0.4,
+      "category": "Adventure",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/twenty-thousand-leagues.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/twenty-thousand-leagues.pdf",
+      "chapters": [
+        {
+          "t": "CHAPTER XXIII CONCLUSION",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER I\nA SHIFTING REEF",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER II\nPRO AND CON",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER III\nI FORM MY RESOLUTION",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IV\nNED LAND",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER V\nAT A VENTURE",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VI\nAT FULL STEAM",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VII\nAN UNKNOWN SPECIES OF WHALE",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VIII\nMOBILIS IN MOBILI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IX\nNED LAND\u2019S TEMPERS",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER X\nTHE MAN OF THE SEAS",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XI\nALL BY ELECTRICITY",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XII\nSOME FIGURES",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIII\nTHE BLACK RIVER",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIV\nA NOTE OF INVITATION",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XV\nA WALK ON THE BOTTOM OF THE SEA",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVI\nA SUBMARINE FOREST",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVII\nFOUR THOUSAND LEAGUES UNDER THE PACIFIC",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVIII\nVANIKORO",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIX\nTORRES STRAITS",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XX\nA FEW DAYS ON LAND",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXI\nCAPTAIN NEMO\u2019S THUNDERBOLT",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXII\n\u201c\u00c6GRI SOMNIA\u201d",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXIII\nTHE CORAL KINGDOM",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER I\nTHE INDIAN OCEAN",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER II\nA NOVEL PROPOSAL OF CAPTAIN NEMO\u2019S",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER III\nA PEARL OF TEN MILLIONS",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IV\nTHE RED SEA",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER V\nTHE ARABIAN TUNNEL",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VI\nTHE GRECIAN ARCHIPELAGO",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VII\nTHE MEDITERRANEAN IN FORTY-EIGHT HOURS",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VIII\nVIGO BAY",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IX\nA VANISHED CONTINENT",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER X\nTHE SUBMARINE COAL-MINES",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XI\nTHE SARGASSO SEA",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XII\nCACHALOTS AND WHALES",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIII\nTHE ICEBERG",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIV\nTHE SOUTH POLE",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XV\nACCIDENT OR INCIDENT?",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVI\nWANT OF AIR",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVII\nFROM CAPE HORN TO THE AMAZON",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVIII\nTHE POULPS",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIX\nTHE GULF STREAM",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XX\nFROM LATITUDE 47\u00b0 24\u2032 TO LONGITUDE 17\u00b0 28\u2032",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXI\nA HECATOMB",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXII\nTHE LAST WORDS OF CAPTAIN NEMO",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXIII\nCONCLUSION",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "thewaroftheworlds",
+      "title": "The War of the Worlds",
+      "author": "H. G. Wells",
+      "pages": 116,
+      "sizeMB": 0.2,
+      "category": "Science Fiction",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-war-of-the-worlds.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-war-of-the-worlds.pdf",
+      "chapters": [
+        {
+          "t": "The War of the Worlds",
+          "p": 1
+        },
+        {
+          "t": "II",
+          "p": 1
+        },
+        {
+          "t": "III",
+          "p": 1
+        },
+        {
+          "t": "IV",
+          "p": 1
+        },
+        {
+          "t": "V",
+          "p": 1
+        },
+        {
+          "t": "VI",
+          "p": 1
+        },
+        {
+          "t": "VII",
+          "p": 1
+        },
+        {
+          "t": "VIII",
+          "p": 1
+        },
+        {
+          "t": "IX",
+          "p": 1
+        },
+        {
+          "t": "X",
+          "p": 1
+        },
+        {
+          "t": "XI",
+          "p": 1
+        },
+        {
+          "t": "XII",
+          "p": 1
+        },
+        {
+          "t": "XIII",
+          "p": 1
+        },
+        {
+          "t": "XIV",
+          "p": 1
+        },
+        {
+          "t": "XV",
+          "p": 1
+        },
+        {
+          "t": "XVI",
+          "p": 1
+        },
+        {
+          "t": "XVII",
+          "p": 1
+        },
+        {
+          "t": "I",
+          "p": 1
+        },
+        {
+          "t": "II",
+          "p": 1
+        },
+        {
+          "t": "III",
+          "p": 1
+        },
+        {
+          "t": "IV",
+          "p": 1
+        },
+        {
+          "t": "V",
+          "p": 1
+        },
+        {
+          "t": "VI",
+          "p": 1
+        },
+        {
+          "t": "VII",
+          "p": 1
+        },
+        {
+          "t": "VIII",
+          "p": 1
+        },
+        {
+          "t": "IX",
+          "p": 1
+        },
+        {
+          "t": "X",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "flatland",
+      "title": "Flatland",
+      "author": "Edwin A. Abbott",
+      "pages": 67,
+      "sizeMB": 0.1,
+      "category": "Science Fiction",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/flatland.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/flatland.pdf",
+      "chapters": [
+        {
+          "t": "\u00a7 1 Of the Nature of Flatland",
+          "p": 1
+        },
+        {
+          "t": "\u00a7 2 Of the Climate and Houses in Flatland",
+          "p": 1
+        },
+        {
+          "t": "\u00a7 3 Concerning the Inhabitants of Flatland",
+          "p": 1
+        },
+        {
+          "t": "\u00a7 4 Concerning the Women",
+          "p": 1
+        },
+        {
+          "t": "\u00a7 5 Of our Methods of Recognizing one another",
+          "p": 1
+        },
+        {
+          "t": "\u00a7 6 Of Recognition by Sight",
+          "p": 1
+        },
+        {
+          "t": "\u00a7 7 Concerning Irregular Figures",
+          "p": 1
+        },
+        {
+          "t": "\u00a7 8 Of the Ancient Practice of Painting",
+          "p": 1
+        },
+        {
+          "t": "\u00a7 9 Of the Universal Colour Bill",
+          "p": 1
+        },
+        {
+          "t": "\u00a7 10 Of the Suppression of the Chromatic Sedition",
+          "p": 1
+        },
+        {
+          "t": "\u00a7 11 Concerning our Priests",
+          "p": 1
+        },
+        {
+          "t": "\u00a7 12 Of the Doctrine of our Priests",
+          "p": 1
+        },
+        {
+          "t": "\u00a7 13 How I had a Vision of Lineland",
+          "p": 1
+        },
+        {
+          "t": "\u00a7 14 How I vainly tried to explain the nature of Flatland",
+          "p": 1
+        },
+        {
+          "t": "\u00a7 15 Concerning a Stranger from Spaceland",
+          "p": 1
+        },
+        {
+          "t": "\u00a7 16 How the Stranger vainly endeavoured to reveal to me in words the",
+          "p": 1
+        },
+        {
+          "t": "\u00a7 17 How the Sphere, having in vain tried words, resorted to deeds",
+          "p": 1
+        },
+        {
+          "t": "\u00a7 18 How I came to Spaceland, and what I saw there",
+          "p": 1
+        },
+        {
+          "t": "\u00a7 19 How, though the Sphere shewed me other mysteries of Spaceland, I",
+          "p": 1
+        },
+        {
+          "t": "\u00a7 20 How the Sphere encouraged me in a Vision",
+          "p": 1
+        },
+        {
+          "t": "\u00a7 21 How I tried to teach the Theory of Three Dimensions to my",
+          "p": 1
+        },
+        {
+          "t": "\u00a7 22 How I then tried to diffuse the Theory of Three Dimensions by",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "thelostworld",
+      "title": "The Lost World",
+      "author": "Arthur Conan Doyle",
+      "pages": 129,
+      "sizeMB": 0.3,
+      "category": "Science Fiction",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-lost-world.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-lost-world.pdf",
+      "chapters": [
+        {
+          "t": "CHAPTER I",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER II",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER III",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER V",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER X",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVI",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "peterpan",
+      "title": "Peter Pan",
+      "author": "J. M. Barrie",
+      "pages": 97,
+      "sizeMB": 0.2,
+      "category": "Children",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/peter-pan.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/peter-pan.pdf",
+      "chapters": [
+        {
+          "t": "Chapter I PETER BREAKS THROUGH",
+          "p": 1
+        },
+        {
+          "t": "Chapter II THE SHADOW",
+          "p": 1
+        },
+        {
+          "t": "Chapter III COME AWAY, COME AWAY!",
+          "p": 1
+        },
+        {
+          "t": "Chapter IV THE FLIGHT",
+          "p": 1
+        },
+        {
+          "t": "Chapter V THE ISLAND COME TRUE",
+          "p": 1
+        },
+        {
+          "t": "Chapter VI THE LITTLE HOUSE",
+          "p": 1
+        },
+        {
+          "t": "Chapter VII THE HOME UNDER THE GROUND",
+          "p": 1
+        },
+        {
+          "t": "Chapter VIII THE MERMAIDS\u2019 LAGOON",
+          "p": 1
+        },
+        {
+          "t": "Chapter IX THE NEVER BIRD",
+          "p": 1
+        },
+        {
+          "t": "Chapter X THE HAPPY HOME",
+          "p": 1
+        },
+        {
+          "t": "Chapter XI WENDY\u2019S STORY",
+          "p": 1
+        },
+        {
+          "t": "Chapter XII THE CHILDREN ARE CARRIED OFF",
+          "p": 1
+        },
+        {
+          "t": "Chapter XIII DO YOU BELIEVE IN FAIRIES?",
+          "p": 1
+        },
+        {
+          "t": "Chapter XIV THE PIRATE SHIP",
+          "p": 1
+        },
+        {
+          "t": "Chapter XV \u201cHOOK OR ME THIS TIME\u201d",
+          "p": 1
+        },
+        {
+          "t": "Chapter XVI THE RETURN HOME",
+          "p": 1
+        },
+        {
+          "t": "Chapter XVII WHEN WENDY GREW UP",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "thesecretgarden",
+      "title": "The Secret Garden",
+      "author": "Frances Hodgson Burnett",
+      "pages": 150,
+      "sizeMB": 0.3,
+      "category": "Children",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-secret-garden.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-secret-garden.pdf",
+      "chapters": [
+        {
+          "t": "CHAPTER I THERE IS NO ONE LEFT",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER II MISTRESS MARY QUITE CONTRARY",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER III ACROSS THE MOOR",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IV MARTHA",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER V THE CRY IN THE CORRIDOR",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VII THE KEY TO THE GARDEN",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VIII THE ROBIN WHO SHOWED THE WAY",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IX THE STRANGEST HOUSE ANYONE EVER LIVED IN",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER X DICKON",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XI THE NEST OF THE MISSEL THRUSH",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIV A YOUNG RAJAH",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XV NEST BUILDING",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVII A TANTRUM",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXI BEN WEATHERSTAFF",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXII WHEN THE SUN WENT DOWN",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXIII MAGIC",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXIV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXV THE CURTAIN",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXVI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXVII IN THE GARDEN",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "anneofgreengables",
+      "title": "Anne of Green Gables",
+      "author": "L. M. Montgomery",
+      "pages": 184,
+      "sizeMB": 0.4,
+      "category": "Children",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/anne-of-green-gables.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/anne-of-green-gables.pdf",
+      "chapters": [
+        {
+          "t": "CHAPTER I Mrs. Rachel Lynde Is Surprised",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER II Matthew Cuthbert Is Surprised",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER III Marilla Cuthbert Is Surprised",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IV Morning at Green Gables",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER V Anne\u2019s History",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VI Marilla Makes Up Her Mind",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VII Anne Says Her Prayers",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VIII Anne\u2019s Bringing-up Is Begun",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IX Mrs. Rachel Lynde Is Properly Horrified",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER X Anne\u2019s Apology",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XI Anne\u2019s Impressions of Sunday-school",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XII A Solemn Vow and Promise",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIII The Delights of Anticipation",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIV Anne\u2019s Confession",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XV A Tempest in the School Teapot",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVI Diana Is Invited to Tea with Tragic Results",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVII A New Interest in Life",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVIII Anne to the Rescue",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIX A Concert, a Catastrophe, and a Confession",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XX A Good Imagination Gone Wrong",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXI A New Departure in Flavorings",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXII Anne Is Invited Out to Tea",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXIII Anne Comes to Grief in an Affair of Honor",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXIV Miss Stacy and Her Pupils Get Up a Concert",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXV Matthew Insists on Puffed Sleeves",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXVI The Story Club Is Formed",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXVII Vanity and Vexation of Spirit",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXVIII An Unfortunate Lily Maid",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXIX An Epoch in Anne\u2019s Life",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXX The Queen\u2019s Class Is Organized",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXXI Where the Brook and River Meet",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXXII The Pass List Is Out",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXXIII The Hotel Concert",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXXIV A Queen\u2019s Girl",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXXV The Winter at Queen\u2019s",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXXVI The Glory and the Dream",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXXVII The Reaper Whose Name Is Death",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXXVIII The Bend in the Road",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "thewindinthewillows",
+      "title": "The Wind in the Willows",
+      "author": "Kenneth Grahame",
+      "pages": 102,
+      "sizeMB": 0.2,
+      "category": "Children",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-wind-in-the-willows.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-wind-in-the-willows.pdf",
+      "chapters": [
+        {
+          "t": "I THE RIVER BANK",
+          "p": 1
+        },
+        {
+          "t": "II THE OPEN ROAD",
+          "p": 1
+        },
+        {
+          "t": "III THE WILD WOOD",
+          "p": 1
+        },
+        {
+          "t": "IV MR. BADGER",
+          "p": 1
+        },
+        {
+          "t": "V DULCE DOMUM",
+          "p": 1
+        },
+        {
+          "t": "VI MR. TOAD",
+          "p": 1
+        },
+        {
+          "t": "VII THE PIPER AT THE GATES OF DAWN",
+          "p": 1
+        },
+        {
+          "t": "VIII TOAD\u2019S ADVENTURES",
+          "p": 1
+        },
+        {
+          "t": "IX WAYFARERS ALL",
+          "p": 1
+        },
+        {
+          "t": "X THE FURTHER ADVENTURES OF TOAD",
+          "p": 1
+        },
+        {
+          "t": "XI",
+          "p": 1
+        },
+        {
+          "t": "XII THE RETURN OF ULYSSES",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "blackbeauty",
+      "title": "Black Beauty",
+      "author": "Anna Sewell",
+      "pages": 95,
+      "sizeMB": 0.2,
+      "category": "Children",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/black-beauty.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/black-beauty.pdf",
+      "chapters": [
+        {
+          "t": "Black Beauty",
+          "p": 1
+        },
+        {
+          "t": "Part II 22      Earlshall",
+          "p": 1
+        },
+        {
+          "t": "Part III 32      A Horse Fair",
+          "p": 1
+        },
+        {
+          "t": "Part IV 46      Jakes and the Lady",
+          "p": 1
+        },
+        {
+          "t": "Part I 01 My Early Home",
+          "p": 1
+        },
+        {
+          "t": "Part II 22 Earlshall",
+          "p": 1
+        },
+        {
+          "t": "Part III 32 A Horse Fair",
+          "p": 1
+        },
+        {
+          "t": "Part IV 46 Jakes and the Lady",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "grimmsfairytales",
+      "title": "Grimms' Fairy Tales",
+      "author": "Jacob and Wilhelm Grimm",
+      "pages": 184,
+      "sizeMB": 0.4,
+      "category": "Fantasy",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/grimms-fairy-tales.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/grimms-fairy-tales.pdf",
+      "chapters": [
+        {
+          "t": "CONTENTS:",
+          "p": 1
+        },
+        {
+          "t": "THE BROTHERS GRIMM FAIRY TALES",
+          "p": 1
+        },
+        {
+          "t": "THE GOLDEN BIRD",
+          "p": 1
+        },
+        {
+          "t": "HANS IN LUCK",
+          "p": 1
+        },
+        {
+          "t": "JORINDA AND JORINDEL",
+          "p": 1
+        },
+        {
+          "t": "THE TRAVELLING MUSICIANS",
+          "p": 1
+        },
+        {
+          "t": "OLD SULTAN",
+          "p": 1
+        },
+        {
+          "t": "THE STRAW, THE COAL, AND THE BEAN",
+          "p": 1
+        },
+        {
+          "t": "BRIAR ROSE",
+          "p": 1
+        },
+        {
+          "t": "THE DOG AND THE SPARROW",
+          "p": 1
+        },
+        {
+          "t": "THE TWELVE DANCING PRINCESSES",
+          "p": 1
+        },
+        {
+          "t": "THE FISHERMAN AND HIS WIFE",
+          "p": 1
+        },
+        {
+          "t": "THE WILLOW-WREN AND THE BEAR",
+          "p": 1
+        },
+        {
+          "t": "THE FROG-PRINCE",
+          "p": 1
+        },
+        {
+          "t": "CAT AND MOUSE IN PARTNERSHIP",
+          "p": 1
+        },
+        {
+          "t": "THE GOOSE-GIRL",
+          "p": 1
+        },
+        {
+          "t": "THE ADVENTURES OF CHANTICLEER AND PARTLET",
+          "p": 1
+        },
+        {
+          "t": "RAPUNZEL",
+          "p": 1
+        },
+        {
+          "t": "FUNDEVOGEL",
+          "p": 1
+        },
+        {
+          "t": "THE VALIANT LITTLE TAILOR",
+          "p": 1
+        },
+        {
+          "t": "HANSEL AND GRETEL",
+          "p": 1
+        },
+        {
+          "t": "THE MOUSE, THE BIRD, AND THE SAUSAGE",
+          "p": 1
+        },
+        {
+          "t": "MOTHER HOLLE",
+          "p": 1
+        },
+        {
+          "t": "THE ROBBER BRIDEGROOM",
+          "p": 1
+        },
+        {
+          "t": "TOM THUMB",
+          "p": 1
+        },
+        {
+          "t": "RUMPELSTILTSKIN",
+          "p": 1
+        },
+        {
+          "t": "CLEVER GRETEL",
+          "p": 1
+        },
+        {
+          "t": "THE OLD MAN AND HIS GRANDSON",
+          "p": 1
+        },
+        {
+          "t": "THE LITTLE PEASANT",
+          "p": 1
+        },
+        {
+          "t": "FREDERICK AND CATHERINE",
+          "p": 1
+        },
+        {
+          "t": "SWEETHEART ROLAND",
+          "p": 1
+        },
+        {
+          "t": "SNOWDROP",
+          "p": 1
+        },
+        {
+          "t": "THE PINK",
+          "p": 1
+        },
+        {
+          "t": "CLEVER ELSIE",
+          "p": 1
+        },
+        {
+          "t": "THE MISER IN THE BUSH",
+          "p": 1
+        },
+        {
+          "t": "ASHPUTTEL",
+          "p": 1
+        },
+        {
+          "t": "THE WHITE SNAKE",
+          "p": 1
+        },
+        {
+          "t": "THE WOLF AND THE SEVEN LITTLE KIDS",
+          "p": 1
+        },
+        {
+          "t": "THE QUEEN BEE",
+          "p": 1
+        },
+        {
+          "t": "THE ELVES AND THE SHOEMAKER",
+          "p": 1
+        },
+        {
+          "t": "THE JUNIPER-TREE",
+          "p": 1
+        },
+        {
+          "t": "THE TURNIP",
+          "p": 1
+        },
+        {
+          "t": "CLEVER HANS",
+          "p": 1
+        },
+        {
+          "t": "THE THREE LANGUAGES",
+          "p": 1
+        },
+        {
+          "t": "THE FOX AND THE CAT",
+          "p": 1
+        },
+        {
+          "t": "THE FOUR CLEVER BROTHERS",
+          "p": 1
+        },
+        {
+          "t": "LILY AND THE LION",
+          "p": 1
+        },
+        {
+          "t": "THE FOX AND THE HORSE",
+          "p": 1
+        },
+        {
+          "t": "THE BLUE LIGHT",
+          "p": 1
+        },
+        {
+          "t": "THE RAVEN",
+          "p": 1
+        },
+        {
+          "t": "THE GOLDEN GOOSE",
+          "p": 1
+        },
+        {
+          "t": "THE WATER OF LIFE",
+          "p": 1
+        },
+        {
+          "t": "THE TWELVE HUNTSMEN",
+          "p": 1
+        },
+        {
+          "t": "THE KING OF THE GOLDEN MOUNTAIN",
+          "p": 1
+        },
+        {
+          "t": "DOCTOR KNOWALL",
+          "p": 1
+        },
+        {
+          "t": "THE SEVEN RAVENS",
+          "p": 1
+        },
+        {
+          "t": "THE WEDDING OF MRS FOX",
+          "p": 1
+        },
+        {
+          "t": "FIRST STORY",
+          "p": 1
+        },
+        {
+          "t": "SECOND STORY",
+          "p": 1
+        },
+        {
+          "t": "THE SALAD",
+          "p": 1
+        },
+        {
+          "t": "THE STORY OF THE YOUTH WHO WENT FORTH TO LEARN WHAT FEAR WAS",
+          "p": 1
+        },
+        {
+          "t": "KING GRISLY-BEARD",
+          "p": 1
+        },
+        {
+          "t": "IRON HANS",
+          "p": 1
+        },
+        {
+          "t": "CAT-SKIN",
+          "p": 1
+        },
+        {
+          "t": "SNOW-WHITE AND ROSE-RED",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "andersensfairytales",
+      "title": "Andersen's Fairy Tales",
+      "author": "Hans Christian Andersen",
+      "pages": 89,
+      "sizeMB": 0.2,
+      "category": "Fantasy",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/andersens-fairy-tales.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/andersens-fairy-tales.pdf",
+      "chapters": [
+        {
+          "t": "Andersen's Fairy Tales",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "thearabiannights",
+      "title": "The Arabian Nights",
+      "author": "Andrew Lang",
+      "pages": 186,
+      "sizeMB": 0.4,
+      "category": "Fantasy",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-arabian-nights.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-arabian-nights.pdf",
+      "chapters": [
+        {
+          "t": "Preface",
+          "p": 1
+        },
+        {
+          "t": "The Arabian Nights",
+          "p": 1
+        },
+        {
+          "t": "The Story of the Merchant and the Genius",
+          "p": 1
+        },
+        {
+          "t": "The Story of the First Old Man and of the Hind",
+          "p": 1
+        },
+        {
+          "t": "The Story of the Second Old Man, and of the Two Black Dogs",
+          "p": 1
+        },
+        {
+          "t": "The Story of the Fisherman",
+          "p": 1
+        },
+        {
+          "t": "The Story of the Greek King and the Physician Douban",
+          "p": 1
+        },
+        {
+          "t": "The Story of the Husband and the Parrot",
+          "p": 1
+        },
+        {
+          "t": "The Story of the Vizir Who Was Punished",
+          "p": 1
+        },
+        {
+          "t": "The Story of the Young King of the Black Isles",
+          "p": 1
+        },
+        {
+          "t": "The Story of the Three Calenders, Sons of Kings,",
+          "p": 1
+        },
+        {
+          "t": "The Story of the First Calender, Son of a King",
+          "p": 1
+        },
+        {
+          "t": "The Story of the Second Calendar, Son of a King",
+          "p": 1
+        },
+        {
+          "t": "The Story of the Envious Man and of Him Who Was Envied",
+          "p": 1
+        },
+        {
+          "t": "The Story of the Third Calendar, Son of a King",
+          "p": 1
+        },
+        {
+          "t": "The Seven Voyages of Sindbad the Sailor",
+          "p": 1
+        },
+        {
+          "t": "First Voyage",
+          "p": 1
+        },
+        {
+          "t": "Second Voyage",
+          "p": 1
+        },
+        {
+          "t": "Third Voyage",
+          "p": 1
+        },
+        {
+          "t": "Fourth Voyage",
+          "p": 1
+        },
+        {
+          "t": "Fifth Voyage",
+          "p": 1
+        },
+        {
+          "t": "Sixth Voyage",
+          "p": 1
+        },
+        {
+          "t": "Seventh and Last Voyage",
+          "p": 1
+        },
+        {
+          "t": "The Little Hunchback",
+          "p": 1
+        },
+        {
+          "t": "The Story of the Barber's Fifth Brother",
+          "p": 1
+        },
+        {
+          "t": "The Story of the Barber's Sixth Brother",
+          "p": 1
+        },
+        {
+          "t": "The Adventures of Prince Camaralzaman and the Princess Badoura",
+          "p": 1
+        },
+        {
+          "t": "Noureddin and the Fair Persian",
+          "p": 1
+        },
+        {
+          "t": "Aladdin and the Wonderful Lamp",
+          "p": 1
+        },
+        {
+          "t": "The Adventures of Haroun-al-Raschid, Caliph of Bagdad",
+          "p": 1
+        },
+        {
+          "t": "The Story of the Blind Baba-Abdalla",
+          "p": 1
+        },
+        {
+          "t": "The Story of Sidi-Nouman",
+          "p": 1
+        },
+        {
+          "t": "The Story of Ali Colia, Merchant of Bagdad",
+          "p": 1
+        },
+        {
+          "t": "The Enchanted Horse",
+          "p": 1
+        },
+        {
+          "t": "The Story of Two Sisters Who Were Jealous of Their Younger Sister",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "dubliners",
+      "title": "Dubliners",
+      "author": "James Joyce",
+      "pages": 127,
+      "sizeMB": 0.3,
+      "category": "Short Stories",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/dubliners.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/dubliners.pdf",
+      "chapters": [
+        {
+          "t": "DUBLINERS",
+          "p": 1
+        },
+        {
+          "t": "THE SISTERS",
+          "p": 1
+        },
+        {
+          "t": "AN ENCOUNTER",
+          "p": 1
+        },
+        {
+          "t": "ARABY",
+          "p": 1
+        },
+        {
+          "t": "EVELINE",
+          "p": 1
+        },
+        {
+          "t": "AFTER THE RACE",
+          "p": 1
+        },
+        {
+          "t": "TWO GALLANTS",
+          "p": 1
+        },
+        {
+          "t": "THE BOARDING HOUSE",
+          "p": 1
+        },
+        {
+          "t": "A LITTLE CLOUD",
+          "p": 1
+        },
+        {
+          "t": "COUNTERPARTS",
+          "p": 1
+        },
+        {
+          "t": "CLAY",
+          "p": 1
+        },
+        {
+          "t": "A PAINFUL CASE",
+          "p": 1
+        },
+        {
+          "t": "IVY DAY IN THE COMMITTEE ROOM",
+          "p": 1
+        },
+        {
+          "t": "A MOTHER",
+          "p": 1
+        },
+        {
+          "t": "GRACE",
+          "p": 1
+        },
+        {
+          "t": "THE DEAD",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "thegiftofthemagi",
+      "title": "The Gift of the Magi",
+      "author": "O. Henry",
+      "pages": 9,
+      "sizeMB": 0.0,
+      "category": "Short Stories",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-gift-of-the-magi.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-gift-of-the-magi.pdf",
+      "chapters": [
+        {
+          "t": "The Gift of the Magi",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "leavesofgrass",
+      "title": "Leaves of Grass",
+      "author": "Walt Whitman",
+      "pages": 242,
+      "sizeMB": 0.5,
+      "category": "Poetry",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/leaves-of-grass.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/leaves-of-grass.pdf",
+      "chapters": [
+        {
+          "t": "BOOK I INSCRIPTIONS",
+          "p": 1
+        },
+        {
+          "t": "BOOK II",
+          "p": 1
+        },
+        {
+          "t": "BOOK III",
+          "p": 1
+        },
+        {
+          "t": "BOOK IV CHILDREN OF ADAM",
+          "p": 1
+        },
+        {
+          "t": "BOOK V CALAMUS",
+          "p": 1
+        },
+        {
+          "t": "BOOK VI",
+          "p": 1
+        },
+        {
+          "t": "BOOK VII",
+          "p": 1
+        },
+        {
+          "t": "BOOK VIII",
+          "p": 1
+        },
+        {
+          "t": "BOOK IX",
+          "p": 1
+        },
+        {
+          "t": "BOOK X",
+          "p": 1
+        },
+        {
+          "t": "BOOK XI",
+          "p": 1
+        },
+        {
+          "t": "BOOK XII",
+          "p": 1
+        },
+        {
+          "t": "BOOK XIII",
+          "p": 1
+        },
+        {
+          "t": "BOOK XIV",
+          "p": 1
+        },
+        {
+          "t": "BOOK XV",
+          "p": 1
+        },
+        {
+          "t": "BOOK XVI",
+          "p": 1
+        },
+        {
+          "t": "BOOK XVII BIRDS OF PASSAGE",
+          "p": 1
+        },
+        {
+          "t": "BOOK XVIII",
+          "p": 1
+        },
+        {
+          "t": "BOOK XIX SEA-DRIFT",
+          "p": 1
+        },
+        {
+          "t": "BOOK XX BY THE ROADSIDE",
+          "p": 1
+        },
+        {
+          "t": "BOOK XXI DRUM-TAPS",
+          "p": 1
+        },
+        {
+          "t": "BOOK XXII MEMORIES OF PRESIDENT LINCOLN",
+          "p": 1
+        },
+        {
+          "t": "BOOK XXIII",
+          "p": 1
+        },
+        {
+          "t": "BOOK XXIV AUTUMN RIVULETS",
+          "p": 1
+        },
+        {
+          "t": "BOOK XXV",
+          "p": 1
+        },
+        {
+          "t": "BOOK XXVI",
+          "p": 1
+        },
+        {
+          "t": "BOOK XXVII",
+          "p": 1
+        },
+        {
+          "t": "BOOK XXVIII",
+          "p": 1
+        },
+        {
+          "t": "BOOK XXIX",
+          "p": 1
+        },
+        {
+          "t": "BOOK XXX WHISPERS OF HEAVENLY DEATH",
+          "p": 1
+        },
+        {
+          "t": "BOOK XXXI",
+          "p": 1
+        },
+        {
+          "t": "BOOK XXXII FROM NOON TO STARRY NIGHT",
+          "p": 1
+        },
+        {
+          "t": "BOOK XXXIII SONGS OF PARTING",
+          "p": 1
+        },
+        {
+          "t": "BOOK XXXIV SANDS AT SEVENTY",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "sonnetsfromtheportuguese",
+      "title": "Sonnets from the Portuguese",
+      "author": "Elizabeth Barrett Browning",
+      "pages": 49,
+      "sizeMB": 0.0,
+      "category": "Poetry",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/sonnets-from-the-portuguese.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/sonnets-from-the-portuguese.pdf",
+      "chapters": [
+        {
+          "t": "I",
+          "p": 1
+        },
+        {
+          "t": "II",
+          "p": 1
+        },
+        {
+          "t": "III",
+          "p": 1
+        },
+        {
+          "t": "IV",
+          "p": 1
+        },
+        {
+          "t": "V",
+          "p": 1
+        },
+        {
+          "t": "VI",
+          "p": 1
+        },
+        {
+          "t": "VII",
+          "p": 1
+        },
+        {
+          "t": "VIII",
+          "p": 1
+        },
+        {
+          "t": "IX",
+          "p": 1
+        },
+        {
+          "t": "X",
+          "p": 1
+        },
+        {
+          "t": "XI",
+          "p": 1
+        },
+        {
+          "t": "XII",
+          "p": 1
+        },
+        {
+          "t": "XIII",
+          "p": 1
+        },
+        {
+          "t": "XIV",
+          "p": 1
+        },
+        {
+          "t": "XV",
+          "p": 1
+        },
+        {
+          "t": "XVI",
+          "p": 1
+        },
+        {
+          "t": "XVII",
+          "p": 1
+        },
+        {
+          "t": "XVIII",
+          "p": 1
+        },
+        {
+          "t": "XIX",
+          "p": 1
+        },
+        {
+          "t": "XX",
+          "p": 1
+        },
+        {
+          "t": "XXI",
+          "p": 1
+        },
+        {
+          "t": "XXII",
+          "p": 1
+        },
+        {
+          "t": "XXIII",
+          "p": 1
+        },
+        {
+          "t": "XXIV",
+          "p": 1
+        },
+        {
+          "t": "XXV",
+          "p": 1
+        },
+        {
+          "t": "XXVI",
+          "p": 1
+        },
+        {
+          "t": "XXVII",
+          "p": 1
+        },
+        {
+          "t": "XXVIII",
+          "p": 1
+        },
+        {
+          "t": "XXIX",
+          "p": 1
+        },
+        {
+          "t": "XXX",
+          "p": 1
+        },
+        {
+          "t": "XXXI",
+          "p": 1
+        },
+        {
+          "t": "XXXII",
+          "p": 1
+        },
+        {
+          "t": "XXXIII",
+          "p": 1
+        },
+        {
+          "t": "XXXIV",
+          "p": 1
+        },
+        {
+          "t": "XXXV",
+          "p": 1
+        },
+        {
+          "t": "XXXVI",
+          "p": 1
+        },
+        {
+          "t": "XXXVII",
+          "p": 1
+        },
+        {
+          "t": "XXXVIII",
+          "p": 1
+        },
+        {
+          "t": "XXXIX",
+          "p": 1
+        },
+        {
+          "t": "XL",
+          "p": 1
+        },
+        {
+          "t": "XLI",
+          "p": 1
+        },
+        {
+          "t": "XLII",
+          "p": 1
+        },
+        {
+          "t": "XLIII",
+          "p": 1
+        },
+        {
+          "t": "XLIV",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "therepublic",
+      "title": "The Republic",
+      "author": "Plato",
+      "pages": 227,
+      "sizeMB": 0.5,
+      "category": "Philosophy",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-republic.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-republic.pdf",
+      "chapters": [
+        {
+          "t": "BOOK I",
+          "p": 1
+        },
+        {
+          "t": "BOOK II",
+          "p": 1
+        },
+        {
+          "t": "BOOK III",
+          "p": 1
+        },
+        {
+          "t": "BOOK IV",
+          "p": 1
+        },
+        {
+          "t": "BOOK V",
+          "p": 1
+        },
+        {
+          "t": "BOOK VI",
+          "p": 1
+        },
+        {
+          "t": "BOOK VII",
+          "p": 1
+        },
+        {
+          "t": "BOOK VIII",
+          "p": 1
+        },
+        {
+          "t": "BOOK IX",
+          "p": 1
+        },
+        {
+          "t": "BOOK X",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "thusspakezarathustra",
+      "title": "Thus Spake Zarathustra",
+      "author": "Friedrich Nietzsche",
+      "pages": 66,
+      "sizeMB": 0.1,
+      "category": "Philosophy",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/thus-spake-zarathustra.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/thus-spake-zarathustra.pdf",
+      "chapters": [
+        {
+          "t": "Chapter I The Three Metamorphoses",
+          "p": 1
+        },
+        {
+          "t": "Chapter II The Academic Chairs of Virtue",
+          "p": 1
+        },
+        {
+          "t": "Chapter IV The Despisers of the Body",
+          "p": 1
+        },
+        {
+          "t": "Chapter IX The Preachers of Death",
+          "p": 1
+        },
+        {
+          "t": "Chapter XV The Thousand and One Goals",
+          "p": 1
+        },
+        {
+          "t": "Chapter XVIII Old and Young Women",
+          "p": 1
+        },
+        {
+          "t": "Chapter XXI Voluntary Death",
+          "p": 1
+        },
+        {
+          "t": "Chapter XXII The Bestowing Virtue",
+          "p": 1
+        },
+        {
+          "t": "Chapter XXIII The Child with the Mirror",
+          "p": 1
+        },
+        {
+          "t": "Chapter XXIV In the Happy Isles",
+          "p": 1
+        },
+        {
+          "t": "Chapter XXIX The Tarantulas",
+          "p": 1
+        },
+        {
+          "t": "Chapter XXX The Famous Wise Ones",
+          "p": 1
+        },
+        {
+          "t": "Chapter XXXIII The Grave-Song",
+          "p": 1
+        },
+        {
+          "t": "Chapter XXXIV Self-Surpassing",
+          "p": 1
+        },
+        {
+          "t": "Chapter XXXV The Sublime Ones",
+          "p": 1
+        },
+        {
+          "t": "Chapter XXXVI The Land of Culture",
+          "p": 1
+        },
+        {
+          "t": "Chapter XXXVII Immaculate Perception",
+          "p": 1
+        },
+        {
+          "t": "Chapter XXXVIII Scholars",
+          "p": 1
+        },
+        {
+          "t": "Chapter XXXIX Poets",
+          "p": 1
+        },
+        {
+          "t": "Chapter XL Great Events",
+          "p": 1
+        },
+        {
+          "t": "Chapter XLI The Soothsayer",
+          "p": 1
+        },
+        {
+          "t": "Chapter XLII Redemption",
+          "p": 1
+        },
+        {
+          "t": "Chapter XLIII Manly Prudence",
+          "p": 1
+        },
+        {
+          "t": "Chapter XLIV The Stillest Hour",
+          "p": 1
+        },
+        {
+          "t": "Chapter XLVI The Vision and the Enigma",
+          "p": 1
+        },
+        {
+          "t": "Chapter XLVII Involuntary Bliss",
+          "p": 1
+        },
+        {
+          "t": "Chapter XLVIII Before Sunrise",
+          "p": 1
+        },
+        {
+          "t": "Chapter XLIX The Bedwarfing Virtue",
+          "p": 1
+        },
+        {
+          "t": "Chapter LI On Passing-by",
+          "p": 1
+        },
+        {
+          "t": "Chapter LII The Apostates",
+          "p": 1
+        },
+        {
+          "t": "Chapter LIII The Return Home",
+          "p": 1
+        },
+        {
+          "t": "Chapter LIV The Three Evil Things",
+          "p": 1
+        },
+        {
+          "t": "Chapter LV The Spirit of Gravity",
+          "p": 1
+        },
+        {
+          "t": "Chapter LVI Old and New Tables. Par. 2",
+          "p": 1
+        },
+        {
+          "t": "Chapter LVII The Convalescent",
+          "p": 1
+        },
+        {
+          "t": "Chapter LX The Seven Seals",
+          "p": 1
+        },
+        {
+          "t": "Chapter LXI The Honey Sacrifice",
+          "p": 1
+        },
+        {
+          "t": "Chapter LXII The Cry of Distress",
+          "p": 1
+        },
+        {
+          "t": "Chapter LXIII Talk with the Kings",
+          "p": 1
+        },
+        {
+          "t": "Chapter LXIV The Leech",
+          "p": 1
+        },
+        {
+          "t": "Chapter LXV The Magician",
+          "p": 1
+        },
+        {
+          "t": "Chapter LXVI Out of Service",
+          "p": 1
+        },
+        {
+          "t": "Chapter LXVII The Ugliest Man",
+          "p": 1
+        },
+        {
+          "t": "Chapter LXVIII The Voluntary Beggar",
+          "p": 1
+        },
+        {
+          "t": "Chapter LXIX The Shadow",
+          "p": 1
+        },
+        {
+          "t": "Chapter LXX Noontide",
+          "p": 1
+        },
+        {
+          "t": "Chapter LXXI The Greeting",
+          "p": 1
+        },
+        {
+          "t": "Chapter LXXII The Supper",
+          "p": 1
+        },
+        {
+          "t": "Chapter LXXIII The Higher Man. Par. 1",
+          "p": 1
+        },
+        {
+          "t": "Chapter LXXIV The Song of Melancholy",
+          "p": 1
+        },
+        {
+          "t": "Chapter LXXV Science",
+          "p": 1
+        },
+        {
+          "t": "Chapter LXXVI Among the Daughters of the Desert",
+          "p": 1
+        },
+        {
+          "t": "Chapter LXXVII The Awakening",
+          "p": 1
+        },
+        {
+          "t": "Chapter LXXVIII The Ass-Festival",
+          "p": 1
+        },
+        {
+          "t": "Chapter LXXIX The Drunken Song",
+          "p": 1
+        },
+        {
+          "t": "Chapter LXXX The Sign",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "walden",
+      "title": "Walden",
+      "author": "Henry David Thoreau",
+      "pages": 165,
+      "sizeMB": 0.4,
+      "category": "Philosophy",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/walden.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/walden.pdf",
+      "chapters": [
+        {
+          "t": "Walden",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "dreampsychology",
+      "title": "Dream Psychology",
+      "author": "Sigmund Freud",
+      "pages": 87,
+      "sizeMB": 0.2,
+      "category": "Psychology",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/dream-psychology.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/dream-psychology.pdf",
+      "chapters": [
+        {
+          "t": "I DREAMS HAVE A MEANING",
+          "p": 1
+        },
+        {
+          "t": "II THE DREAM MECHANISM",
+          "p": 1
+        },
+        {
+          "t": "III WHY THE DREAM DISGUISES THE DESIRES",
+          "p": 1
+        },
+        {
+          "t": "IV DREAM ANALYSIS",
+          "p": 1
+        },
+        {
+          "t": "V SEX IN DREAMS",
+          "p": 1
+        },
+        {
+          "t": "VI THE WISH IN DREAMS",
+          "p": 1
+        },
+        {
+          "t": "VII THE FUNCTION OF THE DREAM",
+          "p": 1
+        },
+        {
+          "t": "VIII THE PRIMARY AND SECONDARY PROCESS--REGRESSION",
+          "p": 1
+        },
+        {
+          "t": "IX THE UNCONSCIOUS AND CONSCIOUSNESS--REALITY",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "thecrowd",
+      "title": "The Crowd",
+      "author": "Gustave Le Bon",
+      "pages": 98,
+      "sizeMB": 0.2,
+      "category": "Psychology",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-crowd.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-crowd.pdf",
+      "chapters": [
+        {
+          "t": "The Crowd",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER I GENERAL CHARACTERISTICS OF CROWDS.--PSYCHOLOGICAL LAW OF THEIR",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER II THE SENTIMENTS AND MORALITY OF CROWDS",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER III THE IDEAS, REASONING POWER, AND IMAGINATION OF CROWDS",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IV A RELIGIOUS SHAPE ASSUMED BY ALL THE CONVICTIONS OF CROWDS",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER I REMOTE FACTORS OF THE OPINIONS AND BELIEFS OF CROWDS",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER II THE IMMEDIATE FACTORS OF THE OPINIONS OF CROWDS",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER III THE LEADERS OF CROWDS AND THEIR MEANS OF PERSUASION",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IV LIMITATIONS OF THE VARIABILITY OF THE BELIEFS AND OPINIONS OF CROWDS",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER I THE CLASSIFICATION OF CROWDS",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER II CROWDS TERMED CRIMINAL CROWDS",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER III CRIMINAL JURIES",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IV ELECTORAL CROWDS",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER V PARLIAMENTARY ASSEMBLIES",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "expressionoftheemotions",
+      "title": "The Expression of the Emotions in Man and Animals",
+      "author": "Charles Darwin",
+      "pages": 179,
+      "sizeMB": 0.4,
+      "category": "Psychology",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/expression-of-the-emotions.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/expression-of-the-emotions.pdf",
+      "chapters": [
+        {
+          "t": "CHAPTER XIV \u2014 CONCLUDING REMARKS AND SUMMARY",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER I GENERAL PRINCIPLES OF EXPRESSION",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER II GENERAL PRINCIPLES OF EXPRESSION\u2014_continued_",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER III GENERAL PRINCIPLES OF EXPRESSION\u2014_concluded_",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IV MEANS OF EXPRESSION IN ANIMALS",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER V SPECIAL EXPRESSIONS OF ANIMALS",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VI SPECIAL EXPRESSIONS OF MAN: SUFFERING AND WEEPING",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VII LOW SPIRITS, ANXIETY, GRIEF, DEJECTION, DESPAIR",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VIII JOY, HIGH SPIRITS, LOVE, TENDER FEELINGS, DEVOTION",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IX REFLECTION\u2014MEDITATION-ILL-TEMPER\u2014SULKINESS\u2014DETERMINATION",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER X HATRED AND ANGER",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XI DISDAIN\u2014CONTEMPT\u2014DISGUST-GUILT\u2014PRIDE,",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XII SURPRISE\u2014ASTONISHMENT\u2014FEAR\u2014HORROR",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIII SELF-ATTENTION\u2014SHAME\u2014SHYNESS\u2014MODESTY: BLUSHING",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIV CONCLUDING REMARKS AND SUMMARY",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "theanalysisofmind",
+      "title": "The Analysis of Mind",
+      "author": "Bertrand Russell",
+      "pages": 148,
+      "sizeMB": 0.3,
+      "category": "Psychology",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-analysis-of-mind.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-analysis-of-mind.pdf",
+      "chapters": [
+        {
+          "t": "XV Characteristics of Mental Phenomena",
+          "p": 1
+        },
+        {
+          "t": "I We may regard knowledge, from a behaviourist standpoint, as exhibited",
+          "p": 1
+        },
+        {
+          "t": "II We may hold that the beliefs that constitute knowledge are",
+          "p": 1
+        },
+        {
+          "t": "III We believe that some beliefs are true, and some false. This raises",
+          "p": 1
+        },
+        {
+          "t": "IV Finally, there is the formal problem of defining truth and",
+          "p": 1
+        },
+        {
+          "t": "I We may regard a human being as an instrument, which makes various",
+          "p": 1
+        },
+        {
+          "t": "II I have so far assumed as unquestionable the view that the truth or",
+          "p": 1
+        },
+        {
+          "t": "III Many difficult problems arise as regards the verifiability of",
+          "p": 1
+        },
+        {
+          "t": "IV I come now to the purely formal definition of the truth or falsehood",
+          "p": 1
+        },
+        {
+          "t": "I Physics and psychology are not distinguished by their material. Mind",
+          "p": 1
+        },
+        {
+          "t": "II The two most essential characteristics of the causal laws which",
+          "p": 1
+        },
+        {
+          "t": "III Habit, memory and thought are all developments of mnemic causation",
+          "p": 1
+        },
+        {
+          "t": "IV Consciousness is a complex and far from universal characteristic of",
+          "p": 1
+        },
+        {
+          "t": "V Mind is a matter of degree, chiefly exemplified in number and",
+          "p": 1
+        },
+        {
+          "t": "VI All our data, both in physics and psychology, are subject to",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "foundationsofpersonality",
+      "title": "The Foundations of Personality",
+      "author": "Abraham Myerson",
+      "pages": 189,
+      "sizeMB": 0.5,
+      "category": "Psychology",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/foundations-of-personality.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/foundations-of-personality.pdf",
+      "chapters": [
+        {
+          "t": "CHAPTER I THE ORGANIC BASIS OF CHARACTER",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER II THE ENVIRONMENTAL BASIS OF CHARACTER",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER III MEMORY AND HABIT",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IV STIMULATION, INHIBITION, ORGANIZING ENERGY, CHOICE",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER V HYSTERIA, SUBCONSCIOUSNESS AND FREUDIANISM",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VI EMOTION, INSTINCT, INTELLIGENCE AND WILL",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VII EXCITEMENT, MONOTONY AND INTEREST",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VIII THE SENTIMENTS OF LOVE, FRIENDSHIP, HATE, PITY AND",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IX ENERGY RELEASE AND THE EMOTIONS",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER X COURAGE, RESIGNATION, SUBLIMATION, PATIENCE, THE WISH,",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XI THE EVOLUTION OF CHARACTER WITH ESPECIAL REFERENCE TO",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XII THE METHODS OF PURPOSE--WORK CHARACTERS",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIII THE QUALITIES OF THE LEADER AND THE FOLLOWER",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIV SEX CHARACTERS AND DOMESTICITY",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XV PLAY, RECREATION, HUMOR AND PLEASURE SEEKING",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVI RELIGIOUS CHARACTERS. DISHARMONY IN CHARACTER",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVII SOME CHARACTER TYPES",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "howtoliveon24hours",
+      "title": "How to Live on 24 Hours a Day",
+      "author": "Arnold Bennett",
+      "pages": 29,
+      "sizeMB": 0.1,
+      "category": "Emotional Wellbeing",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/how-to-live-on-24-hours.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/how-to-live-on-24-hours.pdf",
+      "chapters": [
+        {
+          "t": "I THE DAILY MIRACLE",
+          "p": 1
+        },
+        {
+          "t": "II THE DESIRE TO EXCEED ONE'S PROGRAMME",
+          "p": 1
+        },
+        {
+          "t": "III PRECAUTIONS BEFORE BEGINNING",
+          "p": 1
+        },
+        {
+          "t": "IV THE CAUSE OF THE TROUBLES",
+          "p": 1
+        },
+        {
+          "t": "V TENNIS AND THE IMMORTAL SOUL",
+          "p": 1
+        },
+        {
+          "t": "VI REMEMBER HUMAN NATURE",
+          "p": 1
+        },
+        {
+          "t": "VII CONTROLLING THE MIND",
+          "p": 1
+        },
+        {
+          "t": "VIII THE REFLECTIVE MOOD",
+          "p": 1
+        },
+        {
+          "t": "IX INTEREST IN THE ARTS",
+          "p": 1
+        },
+        {
+          "t": "X NOTHING IN LIFE IS HUMDRUM",
+          "p": 1
+        },
+        {
+          "t": "XI SERIOUS READING",
+          "p": 1
+        },
+        {
+          "t": "XII DANGERS TO AVOID",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "asamanthinketh",
+      "title": "As a Man Thinketh",
+      "author": "James Allen",
+      "pages": 18,
+      "sizeMB": 0.0,
+      "category": "Emotional Wellbeing",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/as-a-man-thinketh.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/as-a-man-thinketh.pdf",
+      "chapters": [
+        {
+          "t": "As a Man Thinketh",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "whyworry",
+      "title": "Why Worry?",
+      "author": "George Lincoln Walton",
+      "pages": 68,
+      "sizeMB": 0.1,
+      "category": "Emotional Wellbeing",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/why-worry.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/why-worry.pdf",
+      "chapters": [
+        {
+          "t": "I INTRODUCTORY",
+          "p": 1
+        },
+        {
+          "t": "II EPICURUS AS A MENTAL HEALER",
+          "p": 1
+        },
+        {
+          "t": "III MARCUS AURELIUS",
+          "p": 1
+        },
+        {
+          "t": "IV ANALYSIS OF WORRY",
+          "p": 1
+        },
+        {
+          "t": "V WORRY AND OBSESSION",
+          "p": 1
+        },
+        {
+          "t": "VI THE DOUBTING FOLLY",
+          "p": 1
+        },
+        {
+          "t": "VII HYPOCHONDRIA",
+          "p": 1
+        },
+        {
+          "t": "VIII NEURASTHENIA",
+          "p": 1
+        },
+        {
+          "t": "IX SLEEPLESSNESS",
+          "p": 1
+        },
+        {
+          "t": "X OCCUPATION NEUROSIS",
+          "p": 1
+        },
+        {
+          "t": "XI THE WORRIER AT HOME",
+          "p": 1
+        },
+        {
+          "t": "XII THE WORRIER ON HIS TRAVELS",
+          "p": 1
+        },
+        {
+          "t": "XIII THE WORRIER AT THE TABLE",
+          "p": 1
+        },
+        {
+          "t": "XIV THE FEAR OF BECOMING INSANE",
+          "p": 1
+        },
+        {
+          "t": "XV RECAPITULATORY",
+          "p": 1
+        },
+        {
+          "t": "XVI MAXIMS MISAPPLIED",
+          "p": 1
+        },
+        {
+          "t": "XVII THE FAD",
+          "p": 1
+        },
+        {
+          "t": "XVIII HOME TREATMENT",
+          "p": 1
+        },
+        {
+          "t": "XIX HOME TREATMENT (CONTINUED)",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "theconquestoffear",
+      "title": "The Conquest of Fear",
+      "author": "Basil King",
+      "pages": 80,
+      "sizeMB": 0.2,
+      "category": "Emotional Wellbeing",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-conquest-of-fear.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-conquest-of-fear.pdf",
+      "chapters": [
+        {
+          "t": "The Conquest of Fear",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "quityourworrying",
+      "title": "Quit Your Worrying!",
+      "author": "George Wharton James",
+      "pages": 97,
+      "sizeMB": 0.2,
+      "category": "Emotional Wellbeing",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/quit-your-worrying.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/quit-your-worrying.pdf",
+      "chapters": [
+        {
+          "t": "CHAPTER I THE CURSE OF WORRY",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER II OURS IS THE AGE OF WORRY",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER III",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IV HOLY WRIT, THE SAGES, AND WORRY",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER V THE NEEDLESSNESS AND USELESSNESS OF WORRY",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VII CAUSES OF WORRY",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VIII PROTEAN FORMS OF WORRY",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IX HEALTH WORRIES",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER X THE WORRIES OF PARENTS",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XI MARITAL WORRIES",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XII THE WORRY OF THE SQUIRREL CAGE",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIII RELIGIOUS WORRIES AND WORRIERS",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIV AMBITION AND WORRY",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XV ENVY AND WORRY",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVI DISCONTENT AND WORRY",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVII COWARDICE AND WORRY",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVIII WORRY ABOUT MANNERS AND SPEECH",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIX THE WORRIES OF JEALOUSY",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XX THE WORRIES OF SUSPICION",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXI THE WORRIES OF IMPATIENCE",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXII THE WORRIES OF ANTICIPATION",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXIII HOW OUR WORRY AFFECTS OTHERS",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXIV WORRY VERSUS INDIFFERENCE",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXV WORRIES AND HOBBIES",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "powerthroughrepose",
+      "title": "Power Through Repose",
+      "author": "Annie Payson Call",
+      "pages": 75,
+      "sizeMB": 0.2,
+      "category": "Emotional Wellbeing",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/power-through-repose.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/power-through-repose.pdf",
+      "chapters": [
+        {
+          "t": "I THE GUIDANCE OF THE BODY",
+          "p": 1
+        },
+        {
+          "t": "II PERVERSIONS IN THE GUIDANCE OF THE BODY",
+          "p": 1
+        },
+        {
+          "t": "III REST IN SLEEP",
+          "p": 1
+        },
+        {
+          "t": "IV OTHER FORMS OF REST",
+          "p": 1
+        },
+        {
+          "t": "V THE USE OF THE BRAIN",
+          "p": 1
+        },
+        {
+          "t": "VI THE BRAIN IN ITS DIRECTION OF THE BODY",
+          "p": 1
+        },
+        {
+          "t": "VII THE DIRECTION OF THE BODY IN LOCOMOTION",
+          "p": 1
+        },
+        {
+          "t": "VIII NERVOUS STRAIN IN PAIN AND SICKNESS",
+          "p": 1
+        },
+        {
+          "t": "IX NERVOUS STRAIN IN THE EMOTIONS",
+          "p": 1
+        },
+        {
+          "t": "X NATURE'S TEACHING",
+          "p": 1
+        },
+        {
+          "t": "XI THE CHILD AS AN IDEAL",
+          "p": 1
+        },
+        {
+          "t": "XII TRAINING FOR REST",
+          "p": 1
+        },
+        {
+          "t": "XIII TRAINING FOR MOTION",
+          "p": 1
+        },
+        {
+          "t": "XIV MIND TRAINING",
+          "p": 1
+        },
+        {
+          "t": "XV ARTISTIC CONSIDERATIONS",
+          "p": 1
+        },
+        {
+          "t": "XVI TESTS",
+          "p": 1
+        },
+        {
+          "t": "XVIII OUR RELATIONS WITH OTHERS",
+          "p": 1
+        },
+        {
+          "t": "XIX THE USE OF THE WILL",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "fourepochsofwomanslife",
+      "title": "The Four Epochs of Woman's Life",
+      "author": "Anna M. Galbraith",
+      "pages": 104,
+      "sizeMB": 0.2,
+      "category": "Women's Health",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/four-epochs-of-womans-life.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/four-epochs-of-womans-life.pdf",
+      "chapters": [
+        {
+          "t": "The Four Epochs of Woman's Life",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IV PHYSIOLOGY OF THE FEMALE GENERATIVE ORGANS",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER V THE ANOMALIES OF MENSTRUATION",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VI THE MARRIAGE QUESTION",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VII THE ETHICS OF MARRIED LIFE",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VIII SEXUAL INSTINCT IN WOMEN",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IX STERILITY",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER X PREGNANCY",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XI THE CONFINMENT",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XII THE LYING-IN",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIII THE NEW-BORN INFANT",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIV THE MENOPAUSE",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XV HYGIENE OF THE MENOPAUSE",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVI HINTS FOR HOME TREATMENT",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER I",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER II",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER III",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER V",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER X",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVI HINTS FOR HOME TREATMENT",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "theprospectivemother",
+      "title": "The Prospective Mother",
+      "author": "J. Morris Slemons",
+      "pages": 142,
+      "sizeMB": 0.3,
+      "category": "Women's Health",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-prospective-mother.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-prospective-mother.pdf",
+      "chapters": [
+        {
+          "t": "CHAPTER I THE SIGNS OF PREGNANCY AND THE DATE OF CONFINEMENT",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER II THE DEVELOPMENT OF THE OVUM",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER III THE EMBRYO",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IV THE FOOD REQUIREMENTS DURING PREGNANCY",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER V THE CARE OF THE BODY",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VI GENERAL HYGIENIC MEASURES",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VII THE AILMENTS OF PREGNANCY",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VIII MISCARRIAGE",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IX THE PREPARATIONS FOR CONFINEMENT",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER X THE BIRTH OF THE CHILD",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XI THE LYING-IN PERIOD",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XII THE NURSING MOTHER",
+          "p": 1
+        }
+      ]
+    },
+    {
+      "id": "ahandbookofhealth",
+      "title": "A Handbook of Health",
+      "author": "Woods Hutchinson",
+      "pages": 207,
+      "sizeMB": 0.4,
+      "category": "Health",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/a-handbook-of-health.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/a-handbook-of-health.pdf",
+      "chapters": [
+        {
+          "t": "CHAPTER I RUNNING THE HUMAN AUTOMOBILE",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER II WHY WE HAVE A STOMACH",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER III THE FOOD-FUEL OF THE BODY-ENGINE",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IV THE COAL FOODS",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER V THE COAL FOODS (_Continued_)",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VI THE COAL FOODS (_Continued_)",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VII KINDLING AND PAPER FOODS--FRUITS AND VEGETABLES",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VIII COOKING",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IX OUR DRINK",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER X BEVERAGES, ALCOHOL, AND TOBACCO",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XI THE HEART-PUMP AND ITS PIPE-LINE SYSTEM",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XII THE CARE OF THE HEART-PUMP AND ITS PIPE-LINES",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIII HOW AND WHY WE BREATHE",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIV HOW TO KEEP THE LUNG-BELLOWS IN GOOD CONDITION",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XV THE SKIN",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVI HOW TO KEEP THE SKIN HEALTHY",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVII THE PLUMBING AND SEWERING OF THE BODY",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVIII THE MUSCLES",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIX THE STIFFENING RODS OF THE BODY-MACHINE",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XX OUR TELEPHONE EXCHANGE AND ITS CABLES",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXI THE HYGIENE OF BONES, NERVES, AND MUSCLES",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXII EXERCISE AND GROWTH",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXIII THE LOOKOUT DEPARTMENT",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXIV THE SPEECH ORGANS",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXV THE TEETH, THE IVORY KEEPERS OF THE GATE",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXVI INFECTIONS, AND HOW TO AVOID THEM",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXVII ACCIDENTS AND EMERGENCIES",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER III 1. If we call the body an engine, what is the fuel? what is the smoke?",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IV 1. Name and describe our most common meats. 2. When is pork a valuable",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER V 1. Explain the name \"starch-sugars.\" To which class of fuel-food might",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VI 1. Why are fats slow of digestion? 2. If they are so valuable as \"coal",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VII 1. What is the necessity of fruits and vegetables in our dietary? Why",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER VIII 1. What changes occur in food when it is cooked? Describe some of the",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER IX 1. Why is water necessary in the body? 2. How does the body take in",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER X",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XI 1. Where does the real \"eating\" take place in the body? 2. How is the",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XII 1. Why is it bad for you to study or exercise while you are eating, or",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIV 1. Why is \"caged air\" dangerous? 2. How is outdoor air kept clean and",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XV 1. Why is the skin so important? 2. Name some of the things that it",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVII 1. Name four processes that take place in the living body. 2. What two",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XVIII 1. What is muscle? How much of your body weight is made up of the",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XIX",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XX 1. Why do we need a system of nerves? 2. What do we mean by motor",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXII 1. How much of the body will muscular exercise develop? 2. Why should",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXIII",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXIV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXV",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXVI",
+          "p": 1
+        },
+        {
+          "t": "CHAPTER XXVII",
+          "p": 1
+        }
+      ]
     }
   ]
 }
