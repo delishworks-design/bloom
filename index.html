@@ -79,7 +79,7 @@ p{margin:0;line-height:1.5}
 .bookgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px 12px}
 .bookcard{position:relative;display:flex;flex-direction:column;text-align:left;background:#FFFBF5;border:1.5px solid #EADFD2;border-radius:18px;padding:0;overflow:hidden;min-height:0;box-shadow:0 2px 10px rgba(120,70,80,.05);transition:transform .15s ease,box-shadow .2s ease;cursor:pointer}
 .bookcard:active{transform:scale(.98)}
-.bookcard-cover{display:block;width:100%;aspect-ratio:2/2.6;background-size:cover;background-position:center 22%;background-color:#F6E8E9}
+.bookcard-cover{display:block;width:100%;aspect-ratio:2/2.6;position:relative}
 .bookcard-meta{display:flex;flex-direction:column;gap:2px;padding:10px 12px 12px}
 .bookcard-title{font-size:.92rem;font-weight:700;color:var(--ink);line-height:1.3}
 .bookcard-author{font-size:.68rem;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
@@ -91,7 +91,7 @@ p{margin:0;line-height:1.5}
 .recentrow{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;padding:2px 2px 6px;scrollbar-width:none;margin:4px -2px 0}
 .recentrow::-webkit-scrollbar{display:none}
 .recentcard{flex:0 0 auto;width:140px;scroll-snap-align:start;text-align:left;background:#FFF9F2;border:1px solid #EFE4DC;border-radius:12px;padding:6px;display:flex;gap:8px;cursor:pointer}
-.recentcard-cover{flex:0 0 auto;width:42px;height:62px;border-radius:6px;background-size:cover;background-position:center 22%;background-color:#F6E8E9}
+.recentcard-cover{flex:0 0 auto;width:42px;height:62px;border-radius:6px;overflow:hidden;background:#151011;position:relative}
 .recentcard-meta{display:flex;flex-direction:column;gap:2px;min-width:0}
 .recentcard-title{font-size:.68rem;font-weight:700;color:var(--ink);line-height:1.3}
 .recentcard-sub{font-size:.58rem;color:var(--mut)}
@@ -150,8 +150,15 @@ body.reader-open{overflow:hidden}
 .reader-prog i{display:block;height:100%;background:var(--rose);width:0%;transition:width .25s ease}
 .spinner{width:26px;height:26px;border-radius:50%;border:2.5px solid rgba(184,69,107,.25);border-top-color:var(--rose);animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.bookcard-cover{position:relative;overflow:hidden}
-.bookcard-cover:after{content:'';position:absolute;left:0;right:0;bottom:0;height:56px;background:linear-gradient(180deg,rgba(22,17,19,0) 0%,rgba(22,17,19,.58) 100%);pointer-events:none}
+.bookcard-cover{position:relative;overflow:hidden;background:linear-gradient(115deg,#1F181B 30%,#2B2226 44%,#1F181B 52%);background-size:240% 100%;animation:coverShimmer 1.3s linear infinite}
+.bookcard-cover.done{animation:none;background:#151011}
+.bookcard-cover::before{content:'';position:absolute;inset:0;background:linear-gradient(155deg,rgba(78,44,36,.24) 0%,rgba(50,28,26,.05) 38%,rgba(22,12,14,.28) 100%);z-index:1;pointer-events:none}
+.bookcard-cover::after{content:'';position:absolute;left:0;right:0;bottom:0;height:56px;background:linear-gradient(180deg,rgba(22,17,19,0) 0%,rgba(22,17,19,.58) 100%);pointer-events:none;z-index:2}
+@keyframes coverShimmer{0%{background-position:0% 0}100%{background-position:200% 0}}
+.cover-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .65s ease;z-index:0}
+.cover-img.done{opacity:1}
+.bookcard-cover.broken .cover-img{display:none}
+.recentcard-cover.broken{background:#151011}
 .cover-foot{position:absolute;left:6px;right:6px;bottom:6px;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:6px;pointer-events:none}
 .cover-chip{display:inline-flex;align-items:center;justify-content:center;gap:4px;height:20px;min-width:20px;padding:0 7px;border-radius:999px;background:rgba(22,17,19,.62);color:#FBF4EA;font-size:.56rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;line-height:1;backdrop-filter:blur(3px)}
 .cover-chip svg{width:11px;height:11px;flex:0 0 auto}
@@ -164,6 +171,14 @@ body.reader-open{overflow:hidden}
 .bookcard-progress{display:block;height:3px;background:rgba(0,0,0,.07);overflow:hidden;position:relative}
 .bookcard-progress i{display:block;height:100%;background:var(--rose);width:0%}
 .bookcard-add{margin-left:auto;color:var(--teal);font-weight:800;letter-spacing:.04em}
+.ex-detail{display:flex;gap:14px;align-items:flex-start}
+.ex-cover{flex:0 0 96px;width:96px;aspect-ratio:2/2.6;border-radius:12px;overflow:hidden;background:#151011;box-shadow:0 8px 22px rgba(42,26,28,.38)}
+.ex-cover img{width:100%;height:100%;object-fit:cover}
+.ex-meta{flex:1;min-width:0}
+.ex-meta h2{margin:0;font-size:1.02rem;color:var(--ink);line-height:1.3}
+.ex-desc{margin:0;font-size:.76rem;line-height:1.5;color:#5B4A50}
+.seeall{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:2px 0 4px;padding:10px;border:1.5px dashed rgba(184,69,107,.45);border-radius:14px;background:#FFFBF5;color:var(--rose);font:inherit;font-size:.76rem;font-weight:800;letter-spacing:.03em;cursor:pointer}
+.seeall:active{background:#F9E4EC}
 .lib-genre{display:flex;align-items:center;gap:8px;margin:18px 2px 8px;font-size:.78rem;font-weight:800;color:var(--ink)}
 .lib-genre:before{content:'';width:3px;height:14px;border-radius:2px;background:var(--rose)}
 .lib-genre-n{font-size:.62rem;font-weight:800;color:var(--mut);letter-spacing:.06em;background:#FFF5EC;border:1px solid #EFE4DC;border-radius:999px;padding:1px 7px}
@@ -4669,7 +4684,7 @@ function libContinueHTML(){
  if(!entries.length)return '';
  entries.sort((a,b)=>(+b.b.lastRead||0)-(+a.b.lastRead||0));
  const m=libCached(),byId={};m.forEach(x=>byId[x.id]=x);
- const items=entries.slice(0,5).map(e=>{const b=byId[e.id];if(!b)return '';const pct=Math.min(100,Math.max(0,+e.b.pct||0));return `<button class="recentcard" data-bid="${E(e.id)}"><span class="recentcard-cover" style="background-image:url(${escCssUrl(b.cover||'')})"></span><span class="recentcard-meta"><span class="recentcard-title">${E(b.title)}</span><span class="recentcard-sub">Page ${e.b.page||1}/${b.pages||'?'}</span><span class="recentcard-prog"><i style="width:${pct}%"></i></span></span></button>`}).filter(Boolean);
+ const items=entries.slice(0,5).map(e=>{const b=byId[e.id];if(!b)return '';const pct=Math.min(100,Math.max(0,+e.b.pct||0));return `<button class="recentcard" data-bid="${E(e.id)}"><span class="recentcard-cover"><img class="cover-img" src="${escCssUrl(b.cover||'')}" alt="" onload="this.classList.add('done')" onerror="this.onerror=null;this.parentNode.classList.add('broken')"></span><span class="recentcard-meta"><span class="recentcard-title">${E(b.title)}</span><span class="recentcard-sub">Page ${e.b.page||1}/${b.pages||'?'}</span><span class="recentcard-prog"><i style="width:${pct}%"></i></span></span></button>`}).filter(Boolean);
  if(!items.length)return '';
  return `<div class="lib-recent"><p class="lib-sub">Continue reading</p><div class="recentrow">${items.join('')}</div></div>`}
 function libFilterChip(id,label,count){return `<button class="lib-chip${libFilter===id?' on':''}" role="tab" data-lf="${id}" aria-pressed="${libFilter===id}">${label}${count!=null?' <span class="lib-chip-n">'+count+'</span>':''}</button>`}
@@ -4687,6 +4702,8 @@ function renderBookList(){const el=document.getElementById('lb');
  const exploreHTML=all.length?exploreByGenreHTML(all):'';
  el.innerHTML=head+filters+mineHTML+exploreHTML;
  el.querySelectorAll('.lib-chip').forEach(b=>b.onclick=()=>{libFilter=b.dataset.lf;library()});
+ el.querySelectorAll('.recentcard[data-bid]').forEach(b=>b.addEventListener('click',()=>{const id=b.dataset.bid;const e=libEntry(id);if(e)openBook(id);else{showExploreSheet(id);library()}}));
+ el.querySelectorAll('[data-seeall]').forEach(b=>b.onclick=()=>{const g=b.dataset.seeall;exploreShown[g]=!exploreShown[g];library()});
  el.querySelectorAll('.bookcard[data-bid]').forEach(b=>{
   const id=b.dataset.bid;const added=!!L.books[id];
   const holdMs=450,move=14;let timer=0,sx=0,sy=0;
@@ -4708,22 +4725,28 @@ function applyLibFilter(inLib,L){
  return inLib}
 function bookcardHTML(b,entry,isExplore){
  const pages=b.pages?b.pages+' pages':'Bloom';
- const sizeTxt=b.sizeMB?b.sizeMB+' MB':'Free';
  const fin=!!(entry&&entry.finished);
  const star=(entry&&entry.favorite)?`<span class="bookcard-star" aria-hidden="true">${libStarSVG(14,true)}</span>`:'';
  const chips=`<span class="cover-foot">${fin?`<span class="cover-chip fin">${libCheckSVG(11)}Finished</span>`:'<span></span>'}${isExplore||entry?dlChipHTML(b.id,entry):''}</span>`;
  if(isExplore){
   const added=entry!=null;
-  return `<button class="bookcard" data-bid="${E(b.id)}" aria-label="${added?'Read '+E(b.title):'Add '+E(b.title)+' to your library'}"><span class="bookcard-cover" style="background-image:url(${escCssUrl(b.cover||'')})">${star}${chips}</span><span class="bookcard-meta"><span class="bookcard-title">${E(b.title)}</span><span class="bookcard-author">${E(b.author||'')}</span></span><span class="bookcard-foot"><span>${pages}</span><span>${sizeTxt}</span><span class="bookcard-add">${added?'Read now':'Add to library'}</span></span></button>`
+  return `<button class="bookcard" data-bid="${E(b.id)}" aria-label="${added?'Read '+E(b.title):'View '+E(b.title)}"><span class="bookcard-cover"><img class="cover-img" loading="lazy" src="${escCssUrl(b.cover||'')}" alt="" onload="this.classList.add('done');this.parentNode.classList.add('done')" onerror="this.onerror=null;this.parentNode.classList.add('done','broken')">${star}${chips}</span><span class="bookcard-meta"><span class="bookcard-title">${E(b.title)}</span><span class="bookcard-author">${E(b.author||'')}</span></span><span class="bookcard-foot"><span>${pages}</span><span class="bookcard-add">${added?'Read now':'Add to library'}</span></span></button>`
  }
  const pct=Math.min(100,Math.max(0,+entry.pct||0));
  const prog=pct>0&&!fin?`<span class="bookcard-progress"><i style="width:${pct}%"></i></span>`:'';
- return `<button class="bookcard" data-bid="${E(b.id)}"><span class="bookcard-cover" style="background-image:url(${escCssUrl(b.cover||'')})">${star}${chips}</span>${prog}<span class="bookcard-meta"><span class="bookcard-title">${E(b.title)}</span><span class="bookcard-author">${E(b.author||'')}</span></span><span class="bookcard-foot"><span>${pages}</span><span>${sizeTxt}</span></span></button>`}
+ return `<button class="bookcard" data-bid="${E(b.id)}"><span class="bookcard-cover"><img class="cover-img" loading="lazy" src="${escCssUrl(b.cover||'')}" alt="" onload="this.classList.add('done');this.parentNode.classList.add('done')" onerror="this.onerror=null;this.parentNode.classList.add('done','broken')">${star}${chips}</span>${prog}<span class="bookcard-meta"><span class="bookcard-title">${E(b.title)}</span><span class="bookcard-author">${E(b.author||'')}</span></span><span class="bookcard-foot"><span>${pages}</span></span></button>`}
+const exploreShown={};
+const EXPLORE_GRID_MAX=10;
 function exploreByGenreHTML(all){
  const groups=new Map();
  all.forEach(b=>{const g=(b.category||'Other').trim()||'Other';if(!groups.has(g))groups.set(g,[]);groups.get(g).push(b)});
  const order=[...groups.keys()].sort((a,b)=>groups.get(b).length-groups.get(a).length||a.localeCompare(b));
- return '<p class="lib-sub">Explore by genre</p>'+order.map(g=>`<p class="lib-genre">${E(g)}<span class="lib-genre-n">${groups.get(g).length}</span></p><div class="bookgrid">${groups.get(g).map(b=>bookcardHTML(b,libEntry(b.id),true)).join('')}</div>`).join('')}
+ return '<p class="lib-sub">Explore by genre</p>'+order.map(g=>{
+  const items=groups.get(g),written=new Set((items||[]).map(x=>x.id));
+  const open=Object.prototype.hasOwnProperty.call(exploreShown,g)?!!exploreShown[g]:false;
+  const slice=open?items:items.slice(0,EXPLORE_GRID_MAX);
+  return `<p class="lib-genre">${E(g)}<span class="lib-genre-n">${items.length}</span></p><div class="bookgrid">${slice.map(b=>bookcardHTML(b,libEntry(b.id),true)).join('')}</div>${items.length>EXPLORE_GRID_MAX?`<button class="seeall" data-seeall="${E(g)}">${open?'Show fewer':'See all '+items.length+' '+(items.length===1?'book':'books')}</button>`:''}`;
+ }).join('')}
 function renderArticleList(){const el=document.getElementById('lb');
  const q=String(libSearch||'').trim().toLowerCase();
  const L=libEnsure();const all=ARTICLES.map((_,i)=>i).filter(i=>{if(!q)return true;const a=ARTICLES[i];return (a[3]+' '+a[4]+' '+a[0]).toLowerCase().includes(q)});
@@ -4993,7 +5016,7 @@ function startDownload(id){
  downloadBook(m,(done,total)=>{const pct=total?Math.min(99,Math.round(100*done/total)):null;dlProg[id]=(pct==null?Math.min(99,(dlProg[id]||0)+3):pct);updateDlChip(id)},()=>{delete dlProg[id];libMarkDl(id,true);library();toast('Downloaded for offline reading')}).catch(e=>{delete dlProg[id];updateDlChip(id);reportErr('book.download',e);toast('Download failed')})}
 function showExploreSheet(id){
  const m=libCached().find(x=>x.id===id);if(!m)return;
- sheet(`<h2>${E(m.title)}</h2><p class="meta" style="margin:0 0 10px">${E(m.author||'')}${m.category?' · '+E(m.category):''}</p>
+ sheet(`<div class="ex-detail"><div class="ex-cover"><img src="${escCssUrl(m.cover||'')}" alt="${E(m.title)}" loading="lazy" onerror="this.onerror=null;this.style.opacity=0"></div><div class="ex-meta"><h2>${E(m.title)}</h2><p class="meta" style="margin:2px 0 8px">${E(m.author||'')}${m.category?' · '+E(m.category):''} · ${m.pages||'?'} pages</p><p class="ex-desc">${E(m.description||'A timeless public-domain read from the Bloom library, restored from the original plates.')}</p></div></div>
  <div class="bookmenu">
   <button class="bookmenu-item" id="exAdd"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg><span>Add to library</span></button>
   <button class="bookmenu-item" id="exDl">${libDlSVG(18,false)}<span>Download for offline</span></button>
@@ -5178,7 +5201,7 @@ function showReader(html){
  const bm=document.getElementById('readerBm');if(bm)bm.onclick=()=>{const b=libBook(pdfBookId);const on=!b.bookmarked;b.bookmarked=on;save();bm.classList.toggle('on',on);bm.setAttribute('aria-pressed',String(on));toast(on?'Bookmarked':'Bookmark removed')};
  window.addEventListener('resize',readerOnResize);
 }
-function closeReader(){const r=document.getElementById('reader');r.hidden=true;r.innerHTML='';document.body.classList.remove('reader-open');pdfDoc=null;pdfPage=1;pdfPages=0;pdfBookId=null;pdfFrag=0;pdfFrags=1;pdfLastFrag=false;clearPageBlocksCache();window.removeEventListener('resize',readerOnResize)}
+function closeReader(){const r=document.getElementById('reader');r.hidden=true;r.innerHTML='';document.body.classList.remove('reader-open');pdfDoc=null;pdfPage=1;pdfPages=0;pdfBookId=null;pdfFrag=0;pdfFrags=1;pdfLastFrag=false;clearPageBlocksCache();window.removeEventListener('resize',readerOnResize);try{if(view==='library'&&libTab==='books')library()}catch(e){}}
 async function openBook(id){
  const b=libCached().find(x=>x.id===id);if(!b)return;
  if(!libEntry(id)){libAddBook(id)}
@@ -5799,6 +5822,9 @@ function backfillMeals(){try{if(!D||!D.meals)return;let fix=0;
  for(const d of Object.keys(D.meals)){const arr=D.meals[d];if(!Array.isArray(arr))continue;
   arr.forEach(x=>{const m=MEALS.find(k=>k.n===x.n);if(m&&x.t!==m.t){x.t=m.t;fix++}})}
  if(fix){save()}}catch(e){}}
+async function probeNet(){
+ try{const c=new AbortController();const t=setTimeout(()=>c.abort(),3500);const r=await fetch(LIB_REMOTE+'?t='+Date.now(),{cache:'no-store',signal:c.signal});clearTimeout(t);return !!r;}catch(e){return false}
+}
 // boot without a live session (offline / failed token refresh): render the cached copy
 // @test-begin boot
 function localSessionBoot(sess){
@@ -5823,7 +5849,10 @@ if(splashShouldShow())splashPlay();else splashSkip();  // only after 3 minutes a
  setTimeout(()=>{try{checkUpdate(false)}catch(e){}},2400);
  setTimeout(()=>{try{if(!ST.get('bloom_lib_sync_v1')){migrateLibrary(D);ST.set('bloom_lib_sync_v1','1')}}catch(e){}},1200);
  setTimeout(()=>{try{refreshLibrary()}catch(e){}},1500);
- if(isOffline()){
+ // reachability probe: navigator.onLine lies in WebViews, and a stuck token-refresh loop
+ // would strand the app on the login screen. Trust nothing but a real round-trip.
+ const reachable=await probeNet();
+ if(isOffline()||!reachable){
   if(localSessionBoot(s))return;
   authView('in');
   try{splashSkip()}catch(e){}

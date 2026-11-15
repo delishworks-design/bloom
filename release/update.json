@@ -1,7 +1,7 @@
 {
-    "versionCode": 110,
-    "versionName": "1.2.95",
-    "notes": "Reader: paragraphs flow across sub-pages and PDF page breaks, chapter headings stay with the text that follows them, no page number artifacts, spacing across the cover title fixed.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.95/bloom-1.2.95.apk",
+    "versionCode": 111,
+    "versionName": "1.2.96",
+    "notes": "Library UX: real cover art with load placeholders, Explore descriptions with a detail sheet, paginate covers per genre (10 + See all), reader and library refresh bugs fixed, library stays signed in offline.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.96/bloom-1.2.96.apk",
     "publishedAt": "2026-11-15"
 }
