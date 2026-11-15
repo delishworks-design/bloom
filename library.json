@@ -2477,7 +2477,7 @@
             "title": "The Yellow Wallpaper",
             "author": "Charlotte Perkins Gilman",
             "pages": 16,
-            "sizeMB": 0.0,
+            "sizeMB": 0,
             "category": "Gothic",
             "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-yellow-wallpaper.jpg",
             "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-yellow-wallpaper.pdf",
@@ -5066,7 +5066,7 @@
             "title": "The Gift of the Magi",
             "author": "O. Henry",
             "pages": 9,
-            "sizeMB": 0.0,
+            "sizeMB": 0,
             "category": "Short Stories",
             "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-gift-of-the-magi.jpg",
             "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-gift-of-the-magi.pdf",
@@ -5232,7 +5232,7 @@
             "title": "Sonnets from the Portuguese",
             "author": "Elizabeth Barrett Browning",
             "pages": 49,
-            "sizeMB": 0.0,
+            "sizeMB": 0,
             "category": "Poetry",
             "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/sonnets-from-the-portuguese.jpg",
             "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/sonnets-from-the-portuguese.pdf",
@@ -6134,7 +6134,7 @@
             "title": "As a Man Thinketh",
             "author": "James Allen",
             "pages": 18,
-            "sizeMB": 0.0,
+            "sizeMB": 0,
             "category": "Emotional Wellbeing",
             "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/as-a-man-thinketh.jpg",
             "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/as-a-man-thinketh.pdf",
@@ -6860,6 +6860,17 @@
                 }
             ],
             "description": "Woods Hutchinson's comprehensive early-1900s manual of hygiene, diet, and everyday wellbeing."
+        },
+        {
+            "id": "bloom-test-preview",
+            "title": "Test Book (Delete Me)",
+            "author": "Bloom Admin",
+            "pages": 1,
+            "sizeMB": 0.1,
+            "category": "Fiction",
+            "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/bloom-test-preview.jpg",
+            "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/bloom-test-preview.pdf",
+            "description": "Temporary upload to verify the admin flow. Safe to delete."
         }
     ]
 }
