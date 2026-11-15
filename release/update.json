@@ -1,7 +1,7 @@
 {
-    "versionCode": 111,
-    "versionName": "1.2.96",
-    "notes": "Library UX: real cover art with load placeholders, Explore descriptions with a detail sheet, paginate covers per genre (10 + See all), reader and library refresh bugs fixed, library stays signed in offline.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.96/bloom-1.2.96.apk",
+    "versionCode": 112,
+    "versionName": "1.2.97",
+    "notes": "Featured health shelf: 13 classic women's health and general-health books now in the library, pastel genre pills on every cover, Explore spotlight panel for the clinic.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.97/bloom-1.2.97.apk",
     "publishedAt": "2026-11-15"
 }
