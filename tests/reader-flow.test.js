@@ -101,3 +101,43 @@ test('no text lost or duplicated across three pages worth of paragraphs', () => 
   const norm = s => s.replace(/\s+/g, ' ').replace(/[^\w\s.,;:!?'"-]/g, '').trim();
   assert.equal(norm(all), norm(expected));
 });
+
+test('heading group helper counts consecutive h3 blocks', () => {
+  const { h3GroupLength } = load();
+  const blocks = [{ tag: 'h3', text: 'A' }, { tag: 'h3', text: 'B' }, { tag: 'p', text: 'body' }, { tag: 'h3', text: 'C' }];
+  assert.equal(h3GroupLength(blocks, 0), 2);
+  assert.equal(h3GroupLength(blocks, 1), 1);
+  assert.equal(h3GroupLength(blocks, 2), 0);
+  assert.equal(h3GroupLength(blocks, 3), 1);
+});
+
+test('capital continuation merges only when the previous page was full to the last line', () => {
+  const { blocksOfItems, readerBlocksAcross } = load();
+  const prev = blocksOfItems([its('The night was very dark and', 78, 800, 460, 11), its('the wind howled outside my', 78, 784, 460, 11)], 'Book');
+  prev.lastFull = true;
+  const next = blocksOfItems([its('Window was open and the wind', 78, 800, 460, 11), its('kept howling all night long. Nobody slept.', 78, 784, 460, 11)], 'Book');
+  // simulate rendering of the NEXT page with a full previous page
+  const r = readerBlocksAcross(prev, next, null);
+  assert.equal(r.length, 1);
+  assert.equal(r[0].text, 'Nobody slept.');
+  // and with an unfilled last line it must NOT merge
+  const prevNotFull = blocksOfItems([its('The night was very dark', 78, 800, 200, 11), its('and cold.', 78, 784, 60, 11)], 'Book');
+  prevNotFull.lastFull = false;
+  const r2 = readerBlocksAcross(prevNotFull, next, null);
+  assert.equal(r2.length, 1);
+  assert.equal(r2[0].text, next[0].text);
+});
+
+test('word items with normal space-width gaps join with spaces (body text unchanged)', () => {
+  const { lineTextJoin } = load();
+  const items = [
+    its('the quick', 78, 800, 46, 11),
+    its('brown fox', 130, 800, 55, 11),
+    its('jumps over', 191, 800, 54, 11)
+  ];
+  assert.equal(lineTextJoin(items, 11), 'the quick brown fox jumps over');
+  // a zero-gap split between fragments of the same word region stays glued or normal spaced: both acceptable, must not drop text
+  const zero = [its('an awful', 78, 800, 46, 11), its('thing', 124, 800, 32, 11)];
+  const out = lineTextJoin(zero, 11);
+  assert.ok(out === 'an awfulthing' || out === 'an awful thing');
+});

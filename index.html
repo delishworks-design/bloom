@@ -4800,11 +4800,13 @@ function lineTextJoin(items,h){
  for(const it of sorted){
   const text=String(it.str).replace(/\s+/g,' ').trim();if(!text)continue;
   const x=it.transform[4];
-  if(prevEnd===null||x>=prevEnd-3){out+=(out?' ':'')+text}else{out+=text}
+  if(prevEnd===null||x-prevEnd>th||x>=prevEnd-3){out+=(out?' ':'')+text}else{out+=text}
   prevEnd=x+(it.width||0);
  }
  return out;
 }
+function h3GroupLength(blocks,i){let g=i;while(g<blocks.length&&blocks[g]&&blocks[g].tag==='h3')g++;return g-i}
+const READER_CAPS=/^[A-ZÀ-Þ0-9\u2018\u201C]/;
 function nextLeadingPrefix(t){
  const s=String(t||'');
  const m=s.match(/[.!?\u2026][”’»"')]?(?=\s|$)/);
@@ -4813,19 +4815,22 @@ function nextLeadingPrefix(t){
  return {pre:s.slice(0,end).trim(),rest:s.slice(end).trim()};
 }
 function readerBlocksAcross(prevBlocks,selfBlocks,nextBlocks){
- const clone=arr=>(arr||[]).map(b=>({tag:b.tag,text:b.text}));
+ const clone=arr=>{const c=(arr||[]).map(b=>({tag:b.tag,text:b.text}));if(arr)c.lastFull=!!arr.lastFull;return c};
  let own=clone(selfBlocks);
  const prev=prevBlocks||[];
+ const ownLastFull=(selfBlocks&&selfBlocks.lastFull!==false);
+ const prevLastFull=(!prev.length||prev.lastFull!==false);
+ const cont=t=>readerContinuationStart(t)||READER_CAPS.test(String(t||'').trim());
  if(prev.length){
   const lastP=prev[prev.length-1],ownFirst=own[0];
-  if(lastP&&lastP.tag==='p'&&ownFirst&&ownFirst.tag==='p'&&readerIsUnfinished(lastP.text)&&readerContinuationStart(ownFirst.text)){
+  if(lastP&&lastP.tag==='p'&&ownFirst&&ownFirst.tag==='p'&&readerIsUnfinished(lastP.text)&&((prevLastFull&&cont(ownFirst.text))||readerContinuationStart(ownFirst.text))){
    const {rest}=nextLeadingPrefix(ownFirst.text);
    own=rest?[{tag:'p',text:rest}].concat(own.slice(1)):own.slice(1);
   }
  }
  if(nextBlocks&&nextBlocks.length){
   const last=own[own.length-1],firstN=nextBlocks[0];
-  if(last&&last.tag==='p'&&firstN&&firstN.tag==='p'&&readerIsUnfinished(last.text)&&readerContinuationStart(firstN.text)){
+  if(last&&last.tag==='p'&&firstN&&firstN.tag==='p'&&readerIsUnfinished(last.text)&&((ownLastFull&&cont(firstN.text))||readerContinuationStart(firstN.text))){
    const {pre}=nextLeadingPrefix(firstN.text);
    if(pre)own[own.length-1]={tag:'p',text:last.text+' '+pre};
   }
@@ -4847,11 +4852,15 @@ function lineGroup(items){
   cur={y:y,items:[it],text:text,hMax:Math.abs(it.transform[3])||10};
  }
  if(cur)lines.push(cur);
+ let maxSpan=0;
  for(const ln of lines){
   ln.text=lineTextJoin(ln.items,ln.hMax);
   if(!ln.text)ln.text=' ';
+  let mn=Infinity,mx=-Infinity;
+  for(const it of ln.items){const a=it.transform[4];const b=a+(it.width||0);if(a<mn)mn=a;if(b>mx)mx=b}
+  ln.span=mx>mn?mx-mn:0;if(ln.span>maxSpan)maxSpan=ln.span;
  }
- return {lines,headCut,lineH:h};
+ return {lines,headCut,lineH:h,maxSpan};
 }
 function blocksOfItems(items,bookTitle){
  const g=lineGroup(items);
@@ -4866,7 +4875,11 @@ function blocksOfItems(items,bookTitle){
   if(ln.text&&ln.text.trim())para.push(ln.text.trim())
  }
  flush();
- return blocks.filter(b=>b.text);
+ const kept=blocks.filter(b=>b.text);
+ const w=g.maxSpan||0;
+ const lastLine=lines[lines.length-1];
+ kept.lastFull=w>0&&lastLine?((lastLine.span||0)>=0.85*w):false;
+ return kept;
 }
 function readerSerialize(blocks){
  if(!blocks||!blocks.length)return '<p class="ra-foot">Nothing readable on this page.</p>';
@@ -5035,12 +5048,35 @@ function paginateReader(blocks){
  const measure=(list)=>{meas.innerHTML='';for(const b of list)meas.appendChild(mkNode(b));return meas.scrollHeight};
  const pages=[];let cur=[];
  const flush=()=>{const d=document.createElement('div');d.className='bookpage';d.style.width=W+'px';d.style.height=H+'px';for(const b of cur)d.appendChild(mkNode(b));el.appendChild(d);pages.push(d);cur=[]};
- for(const blk of blocks){
+ const lh=readerLineHeight();
+ for(let bi=0;bi<blocks.length;){
+  const blk=blocks[bi];
   if(blk.tag==='h3'){
-   const h=measure(cur.concat([blk]));
-   if(cur.length&&h>H){flush();cur.push(blk);continue}
-   if(!cur.length&&h>H){cur.push(blk);flush();continue}
-   cur.push(blk);continue;
+   const gl=h3GroupLength(blocks,bi);
+   const group=blocks.slice(bi,bi+gl);
+   const next=(bi+gl<blocks.length&&blocks[bi+gl].tag==='p')?blocks[bi+gl]:null;
+   if(cur.length){
+    const words=next?next.text.split(/\s+/).filter(Boolean):[];
+    const base=cur.concat(group);
+    // find the fewest words of the next paragraph that fill at least two lines, if it is that long
+    let prefixLen=words.length;
+    if(next){
+     const baseH=measure(base);
+     let lo=1,hi=words.length;
+     let found=words.length;
+     while(lo<=hi){const mid=(lo+hi)>>1;const cand=base.concat([{tag:'p',text:words.slice(0,mid).join(' ')}]);if(measure(cand)-baseH>=2*lh){found=mid;hi=mid-1}else{lo=mid+1}}
+     if(measure(base.concat([{tag:'p',text:next.text}]))-baseH<2*lh)found=words.length;
+     prefixLen=found;
+    }
+    const check=base.concat(next?[{tag:'p',text:words.slice(0,prefixLen).join(' ')}]:[]);
+    if(measure(check)<=H){cur.push(...group);bi+=gl;continue}
+    flush();cur=group.slice();bi+=gl;continue;
+   }
+   cur.push(...group);
+   // if the group alone exceeds the page it is flushed now rather than clipped silently;
+   // this can only happen with a heading taller than a screenful, which is exceptionally rare
+   if(measure(cur)>H){flush()}
+   bi+=gl;continue;
   }
   // paragraph: split by word boundary, binary search for the max fill
   const words=blk.text.split(/\s+/).filter(Boolean);
@@ -5052,32 +5088,11 @@ function paginateReader(blocks){
    cur.push({tag:'p',text:words.slice(i,i+best).join(' ')});i+=best;
    if(i<words.length)flush();
   }
+  bi++;
  }
  if(cur.length)flush();
  meas.remove();
  if(!pages.length){const d=document.createElement('div');d.className='bookpage on';d.style.width=W+'px';d.style.height=H+'px';d.innerHTML='<p class="ra-foot">Nothing readable on this page.</p>';el.appendChild(d);pages.push(d)}
- // h3 must never be the last block on a page: shift it to the next page
- for(let p=0;p<pages.length;p++){
-  const page=pages[p];
-  const lastEl=page.lastElementChild;
-  if(lastEl&&lastEl.tagName==='H3'&&p<pages.length-1){
-   pages[p+1].insertBefore(lastEl,pages[p+1].firstChild);
-  }
- }
- // if the paragraph right after an h3 occupies less than two lines of height, push the h3 with it to the next page
- const lh=readerLineHeight();
- for(let p=0;p<pages.length;p++){
-  const page=pages[p];
-  const kids=[...page.children];
-  for(let k=kids.length-1;k>=0;k--){
-   if(kids[k].tagName!=='H3')continue;
-   const afterH=kids.slice(k+1).reduce((sum,n)=>sum+n.offsetHeight,0);
-   if(p<pages.length-1&&kids.length>k+1&&afterH<2*lh){
-    const nxt=pages[p+1];
-    nxt.insertBefore(kids[k],nxt.firstChild);
-   }
-  }
- }
  pages.forEach((d,i)=>d.classList.toggle('on',i===Math.min(pdfFrag||0,pages.length-1)));
  pdfFrags=Math.max(1,pages.length);
  if(pdfFrag>=pdfFrags)pdfFrag=pdfFrags-1;
