@@ -61,10 +61,11 @@ function load() {
     smart: ['smartPredictionHistory', 'smartCurrentCycle', 'smartCurrentCycleFromHistory', 'smartHistoricalPhaseFor', 'smartPatternsFromLogs', 'smartInsightsHTML', 'smartPatternsHTML', 'smartPhaseInsight', 'smartProgress', 'smartInsightsExtras', 'smartComingUp', 'smartWeekCompare', 'smartActiveGoals', 'smartGoalFocus', 'smartWeekFacts', 'smartWeekTemplate', 'smartWeekValidate', 'smartWeekAllowedNumbers', 'smartWeekHTML', 'smartWeekCompareHTML', 'smartComingUpHTML', 'dashboardCycle', 'clearLegacySmartAIStorage', 'smartCTAFor', 'smartCTALabel', 'smartKnowledgeFor', 'smartWeekVariantIndex', 'smartEvidenceRegistry', 'smartWeekProse', 'smartFocusHTML', 'smartGoalProgress', 'smartStage', 'smartFocusName', 'smartKnowledgeProse', 'smartNextProse', 'smartNextStep', 'smartSymptomAdvice', 'smartEmptyPatternLine', 'smartPlainPhase'],
     auth: ['logout', 'wipeLocalData', 'pwIssue', 'confirmLogout'],
     ownmode: ['seedOwnDoc'],
+    reader: ['lineGroup', 'blocksOfItems', 'readerSerialize', 'readerBlocksAcross', 'filterReaderLines', 'lineTextJoin', 'readerIsUnfinished', 'readerContinuationStart', 'nextLeadingPrefix'],
     widget: ['ownWidgetDoc', 'widgetSnapshot', 'widgetSync', 'widgetReset'],
     planui: ['shareFlags', 'plannerTabSet', 'ringPillBare', 'peerLabel']
   };
-  for (const name of ['phases', 'esc', 'sync', 'netmsg', 'roWho', 'sxmig', 'backup', 'smart', 'auth', 'ownmode', 'widget', 'planui', 'library']) {
+  for (const name of ['phases', 'esc', 'sync', 'netmsg', 'roWho', 'sxmig', 'backup', 'smart', 'auth', 'ownmode', 'widget', 'planui', 'library', 'reader']) {
     let code;
     try{ code = extract(html, name); }catch(e){ if(name==='auth') continue; throw e; }
     const names = exportsByName[name];
