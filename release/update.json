@@ -1,7 +1,7 @@
 {
-    "versionCode": 112,
-    "versionName": "1.2.97",
-    "notes": "Featured health shelf: 13 classic women's health and general-health books now in the library, pastel genre pills on every cover, Explore spotlight panel for the clinic.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.97/bloom-1.2.97.apk",
+    "versionCode": 113,
+    "versionName": "1.2.98",
+    "notes": "Critical fix: blank screen on launch caused by duplicated explore-by-genre section rendering once per genre. 1.2.97 renders a broken list; install this update.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.98/bloom-1.2.98.apk",
     "publishedAt": "2026-11-15"
 }
