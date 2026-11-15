@@ -4689,8 +4689,9 @@ function library(){
  <p class="dr-warn">Educational content only. Not personal medical advice. Severe pelvic pain, soaking through a pad every hour, fainting, or sudden severe symptoms need urgent care.</p>`;
  document.querySelectorAll('[data-lt]').forEach(b=>b.onclick=()=>{libTab=b.dataset.lt;libSearch='';libFilter='all';library()});
  const ls=document.getElementById('ls');
- if(ls)ls.oninput=e=>{libSearch=e.target.value;library()};
- if(libTab==='books')renderBookList();else renderArticleList()}
+ if(ls)ls.oninput=e=>{libSearch=e.target.value;renderLibList()};
+ renderLibList()}
+function renderLibList(){if(libTab==='books')renderBookList();else renderArticleList()}
 function libContinueHTML(){
  const L=libEnsure();
  const entries=Object.keys(L.books).map(id=>({id,b:L.books[id]})).filter(e=>!e.b.finished&&(+e.b.lastRead||0)>0);
