@@ -40,6 +40,106 @@
       "category": "Fiction",
       "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/pride-and-prejudice.jpg",
       "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/pride-and-prejudice.pdf"
+    },
+    {
+      "id": "janeeyre",
+      "title": "Jane Eyre",
+      "author": "Charlotte Bront\u00eb",
+      "pages": 322,
+      "sizeMB": 0.7,
+      "category": "Classic",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/jane-eyre.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/jane-eyre.pdf"
+    },
+    {
+      "id": "frankenstein",
+      "title": "Frankenstein",
+      "author": "Mary Shelley",
+      "pages": 133,
+      "sizeMB": 0.3,
+      "category": "Gothic",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/frankenstein.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/frankenstein.pdf"
+    },
+    {
+      "id": "dracula",
+      "title": "Dracula",
+      "author": "Bram Stoker",
+      "pages": 248,
+      "sizeMB": 0.6,
+      "category": "Horror",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/dracula.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/dracula.pdf"
+    },
+    {
+      "id": "houndofthebaskervilles",
+      "title": "The Hound of the Baskervilles",
+      "author": "Arthur Conan Doyle",
+      "pages": 110,
+      "sizeMB": 0.2,
+      "category": "Mystery",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/hound-of-the-baskervilles.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/hound-of-the-baskervilles.pdf"
+    },
+    {
+      "id": "treasureisland",
+      "title": "Treasure Island",
+      "author": "Robert Louis Stevenson",
+      "pages": 130,
+      "sizeMB": 0.3,
+      "category": "Adventure",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/treasure-island.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/treasure-island.pdf"
+    },
+    {
+      "id": "thetimemachine",
+      "title": "The Time Machine",
+      "author": "H. G. Wells",
+      "pages": 62,
+      "sizeMB": 0.1,
+      "category": "Science Fiction",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-time-machine.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-time-machine.pdf"
+    },
+    {
+      "id": "aliceinwonderland",
+      "title": "Alice's Adventures in Wonderland",
+      "author": "Lewis Carroll",
+      "pages": 59,
+      "sizeMB": 0.1,
+      "category": "Children",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/alice-in-wonderland.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/alice-in-wonderland.pdf"
+    },
+    {
+      "id": "thewizardofoz",
+      "title": "The Wonderful Wizard of Oz",
+      "author": "L. Frank Baum",
+      "pages": 83,
+      "sizeMB": 0.2,
+      "category": "Fantasy",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-wizard-of-oz.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-wizard-of-oz.pdf"
+    },
+    {
+      "id": "meditations",
+      "title": "Meditations",
+      "author": "Marcus Aurelius",
+      "pages": 107,
+      "sizeMB": 0.3,
+      "category": "Philosophy",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/meditations.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/meditations.pdf"
+    },
+    {
+      "id": "sherlockholmes",
+      "title": "The Adventures of Sherlock Holmes",
+      "author": "Arthur Conan Doyle",
+      "pages": 177,
+      "sizeMB": 0.4,
+      "category": "Short Stories",
+      "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/sherlock-holmes.jpg",
+      "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/sherlock-holmes.pdf"
     }
   ]
 }
