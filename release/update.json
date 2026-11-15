@@ -1,7 +1,7 @@
 {
-    "versionCode": 107,
-    "versionName": "1.2.92",
-    "notes": "50 more books (health, psychology, philosophy, fiction). Explore grouped by genre, chapter navigation, page-by-page reading, working Remove from library, download progress on covers.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.92/bloom-1.2.92.apk",
+    "versionCode": 108,
+    "versionName": "1.2.93",
+    "notes": "Reader rendering fixed: text now fills the page (measured pagination), chapter contents opens above the reader, Explore offers Add/Download/Read options, tap zones and edge-tap page turns.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.93/bloom-1.2.93.apk",
     "publishedAt": "2026-11-15"
 }
