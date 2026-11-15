@@ -1,7 +1,7 @@
 {
-    "versionCode": 105,
-    "versionName": "1.2.90",
-    "notes": "Add/download fixes and dark reader. Download icon always present on cards, Continue reading only after opening, empty states per filter, dark mode actually toggles.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.90/bloom-1.2.90.apk",
-    "publishedAt": "2026-11-14"
+    "versionCode": 106,
+    "versionName": "1.2.91",
+    "notes": "50 more books (health, psychology, philosophy, fiction). Explore grouped by genre, chapter navigation, page-by-page reading, working Remove from library, download progress on covers.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.91/bloom-1.2.91.apk",
+    "publishedAt": "2026-11-15"
 }

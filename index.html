@@ -127,7 +127,21 @@ body.reader-open{overflow:hidden}
 .rt-modes[aria-pressed="true"]{color:var(--rose)}
 .lib-hl-bubble{position:fixed;z-index:300;background:#3A2E33;color:#FBF4EA;border:0;border-radius:20px;padding:7px 14px;font-size:.72rem;transform:translateX(-50%);box-shadow:0 4px 12px rgba(0,0,0,.32);cursor:pointer}
 #readerText[hidden]{display:none}
-.reader-page-pill{font-size:.74rem;color:var(--mut);min-width:80px;text-align:center}
+.reader-page-pill{font-size:.72rem;color:var(--mut);min-width:92px;text-align:center;font-variant-numeric:tabular-nums}
+.reader-pages{position:absolute;inset:0;overflow:hidden;padding:14px 22px 10px}
+.reader-pages #readerText{height:100%;column-fill:auto;transition:transform .18s ease;will-change:transform;padding:0}
+.reader-pages #readerText p,.reader-pages #readerText h3{break-inside:avoid}
+.reader-pdf #bookCanvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);box-shadow:0 4px 22px rgba(58,46,51,.22)}
+.rb-nav{background:none;border:0;padding:8px 12px;font-size:1.45rem;line-height:1;color:var(--rose);cursor:pointer}
+.rb-nav:disabled{color:#D9C9CE;cursor:default}
+.reader-spacer{flex:1}
+.toc-list{max-height:56vh;overflow:auto;-webkit-overflow-scrolling:touch;margin:0 -4px}
+.toc-item{display:flex;align-items:baseline;gap:10px;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid #F1E6DD;padding:11px 6px;font:inherit;color:var(--ink);cursor:pointer}
+.toc-item.on{color:var(--rose);font-weight:800}
+.toc-item:active{background:#FFF3EA}
+.toc-num{flex:0 0 auto;min-width:24px;font-size:.66rem;font-weight:800;color:var(--mut);font-variant-numeric:tabular-nums}
+.toc-title{flex:1;font-size:.86rem;line-height:1.35}
+.toc-page{flex:0 0 auto;font-size:.66rem;color:var(--faded);font-variant-numeric:tabular-nums}
 .ra-cat{font-size:.62rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--rose);margin-bottom:6px}
 .ra-title{font-family:'Playfair Display',Georgia,serif;font-size:1.5rem;line-height:1.28;color:var(--ink);margin:0 0 14px}
 .reader-article p{margin:0 0 1.15em}
@@ -139,15 +153,22 @@ body.reader-open{overflow:hidden}
 .spinner{width:26px;height:26px;border-radius:50%;border:2.5px solid rgba(184,69,107,.25);border-top-color:var(--rose);animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .bookcard-cover{position:relative;overflow:hidden}
-.bookcard-star{position:absolute;top:6px;right:6px;z-index:2;color:rgba(255,255,255,.9);width:24px;height:24px;display:grid;place-items:center;border-radius:50%;background:rgba(0,0,0,.42)}
-.bookcard-star.fav{color:#F8E7A4}
-.bookcard-dl.on-device{position:absolute;bottom:6px;right:6px;z-index:2;color:#FBF4EA;width:24px;height:24px;display:grid;place-items:center;border-radius:50%;background:rgba(0,0,0,.42)}
+.bookcard-cover:after{content:'';position:absolute;left:0;right:0;bottom:0;height:56px;background:linear-gradient(180deg,rgba(22,17,19,0) 0%,rgba(22,17,19,.58) 100%);pointer-events:none}
+.cover-foot{position:absolute;left:6px;right:6px;bottom:6px;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:6px;pointer-events:none}
+.cover-chip{display:inline-flex;align-items:center;justify-content:center;gap:4px;height:20px;min-width:20px;padding:0 7px;border-radius:999px;background:rgba(22,17,19,.62);color:#FBF4EA;font-size:.56rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;line-height:1;backdrop-filter:blur(3px)}
+.cover-chip svg{width:11px;height:11px;flex:0 0 auto}
+.cover-chip.fin{background:rgba(184,69,107,.88)}
+.cover-chip.dl.on-device{background:rgba(38,92,84,.9)}
+.cover-chip.dl{background:rgba(22,17,19,.62)}
+.cover-chip.prog{background:rgba(22,17,19,.78);font-variant-numeric:tabular-nums;letter-spacing:.02em;text-transform:none;font-size:.6rem}
+.cover-chip.prog i{display:block;position:absolute;left:0;bottom:0;height:2px;background:#F8E7A4;border-radius:999px}
+.bookcard-star{position:absolute;top:6px;right:6px;z-index:3;color:#F8E7A4;width:22px;height:22px;display:grid;place-items:center;border-radius:50%;background:rgba(22,17,19,.55)}
 .bookcard-progress{display:block;height:3px;background:rgba(0,0,0,.07);overflow:hidden;position:relative}
 .bookcard-progress i{display:block;height:100%;background:var(--rose);width:0%}
-.bookcard-finished{position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;justify-content:flex-end;padding:8px;pointer-events:none;background:linear-gradient(180deg,rgba(20,20,20,0) 55%,rgba(20,20,20,.62))}
-.bookcard-finished-badge{width:30px;height:30px;border-radius:50%;background:var(--rose);color:#FBF4EA;display:grid;place-items:center;align-self:flex-end}
-.bookcard-finished-label{color:#FBF4EA;font-size:.66rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;text-shadow:0 1px 4px rgba(0,0,0,.4);align-self:flex-end;margin-top:4px}
 .bookcard-add{margin-left:auto;color:var(--teal);font-weight:800;letter-spacing:.04em}
+.lib-genre{display:flex;align-items:center;gap:8px;margin:18px 2px 8px;font-size:.78rem;font-weight:800;color:var(--ink)}
+.lib-genre:before{content:'';width:3px;height:14px;border-radius:2px;background:var(--rose)}
+.lib-genre-n{font-size:.62rem;font-weight:800;color:var(--mut);letter-spacing:.06em;background:#FFF5EC;border:1px solid #EFE4DC;border-radius:999px;padding:1px 7px}
 .lib-chips{display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 12px}
 .lib-chip{border:1.5px solid var(--line);background:#FFFBF5;border-radius:999px;padding:7px 12px;font:inherit;font-size:.82rem;color:var(--mut);font-weight:700;cursor:pointer}
 .lib-chip.on{background:var(--rose);border-color:var(--rose);color:#FBF4EA}
@@ -4610,6 +4631,22 @@ function libEntry(id){return (D.library&&D.library.books&&D.library.books[id])||
 function libAddBook(id){const b=libBook(id);b.added=b.added||Date.now();save();return b}
 function libToggleFavorite(id){const b=libBook(id);b.favorite=!b.favorite;save();return b.favorite}
 function libMarkDl(id,v){const b=libBook(id);b.dl=!!v;save()}
+function libDel(id){const L=libEnsure();if(!L.books[id])return false;delete L.books[id];save();return true}
+const dlProg={};
+function dlChipHTML(id,entry){
+ const pct=dlProg[id];
+ if(pct!=null)return `<span class="cover-chip prog" data-dlchip="${E(id)}" style="position:relative;overflow:hidden">${pct}%<i style="width:${Math.max(2,Math.min(100,pct))}%"></i></span>`;
+ if(!entry)return '';
+ return `<span class="cover-chip dl${entry.dl?' on-device':''}" data-dlchip="${E(id)}" title="${entry.dl?'Saved on this device':'Not downloaded'}">${libDlSVG(11,!!entry.dl)}</span>`;
+}
+function updateDlChip(id){
+ const el=document.querySelector('[data-dlchip="'+String(id).replace(/"/g,'')+'"]');
+ if(!el)return;
+ const pct=dlProg[id];
+ if(pct!=null){el.className='cover-chip prog';el.style.position='relative';el.style.overflow='hidden';el.innerHTML=pct+'%<i style="width:'+Math.max(2,Math.min(100,pct))+'%"></i>';return}
+ const entry=libEntry(id);
+ el.outerHTML=dlChipHTML(id,entry);
+}
 function libMarkFinished(id,v){const b=libBook(id);b.finished=!!v;if(v){b.pct=100}save()}
 function libTouchPage(id,page,total){
  const b=libBook(id);b.page=Math.max(1,+page||1);b.pct=Math.min(100,Math.max(0,Math.round(100*(b.page/Math.max(1,+total||1)))));b.lastRead=Date.now();save()}
@@ -4649,7 +4686,7 @@ function renderBookList(){const el=document.getElementById('lb');
  const filters=nAll?`<div class="lib-chips">${libFilterChip('all','All')}${libFilterChip('favorites','Favorites',nFav)}${libFilterChip('reading','Reading',nRead)}${libFilterChip('finished','Finished',nFin)}</div>`:'';
  const filtered=applyLibFilter(inLib,L);
  const mineHTML=filtered.length?`<p class="lib-sub">${libFilterLabel()}</p><div class="bookgrid">${filtered.map(b=>bookcardHTML(b,L.books[b.id],false)).join('')}</div>`:q?'<p class="meta" style="text-align:center;padding:18px">Nothing found</p>':(libFilter==='all'?'<div class="libempty"><p>Your library is empty</p><p class="meta">Add a book below</p></div>':'<div class="libempty"><p>'+(libFilter==='favorites'?'No favorites yet':libFilter==='reading'?'Nothing in progress':'No finished books yet')+'</p></div>');
- const exploreHTML=all.length?`<p class="lib-sub">Explore</p><div class="bookgrid">${all.map(b=>bookcardHTML(b,L.books[b.id]||null,true)).join('')}</div>`:'';
+ const exploreHTML=all.length?exploreByGenreHTML(all):'';
  el.innerHTML=head+filters+mineHTML+exploreHTML;
  el.querySelectorAll('.lib-chip').forEach(b=>b.onclick=()=>{libFilter=b.dataset.lf;library()});
  el.querySelectorAll('.bookcard[data-bid]').forEach(b=>{
@@ -4674,16 +4711,21 @@ function applyLibFilter(inLib,L){
 function bookcardHTML(b,entry,isExplore){
  const pages=b.pages?b.pages+' pages':'Bloom';
  const sizeTxt=b.sizeMB?b.sizeMB+' MB':'Free';
+ const fin=!!(entry&&entry.finished);
+ const star=(entry&&entry.favorite)?`<span class="bookcard-star" aria-hidden="true">${libStarSVG(14,true)}</span>`:'';
+ const chips=`<span class="cover-foot">${fin?`<span class="cover-chip fin">${libCheckSVG(11)}Finished</span>`:'<span></span>'}${isExplore||entry?dlChipHTML(b.id,entry):''}</span>`;
  if(isExplore){
   const added=entry!=null;
-  return `<button class="bookcard" data-bid="${E(b.id)}" aria-label="${added?'Read '+E(b.title):'Add '+E(b.title)+' to your library'}"><span class="bookcard-cover" style="background-image:url(${escCssUrl(b.cover||'')})"><span class="bookcard-dl${added&&entry.dl?' on-device':''}" title="${added&&entry.dl?'On this device':(added?'Tap to open':'Tap to add')}" aria-hidden="true">${libDlSVG(18,added&&entry.dl)}</span></span><span class="bookcard-meta"><span class="bookcard-title">${E(b.title)}</span><span class="bookcard-author">${E(b.author||'')}</span></span><span class="bookcard-foot"><span>${pages}</span><span>${sizeTxt}</span><span class="bookcard-add">${added?'Read now':'Add to library'}</span></span></button>`
+  return `<button class="bookcard" data-bid="${E(b.id)}" aria-label="${added?'Read '+E(b.title):'Add '+E(b.title)+' to your library'}"><span class="bookcard-cover" style="background-image:url(${escCssUrl(b.cover||'')})">${star}${chips}</span><span class="bookcard-meta"><span class="bookcard-title">${E(b.title)}</span><span class="bookcard-author">${E(b.author||'')}</span></span><span class="bookcard-foot"><span>${pages}</span><span>${sizeTxt}</span><span class="bookcard-add">${added?'Read now':'Add to library'}</span></span></button>`
  }
- const finished=!!entry.finished, pct=Math.min(100,Math.max(0,+entry.pct||0));
- const overlay=finished?`<span class="bookcard-finished" aria-hidden="true"><span class="bookcard-finished-badge">${libCheckSVG(18)}</span><span class="bookcard-finished-label">Finished</span></span>`:'';
- const star=entry.favorite?`<span class="bookcard-star fav" aria-hidden="true">${libStarSVG(16,true)}</span>`:'';
- const dl=(entry.dl!==false)?`<span class="bookcard-dl${entry.dl?' on-device':' download'}" title="${entry.dl?'Saved on device':'Tap to download'}" aria-hidden="true">${libDlSVG(16,entry.dl)}</span>`:'';
- const prog=pct>0&&!finished?`<span class="bookcard-progress"><i style="width:${pct}%"></i></span>`:'';
- return `<button class="bookcard" data-bid="${E(b.id)}"><span class="bookcard-cover" style="background-image:url(${escCssUrl(b.cover||'')})">${overlay}${star}${dl}</span>${prog}<span class="bookcard-meta"><span class="bookcard-title">${E(b.title)}</span><span class="bookcard-author">${E(b.author||'')}</span></span><span class="bookcard-foot"><span>${pages}</span><span>${sizeTxt}</span></span></button>`}
+ const pct=Math.min(100,Math.max(0,+entry.pct||0));
+ const prog=pct>0&&!fin?`<span class="bookcard-progress"><i style="width:${pct}%"></i></span>`:'';
+ return `<button class="bookcard" data-bid="${E(b.id)}"><span class="bookcard-cover" style="background-image:url(${escCssUrl(b.cover||'')})">${star}${chips}</span>${prog}<span class="bookcard-meta"><span class="bookcard-title">${E(b.title)}</span><span class="bookcard-author">${E(b.author||'')}</span></span><span class="bookcard-foot"><span>${pages}</span><span>${sizeTxt}</span></span></button>`}
+function exploreByGenreHTML(all){
+ const groups=new Map();
+ all.forEach(b=>{const g=(b.category||'Other').trim()||'Other';if(!groups.has(g))groups.set(g,[]);groups.get(g).push(b)});
+ const order=[...groups.keys()].sort((a,b)=>groups.get(b).length-groups.get(a).length||a.localeCompare(b));
+ return '<p class="lib-sub">Explore by genre</p>'+order.map(g=>`<p class="lib-genre">${E(g)}<span class="lib-genre-n">${groups.get(g).length}</span></p><div class="bookgrid">${groups.get(g).map(b=>bookcardHTML(b,libEntry(b.id),true)).join('')}</div>`).join('')}
 function renderArticleList(){const el=document.getElementById('lb');
  const q=String(libSearch||'').trim().toLowerCase();
  const L=libEnsure();const all=ARTICLES.map((_,i)=>i).filter(i=>{if(!q)return true;const a=ARTICLES[i];return (a[3]+' '+a[4]+' '+a[0]).toLowerCase().includes(q)});
@@ -4724,10 +4766,11 @@ function showBookMenu(id){
   const next=!b.dl;
   if(next&&isOffline()){toast('Needs an internet connection to download');sheet();return}
   if(!next){idbDelete(id).catch(()=>{});libMarkDl(id,false);sheet();library();return}
-  sheet(); // download flow
-  downloadBook(m,(done,total)=>{},()=>openBook(id)).catch(e=>{reportErr('book.download',e);toast('Download failed')})};
+  sheet();
+  dlProg[id]=0;updateDlChip(id);
+  downloadBook(m,(done,total)=>{const pct=total?Math.min(99,Math.round(100*done/total)):null;dlProg[id]=(pct==null?Math.min(99,(dlProg[id]||0)+3):pct);updateDlChip(id)},()=>{delete dlProg[id];libMarkDl(id,true);library();toast('Downloaded for offline reading')}).catch(e=>{delete dlProg[id];updateDlChip(id);reportErr('book.download',e);toast('Download failed')})};
  document.getElementById('bmFin').onclick=()=>{libMarkFinished(id,!fin);sheet();library()};
- document.getElementById('bmDel').onclick=()=>{libDel(id);idbDelete(id).catch(()=>{});sheet();library()};
+ document.getElementById('bmDel').onclick=()=>{libDel(id);idbDelete(id).catch(()=>{});if(pdfBookId===id)closeReader();sheet();library();toast('Removed from library')};
  document.getElementById('bmClose').onclick=()=>sheet()}
 function textSize(){return +(ST.get('bloom_lib_fs')||1.02)}
 function fmtFS(v){return v.toFixed(2)+'rem'}
@@ -4810,7 +4853,7 @@ async function openPdf(b){
  pdfDoc=await window.pdfjsLib.getDocument({data:existing}).promise;
  pdfPages=pdfDoc.numPages;
  const entry=libBook(b.id);
- pdfPage=Math.min(Math.max(1,+pdfPage||+entry.page||1),pdfPages);
+ pdfPage=Math.min(Math.max(1,+entry.page||1),pdfPages);
  libTouchPage(b.id,pdfPage,pdfPages);
  renderBookPage()
 }
@@ -4862,49 +4905,113 @@ async function downloadBook(b,onProgress,onDone){
  }
  libMarkDl(b.id,true);if(onDone)onDone()
 }
+let pdfFrags=1,pdfFrag=0,pdfLastFrag=false;
+function bookChapters(){const b=libCached().find(x=>x.id===pdfBookId);return b&&Array.isArray(b.chapters)?b.chapters:[]}
+function readerChapterIdx(){const ch=bookChapters();let idx=-1;for(let i=0;i<ch.length;i++){if((+ch[i].p||0)<=pdfPage)idx=i}return idx}
+function readerPageView(){return document.getElementById('readerPageView')}
+function layoutTextPage(keepFrag){
+ const view=readerPageView(),el=document.getElementById('readerText');
+ if(!view||!el)return;
+ const w=Math.max(150,view.clientWidth-44),h=Math.max(140,view.clientHeight-24);
+ el.style.height=h+'px';el.style.columnWidth=w+'px';el.style.columnGap='44px';
+ let total=1;try{total=Math.max(1,Math.round((el.scrollWidth+44)/(w+44)))}catch(e){}
+ pdfFrags=Math.max(1,Math.min(80,total));
+ if(!keepFrag)pdfFrag=0;
+ if(pdfFrag>=pdfFrags)pdfFrag=pdfFrags-1;
+ el.style.transform='translateX('+(-pdfFrag*(w+44))+'px)';
+ updatePageChrome();
+}
+function updatePageChrome(){
+ const pill=document.getElementById('readerPage');
+ if(pill){
+  const f=(pdfMode!=='canvas'&&pdfFrags>1)?' · '+(pdfFrag+1)+'/'+pdfFrags:'';
+  pill.textContent='Page '+pdfPage+' of '+pdfPages+f;
+ }
+ const prog=document.getElementById('readerProgBar');
+ if(prog&&pdfPages){const frac=(pdfMode!=='canvas'&&pdfFrags>1)?pdfFrag/pdfFrags:0;prog.style.width=(100*Math.min(1,(pdfPage-1+frac)/pdfPages))+'%'}
+ const prev=document.getElementById('rPrev'),next=document.getElementById('rNext');
+ if(prev)prev.disabled=pdfPage<=1&&pdfFrag<=0;
+ if(next)next.disabled=pdfPage>=pdfPages&&(pdfMode==='canvas'||pdfFrag>=pdfFrags-1);
+ const tocBtn=document.getElementById('readerToc');
+ if(tocBtn)tocBtn.hidden=bookChapters().length<2;
+ const ch=bookChapters(),cur=readerChapterIdx();
+ const ct=document.getElementById('readerCh');
+ if(ct)ct.textContent=cur>=0?ch[cur].t:'';
+}
 async function renderBookPage(){
  if(!pdfDoc)return;
  const page=await pdfDoc.getPage(pdfPage);
- const txt=document.getElementById('readerText'),canvas=document.getElementById('bookCanvas'),load=document.getElementById('readerLoad');
+ const view=readerPageView(),txt=document.getElementById('readerText'),canvas=document.getElementById('bookCanvas'),load=document.getElementById('readerLoad');
  const saved=getHighlights(pdfBookId);
  if(pdfMode!=='canvas'){
   const tc=await page.getTextContent();txt.innerHTML=articleHTML(tc.items);applyHighlights(txt,saved);
   if(canvas)canvas.hidden=true;if(txt)txt.hidden=false;
+  if(load)load.hidden=true;
+  if(view)view.classList.remove('reader-pdf');
+  txt.style.fontSize=fmtFS(textSize());
+  pdfFrags=1;pdfFrag=pdfLastFrag?90:0;pdfLastFrag=false;
+  await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+  layoutTextPage(true);
  }else{
-  if(canvas){canvas.hidden=false;}if(txt)txt.hidden=true;
-  const dpr=Math.min(2,window.devicePixelRatio||1);const vw=Math.min(document.getElementById('readerBody').clientWidth,760);
-  const scale=vw/page.getViewport({scale:1}).width;const vp=page.getViewport({scale:scale*dpr});
-  canvas.width=vp.width;canvas.height=vp.height;canvas.style.height=vp.height/dpr+'px';canvas.style.width='100%';
+  if(canvas)canvas.hidden=false;if(txt)txt.hidden=true;
+  if(view)view.classList.add('reader-pdf');
+  const box=(view||document.getElementById('readerBody')).getBoundingClientRect();
+  const vp1=page.getViewport({scale:1});
+  const scale=Math.max(.2,Math.min((box.width-16)/vp1.width,(box.height-16)/vp1.height));
+  const dpr=Math.min(2,window.devicePixelRatio||1);
+  const vp=page.getViewport({scale:scale*dpr});
+  canvas.width=Math.round(vp.width);canvas.height=Math.round(vp.height);
+  canvas.style.width=(vp.width/dpr)+'px';canvas.style.height=(vp.height/dpr)+'px';
   const ctx=canvas.getContext('2d');await page.render({canvasContext:ctx,viewport:vp}).promise;
+  pdfFrags=1;pdfFrag=0;pdfLastFrag=false;
+  if(load)load.hidden=true;
  }
- if(load)load.hidden=true;
  libTouchPage(pdfBookId,pdfPage,pdfPages);
- document.getElementById('readerPage').textContent='Page '+pdfPage+' of '+pdfPages;
- const prog=document.getElementById('readerProgBar');if(prog)prog.style.width=(100*pdfPage/pdfPages)+'%';
- const fs=document.getElementById('readerText');if(fs)fs.style.fontSize=fmtFS(textSize());
- const bm=document.getElementById('readerBm');if(bm)bm.setAttribute('aria-pressed',String(!!libEnsure().books[pdfBookId]&&libEntry(pdfBookId).bookmarked===true));
+ updatePageChrome();
+ const bm=document.getElementById('readerBm');
+ if(bm)bm.setAttribute('aria-pressed',String(!!libEntry(pdfBookId)&&libEntry(pdfBookId).bookmarked===true));
  maybeOfferFinished(pdfBookId,pdfPages)
 }
-function pdfNext(){if(pdfPage<pdfPages){pdfPage++;renderBookPage()}}
-function pdfPrev(){if(pdfPage>1){pdfPage--;renderBookPage()}}
+function pdfNext(){
+ if(pdfMode!=='canvas'&&pdfFrag<pdfFrags-1){pdfFrag++;layoutTextPage(true);return}
+ if(pdfPage<pdfPages){pdfPage++;pdfFrag=0;renderBookPage()}
+}
+function pdfPrev(){
+ if(pdfMode!=='canvas'&&pdfFrag>0){pdfFrag--;layoutTextPage(true);return}
+ if(pdfPage>1){pdfPage--;pdfLastFrag=true;renderBookPage()}
+}
+function goChapterPage(i){const ch=bookChapters();if(!ch[i])return;pdfPage=Math.max(1,Math.min(pdfPages,+ch[i].p||1));pdfFrag=0;pdfLastFrag=false;renderBookPage()}
+function openContents(){
+ const ch=bookChapters();if(!ch.length)return;
+ const cur=readerChapterIdx(),b=libCached().find(x=>x.id===pdfBookId)||{};
+ sheet(`<h2>Chapters</h2><p class="meta" style="margin:0 0 8px">${E(b.title||'')}</p><div class="toc-list">${ch.map((c,i)=>`<button class="toc-item${i===cur?' on':''}" data-ch="${i}"><span class="toc-num">${i+1}</span><span class="toc-title">${E(c.t)}</span><span class="toc-page">p.${c.p}</span></button>`).join('')}</div>`);
+ document.querySelectorAll('[data-ch]').forEach(el=>el.onclick=()=>{sheet();goChapterPage(+el.dataset.ch)});
+ const on=document.querySelector('.toc-item.on');if(on&&on.scrollIntoView){try{on.scrollIntoView({block:'center'})}catch(e){}}
+}
+function readerOnResize(){if(pdfDoc&&pdfMode!=='canvas')layoutTextPage(true)}
 function showReader(html){
  const r=document.getElementById('reader');r.innerHTML=html;r.hidden=false;document.body.classList.add('reader-open');
  const body=r.querySelector('.reader-body');let x0=0,y0=0;
  body.addEventListener('touchstart',e=>{const t=e.changedTouches[0];x0=t.clientX;y0=t.clientY},{passive:true});
- body.addEventListener('touchend',e=>{const t=e.changedTouches[0];const dx=t.clientX-x0,dy=t.clientY-y0;
+ body.addEventListener('touchend',e=>{if(!pdfDoc)return;const t=e.changedTouches[0];const dx=t.clientX-x0,dy=t.clientY-y0;
   if(Math.abs(dx)>44&&Math.abs(dx)>Math.abs(dy)*1.4){if(dx<0)pdfNext();else pdfPrev()}},{passive:true});
- const bm=document.getElementById('readerBm');if(bm)bm.onclick=()=>{const b=libBook(pdfBookId);const on=!b.bookmarked;b.bookmarked=on;save();bm.classList.toggle('on',on);bm.setAttribute('aria-pressed',String(on));toast(on?'Bookmarked':'Bookmark removed')}}
-function closeReader(){const r=document.getElementById('reader');r.hidden=true;r.innerHTML='';document.body.classList.remove('reader-open');pdfDoc=null;pdfPage=1;pdfPages=0;pdfBookId=null}
+ const bm=document.getElementById('readerBm');if(bm)bm.onclick=()=>{const b=libBook(pdfBookId);const on=!b.bookmarked;b.bookmarked=on;save();bm.classList.toggle('on',on);bm.setAttribute('aria-pressed',String(on));toast(on?'Bookmarked':'Bookmark removed')};
+ window.addEventListener('resize',readerOnResize);
+}
+function closeReader(){const r=document.getElementById('reader');r.hidden=true;r.innerHTML='';document.body.classList.remove('reader-open');pdfDoc=null;pdfPage=1;pdfPages=0;pdfBookId=null;pdfFrag=0;pdfFrags=1;pdfLastFrag=false;window.removeEventListener('resize',readerOnResize)}
 async function openBook(id){
  const b=libCached().find(x=>x.id===id);if(!b)return;
  if(!libEntry(id)){libAddBook(id)}
- pdfBookId=id;pdfMode=ST.get('bloom_lib_view')||'text';
- showReader(`<div class="reader-top"><button class="rt-back" id="readerBack" aria-label="Close">${IC.chevL(22)}</button><div class="rt-title">${E(b.title)}</div><button class="rt-theme" id="readerTheme" aria-label="Toggle theme">${readerTheme()==='dark'?sunSVG():moonSVG()}</button><button class="rt-modes" id="readerMode" aria-label="Toggle text/original" aria-pressed="true">Text</button><button class="rt-bm" id="readerBm" aria-label="Bookmark" aria-pressed="false">${IC.bookmark(20)}</button></div>
- <div class="reader-body reader-article" id="readerBody"><article id="readerText" class="reader-article-body"></article><canvas id="bookCanvas"></canvas><div class="reader-load" id="readerLoad"><div class="reader-spin"><div class="spinner"></div><span>Loading…</span></div></div></div>
- <div class="reader-bottom"><button class="rb-font" id="fDec" aria-label="Smaller text">A−</button><button class="rb-font" id="fInc" aria-label="Larger text">A+</button><span class="reader-page-pill" id="readerPage">— / —</span></div>
+ pdfBookId=id;pdfMode=ST.get('bloom_lib_view')||'text';pdfPage=0;pdfFrag=0;pdfFrags=1;pdfLastFrag=false;
+ showReader(`<div class="reader-top"><button class="rt-back" id="readerBack" aria-label="Close">${IC.chevL(22)}</button><div class="rt-title">${E(b.title)}</div><button class="rt-share" id="readerToc" aria-label="Chapters">${IC.list?IC.list(20):'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>'}</button><button class="rt-theme" id="readerTheme" aria-label="Toggle theme">${readerTheme()==='dark'?sunSVG():moonSVG()}</button><button class="rt-modes" id="readerMode" aria-label="Toggle text/original" aria-pressed="true">Text</button><button class="rt-bm" id="readerBm" aria-label="Bookmark" aria-pressed="false">${IC.bookmark(20)}</button></div>
+ <div class="reader-body reader-article" id="readerBody"><div class="reader-pages" id="readerPageView"><article id="readerText" class="reader-article-body"></article><canvas id="bookCanvas"></canvas></div><div class="reader-load" id="readerLoad"><div class="reader-spin"><div class="spinner"></div><span>Loading…</span></div></div></div>
+ <div class="reader-bottom"><button class="rb-font" id="fDec" aria-label="Smaller text">A−</button><button class="rb-font" id="fInc" aria-label="Larger text">A+</button><span class="reader-spacer"></span><button class="rb-nav" id="rPrev" aria-label="Previous page">‹</button><span class="reader-page-pill" id="readerPage">— / —</span><button class="rb-nav" id="rNext" aria-label="Next page">›</button></div>
  <div class="reader-prog"><i id="readerProgBar" style="width:0%"></i></div>`);
  document.getElementById('readerBack').onclick=closeReader;
  document.getElementById('readerMode').onclick=()=>{pdfMode=pdfMode==='text'?'canvas':'text';ST.set('bloom_lib_view',pdfMode);renderBookPage()};
+ document.getElementById('rPrev').onclick=pdfPrev;
+ document.getElementById('rNext').onclick=pdfNext;
+ document.getElementById('readerToc').onclick=openContents;
  document.getElementById('fDec').onclick=()=>{const cur=textSize();const next=Math.max(.78,+(cur-.13).toFixed(2));ST.set('bloom_lib_fs',String(next));renderBookPage()};
  document.getElementById('fInc').onclick=()=>{const cur=textSize();const next=Math.min(1.42,+(cur+.13).toFixed(2));ST.set('bloom_lib_fs',String(next));renderBookPage()};
  document.getElementById('readerTheme').onclick=()=>{const cur=readerTheme();const next=cur==='dark'?'light':'dark';readerSetTheme(next)};
