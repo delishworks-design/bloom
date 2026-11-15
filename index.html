@@ -160,7 +160,7 @@ body.reader-open{overflow:hidden}
 .cover-chip.fin{background:rgba(184,69,107,.88)}
 .cover-chip.dl.on-device{background:rgba(38,92,84,.9)}
 .cover-chip.dl{background:rgba(22,17,19,.62)}
-.cover-chip.prog{background:rgba(22,17,19,.78);font-variant-numeric:tabular-nums;letter-spacing:.02em;text-transform:none;font-size:.6rem}
+.cover-chip.prog{background:rgba(22,17,19,.78);font-variant-numeric:tabular-nums;letter-spacing:.02em;text-transform:none;font-size:.6rem;position:relative;overflow:hidden}
 .cover-chip.prog i{display:block;position:absolute;left:0;bottom:0;height:2px;background:#F8E7A4;border-radius:999px}
 .bookcard-star{position:absolute;top:6px;right:6px;z-index:3;color:#F8E7A4;width:22px;height:22px;display:grid;place-items:center;border-radius:50%;background:rgba(22,17,19,.55)}
 .bookcard-progress{display:block;height:3px;background:rgba(0,0,0,.07);overflow:hidden;position:relative}
@@ -4832,9 +4832,9 @@ function addHighlight(color){
  const pre=document.createRange();pre.selectNodeContents(body);pre.setEnd(range.startContainer,range.startOffset);
  const start=pre.toString().length,text=range.toString();const end=start+text.length;
  const list=getHighlights(pdfBookId);const id='h'+Date.now().toString(36);
- list.push({id,start,end,text,color:color||'#FFD966'});setHighlights(pdfBookId,list);sel.removeAllRanges();renderBookPage()
+ list.push({id,start,end,text,color:color||'#FFD966'});setHighlights(pdfBookId,list);sel.removeAllRanges();renderBookPage(true)
 }
-function removeHighlight(id){const list=getHighlights(pdfBookId).filter(h=>h.id!==id);setHighlights(pdfBookId,list);renderBookPage()}
+function removeHighlight(id){const list=getHighlights(pdfBookId).filter(h=>h.id!==id);setHighlights(pdfBookId,list);renderBookPage(true)}
 function maybeOfferFinished(id,totalPages){
  try{const key='bloom_finish_'+id,seen=sessionStorage.getItem(key);if(seen)return}catch(e){}
  if(pdfPage<totalPages)return;
@@ -4938,7 +4938,7 @@ function updatePageChrome(){
  const ct=document.getElementById('readerCh');
  if(ct)ct.textContent=cur>=0?ch[cur].t:'';
 }
-async function renderBookPage(){
+async function renderBookPage(keepFrag){
  if(!pdfDoc)return;
  const page=await pdfDoc.getPage(pdfPage);
  const view=readerPageView(),txt=document.getElementById('readerText'),canvas=document.getElementById('bookCanvas'),load=document.getElementById('readerLoad');
@@ -4949,7 +4949,7 @@ async function renderBookPage(){
   if(load)load.hidden=true;
   if(view)view.classList.remove('reader-pdf');
   txt.style.fontSize=fmtFS(textSize());
-  pdfFrags=1;pdfFrag=pdfLastFrag?90:0;pdfLastFrag=false;
+  pdfFrags=1;pdfFrag=pdfLastFrag?90:(keepFrag?pdfFrag:0);pdfLastFrag=false;
   await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
   layoutTextPage(true);
  }else{
@@ -5012,8 +5012,8 @@ async function openBook(id){
  document.getElementById('rPrev').onclick=pdfPrev;
  document.getElementById('rNext').onclick=pdfNext;
  document.getElementById('readerToc').onclick=openContents;
- document.getElementById('fDec').onclick=()=>{const cur=textSize();const next=Math.max(.78,+(cur-.13).toFixed(2));ST.set('bloom_lib_fs',String(next));renderBookPage()};
- document.getElementById('fInc').onclick=()=>{const cur=textSize();const next=Math.min(1.42,+(cur+.13).toFixed(2));ST.set('bloom_lib_fs',String(next));renderBookPage()};
+ document.getElementById('fDec').onclick=()=>{const cur=textSize();const next=Math.max(.78,+(cur-.13).toFixed(2));ST.set('bloom_lib_fs',String(next));renderBookPage(true)};
+ document.getElementById('fInc').onclick=()=>{const cur=textSize();const next=Math.min(1.42,+(cur+.13).toFixed(2));ST.set('bloom_lib_fs',String(next));renderBookPage(true)};
  document.getElementById('readerTheme').onclick=()=>{const cur=readerTheme();const next=cur==='dark'?'light':'dark';readerSetTheme(next)};
  document.getElementById('readerBody').addEventListener('click',e=>{const mark=e.target.closest('mark.lib-hl');if(mark&&mark.dataset.hid)removeHighlight(mark.dataset.hid)});
  document.getElementById('readerBody').addEventListener('mouseup',()=>{setTimeout(()=>{const sel=window.getSelection();if(!sel||sel.isCollapsed)return;const body=document.getElementById('readerText');if(!body.contains(sel.anchorNode))return;document.querySelectorAll('.lib-hl-bubble').forEach(b=>b.remove());const btn=document.createElement('button');btn.className='lib-hl-bubble';btn.textContent='Highlight';btn.onclick=ev=>{ev.stopPropagation();addHighlight('#FFD966');btn.remove()};document.body.appendChild(btn);const anchor=sel.getRangeAt(0);const rect=anchor.getBoundingClientRect();btn.style.left=(rect.left+rect.width/2)+'px';btn.style.top=(rect.top-36)+'px'},60)});
