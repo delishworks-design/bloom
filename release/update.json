@@ -1,7 +1,7 @@
 {
-    "versionCode": 113,
-    "versionName": "1.2.98",
-    "notes": "Critical fix: blank screen on launch caused by duplicated explore-by-genre section rendering once per genre. 1.2.97 renders a broken list; install this update.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.98/bloom-1.2.98.apk",
+    "versionCode": 114,
+    "versionName": "1.2.99",
+    "notes": "Library refresh: book grid now uses health-first ordering (PCOS, women's health, health, other), all 77 covers replaced with modern edition artwork, featured health shelf removed.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.99/bloom-1.2.99.apk",
     "publishedAt": "2026-11-15"
 }
