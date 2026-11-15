@@ -57,3 +57,24 @@ test('docHasContent ignores an empty reset but keeps real follower data', () => 
   assert.equal(docHasContent({ logs: {}, tasks: [], journal: [{ id: 'j', t: 'kept' }] }), true);
   assert.equal(docHasContent({ logs: { '2026-01-20': { mood: 3 } } }), true);
 });
+
+test('docHasContent counts library-only accounts', () => {
+  const { docHasContent } = load();
+  assert.equal(docHasContent({ logs: {}, tasks: [], journal: [], meals: {}, plan: {}, p: {} }), false);
+  assert.equal(docHasContent({ p: {}, library: { books: { x: { page: 3 } }, articles: {} } }), true);
+  assert.equal(docHasContent({ p: {}, library: { books: {}, articles: { 2: true } } }), true);
+});
+
+test('chooseLoginDoc preserves library progress when cloud has no tracked content', () => {
+  const keep = { savedAt: 100, logs: {}, tasks: [], journal: [], done: {}, meals: {}, plan: {}, p: {}, library: { books: { walden: { page: 42, pct: 17 } }, articles: { 1: true } } };
+  const cloud = { savedAt: 300, logs: {}, tasks: [], journal: [], p: { name: 'Partner' } };
+  const out = chooseLoginDoc(keep, cloud, '1');
+  assert.equal(out.library.books.walden.page, 42);
+  assert.equal(out.library.articles['1'], true);
+  // and when both sides have library data, books merge: remote-only keys survive, local-newer scalars win
+  const cloud2 = { savedAt: 50, logs: {}, tasks: [], journal: [], p: {}, library: { books: { walden: { page: 10, favorite: true }, dracula: { page: 5 } }, articles: {} } };
+  const out2 = chooseLoginDoc(keep, cloud2, '1');
+  assert.equal(out2.library.books.walden.page, 42);
+  assert.equal(out2.library.books.walden.favorite, true);
+  assert.equal(out2.library.books.dracula.page, 5);
+});

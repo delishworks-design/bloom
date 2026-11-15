@@ -958,13 +958,23 @@ function setDirtyFlag(v){if(user)try{ST.set('bloom_dirty_'+user,String(v))}catch
 // @test-begin sync
 function docHasContent(doc){
  if(!doc)return false;
- return !!(Object.keys(doc.logs||{}).length||(doc.tasks||[]).length||Object.keys(doc.meals||{}).length||Object.keys(doc.plan||{}).length||(doc.journal||[]).length);
+ const L=doc.library;
+ const libHas=!!(L&&(Object.keys(L.books||{}).length||Object.keys(L.articles||{}).length));
+ return !!(Object.keys(doc.logs||{}).length||(doc.tasks||[]).length||Object.keys(doc.meals||{}).length||Object.keys(doc.plan||{}).length||(doc.journal||[]).length||libHas);
 }
 function chooseLoginDoc(keep,doc,dirty){
  if(!doc)return keep;
  if(dirty==='0')return Object.assign(blank(),doc);
  const cloudHas=docHasContent(doc);
- if(!cloudHas){const out=Object.assign(blank(),doc);out.logs=keep.logs||{};out.tasks=keep.tasks||[];out.done=keep.done||{};out.meals=keep.meals||{};out.journal=keep.journal||[];out.plan=keep.plan||{};return out}
+ if(!cloudHas){
+  const out=Object.assign(blank(),doc);out.logs=keep.logs||{};out.tasks=keep.tasks||[];out.done=keep.done||{};out.meals=keep.meals||{};out.journal=keep.journal||[];out.plan=keep.plan||{};
+  const kl=(keep&&keep.library)||null, cl=(doc&&doc.library)||null;
+  const clB=(cl&&cl.books)||{}, kB=(kl&&kl.books)||{};
+  const clA=(cl&&cl.articles)||{}, kA=(kl&&kl.articles)||{};
+  const books={};[...new Set([...Object.keys(clB),...Object.keys(kB)])].forEach(id=>{books[id]=Object.assign({}, clB[id]||{}, kB[id]||{})});
+  out.library={books, articles:Object.assign({}, clA, kA)};
+  return out;
+ }
  return mergeDocs(keep,doc);
 }
 function isPlainObject(v){return v!==null&&typeof v==='object'&&!Array.isArray(v)}
@@ -1108,8 +1118,9 @@ function validateBackup(obj){
  if(obj.v!==1)return bad('Unsupported backup version.');
  const d=obj.doc;if(!isPlainObject(d))return bad('Backup doc is missing or invalid.');
  if(JSON.stringify(obj).length>5*1024*1024)return bad('Backup file is too large.');
- const keys=['p','logs','tasks','done','meals','journal','plan','games','cons','rem','sxMigrated','seedClean','savedAt'];const out={};keys.forEach(k=>{if(k in d)out[k]=d[k]});
- const objTypes=['logs','done','meals','plan','games','p'];for(const k of objTypes){if(k in out&&!isPlainObject(out[k]))delete out[k]}
+ const keys=['p','logs','tasks','done','meals','journal','plan','games','cons','rem','sxMigrated','seedClean','savedAt','library'];const out={};keys.forEach(k=>{if(k in d)out[k]=d[k]});
+ const objTypes=['logs','done','meals','plan','games','p','library'];for(const k of objTypes){if(k in out&&!isPlainObject(out[k]))delete out[k]}
+if(out.library){out.library={books:isPlainObject(out.library.books)?out.library.books:{},articles:isPlainObject(out.library.articles)?out.library.articles:{}}}
  if('tasks' in out&&!Array.isArray(out.tasks))return bad('Backup field tasks must be an array.');
  if('journal' in out&&!Array.isArray(out.journal))return bad('Backup field journal must be an array.');
  const dateRe=/^\d{4}-\d{2}-\d{2}$/;

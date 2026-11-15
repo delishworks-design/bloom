@@ -78,3 +78,11 @@ test('validateBackup accepts valid backup and round trips', () => {
   assert.equal(res.doc.tasks[0].id, 't1');
   assert.equal(res.doc.journal[0].t, 'note');
 });
+
+test('validateBackup round trips library progress', () => {
+  const original = { savedAt: 1, logs: {}, tasks: [], journal: [], library: { books: { walden: { page: 77, pct: 30 } }, articles: { 4: true } } };
+  const backup = makeBackup(original);
+  const res = validateBackup(backup);
+  assert.equal(res.ok, true);
+  assert.equal(JSON.stringify(res.doc.library), JSON.stringify(original.library));
+});
