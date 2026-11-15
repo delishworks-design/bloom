@@ -1,7 +1,7 @@
 {
-    "versionCode": 108,
-    "versionName": "1.2.93",
-    "notes": "Reader rendering fixed: text now fills the page (measured pagination), chapter contents opens above the reader, Explore offers Add/Download/Read options, tap zones and edge-tap page turns.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.93/bloom-1.2.93.apk",
+    "versionCode": 109,
+    "versionName": "1.2.94",
+    "notes": "Fix: reader collapsed to a narrow column \u2014 book reader container must not inherit article max-width/auto margins. Library, chapter contents, page turns unchanged.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.94/bloom-1.2.94.apk",
     "publishedAt": "2026-11-15"
 }
