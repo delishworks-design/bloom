@@ -5849,8 +5849,17 @@ async function probeNet(){
 // boot without a live session (offline / failed token refresh): render the cached copy
 // @test-begin boot
 function localSessionBoot(sess){
- if(!sess||String(sess).indexOf('p:')===0)return false;
- const mail=String(sess).toLowerCase();
+ if(sess&&String(sess).indexOf('p:')===0)return false;
+ let mail=sess?String(sess).toLowerCase():null;
+ if(!mail){
+  // the custom session flag can go missing in some WebViews; fall back to the
+  // supabase auth token's own email as proof of an established account
+  try{const raw=Object.keys(localStorage).find(k=>/^sb-[^-]+-auth-token$/.test(k));const j=raw?JSON.parse(localStorage.getItem(raw)):null;const em=(j&&j.user&&j.user.email)||(j&&j.email);mail=em?String(em).toLowerCase():null}catch(e){}
+ }
+ if(!mail){
+  try{const po=ST.get('bloom_own');if(po)mail=String(po).toLowerCase()}catch(e){}
+ }
+ if(!mail)return false;
  let cached=null;try{cached=J(key(mail),null)}catch(e){}
  if(!cached||typeof cached!=='object')return false;
  user=mail;D=Object.assign(blank(),cached);loadRev(mail);applyTheme();restoreNav();shell();
