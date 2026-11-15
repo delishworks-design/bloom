@@ -4772,20 +4772,16 @@ function healthShelfHTML(all){
  return `<div class="healthfeat" role="region" aria-label="Bloom clinic shelf: women's health"><div class="healthfeat-in"><p class="hf-kicker">Bloom Clinic · Featured</p><h2 class="hf-title">Women&rsquo;s health,<br><em>handpicked.</em></h2><p class="hf-lede">Pregnancy, cycle care, mood and everyday wellbeing — a handpicked shelf for the clinic.</p></div><div class="hf-row">${shown.map(b=>`<button class="hf-card" data-bid="${E(b.id)}" aria-label="${E(b.title)}"><span class="hf-card-cover"><img loading="lazy" src="${escCssUrl(b.cover||'')}" alt="" onerror="this.style.opacity=0"></span><span class="hf-card-foot"><span class="hf-card-title">${E(b.title)}</span><span class="hf-card-author">${E(b.author||'')}</span></span></button>`).join('')}</div><button class="hf-all" data-healthall="1">${healthFeatAll?'Hide the full shelf':'Browse all '+pick.length+' health books'}</button>${healthFeatAll?`<div class="bookgrid hf-panel">${pick.map(b=>bookcardHTML(b,libEntry(b.id),true)).join('')}</div>`:''}</div>`;
 }
 function exploreByGenreHTML(all){
- const health=new Set(HEALTH_CATS);
  const groups=new Map();
  all.forEach(b=>{const g=(b.category||'Other').trim()||'Other';if(!groups.has(g))groups.set(g,[]);groups.get(g).push(b)});
  const order=[...groups.keys()].sort((a,b)=>groups.get(b).length-groups.get(a).length||a.localeCompare(b));
  return healthShelfHTML(all)+'<p class="lib-sub">Explore by genre</p>'+order.map(g=>{
- const groups=new Map();
- all.forEach(b=>{const g=(b.category||'Other').trim()||'Other';if(!groups.has(g))groups.set(g,[]);groups.get(g).push(b)});
- const order=[...groups.keys()].sort((a,b)=>groups.get(b).length-groups.get(a).length||a.localeCompare(b));
- return '<p class="lib-sub">Explore by genre</p>'+order.map(g=>{
-  const items=groups.get(g),written=new Set((items||[]).map(x=>x.id));
+  const items=groups.get(g);
   const open=Object.prototype.hasOwnProperty.call(exploreShown,g)?!!exploreShown[g]:false;
   const slice=open?items:items.slice(0,EXPLORE_GRID_MAX);
   return `<p class="lib-genre">${E(g)}<span class="lib-genre-n">${items.length}</span></p><div class="bookgrid">${slice.map(b=>bookcardHTML(b,libEntry(b.id),true)).join('')}</div>${items.length>EXPLORE_GRID_MAX?`<button class="seeall" data-seeall="${E(g)}">${open?'Show fewer':'See all '+items.length+' '+(items.length===1?'book':'books')}</button>`:''}`;
- }).join('')}
+ }).join('');
+}
 function renderArticleList(){const el=document.getElementById('lb');
  const q=String(libSearch||'').trim().toLowerCase();
  const L=libEnsure();const all=ARTICLES.map((_,i)=>i).filter(i=>{if(!q)return true;const a=ARTICLES[i];return (a[3]+' '+a[4]+' '+a[0]).toLowerCase().includes(q)});
