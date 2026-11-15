@@ -6860,17 +6860,6 @@
                 }
             ],
             "description": "Woods Hutchinson's comprehensive early-1900s manual of hygiene, diet, and everyday wellbeing."
-        },
-        {
-            "id": "bloom-test-preview",
-            "title": "Test Book (Delete Me)",
-            "author": "Bloom Admin",
-            "pages": 1,
-            "sizeMB": 0.1,
-            "category": "Fiction",
-            "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/bloom-test-preview.jpg",
-            "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/bloom-test-preview.pdf",
-            "description": "Temporary upload to verify the admin flow. Safe to delete."
         }
     ]
 }
