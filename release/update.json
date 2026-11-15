@@ -1,7 +1,7 @@
 {
-    "versionCode": 109,
-    "versionName": "1.2.94",
-    "notes": "Fix: reader collapsed to a narrow column \u2014 book reader container must not inherit article max-width/auto margins. Library, chapter contents, page turns unchanged.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.94/bloom-1.2.94.apk",
+    "versionCode": 110,
+    "versionName": "1.2.95",
+    "notes": "Reader: paragraphs flow across sub-pages and PDF page breaks, chapter headings stay with the text that follows them, no page number artifacts, spacing across the cover title fixed.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.95/bloom-1.2.95.apk",
     "publishedAt": "2026-11-15"
 }
