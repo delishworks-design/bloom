@@ -1,7 +1,7 @@
 {
-    "versionCode": 120,
-    "versionName": "1.2.105",
-    "notes": "Fix: app broke on startup (missing $ helper). Includes recovery screen that catches future boot failures with a Reset data button. Install instead of 1.2.103/1.2.104.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.105/bloom-1.2.105.apk",
+    "versionCode": 121,
+    "versionName": "1.2.106",
+    "notes": "Default theme now Light. Partner accounts keep their own private reading progress, not the owner's. Dropped the Step-1/Step-2 labels in signup. Did-you-know and food-tip text now visible in dark mode.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.106/bloom-1.2.106.apk",
     "publishedAt": "2026-11-16"
 }
