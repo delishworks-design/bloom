@@ -68,9 +68,10 @@ function load() {
     planui: ['shareFlags', 'plannerTabSet', 'ringPillBare', 'peerLabel'],
     plannerAdvance: ['normalizeTask', 'taskOn', 'tasksFor', 'overdueList'],
     readingGoal: ['readNormalize', 'readGoalPct', 'formatMS', 'computeStreak', 'weekDots', 'booksThisYear'],
+    readingSync: ['readingMerge'],
     bloomcal: ['calMonthBlock', 'calContinueBtn']
   };
-  for (const name of ['phases', 'esc', 'sync', 'netmsg', 'roWho', 'sxmig', 'backup', 'smart', 'auth', 'ownmode', 'widget', 'planui', 'library', 'reader', 'errorIgnore', 'partnerLibrary', 'plannerAdvance', 'readingGoal', 'bloomcal']) {
+  for (const name of ['phases', 'esc', 'sync', 'netmsg', 'roWho', 'sxmig', 'backup', 'smart', 'auth', 'ownmode', 'widget', 'planui', 'library', 'reader', 'errorIgnore', 'partnerLibrary', 'plannerAdvance', 'readingGoal', 'readingSync', 'bloomcal']) {
     let code;
     try{ code = extract(html, name); }catch(e){ if(name==='auth') continue; throw e; }
     const names = exportsByName[name];
