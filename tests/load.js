@@ -65,9 +65,11 @@ function load() {
     errorIgnore: ['errorIgnorableEvent'],
     partnerLibrary: ['libMergeDocs', 'libStoreKey', 'libStoreReset'],
     widget: ['ownWidgetDoc', 'widgetSnapshot', 'widgetSync', 'widgetReset'],
-    planui: ['shareFlags', 'plannerTabSet', 'ringPillBare', 'peerLabel']
+    planui: ['shareFlags', 'plannerTabSet', 'ringPillBare', 'peerLabel'],
+    plannerAdvance: ['normalizeTask', 'taskOn', 'tasksFor', 'overdueList'],
+    readingGoal: ['readNormalize', 'readGoalPct', 'formatMS', 'computeStreak', 'weekDots', 'booksThisYear']
   };
-  for (const name of ['phases', 'esc', 'sync', 'netmsg', 'roWho', 'sxmig', 'backup', 'smart', 'auth', 'ownmode', 'widget', 'planui', 'library', 'reader', 'errorIgnore', 'partnerLibrary']) {
+  for (const name of ['phases', 'esc', 'sync', 'netmsg', 'roWho', 'sxmig', 'backup', 'smart', 'auth', 'ownmode', 'widget', 'planui', 'library', 'reader', 'errorIgnore', 'partnerLibrary', 'plannerAdvance', 'readingGoal']) {
     let code;
     try{ code = extract(html, name); }catch(e){ if(name==='auth') continue; throw e; }
     const names = exportsByName[name];
