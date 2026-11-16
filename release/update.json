@@ -1,7 +1,7 @@
 {
-    "versionCode": 115,
-    "versionName": "1.2.100",
-    "notes": "Fix: bundled APK shipped the stale page \u2014 featured health shelf finally removed on-device, health books now sort first as normal genre sections with pastel pills and modern covers.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.100/bloom-1.2.100.apk",
+    "versionCode": 116,
+    "versionName": "1.2.101",
+    "notes": "Fix: library and book progress kept when logging out and logging back in, backup restore and fresh-login keep library state, offline boot works with missing session flag, search no longer loses focus.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.101/bloom-1.2.101.apk",
     "publishedAt": "2026-11-15"
 }
