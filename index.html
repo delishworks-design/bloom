@@ -1355,7 +1355,7 @@ async function sbSignIn(email,pw){await sbInit();if(!sb)return 'offline';
  if(error)return String(error.message||error)==='offline'?OFFLINE_MSG:errText(resR.error.message||resR.error);
  const {data}=await sb.auth.getSession();if(data.session)await sbAfterLogin(data.session.user);return null}
 async function sbSignUp(email,pw){await sbInit();if(!sb)return 'offline';
- const resR=await withTimeout(sb.auth.signUp({email:email.trim(),password:pw}),4500).catch(e=>({error:new Error('offline')}));
+ const resR=await withTimeout(sb.auth.signUp({email:email.trim(),password:pw,options:{emailRedirectTo:location.origin+(location.pathname||'/')}}),4500).catch(e=>({error:new Error('offline')}));
  const {error}=resR||{};
  if(error)return String(error.message||error)==='offline'?OFFLINE_MSG:errText(resR.error.message||resR.error);
  const {data}=await sb.auth.getSession();
@@ -1402,6 +1402,22 @@ async function enterPartnerMode(owner,code,quiet){
  if(ownMode||ownLoading){if(doc){try{ST.set(key(owner),JSON.stringify(doc))}catch(e){}}return true}
  if(doc){D=Object.assign(blank(),doc);roHash=roHashOf(JSON.stringify(doc));try{ST.set(key(owner),JSON.stringify(doc))}catch(e){}}
  else{const cached=J(key(owner),null);if(cached)D=Object.assign(blank(),cached)}
+ // load the partner's own library doc once, merge with local cache
+ try{
+   const k='bloom_reader_partner_'+((sbUser&&sbUser.id)||'');
+   const local=(function(){ let s=null;try{s=JSON.parse(ST.get(k)||'null')}catch(e){};if(!s||typeof s!=='object')s={books:{},articles:{}};if(!s.books)s.books={};if(!s.articles)s.articles={};return s })();
+   partnerLibFetch().then(remote=>{
+     if(remote && remote.books){
+       const merged=libMergeDocs(local,remote);
+       try{ST.set(k,JSON.stringify(merged))}catch(e){}
+       roLibCache={key:k,obj:merged};
+       partnerLibPush(merged).then(()=>{});
+     }else{
+       try{ST.set(k,JSON.stringify(local))}catch(e){}
+       roLibCache={key:k,obj:local};
+     }
+   }).catch(()=>{});
+ }catch(e){}
  setSession('p:'+owner);
  if(!window.__navReady)view='cycle';shell();
  if(!quiet)toast('Paired \u00b7 following '+(((D.p&&D.p.name)||'your partner')));
@@ -1638,7 +1654,6 @@ function authView(mode){try{splashSkip()}catch(e){}mode=mode||'in';try{fabSync()
     <input id="u" type="email" inputmode="email" autocomplete="email" maxlength="80" placeholder="you@example.com" autocapitalize="none" spellcheck="false" aria-describedby="e-u">
     <p class="hint" id="e-u" role="status"></p></div>
    ${up?'':pwBlock('pw','Password','current-password')}
-   ${up ? '' : '<div class="step-dots" aria-hidden="true"><span class="on"></span><span></span></div>'}
    <div class="err" id="err" role="alert"></div>
    <button class="btn" type="submit" id="go">${up?'Continue':'Log in'}</button>
    <div class="or">or</div>
@@ -4783,13 +4798,57 @@ async function idbPut(id,buf){const db=await idbDB();const tx=db.transaction('bo
 async function idbDelete(id){const db=await idbDB();const tx=db.transaction('books','readwrite');const st=tx.objectStore('books');st.delete(id);return new Promise((res)=>{tx.oncomplete=res;tx.onerror=res})}
 
 // account-bound library state lives in D.library and syncs with the user doc
-function libStoreKey(){ if(RO&&ROowner)return 'bloom_reader_ro_'+ROowner; if(user)return 'bloom_reader_u_'+user; return 'bloom_reader_anon'; }
+// @test-begin partnerLibrary
+function libMergeDocs(local,remote){
+ const l=local&&typeof local==='object'?local:{books:{},articles:{}};
+ const r=remote&&typeof remote==='object'?remote:{books:{},articles:{}};
+ const lBooks=(l.books||{}),rBooks=(r.books||{}),lArts=l.articles||{},rArts=r.articles||{};
+ const books={};
+ const all=new Set([...Object.keys(lBooks),...Object.keys(rBooks)]);
+ all.forEach(id=>{
+   const a=rBooks[id],b=lBooks[id];
+   if(!a){books[id]=b||{};return}
+   if(!b){books[id]=a;return}
+   const out=Object.assign({}, a, b, {page:Math.max(+b.page||1,+a.page||1), pct:Math.max(+b.pct||0,+a.pct||0), lastRead:Math.max(+b.lastRead||0,+a.lastRead||0)});
+   if(a.finished!==b.finished) out.finished=!!(a.finished||b.finished);
+   if(a.favorite!==b.favorite) out.favorite=!!(a.favorite||b.favorite);
+   if(Array.isArray(a.hl)||Array.isArray(b.hl)){
+     const seen=new Set();const hl=[];
+     [(a.hl||[]),(b.hl||[])].forEach(arr=>arr.forEach(h=>{const k=(h.start||'')+':'+(h.end||'')+':'+(h.color||'');if(!seen.has(k)){seen.add(k);hl.push(h)}}));
+     out.hl=hl.slice(0,200);
+   }
+   books[id]=out;
+ });
+ const articles=Object.assign({}, rArts||{}, lArts||{});
+ Object.keys(rArts||{}).forEach(k=>{ if(rArts[k]===false) articles[k]=false; });
+ return {books, articles};
+}
+function libStoreKey(){ if((RO||ROowner||ownMode)&&sbUser&&sbUser.id)return 'bloom_reader_partner_'+sbUser.id; if(user)return 'bloom_reader_u_'+user; return 'bloom_reader_anon'; }
 let roLibCache=null;
 function libStoreReset(){roLibCache=null}
 function libStoreRead(){ const k=libStoreKey(); if(roLibCache&&roLibCache.key===k)return roLibCache.obj; let s=null;try{s=JSON.parse(ST.get(k)||'null')}catch(e){};if(!s||typeof s!=='object')s={books:{},articles:{}};if(!s.books)s.books={};if(!s.articles)s.articles={};roLibCache={key:k,obj:s};return s; }
-function libStoreWrite(s){ try{ST.set(libStoreKey(),JSON.stringify(s))}catch(e){} }
+function partnerLibKey(uid){ return 'bloom_reader_partner_'+uid; }
+function partnerLibPush(doc){
+ if(!sb||!sbUser||!sbUser.id) return Promise.resolve('failed');
+ const payload={user_id:sbUser.id, doc:doc, updated_at:new Date().toISOString()};
+ return sb.from('bloom_library').upsert(payload, { onConflict:'user_id' }).then(({error})=>{
+   if(error){ try{ST.set('bloom_partner_lib_dirty_'+sbUser.id,'1')}catch(e){} ; return 'failed'; }
+   try{ST.del('bloom_partner_lib_dirty_'+sbUser.id)}catch(e){};
+   return 'ok';
+ }).catch(()=>{ try{ST.set('bloom_partner_lib_dirty_'+sbUser.id,'1')}catch(e){} ; return 'failed'; });
+}
+function partnerLibFetch(){
+ if(!sb||!sbUser||!sbUser.id) return Promise.resolve(null);
+ return sb.from('bloom_library').select('doc').eq('user_id',sbUser.id).maybeSingle()
+   .then(({data,error})=>{
+     if(error) return {error:String(error.message||error)};
+     return data&&data.doc?data.doc:null;
+   }).catch(e=>({error:String(e&&e.message||e)}));
+}
+function libStoreWrite(s){ try{ST.set(libStoreKey(),JSON.stringify(s))}catch(e){}; if((RO||ROowner)&&sbUser&&sbUser.id){ partnerLibPush(s).then(r=>{}); } }
+// @test-end partnerLibrary
 function libEnsure(){
- if(RO&&!ownMode&&ROowner){ return libStoreRead(); }
+ if(RO&&!ownMode){ return libStoreRead(); }
  const L=D.library||(D.library={books:{},articles:{}});
  if(!L.books)L.books={};if(!L.articles)L.articles={};
  return L;
