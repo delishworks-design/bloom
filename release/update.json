@@ -1,7 +1,7 @@
 {
-    "versionCode": 118,
-    "versionName": "1.2.103",
-    "notes": "Fix: blanks screen after 1.2.102 update \u2014 CSS variables were malformed by an unplanned edit and the entire app rendered blank. This build restores both light and dark palettes. Install instead of 1.2.102.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.103/bloom-1.2.103.apk",
+    "versionCode": 119,
+    "versionName": "1.2.104",
+    "notes": "Defensive: shows the exact runtime error on screen with a Reset app data button, and auto-recovers an empty-on-boot build. Install instead of 1.2.103 if you still see a blank page.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.104/bloom-1.2.104.apk",
     "publishedAt": "2026-11-16"
 }
