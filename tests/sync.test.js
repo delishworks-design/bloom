@@ -78,3 +78,19 @@ test('chooseLoginDoc preserves library progress when cloud has no tracked conten
   assert.equal(out2.library.books.walden.favorite, true);
   assert.equal(out2.library.books.dracula.page, 5);
 });
+
+
+test('chooseLoginDoc preserves reading log from local keep when cloud lacks it', () => {
+  const keep = { savedAt: 1, p:{}, logs:{}, tasks:[], library:{books:{},articles:{}}, read:{goalMin:5,goalBooks:12,log:{'2026-11-17':13}} };
+  const cloud = { savedAt: 2, p:{}, logs:{}, tasks:[] };
+  const out = chooseLoginDoc(keep, cloud, '1');
+  assert.equal(out.read.log['2026-11-17'], 13);
+});
+
+test('chooseLoginDoc dirty=0 path preserves reading log', () => {
+  const keep = { savedAt: 1, p:{}, logs:{}, read:{goalMin:10,goalBooks:3,log:{'2026-11-17':60}} };
+  const cloud = { savedAt: 2, p:{}, logs:{} };
+  const out = chooseLoginDoc(keep, cloud, '0');
+  assert.equal(out.read.log['2026-11-17'], 60);
+  assert.equal(out.read.goalMin, 10);
+});

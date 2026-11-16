@@ -33,7 +33,7 @@ function load() {
     encodeURIComponent
   };
   sandbox.blank = function blank() {
-    return { p: {}, logs: {}, tasks: [], done: {}, meals: {}, journal: [], plan: {}, games: {}, cons: true, rem: { on: false, time: '20:00' } };
+    return { p: {}, logs: {}, tasks: [], done: {}, meals: {}, journal: [], plan: {}, games: {}, cons: true, rem: { on: false, time: '20:00' }, read: { goalMin: 5, goalBooks: 1, log: {} } };
   };
   sandbox.TAGS = ['Acne','Hair changes','Bloating','Cramps','Fatigue','Cravings','Headache','Low mood','Anxious','Breast tenderness'];
   sandbox.D = { p: {} };

@@ -56,3 +56,12 @@ test('index.html has dedicated reading table helpers and login wiring', () => {
   assert.match(html, /from\('bloom_reading'\)/);
   assert.match(html, /await readingLoadOnce\(\)/);
 });
+
+test('blank() seeds a read bucket so cloud-doc replaces never drop it', () => {
+  const ctx = load();
+  // blank is provided by the vm sandbox in tests/load.js
+  const b = ctx.blank();
+  assert.ok(b.read, 'blank must include read');
+  assert.equal(b.read.goalMin, 5);
+  assert.equal(typeof b.read.log, 'object');
+});
