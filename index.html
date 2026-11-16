@@ -392,9 +392,12 @@ label{display:block;font-size:.86rem;color:var(--mut) !important;margin-top:16px
 .calsheet-scroll{overflow-y:auto;flex:1;padding:0 12px 20px;-webkit-overflow-scrolling:touch}
 .cal-month{padding:14px 4px 10px;border-bottom:1px solid var(--line)}
 .cal-month-h{margin:0 0 8px;font-size:1rem;color:var(--ink);letter-spacing:.02em}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;width:100%;min-width:0}
+.cal-month{min-width:0;width:100%}
 .cal-wd{text-align:center;font-size:.6rem;font-weight:800;letter-spacing:.08em;color:var(--mut);padding:2px 0 4px}
 .cal-cell{aspect-ratio:1;border:1px solid var(--line2);border-radius:10px;background:var(--card);color:var(--ink);font-size:.88rem;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.cal-cell,.mg-cell{min-width:0;overflow:hidden;box-sizing:border-box}
+.calsheet,.calsheet-scroll{min-width:0;width:100%;max-width:100%}
 .cal-cell:hover{border-color:var(--rose)}
 .cal-empty{aspect-ratio:1}
 .cal-today{outline:2px solid #2A8A87;outline-offset:1px}
@@ -424,6 +427,8 @@ label{display:block;font-size:.86rem;color:var(--mut) !important;margin-top:16px
 
 /* Sheet - light */
 .sheet{position:fixed;inset:0;background:rgba(58,46,51,.35) !important;backdrop-filter:blur(8px);z-index:260;display:flex;align-items:flex-end;justify-content:center}
+html.sheet-open,html.sheet-open body{overflow:hidden !important;overscroll-behavior:none}
+.sheet-back{display:inline-flex;align-items:center;gap:4px;background:none;border:0;padding:2px 4px;margin:0 0 6px;color:var(--rose);font:inherit;font-size:.84rem;font-weight:700;cursor:pointer}
 .sheet>div{background:var(--card) !important;width:100%;max-width:430px;max-height:92%;overflow:auto;border-radius:28px 28px 0 0 !important;padding:24px 20px 28px !important;box-shadow:0 -16px 40px rgba(120,70,80,.18) !important;display:flex;flex-direction:column;gap:14px;border:1.5px solid var(--line) !important;border-bottom:0 !important}
 .sheet>div{padding-bottom:calc(28px + env(safe-area-inset-bottom,0px)) !important}
 .upbar{height:4px;border-radius:2px;background:var(--line2);overflow:hidden}
@@ -2146,8 +2151,17 @@ let sheetVV=null;
 function sheetFit(){const box=document.querySelector('#sh>div');if(!box)return;
  const vv=window.visualViewport;const h=vv?vv.height:window.innerHeight;
  box.style.maxHeight=Math.max(220,Math.round(h*0.88))+'px'}
-function sheet(h){const s=$('#sheet');if(!h){s.innerHTML='';if(sheetVV){window.visualViewport.removeEventListener('resize',sheetFit);sheetVV=null}return}
- s.innerHTML=`<div class="sheet" id="sh"><div role="dialog" aria-modal="true">${h}</div></div>`;$('#sh').onclick=e=>{if(e.target.id=='sh')sheet()};
+function sheet(h){const s=$('#sheet');
+ if(!h){
+   s.innerHTML='';
+   document.documentElement.classList.remove('sheet-open');
+   if(sheetVV){window.visualViewport.removeEventListener('resize',sheetFit);sheetVV=null}
+   return;
+ }
+ document.documentElement.classList.add('sheet-open');
+ s.innerHTML=`<div class="sheet" id="sh"><div role="dialog" aria-modal="true"><button type="button" class="sheet-back" id="sheetBack" aria-label="Close">\u2039 Back</button>${h}</div></div>`;
+ $('#sh').onclick=e=>{if(e.target.id=='sh')sheet()};
+ const back=document.getElementById('sheetBack');if(back)back.onclick=()=>sheet();
  // never auto-focus an input: the soft keyboard covers the sheet actions
  const f=s.querySelector('button,input,select,textarea');
  if(f&&!/^(INPUT|SELECT|TEXTAREA)$/.test(f.tagName))f.focus();

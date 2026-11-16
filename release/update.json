@@ -1,7 +1,7 @@
 {
-    "versionCode": 131,
-    "versionName": "1.2.116",
-    "notes": "Themed calendar + wheel time pickers replace native inputs; scrollable year view in Cycle and Planner months; drop Advanced Scheduling UI.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.116/bloom-1.2.116.apk",
-    "publishedAt": "2026-11-16"
+    "versionCode": 132,
+    "versionName": "1.2.117",
+    "notes": "Fix Planner Month calendar overflow; lock background scroll when a sheet/picker is open and add a Back button to sheets.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.117/bloom-1.2.117.apk",
+    "publishedAt": "2026-11-17"
 }
