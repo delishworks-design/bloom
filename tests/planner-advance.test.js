@@ -17,7 +17,7 @@ test('normalizeTask migrates legacy days array to repeat rules', () => {
   assert.equal(wk.repeat, 'weekdays');
   const sel = normalizeTask({ id: 't4', t: 'x', days: [1,3,5] });
   assert.equal(sel.repeat, 'weekly');
-  assert.deepEqual(sel._weekdays, [1,3,5]);
+  assert.equal(sel._weekdays.join(','), '1,3,5');
 });
 
 test('normalizeTask defaults missing from when nothing can be inferred', () => {
@@ -72,4 +72,82 @@ test('taskOn respects once and repeat rules', () => {
   assert.equal(taskOn({ id: 'a', t: 'a', from: '2026-01-10', repeat: 'none' }, '2026-01-11'), false);
   assert.equal(taskOn({ id: 'a', t: 'a', from: '2026-01-05', repeat: 'weekdays' }, '2026-01-10'), false); // Saturday
   assert.equal(taskOn({ id: 'a', t: 'a', from: '2026-01-05', repeat: 'weekdays' }, '2026-01-12'), true);  // Monday
+});
+
+test('taskOn custom weekdays matches only those weekdays', () => {
+  const { normalizeTask, taskOn } = load();
+  const t = normalizeTask({ id:'c', t:'c', repeat:'custom', weekdays:[1,3,5], from:'2026-01-05' }); // 2026-01-05 is Monday
+  assert.equal(taskOn(t, '2026-01-06'), false); // Tue
+  assert.equal(taskOn(t, '2026-01-07'), true);  // Wed
+  assert.equal(taskOn(t, '2026-01-08'), false); // Thu
+  assert.equal(taskOn(t, '2026-01-09'), true);  // Fri
+});
+
+test('taskOn every-x-days every 3 days', () => {
+  const { normalizeTask, taskOn } = load();
+  const t = normalizeTask({ id:'e', t:'e', repeat:'every-x-days', interval:3, from:'2026-01-05' });
+  assert.equal(taskOn(t, '2026-01-05'), true);
+  assert.equal(taskOn(t, '2026-01-06'), false);
+  assert.equal(taskOn(t, '2026-01-07'), false);
+  assert.equal(taskOn(t, '2026-01-08'), true);
+  assert.equal(taskOn(t, '2026-01-02'), false); // before from
+});
+
+test('taskOn every-x-weeks every 2 weeks on same weekday', () => {
+  const { normalizeTask, taskOn } = load();
+  const t = normalizeTask({ id:'e', t:'e', repeat:'every-x-weeks', interval:2, from:'2026-01-05' }); // Mon
+  assert.equal(taskOn(t, '2026-01-05'), true);
+  assert.equal(taskOn(t, '2026-01-12'), false); // 1 week
+  assert.equal(taskOn(t, '2026-01-19'), true);  // 2 weeks
+  assert.equal(taskOn(t, '2026-01-14'), false); // Wed
+});
+
+test('taskOn monthly on day 15', () => {
+  const { normalizeTask, taskOn } = load();
+  const t = normalizeTask({ id:'m', t:'m', repeat:'monthly', monthDay:15, from:'2026-01-01' });
+  assert.equal(taskOn(t, '2026-01-15'), true);
+  assert.equal(taskOn(t, '2026-02-15'), true);
+  assert.equal(taskOn(t, '2026-01-14'), false);
+});
+
+test('taskOn monthly clamps to last day of short months', () => {
+  const { normalizeTask, taskOn } = load();
+  const t = normalizeTask({ id:'m', t:'m', repeat:'monthly', monthDay:31, from:'2026-01-01' });
+  assert.equal(taskOn(t, '2026-01-31'), true);
+  assert.equal(taskOn(t, '2026-02-28'), true); // 2026 not leap
+  assert.equal(taskOn(t, '2026-02-27'), false);
+});
+
+test('normalizeTask rejects invalid interval and drops to none', () => {
+  const { normalizeTask } = load();
+  const out = normalizeTask({ id:'i', t:'i', repeat:'every-x-days', interval:0, from:'2026-01-01' });
+  assert.equal(out.repeat, 'none');
+});
+
+test('normalizeTask rejects invalid monthly day', () => {
+  const { normalizeTask } = load();
+  const out = normalizeTask({ id:'m', t:'m', repeat:'monthly', monthDay:99, from:'2026-01-01' });
+  assert.equal(out.repeat, 'none');
+});
+
+test('taskOn respects until boundary', () => {
+  const { normalizeTask, taskOn } = load();
+  const t = normalizeTask({ id:'u', t:'u', repeat:'daily', from:'2026-01-01', until:'2026-01-10' });
+  assert.equal(taskOn(t, '2026-01-10'), true);
+  assert.equal(taskOn(t, '2026-01-11'), false);
+});
+
+test('notes survive normalize-tack-on round trip', () => {
+  const { normalizeTask, taskOn } = load();
+  const raw = { id:'n', t:'whole note', repeat:'custom', weekdays:[6], from:'2026-01-05', note:'bring book' };
+  const out = normalizeTask(raw);
+  assert.equal(out.note, 'bring book');
+  assert.equal(taskOn(out, '2026-01-10'), true);
+});
+
+test('legacy weekday _weekdays still works for backward compat', () => {
+  const { taskOn } = load();
+  const legacy = { id:'l', t:'legacy', repeat:'weekly', from:'2026-01-05', _weekdays:[1,3,5] };
+  assert.equal(taskOn(legacy, '2026-01-07'), true);
+  assert.equal(taskOn(legacy, '2026-01-06'), false);
 });

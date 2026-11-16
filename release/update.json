@@ -1,7 +1,7 @@
 {
-    "versionCode": 129,
-    "versionName": "1.2.114",
-    "notes": "Real advance planner: schedule one-time or repeating tasks, weekly navigation and month grid. Reading-goal card in Library with daily and yearly goals, streak, and hourly reminders. Sign-up confirmation returns to the app on native; resend email link also returns. \u201cUse a different email\u201d now focuses the email field. Partner library sync prep.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.114/bloom-1.2.114.apk",
+    "versionCode": 130,
+    "versionName": "1.2.115",
+    "notes": "Advanced Scheduling for Planner tasks: custom weekdays, every X days, every X weeks, monthly on a chosen day, optional start and end dates. Validation prevents invalid schedules. Add Task and Edit Task share the same scheduling logic. Notes preserved across edits.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.115/bloom-1.2.115.apk",
     "publishedAt": "2026-11-16"
 }

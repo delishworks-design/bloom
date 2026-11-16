@@ -478,6 +478,19 @@ details{border-bottom:1px solid var(--line);padding:14px 0}summary{cursor:pointe
 .note-chip{display:inline-block;font-size:.66rem;font-weight:700;color:var(--mut);border:1px solid var(--line);border-radius:999px;padding:1px 6px;text-transform:uppercase;letter-spacing:.06em}
 .rose-warn{background:rgba(184,69,107,.07)!important;border:1px solid rgba(184,69,107,.34)!important}
 .tabsrow{display:flex;flex-wrap:nowrap;gap:8px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:4px 0 8px;align-items:center}
+.advsched{border:1px dashed var(--line2);border-radius:12px;padding:8px 10px 10px;margin:10px 0 0;background:var(--bg2)}
+.adv-sum{cursor:pointer;font-weight:700;list-style:none;display:flex;align-items:center;gap:6px;font-size:.82rem;color:var(--ink)}
+.adv-sum::-webkit-details-marker{display:none}
+.adv-caret{display:inline-block;transition:transform .18s}
+.advsched[open] .adv-caret{transform:rotate(90deg)}
+.advbody{padding-top:8px;display:flex;flex-direction:column;gap:6px}
+.adv-field{border:0;padding:0;margin:0}
+.adv-field legend{display:none}
+.adv-weeks{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 0}
+.adv-wd{width:36px;height:36px;border-radius:50%;border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;cursor:pointer;color:var(--ink);background:var(--card)}
+.adv-wd.on{background:var(--rose);border-color:var(--rose);color:#fff}
+.adv-num{border:1px solid var(--line2);border-radius:8px;padding:6px 8px;background:var(--card);color:var(--ink);font-size:.85rem}
+.adv-grp{display:flex;flex-direction:column;gap:6px}
 .tabsrow::-webkit-scrollbar{display:none}
 .tabsrow .chip{flex:0 0 auto;padding:0 14px !important;min-height:38px !important;font-size:.86rem !important}
 .kv{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px dashed var(--line)}
@@ -1997,53 +2010,167 @@ function cycleLine(nowDate,startDates){const s=startDates||starts(),c=cycleStats
  const nx=c.min===c.max?fmt(addD(c.last,c.min)):fmt(addD(c.last,c.min))+'\u2013'+fmt(addD(c.last,c.max));return`Day ${current.cycleDay} \u00b7 ${c.min===c.max?c.min+' days':c.min+'\u2013'+c.max+' days (avg '+c.avg+')'} \u00b7 next ${nx}`}
 
 // @test-begin plannerAdvance
+function daysBetween(a, b){
+  const ms = new Date(b + 'T12:00') - new Date(a + 'T12:00');
+  return Math.round(ms / 86400000);
+}
+function lastDayOfMonth(y, m){ // m is 0-indexed
+  return new Date(y, m + 1, 0).getDate();
+}
+function normalizeWeekdays(arr){
+  if (!Array.isArray(arr)) return [];
+  const set = new Set();
+  arr.forEach(v => { const n = +v; if (Number.isFinite(n) && n >= 0 && n <= 6) set.add(Math.floor(n)); });
+  return [...set].sort((a, b) => a - b);
+}
+function clampInt(v, min, max){
+  const n = Math.floor(+v);
+  if (!Number.isFinite(n)) return null;
+  return Math.min(max, Math.max(min, n));
+}
 function normalizeTask(t){
- if(!t||typeof t!=='object')return {id:'',t:'',repeat:'none',from:today()};
- const o=Object.assign({},t);
- o.id=String(o.id||'');o.t=String(o.t||'');
- if(!o.from){
-   if(o.once){o.from=o.once;o.repeat=o.repeat||'none'}
-   else if(!o.carry && Array.isArray(o.days)&&o.days.length===7){o.repeat='daily';o.from=today()}
-   else if(!o.carry && Array.isArray(o.days)&&o.days.join(',')==='1,2,3,4,5'){o.repeat='weekdays';o.from=today()}
-   else if(Array.isArray(o.days)&&o.days.length===7){o.repeat='daily';o.from='1970-01-01'}
-   else if(Array.isArray(o.days)&&o.days.join(',')==='1,2,3,4,5'){o.repeat='weekdays';o.from='1970-01-01'}
-   else if(Array.isArray(o.days)&&o.days.length){o.repeat='weekly';o.from=o.carry?'1970-01-01':today();o._weekdays=o.days.map(Number).sort((a,b)=>a-b)}
-   else {o.repeat='daily';o.from=o.carry?'1970-01-01':today()}
- }else{
-   if(!o.repeat)o.repeat='daily';
- }
- if(o.until==='')delete o.until;
- if(o.time==='')delete o.time;
- if(o.note==='')delete o.note;
- return o;
+  if (!t || typeof t !== 'object') return { id:'', t:'', repeat:'none', from:today() };
+  const o = Object.assign({}, t);
+  o.id = String(o.id || '');
+  o.t = String(o.t || '');
+  if (!o.from) {
+    if (o.once) { o.from = o.once; o.repeat = o.repeat || 'none'; }
+    else if (!o.carry && Array.isArray(o.days) && o.days.length === 7) { o.repeat = 'daily'; o.from = today(); }
+    else if (!o.carry && Array.isArray(o.days) && o.days.join(',') === '1,2,3,4,5') { o.repeat = 'weekdays'; o.from = today(); }
+    else if (Array.isArray(o.days) && o.days.length === 7) { o.repeat = 'daily'; o.from = '1970-01-01'; }
+    else if (Array.isArray(o.days) && o.days.join(',') === '1,2,3,4,5') { o.repeat = 'weekdays'; o.from = '1970-01-01'; }
+    else if (Array.isArray(o.days) && o.days.length) { o.repeat = 'weekly'; o.from = o.carry ? '1970-01-01' : today(); o._weekdays = normalizeWeekdays(o.days); }
+    else { o.repeat = 'daily'; o.from = o.carry ? '1970-01-01' : today(); }
+  } else {
+    if (!o.repeat) o.repeat = 'daily';
+  }
+  if (o.until === '') delete o.until;
+  if (o.time === '') delete o.time;
+  if (o.note === '') delete o.note;
+  // Sanitize advanced fields so once-broken docs keep rendering
+  o.repeat = String(o.repeat || 'none');
+  // until < from is tolerated by taskOn(); do not destroy user data here
+  if (o.repeat === 'custom') {
+    o.weekdays = normalizeWeekdays(o.weekdays);
+    if (!o.weekdays.length) o.repeat = 'none';
+  } else if (o.repeat === 'every-x-days' || o.repeat === 'every-x-weeks') {
+    const iv = clampInt(o.interval, 1, 365);
+    const raw = o.interval;
+    if (iv == null || (Number.isFinite(+raw) && +raw < 1)) { o.repeat = 'none'; delete o.interval; }
+    else o.interval = iv;
+  } else if (o.repeat === 'monthly') {
+    const md = clampInt(o.monthDay, 1, 31);
+    const raw = o.monthDay;
+    if (md == null || (Number.isFinite(+raw) && (+raw < 1 || +raw > 31))) { o.repeat = 'none'; delete o.monthDay; }
+    else o.monthDay = md;
+  }
+  return o;
 }
-function taskOn(t,d){
- const o=normalizeTask(t);if(!o.from)return false;
- if(o.from>d)return false;
- if(o.until&&d>o.until)return false;
- if(o.repeat==='none')return d===o.from;
- if(o.repeat==='daily')return true;
- const dn=new Date(d+'T12:00').getDay();
- if(o.repeat==='weekdays')return dn>=1&&dn<=5;
- if(o.repeat==='weekly'){const fDn=new Date(o.from+'T12:00').getDay();return dn===fDn}
- if(Array.isArray(o._weekdays))return o._weekdays.includes(dn);
- return Array.isArray(o.days)?o.days.includes(dn):true;
+function taskOn(t, d){
+  const o = normalizeTask(t); if (!o.from || !d) return false;
+  if (o.from > d) return false;
+  if (o.until && d > o.until) return false;
+  if (o.repeat === 'none') return d === o.from;
+  if (o.repeat === 'daily') return true;
+  const dn = new Date(d + 'T12:00').getDay();
+  if (o.repeat === 'weekdays') return dn >= 1 && dn <= 5;
+  if (Array.isArray(o._weekdays) && o._weekdays.length && o.repeat === 'weekly') return o._weekdays.includes(dn);
+  if (o.repeat === 'weekly') { return dn === new Date(o.from + 'T12:00').getDay(); }
+  if (o.repeat === 'custom') return Array.isArray(o.weekdays) && o.weekdays.includes(dn);
+  if (o.repeat === 'every-x-days') {
+    if (!o.interval) return false;
+    const diff = daysBetween(o.from, d);
+    return diff >= 0 && diff % o.interval === 0;
+  }
+  if (o.repeat === 'every-x-weeks') {
+    if (!o.interval) return false;
+    if (dn !== new Date(o.from + 'T12:00').getDay()) return false;
+    const diff = daysBetween(o.from, d);
+    if (diff < 0) return false;
+    return Math.floor(diff / 7) % o.interval === 0;
+  }
+  if (o.repeat === 'monthly') {
+    if (!o.monthDay) return false;
+    const dt = new Date(d + 'T12:00');
+    const dom = dt.getDate();
+    if (dom === o.monthDay) return true;
+    if (o.monthDay > lastDayOfMonth(dt.getFullYear(), dt.getMonth())) {
+      return dom === lastDayOfMonth(dt.getFullYear(), dt.getMonth());
+    }
+    return false;
+  }
+  return false;
 }
-function tasksFor(d,doc){
- const list=(doc||D).tasks||[];
- return list.map(normalizeTask).filter(o=>taskOn(o,d));
+function tasksFor(d, doc){
+  const list = (doc || D).tasks || [];
+  return list.map(normalizeTask).filter(o => taskOn(o, d));
 }
-function overdueList(doc,ref){
- const d=ref||today();const list=(doc||D).tasks||[];
- return list.map(normalizeTask).filter(o=>{
-   if(!o.carry)return false;
-   if(o.from&&o.from>=d)return false;
-   if(o.until&&o.until<d)return false;
-   const done=((doc||D).done||{})[d]||{};
-   return !done[o.id];
- });
+function overdueList(doc, ref){
+  const d = ref || today(); const list = (doc || D).tasks || [];
+  return list.map(normalizeTask).filter(o => {
+    if (!o.carry) return false;
+    if (o.from && o.from >= d) return false;
+    if (o.until && o.until < d) return false;
+    const done = ((doc || D).done || {})[d] || {};
+    return !done[o.id];
+  });
 }
 // @test-end plannerAdvance
+
+// @test-begin plannerAdvancedUI
+function advSchedulingHTML(p, cur){
+ const months = (() => { let s = ''; for (let d = 1; d <= 31; d++) s += `<option value="${d}"${cur.monthDay === d ? ' selected' : ''}>${d}</option>`; return s; })();
+ const wkd = ['S','M','T','W','T','F','S'];
+ return `<details class="advsched" id="${p}advDet"><summary class="adv-sum"><span class="adv-caret">▸</span> Advanced Scheduling</summary>
+  <div class="advbody">
+   <div class="row" style="gap:10px;margin:6px 0 10px;flex-wrap:wrap">
+    <label class="row" style="gap:6px;margin:0"><input type="radio" name="${p}advMode" value="basic"${(cur.advMode||'basic')==='basic'?' checked':''}> <span class="meta" style="margin:0">Use quick repeat above</span></label>
+    <label class="row" style="gap:6px;margin:0"><input type="radio" name="${p}advMode" value="advanced"${(cur.advMode||'basic')==='advanced'?' checked':''}> <span class="meta" style="margin:0">Advanced rule</span></label>
+   </div>
+   <div class="adv-grp" id="${p}advGrp" style="${(cur.advMode||'basic')==='advanced'?'':'display:none'}">
+    <fieldset class="adv-field"><legend class="meta" style="margin-bottom:6px">Rule</legend>
+     <label class="row" style="gap:6px;margin:4px 0"><input type="radio" name="${p}advRep" value="custom"${(cur.repeat||'custom')==='custom'?' checked':''}> <span class="meta" style="margin:0">Custom weekdays</span></label>
+     <div class="adv-weeks" role="group" aria-label="Custom weekdays">${wkd.map((l,i)=>`<label class="adv-wd${(cur.weekdays||[]).includes(i)?' on':''}"><input type="checkbox" data-wd="${i}" value="${i}"${(cur.weekdays||[]).includes(i)?' checked':''} style="display:none"><span>${l}</span></label>`).join('')}</div>
+     <label class="row" style="gap:6px;margin:8px 0"><input type="radio" name="${p}advRep" value="every-x-days"${cur.repeat==='every-x-days'?' checked':''}> <span class="meta" style="margin:0">Every</span><input type="number" class="adv-num" id="${p}advDays" min="1" max="365" value="${cur.interval||2}" style="width:64px;margin:0"> <span class="meta" style="margin:0">days</span></label>
+     <label class="row" style="gap:6px;margin:6px 0"><input type="radio" name="${p}advRep" value="every-x-weeks"${cur.repeat==='every-x-weeks'?' checked':''}> <span class="meta" style="margin:0">Every</span><input type="number" class="adv-num" id="${p}advWeeks" min="1" max="52" value="${cur.interval||2}" style="width:64px;margin:0"> <span class="meta" style="margin:0">weeks</span></label>
+     <label class="row" style="gap:6px;margin:6px 0"><input type="radio" name="${p}advRep" value="monthly"${cur.repeat==='monthly'?' checked':''}> <span class="meta" style="margin:0">Monthly on day</span><select class="adv-num" id="${p}advMonthDay" style="margin:0">${months}</select></label>
+    </fieldset>
+    <div class="row" style="gap:8px;margin:10px 0 0">
+     <input id="${p}advStart" type="date" aria-label="Start date" value="${E(cur.from||'')}" style="flex:1;margin:0">
+     <input id="${p}advUntil" type="date" aria-label="End date (optional)" value="${E(cur.until||'')}" style="flex:1;margin:0">
+    </div>
+    <p class="hint" style="margin:6px 0 0">Start date is when the rule begins. End date is optional and exclusive.</p>
+   </div>
+  </div></details>`;
+}
+function advBind(p){
+ const det=document.getElementById(p+'advDet');if(!det)return;
+ const grp=document.getElementById(p+'advGrp');
+ const modes=det.querySelectorAll('input[name="'+p+'advMode"]');
+ const reps=det.querySelectorAll('input[name="'+p+'advRep"]');
+ const syncMode=()=>{const m=[...modes].find(x=>x.checked);if(grp)grp.style.display=(m&&m.value==='advanced')?'':'none'};
+ modes.forEach(r=>r.addEventListener('change',syncMode));syncMode();
+ const wds=det.querySelectorAll('.adv-wd');
+ wds.forEach(w=>{const inp=w.querySelector('input[type=checkbox]');const sync=()=>w.classList.toggle('on',!!inp.checked);inp.addEventListener('change',sync);sync()});
+}
+function advRead(p){
+ const det=document.getElementById(p+'advDet');if(!det)return null;
+ const mode=(det.querySelector('input[name="'+p+'advMode"]:checked')||{}).value||'basic';
+ const start=document.getElementById(p+'advStart');
+ const until=document.getElementById(p+'advUntil');
+ const out={advMode:mode,from:start&&start.value?start.value:undefined,until:until&&until.value?until.value:undefined};
+ if(mode==='advanced'){
+  const rep=(det.querySelector('input[name="'+p+'advRep"]:checked')||{}).value||'custom';
+  out.repeat=rep;
+  if(rep==='custom'){out.weekdays=Array.from(det.querySelectorAll('.adv-wd input[type=checkbox]:checked')).map(i=>+i.value);if(!out.weekdays.length)return {error:'Pick at least one weekday for Custom weekdays.'}}
+  if(rep==='every-x-days'){const n=+document.getElementById(p+'advDays').value;if(!Number.isFinite(n)||n<1)return {error:'Every X days must be at least 1.'};out.interval=Math.floor(n)}
+  if(rep==='every-x-weeks'){const n=+document.getElementById(p+'advWeeks').value;if(!Number.isFinite(n)||n<1)return {error:'Every X weeks must be at least 1.'};out.interval=Math.floor(n)}
+  if(rep==='monthly'){const n=+document.getElementById(p+'advMonthDay').value;if(!Number.isFinite(n)||n<1||n>31)return {error:'Monthly day must be between 1 and 31.'};out.monthDay=Math.floor(n)}
+ }
+ if(out.until&&out.until<=out.from)return {error:'End date must be after the start date.'};
+ return out;
+}
+// @test-end plannerAdvancedUI
 const isDone=(id,d,doc)=>!!(((doc||D).done||{})[d]||{})[id];
 function toggle(id,d){D.done[d]=D.done[d]||{};D.done[d][id]=!D.done[d][id];save()}
 const uid=()=>Math.random().toString(36).slice(2,9);
@@ -2774,21 +2901,35 @@ function renameTaskIn(doc,id,name){const v=String(name||'').trim();if(!v||!doc||
 function renameMealIn(doc,day,idx,name){const v=String(name||'').trim();if(!v||!doc||!doc.meals)return false;const arr=doc.meals[day];if(!Array.isArray(arr)||!arr[idx])return false;arr[idx].n=v.slice(0,60);return true}
 // @test-end rename
 function editTask(id){const t=(D.tasks||[]).find(x=>String(x.id)===String(id));if(!t)return;
+ const curRepeat=(()=>{const o=normalizeTask(t);return {repeat:o.repeat,weekdays:o.weekdays||[],interval:o.interval||1,monthDay:o.monthDay||new Date((o.from||today())+'T12:00').getDate()}})();
+ const advMode=(['custom','every-x-days','every-x-weeks','monthly'].includes(curRepeat.repeat)?'advanced':'basic');
  sheet(`<h2>Edit task</h2><label for="etName">Task</label><input id="etName" maxlength="80" value="${E(t.t)}">
- <div class="row" style="gap:8px;margin:10px 0"><input id="etFrom" type="date" aria-label="Date" value="${E(t.from||t.once||today())}" style="flex:1;margin:0"><input id="etTime" type="time" aria-label="Time (optional)" value="${E(t.time||'')}" style="flex:0 0 110px;margin:0"></div>
- <label for="etUntil">Until (optional)</label><input id="etUntil" type="date" aria-label="Until (optional)" value="${E(t.until||'')}" style="width:100%;margin:0 0 10px">
+ <div class="row" style="gap:8px;margin:10px 0"><input id="etFrom" type="date" aria-label="Scheduled date" value="${E(t.from||t.once||today())}" style="flex:1;margin:0"><input id="etTime" type="time" aria-label="Time (optional)" value="${E(t.time||'')}" style="flex:0 0 110px;margin:0"></div>
+ ${chipField('etRep','Quick repeat',[['none','Once'],['daily','Daily'],['weekdays','Weekdays'],['weekly','Weekly']],(['none','daily','weekdays','weekly'].includes(t.repeat)?t.repeat:'none'))}
+ ${advSchedulingHTML('e',{advMode,repeat:curRepeat.repeat,weekdays:curRepeat.weekdays,interval:curRepeat.interval,monthDay:curRepeat.monthDay,from:t.from||t.once||today(),until:t.until||''})}
  <label class="row" style="color:var(--ink);margin-top:4px;gap:8px"><input id="etCarry" type="checkbox" style="width:20px;margin:0" ${t.carry?'checked':''}><span class="meta" style="margin:0">Carry forward if missed</span></label>
- <label for="etNote" style="margin-top:10px">Notes or details (optional)</label><textarea id="etNote" rows="2" aria-label="Notes" style="width:100%">${E(t.note||'')}</textarea>
+ <label for="etNote" style="margin-top:10px">Notes or details (optional)</label><textarea id="etNote" rows="3" aria-label="Notes" style="width:100%">${E(t.note||'')}</textarea>
  <div class="row sp" style="margin-top:14px;gap:10px"><button class="btn ghost" id="etc" style="flex:1">Cancel</button><button class="btn" id="ets" style="flex:1">Save</button></div>
  <button class="btn ghost" id="etd" style="width:100%;margin-top:10px;color:var(--rose)">Delete task</button>`);
+ advBind('e');
+ if(document.querySelectorAll('[data-fg="etRep"] .chip').length)bindFields();
  document.getElementById('ets').onclick=()=>{
   const v=$('#etName').value.trim();if(!v)return toast('Type a task name');
-  const from=$('#etFrom').value||today();
-  const tm=$('#etTime').value||'';
-  const until=$('#etUntil').value||'';
+  const adv=advRead('e')||{};if(adv.error)return toast(adv.error);
+  const quickRepeat=((document.getElementById('etRep')||{}).value)||'none';
+  const repeat=adv.advMode==='advanced'?adv.repeat:quickRepeat;
+  const from=(adv.advMode==='advanced'&&adv.from)||$('#etFrom').value||today();
+  const time=$('#etTime').value||'';
+  const until=(adv.advMode==='advanced'&&adv.until)||'';
   const carry=!!$('#etCarry').checked;
   const note=$('#etNote').value.trim();
-  t.t=v.slice(0,80);t.from=from;t.repeat=t.repeat||'none';if(tm)t.time=tm;else delete t.time;if(until)t.until=until;else delete t.until;if(carry)t.carry=true;else delete t.carry;if(note)t.note=note;else delete t.note;
+  t.t=v.slice(0,80);t.from=from;t.repeat=repeat;
+  if(adv.advMode==='advanced'){
+   if(repeat==='custom'){t.weekdays=adv.weekdays;delete t.interval;delete t.monthDay}
+   else if(repeat==='every-x-days'||repeat==='every-x-weeks'){t.interval=adv.interval;delete t.weekdays;delete t.monthDay}
+   else if(repeat==='monthly'){t.monthDay=adv.monthDay;delete t.weekdays;delete t.interval}
+  } else { delete t.weekdays; delete t.interval; delete t.monthDay; }
+  if(time)t.time=time;else delete t.time;if(until)t.until=until;else delete t.until;if(carry)t.carry=true;else delete t.carry;if(note)t.note=note;else delete t.note;
   save();sheet();planner()};
  document.getElementById('etd').onclick=()=>{D.tasks=(D.tasks||[]).filter(x=>x.id!==t.id);save();sheet();planner()};
  document.getElementById('etc').onclick=()=>sheet();
@@ -2915,11 +3056,12 @@ function planner(){tab=tab||'day';
 function taskTimeNote(t){const p=[];if(t.time)p.push('<span class="time-badge">'+E(t.time)+'</span>');if(t.note)p.push('<span class="note-chip" title="Has note" aria-label="Has note">note</span>');return p.join(' ')}
 function overdueBanner(doc,d,only){if(only||!doc||doc!==D)return '';const list=overdueList(doc,d);if(!list.length)return '';return `<div class="card rose-warn" style="margin-bottom:10px"><div class="card-h"><h3>Overdue</h3><span class="meta">${list.length}</span></div>${list.slice(0,5).map(t=>`<div class="taskrow"><button class="btn ghost sm cmp" data-cmp="${t.id}" aria-label="Mark ${E(t.t)} done">Done</button><span class="ckt">${E(t.t)}${t.time?' <span class="meta" style="margin-left:6px">'+E(t.time)+'</span>':''}${t.note?' <span class="note-chip" title="Has note">note</span>':''}</span></div>`).join('')}</div>`}
 function pDay(src,ro){const doc=src||D,only=ro==null?RO:ro;const d=today(),ts=tasksFor(d,doc);$('#pb').innerHTML=`${overdueBanner(doc,d,only)}<div class="card"><div class="card-h"><h3>Today</h3></div><div style="margin-top:6px">${ts.length?ts.map(t=>only?`<div class="taskrow"><span class="ckt" style="${isDone(t.id,d,doc)?'opacity:.55':''}">${isDone(t.id,d,doc)?'&#10003;':''} ${E(t.t)}${t.time?' <span class="meta" style="margin-left:6px">'+E(t.time)+'</span>':''}${t.note?' <span class="note-chip">note</span>':''}</span></div>`:`<div class="taskrow">${ck(t,d)}${taskTimeNote(t)}<button class="btn ghost sm del" data-del="${t.id}" aria-label="Delete ${E(t.t)}">\u00d7</button></div>`).join(''):'<p class="meta">No tasks yet.'+(only?'':' Add one below.')+'</p>'}</div>
-${only?'':`<form id="af" style="margin-top:14px"><input id="nt" maxlength="80" placeholder="Add a task" aria-label="New task" style="width:100%;margin:0 0 10px"><div class="row" style="gap:8px;margin:0 0 10px"><input id="when" type="date" aria-label="Scheduled date" style="flex:1;margin:0" value="${d}"><input id="whenTime" type="time" aria-label="Time (optional)" style="flex:0 0 110px;margin:0"></div>${chipField('rp','Repeat',[['none','Once'],['daily','Daily'],['weekdays','Weekdays'],['weekly','Weekly']],'none')}<details style="border:0;padding:0;margin:10px 0"><summary class="meta" style="cursor:pointer;font-weight:700">Add note or details</summary><textarea id="ptn" rows="2" placeholder="Notes or details (optional)" aria-label="Task notes" style="width:100%;margin:8px 0 0"></textarea><input id="until" type="date" aria-label="Until (optional)" style="width:100%;margin:8px 0 0"></details><label class="row" style="color:var(--ink);margin-top:10px;gap:8px"><input id="carry" type="checkbox" style="width:20px;margin:0"><span class="meta" style="margin:0">Carry forward if missed</span></label><button class="btn" type="submit" style="width:100%;margin-top:12px">Add task</button></form><div class="err" id="er"></div>`}</div>`;
+${only?'':`<form id="af" style="margin-top:14px"><input id="nt" maxlength="80" placeholder="Add a task" aria-label="New task" style="width:100%;margin:0 0 10px"><div class="row" style="gap:8px;margin:0 0 10px"><input id="when" type="date" aria-label="Scheduled date" style="flex:1;margin:0" value="${d}"><input id="whenTime" type="time" aria-label="Time (optional)" style="flex:0 0 110px;margin:0"></div>${chipField('rp','Repeat',[['none','Once'],['daily','Daily'],['weekdays','Weekdays'],['weekly','Weekly']],'none')}${advSchedulingHTML('a',{advMode:'basic',from:d,until:''})}<details style="border:0;padding:0;margin:10px 0"><summary class="meta" style="cursor:pointer;font-weight:700">Notes or details</summary><textarea id="ptn" rows="2" placeholder="Notes or details (optional)" aria-label="Task notes" style="width:100%;margin:8px 0 0"></textarea></details><label class="row" style="color:var(--ink);margin-top:10px;gap:8px"><input id="carry" type="checkbox" style="width:20px;margin:0"><span class="meta" style="margin:0">Carry forward if missed</span></label><button class="btn" type="submit" style="width:100%;margin-top:12px">Add task</button></form><div class="err" id="er"></div>`}</div>`;
  bindCk(d,planner);bindFields();
  if(only)return;
  bindLongPress(document.getElementById('pb'),'task','[data-task]',el=>editTask(el.dataset.task));
-  const afForm=document.getElementById('af');if(afForm)afForm.onsubmit=e=>{e.preventDefault();const t=$('#nt').value.trim();if(!t)return $('#er').textContent='Please type a task.';const when=$('#when').value||today();const time=$('#whenTime').value||undefined;const until=$('#until').value||undefined;const carry=!!$('#carry').checked;const note=$('#ptn').value.trim()||undefined;const rp=$('#rp').value;D.tasks.push({id:uid(),t,from:when,repeat:rp,time:time,until:until,carry:carry||undefined,note:note||undefined});save();planner()};
+  advBind('a');
+ const afForm=document.getElementById('af');if(afForm)afForm.onsubmit=e=>{e.preventDefault();const t=$('#nt').value.trim();if(!t)return $('#er').textContent='Please type a task.';const adv=advRead('a')||{};if(adv.error)return $('#er').textContent=adv.error;const quickRepeat=$('#rp').value;const repeat=adv.advMode==='advanced'?adv.repeat:quickRepeat;const weekdays=adv.advMode==='advanced'&&adv.repeat==='custom'?adv.weekdays:undefined;const interval=adv.advMode==='advanced'&&(adv.repeat==='every-x-days'||adv.repeat==='every-x-weeks')?adv.interval:undefined;const monthDay=adv.advMode==='advanced'&&adv.repeat==='monthly'?adv.monthDay:undefined;const from=(adv.advMode==='advanced'&&adv.from)||$('#when').value||today();const time=$('#whenTime').value||undefined;const until=(adv.advMode==='advanced'&&adv.until)||undefined;const carry=!!$('#carry').checked;const note=$('#ptn').value.trim()||undefined;const tObj={id:uid(),t,from,repeat,time,until,carry:carry||undefined,note:note||undefined};if(weekdays)tObj.weekdays=weekdays;if(interval)tObj.interval=interval;if(monthDay)tObj.monthDay=monthDay;D.tasks.push(tObj);save();planner()};
  document.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{D.tasks=D.tasks.filter(t=>t.id!=b.dataset.del);save();planner()});
  document.querySelectorAll('[data-cmp]').forEach(b=>b.onclick=()=>{toggle(b.dataset.cmp,d);planner()})}
 function pMonth(src,ro){const doc=src||D,only=ro==null?RO:ro;
