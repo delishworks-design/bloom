@@ -1,7 +1,7 @@
 {
-    "versionCode": 123,
-    "versionName": "1.2.108",
-    "notes": "Partner device stays in read-only view offline instead of falling into the partner's own feed; cloud sync resumes when the connection returns.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.108/bloom-1.2.108.apk",
+    "versionCode": 124,
+    "versionName": "1.2.109",
+    "notes": "Partner devices work fully offline: the followed person's doc is cached, your own planner opens from cache, and sync resumes automatically on reconnect instead of waiting for the online event.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.109/bloom-1.2.109.apk",
     "publishedAt": "2026-11-16"
 }
