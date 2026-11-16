@@ -733,15 +733,36 @@ const $=s=>document.querySelector(s);
 try{
 window.__bloomError=function(m){ try{window.__lastErr=String(m).slice(0,240);}catch(e){}
  try{
+ var ap=document.getElementById('app');if(ap&&ap.innerHTML.trim().length>=10)return;
  var r=document.getElementById('recovery');
  if(r){ var et=document.getElementById('bloomErrTxt'); if(et&&m)et.textContent=String(m).slice(0,240); return }
  r=document.createElement('div');r.id='recovery';r.style.cssText='position:fixed;inset:0;z-index:99999;background:#FBF4EA;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;font-family:system-ui,-apple-system,sans-serif;text-align:center;gap:14px';
- r.innerHTML='<h1 style="margin:0;font-size:1.4rem;color:#3A2E33">Bloom recovery</h1><p id="bloomErrTxt" style="margin:0;color:#7C6B71;max-width:34em">This build could not start. Your saved logs and library stay on this device. Resetting clears stale session data only.</p><button id="bloomResetData" style="padding:12px 22px;border:0;border-radius:999px;background:#B8456B;color:#FBF4EA;font-size:1rem;font-weight:700">Reset app data</button><button id="bloomReload" style="padding:8px 18px;border:1px solid #EADFD2;border-radius:999px;background:transparent;color:#3A2E33;font-size:.9rem">Reload</button>';document.body.appendChild(r);var h=document.getElementById('bloomResetData');if(h)h.onclick=function(){try{['bloom_nav','bloom_theme','bloom_reader_theme','bloom_net','bloom_anon','bloom_s','bloom_role','bloom_own'].forEach(function(k){localStorage.removeItem(k)});var ks=Object.keys(localStorage);for(var i=0;i<ks.length;i++){var k=ks[i];if(k.indexOf('bloom_d_')===0||k.indexOf('bloom_backup_')===0||k.indexOf('bloom_dirty_')===0||k.indexOf('bloom_rev_')===0){localStorage.removeItem(k)}}}catch(e){}location.reload()};var rr=document.getElementById('bloomReload');if(rr)rr.onclick=function(){location.reload()};
+ r.innerHTML='<h1 style="margin:0;font-size:1.4rem;color:#3A2E33">Bloom recovery</h1><p id="bloomErrTxt" style="margin:0;color:#7C6B71;max-width:34em">This build could not start. Your logs and library are NOT deleted. Try Reload first. Reset only clears session flags.</p><button id="bloomReload" style="padding:12px 22px;border:0;border-radius:999px;background:#B8456B;color:#FBF4EA;font-size:1rem;font-weight:700">Reload</button><button id="bloomResetData" style="padding:8px 18px;border:1px solid #EADFD2;border-radius:999px;background:transparent;color:#3A2E33;font-size:.9rem">Reset app data</button>';document.body.appendChild(r);var h=document.getElementById('bloomResetData');if(h)h.onclick=function(){try{['bloom_nav','bloom_theme','bloom_reader_theme','bloom_net','bloom_s','bloom_role'].forEach(function(k){localStorage.removeItem(k)})}catch(e){}location.reload()};var rr=document.getElementById('bloomReload');if(rr)rr.onclick=function(){location.reload()};
  }catch(_){}
 };
-window.addEventListener('error',function(e){try{console.error('[bloom] err',e.message,e.filename,e.lineno);var et=document.getElementById('bloomErrTxt');if(et)et.textContent='Error: '+String((e&&e.message)||e).slice(0,200);window.__bloomError(String((e&&e.message)||e).slice(0,220))}catch(_){}},true);
+// @test-begin errorIgnore
+function errorIgnorableEvent(e){
+ if(!e||!e.message) return true;
+ var w = typeof window !== 'undefined' ? window : null;
+ if(e.target&&e.target!==w) return true;
+ if(/^Script error\.?$/.test(e.message)&&!e.filename) return true;
+ if(/ResizeObserver loop/i.test(e.message)) return true;
+ return false;
+}
+// @test-end errorIgnore
+window.addEventListener('error',function(e){try{
+ if(!e||!(e instanceof ErrorEvent)||!e.message)return;
+ if(e.target&&e.target!==window)return;
+ if(/^Script error\.?$/.test(e.message)&&!e.filename)return;
+ if(/ResizeObserver loop/i.test(e.message))return;
+ console.error('[bloom] err',e.message,e.filename,e.lineno);
+ window.__bloomError(String(e.message).slice(0,220))}catch(_){}},true);
 try{ try{localStorage.setItem('bloom_boot','1')}catch(e){} }catch(e){}
-window.addEventListener('unhandledrejection',function(e){try{var m=String((e&&e.reason&&e.reason.message)||(e&&e.reason)||e);console.error('[bloom] rej',m);window.__bloomError('unhandled: '+m.slice(0,220))}catch(_){}},true);
+window.addEventListener('unhandledrejection',function(e){try{
+ var m=String((e&&e.reason&&e.reason.message)||(e&&e.reason)||e);
+ if(/Failed to fetch|NetworkError|Load failed|network|aborted|timeout/i.test(m))return;
+ console.error('[bloom] rej',m);
+ window.__bloomError('unhandled: '+m.slice(0,220))}catch(_){}},true);
 }catch(_){}
 
 // @test-begin esc
@@ -1383,7 +1404,7 @@ async function enterPartnerMode(owner,code,quiet){
  if(!window.__navReady)view='cycle';shell();
  if(!quiet)toast('Paired \u00b7 following '+(((D.p&&D.p.name)||'your partner')));
  return true}
-async function partnerDropped(){
+async function partnerDropped(){try{libStoreReset()}catch(e){}
  const old=ROowner;
  RO=false;ROcloud=false;ROowner=null;roHash='';ownMode=false;ownStash=null;D=null;planPanel='mine';peekDoc=null;peekAt=0;pairInfo=null;
  setRoleFlag('');unlockPartner();setUnpaired(true);clearSession();
@@ -1475,7 +1496,7 @@ async function exitPartner(){
   return}
  exitPartnerNow()}
 // leaving follow mode always opens the partner account's own Profile - never the cycle feed
-async function exitPartnerNow(){
+async function exitPartnerNow(){try{libStoreReset()}catch(e){}
  const wasRO=RO;
  // leaving on purpose removes the cloud link too, so a sign-out cannot restore it
   try{if(wasRO){const cl=await sbInit();if(cl&&sbUser)await cl.rpc('bloom_leave_pairing')}}catch(e){reportErr('partner.leave',e)}
@@ -1809,7 +1830,7 @@ function forgotPasswordSheet(){
 }
 function login(u){user=u;D=Object.assign(blank(),J(key(u),{}));loadRev(u);setSession(u);applyTheme();view='cycle';shell()}
 // @test-begin auth
-function logout(){try{widgetReset()}catch(e){}RO=false;ROcloud=false;ROowner=null;roHash='';ownMode=false;ownStash=null;user=null;D=null;clearSession();planPanel='mine';peekDoc=null;peekAt=0;pairInfo=null;setRoleFlag('');sbLastPush='';sbRev=0;
+function logout(){try{libStoreReset()}catch(e){}try{widgetReset()}catch(e){}RO=false;ROcloud=false;ROowner=null;roHash='';ownMode=false;ownStash=null;user=null;D=null;clearSession();planPanel='mine';peekDoc=null;peekAt=0;pairInfo=null;setRoleFlag('');sbLastPush='';sbRev=0;
  view='cycle';tab='';onbStep=0;calM=today().slice(0,7);try{window.__navReady=false}catch(e){}try{ST.del('bloom_nav')}catch(e){}
  try{ST.del('bloom_own')}catch(e){}try{clearLegacySmartAIStorage()}catch(e){}try{reminderCancel()}catch(e){}if(sb){sb.auth.signOut().catch(()=>{});sbUser=null}if(cloudTimer){clearInterval(cloudTimer);cloudTimer=null}hideUpdateBanner();authView('in')}
 let pwReauthing=false;
@@ -1830,7 +1851,7 @@ function confirmLogout(){
  $('#loCancel').onclick=()=>sheet();
  $('#loGo').onclick=()=>{sheet();logout()};
 }
-function wipeLocalData(){
+function wipeLocalData(){try{libStoreReset()}catch(e){}
   try{widgetReset()}catch(e){}
   try{clearLegacySmartAIStorage()}catch(e){}
   try{Object.keys(localStorage).filter(k=>k.indexOf('bloom_d_')===0||k.indexOf('bloom_backup_')===0||k.indexOf('bloom_dirty_')===0||k.indexOf('bloom_rev_')===0||k==='bloom_s'||k==='bloom_own'||k==='bloom_last_bg'||k==='bloom_upd_skip'||k==='bloom_pname'||k==='bloom_pavatar'||k==='bloom_pown'||k==='bloom_puid'||k==='bloom_powner'||k==='bloom_role'||k==='bloom_unpaired'||k==='bloom_lastcode'||k==='bloom_plocked'||k==='bloom_read'||k==='bloom_errlog'||k==='bloom_nav').forEach(k=>localStorage.removeItem(k))}catch(e){}
@@ -4750,7 +4771,9 @@ async function idbDelete(id){const db=await idbDB();const tx=db.transaction('boo
 
 // account-bound library state lives in D.library and syncs with the user doc
 function libStoreKey(){ if(RO&&ROowner)return 'bloom_reader_ro_'+ROowner; if(user)return 'bloom_reader_u_'+user; return 'bloom_reader_anon'; }
-function libStoreRead(){ let s=null;try{s=JSON.parse(ST.get(libStoreKey())||'null')}catch(e){};if(!s||typeof s!=='object')s={books:{},articles:{}};if(!s.books)s.books={};if(!s.articles)s.articles={};return s; }
+let roLibCache=null;
+function libStoreReset(){roLibCache=null}
+function libStoreRead(){ const k=libStoreKey(); if(roLibCache&&roLibCache.key===k)return roLibCache.obj; let s=null;try{s=JSON.parse(ST.get(k)||'null')}catch(e){};if(!s||typeof s!=='object')s={books:{},articles:{}};if(!s.books)s.books={};if(!s.articles)s.articles={};roLibCache={key:k,obj:s};return s; }
 function libStoreWrite(s){ try{ST.set(libStoreKey(),JSON.stringify(s))}catch(e){} }
 function libEnsure(){
  if(RO&&!ownMode&&ROowner){ return libStoreRead(); }
@@ -4763,7 +4786,7 @@ function libBook(id){
  if(!L.books[id])L.books[id]={added:Date.now(),page:1,pct:0,finished:false,favorite:false,dl:false,hl:[],lastRead:0};
  return L.books[id];
 }
-function libEntry(id){return (D.library&&D.library.books&&D.library.books[id])||null}
+function libEntry(id){try{const L=libEnsure();return (L&&L.books&&L.books[id])||null}catch(e){return null}}
 function libAddBook(id){const b=libBook(id);b.added=b.added||Date.now();save();return b}
 function libToggleFavorite(id){const b=libBook(id);b.favorite=!b.favorite;save();return b.favorite}
 function libMarkDl(id,v){const b=libBook(id);b.dl=!!v;save()}

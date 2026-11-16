@@ -62,10 +62,11 @@ function load() {
     auth: ['logout', 'wipeLocalData', 'pwIssue', 'confirmLogout'],
     ownmode: ['seedOwnDoc'],
     reader: ['lineGroup', 'blocksOfItems', 'readerSerialize', 'readerBlocksAcross', 'filterReaderLines', 'lineTextJoin', 'readerIsUnfinished', 'readerContinuationStart', 'nextLeadingPrefix', 'h3GroupLength'],
+    errorIgnore: ['errorIgnorableEvent'],
     widget: ['ownWidgetDoc', 'widgetSnapshot', 'widgetSync', 'widgetReset'],
     planui: ['shareFlags', 'plannerTabSet', 'ringPillBare', 'peerLabel']
   };
-  for (const name of ['phases', 'esc', 'sync', 'netmsg', 'roWho', 'sxmig', 'backup', 'smart', 'auth', 'ownmode', 'widget', 'planui', 'library', 'reader']) {
+  for (const name of ['phases', 'esc', 'sync', 'netmsg', 'roWho', 'sxmig', 'backup', 'smart', 'auth', 'ownmode', 'widget', 'planui', 'library', 'reader', 'errorIgnore']) {
     let code;
     try{ code = extract(html, name); }catch(e){ if(name==='auth') continue; throw e; }
     const names = exportsByName[name];

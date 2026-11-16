@@ -1,5 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const { load } = require('./load');
 const fs = require('fs');
 const path = require('path');
 
@@ -26,4 +27,12 @@ test('article reader keeps .reader-article', () => {
 
 test('only one #readerBody exists in the markup', () => {
   assert.equal((html.match(/id="readerBody"/g) || []).filter(Boolean).length >= 1, true);
+});
+
+
+test('errorIgnorableEvent ignores plain Events with a target (not from the window)', () => {
+  const { errorIgnorableEvent } = load();
+  assert.equal(errorIgnorableEvent({ type: 'error', target: { tagName: 'IMG' }, message: 'x' }), true);
+  assert.equal(errorIgnorableEvent({ type: 'error', target: { tagName: 'SCRIPT' }, message: 'Failed to load resource' }), true);
+  assert.equal(errorIgnorableEvent({ message: 'boom', filename: 'app.js' }), false);
 });
