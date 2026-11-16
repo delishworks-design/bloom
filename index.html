@@ -1382,7 +1382,7 @@ async function enterPartnerMode(owner,code,quiet){
  RO=true;ROcloud=true;ROowner=owner;ownMode=false;ownStash=null;planPanel='partner';peekDoc=null;peekAt=0;pairInfo=null;
  if(cloudTimer){clearInterval(cloudTimer);cloudTimer=null}
  try{reminderCancel()}catch(e){}
- if(sbUser&&sbUser.email)user=sbUser.email.toLowerCase();
+ if(sbUser&&sbUser.email){user=sbUser.email.toLowerCase();try{ST.set('bloom_pmail',user)}catch(e){}}
  try{ST.set('bloom_powner',owner);if(code)ST.set('bloom_lastcode',code)}catch(e){}
  setRoleFlag('partner');setUnpaired(false);lockPartner();
  // a different account on this phone must not inherit the last follower's name
@@ -1398,7 +1398,7 @@ async function enterPartnerMode(owner,code,quiet){
    else if(prof&&!prof.avatar){ST.del('bloom_pavatar')}
   }catch(e){reportErr('partner.profile',e)}}
  let doc=null;try{doc=await withTimeout(sbFetchDoc(owner),4000)}catch(e){reportErr('partner.doc',e)}
- if(doc){D=Object.assign(blank(),doc);roHash=roHashOf(JSON.stringify(doc))}
+ if(doc){D=Object.assign(blank(),doc);roHash=roHashOf(JSON.stringify(doc));try{ST.set(key(owner),JSON.stringify(doc))}catch(e){}}
  else{const cached=J(key(owner),null);if(cached)D=Object.assign(blank(),cached)}
  setSession('p:'+owner);
  if(!window.__navReady)view='cycle';shell();
@@ -1416,21 +1416,24 @@ async function partnerDropped(){try{libStoreReset()}catch(e){}
 let ownSeq=0,ownLoading=false,ownLoaded=false;
 async function enterOwnMode(){
  if(ownMode||!RO||ownLoading)return;
- if(!sbUser){toast('Sign in first');return}
+ const uid=sbUser?sbUser.id:(ST.get('bloom_puid')||null);
+ if(!sbUser&&!(user&&uid)){toast('Sign in first');return}
+ const mail=(user||'').toLowerCase();
+ let cached=null;try{cached=J(key(mail),null)}catch(e){}
+ if(cached&&cached._uid&&uid&&cached._uid!==uid){try{ST.del(key(mail))}catch(e){};cached=null}
+ if(!sbUser&&!cached){toast('Open your own planner once while online first');return}
  const seq=++ownSeq;ownLoading=true;
  if(ownStash==null)ownStash={D:D,roHash:roHash,view:view,tab:tab,peerName:(D&&D.p&&D.p.name)||''};
  if(roTimer){clearInterval(roTimer);roTimer=null}
- const mail=(user||'').toLowerCase();
- let cached=null;try{cached=J(key(mail),null)}catch(e){}
- if(cached&&cached._uid&&cached._uid!==sbUser.id){try{ST.del(key(mail))}catch(e){};cached=null}
  const pname=(()=>{try{return ST.get('bloom_pname')||''}catch(e){return ''}})();
  let pavatar=null;try{pavatar=JSON.parse(ST.get('bloom_pavatar')||'null')}catch(e){}
- const prepare=src=>{const d=seedOwnDoc(src,cached,pname,pavatar);d._uid=sbUser.id;return d};
+ const prepare=src=>{const d=seedOwnDoc(src,cached,pname,pavatar);if(uid)d._uid=uid;return d};
  const enter=d=>{D=d;ownPeerName=((ownStash&&ownStash.peerName)||'').trim();ownMode=true;RO=false;ROcloud=false;ownLoaded=true;ownLoading=false;
   planPanel='mine';view='planner';if(['day','week','meals','journal'].indexOf(tab)<0)tab='day';startCloudSync();shell()};
  if(cached){
   const base=JSON.stringify(prepare(null));
   enter(JSON.parse(base));
+  if(!sbUser)return;
   (async()=>{
    let row=null;try{row=await sbFetchDocWithRev(sbUser.id)}catch(e){reportErr('own.load.refresh',e)}
    if(seq!==ownSeq||!ownMode||!row||!row.doc)return;
@@ -1833,7 +1836,7 @@ function forgotPasswordSheet(){
 }
 function login(u){user=u;D=Object.assign(blank(),J(key(u),{}));loadRev(u);setSession(u);applyTheme();view='cycle';shell()}
 // @test-begin auth
-function logout(){try{libStoreReset()}catch(e){}try{widgetReset()}catch(e){}RO=false;ROcloud=false;ROowner=null;roHash='';ownMode=false;ownStash=null;user=null;D=null;clearSession();planPanel='mine';peekDoc=null;peekAt=0;pairInfo=null;setRoleFlag('');sbLastPush='';sbRev=0;
+function logout(){try{libStoreReset()}catch(e){}try{ST.del('bloom_pmail')}catch(e){}try{widgetReset()}catch(e){}RO=false;ROcloud=false;ROowner=null;roHash='';ownMode=false;ownStash=null;user=null;D=null;clearSession();planPanel='mine';peekDoc=null;peekAt=0;pairInfo=null;setRoleFlag('');sbLastPush='';sbRev=0;
  view='cycle';tab='';onbStep=0;calM=today().slice(0,7);try{window.__navReady=false}catch(e){}try{ST.del('bloom_nav')}catch(e){}
  try{ST.del('bloom_own')}catch(e){}try{clearLegacySmartAIStorage()}catch(e){}try{reminderCancel()}catch(e){}if(sb){sb.auth.signOut().catch(()=>{});sbUser=null}if(cloudTimer){clearInterval(cloudTimer);cloudTimer=null}hideUpdateBanner();authView('in')}
 let pwReauthing=false;
@@ -1854,7 +1857,7 @@ function confirmLogout(){
  $('#loCancel').onclick=()=>sheet();
  $('#loGo').onclick=()=>{sheet();logout()};
 }
-function wipeLocalData(){try{libStoreReset()}catch(e){}
+function wipeLocalData(){try{libStoreReset()}catch(e){}try{ST.del('bloom_pmail')}catch(e){}
   try{widgetReset()}catch(e){}
   try{clearLegacySmartAIStorage()}catch(e){}
   try{Object.keys(localStorage).filter(k=>k.indexOf('bloom_d_')===0||k.indexOf('bloom_backup_')===0||k.indexOf('bloom_dirty_')===0||k.indexOf('bloom_rev_')===0||k==='bloom_s'||k==='bloom_own'||k==='bloom_last_bg'||k==='bloom_upd_skip'||k==='bloom_pname'||k==='bloom_pavatar'||k==='bloom_pown'||k==='bloom_puid'||k==='bloom_powner'||k==='bloom_role'||k==='bloom_unpaired'||k==='bloom_lastcode'||k==='bloom_plocked'||k==='bloom_read'||k==='bloom_errlog'||k==='bloom_nav').forEach(k=>localStorage.removeItem(k))}catch(e){}
@@ -2079,11 +2082,12 @@ document.addEventListener('storage',e=>{if(RO&&e.key===key(ROowner))roReload()})
 // ---------- shell
 let roTimer=null,roHash='';
 function roHashOf(s){let h=0;for(let i=0;i<s.length;i++){h=(h*31+s.charCodeAt(i))|0}return h}
+let roProbeAt=0;
 async function roReload(){if(!RO||document.hidden)return;
- if(ROcloud){const doc=await sbFetchDoc(ROowner);
+ if(ROcloud){if(!sb&&Date.now()-roProbeAt>20000){roProbeAt=Date.now();try{if(await probeNet()){try{ST.set('bloom_net','1')}catch(e){}await sbInit()}}catch(e){}}const doc=await sbFetchDoc(ROowner);
   if(!doc){ // empty could be a network blip: ask the link itself
    const q=await cloudPairing();if(q.ok&&!q.pair)await partnerDropped();return}
-  const h=roHashOf(JSON.stringify(doc));if(h===roHash)return;roHash=h;D=Object.assign(blank(),doc);shell();return}
+  const h=roHashOf(JSON.stringify(doc));if(h===roHash)return;roHash=h;D=Object.assign(blank(),doc);try{ST.set(key(ROowner),JSON.stringify(doc))}catch(e){}shell();return}
  const raw=ST.get(key(ROowner));if(raw==null)return;const h=roHashOf(raw);if(h===roHash)return;roHash=h;D=Object.assign(blank(),J(key(ROowner),{}));shell()}
 // ---------- navigation persistence (survive an Android WebView reload)
 // @test-begin nav
@@ -6038,7 +6042,7 @@ function startReconnectWatch(){
   if(!sbUser){const r=await c.auth.getSession();if(r&&r.data&&r.data.session&&r.data.session.user)sbUser=r.data.session.user}
   if(!sbUser)return;
   clearInterval(reconnectTimer);reconnectTimer=null;
-  await sbAfterLogin(sbUser);startCloudSync();
+  if(ownMode){startCloudSync();sbPush()}else{await sbAfterLogin(sbUser);startCloudSync()}
  }catch(e){}},15000);
 }
 
@@ -6066,9 +6070,10 @@ if(splashShouldShow())splashPlay();else splashSkip();  // only after 3 minutes a
  }
  if(s&&String(s).indexOf('p:')===0){const owner=String(s).slice(2);
   RO=true;ROcloud=true;ROowner=owner;setRoleFlag('partner');planPanel='partner';
+  try{const pm=ST.get('bloom_pmail');if(pm)user=pm}catch(e){}
   const cached=J(key(owner),{});
   D=Object.assign(blank(),cached||{});backfillMeals();restoreNav();shell();
-  if(isOffline()){try{splashSkip()}catch(e){}return}
+  if(isOffline()||!reachable){try{splashSkip()}catch(e){}try{startReconnectWatch()}catch(e){}return}
   sbInit().then(async()=>{try{
    if(sbUser){
     const q=await cloudPairing();
@@ -6078,7 +6083,7 @@ if(splashShouldShow())splashPlay();else splashSkip();  // only after 3 minutes a
    }
     const doc=await sbFetchDoc(owner);
     if(doc&&(Object.keys(doc.logs||{}).length||Object.keys(doc.tasks||[]).length)){
-     D=Object.assign(blank(),doc);roHash=roHashOf(JSON.stringify(doc));shell()}}catch(e){reportErr('boot.partner',e)}});
+     D=Object.assign(blank(),doc);roHash=roHashOf(JSON.stringify(doc));try{ST.set(key(owner),JSON.stringify(doc))}catch(e){}shell()}}catch(e){reportErr('boot.partner',e)}});
   return}
  await sbInit();
  if(sbUser&&!RO){try{await sbAfterLogin(sbUser);backfillMeals();setTimeout(()=>checkUpdate(false),1500);return}catch(e){reportErr('login.after',e)}}
