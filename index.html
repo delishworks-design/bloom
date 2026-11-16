@@ -1607,6 +1607,7 @@ async function redeemCode(code,onErr){
  const c=String(code||'').trim().toUpperCase();
  if(!c){onErr('Enter a pairing code.');return false}
  const client=await sbInit();
+ if(!user&&!sbUser){onErr('Sign in first to follow someone.');return false}
  if(!client||!sbUser){onErr('Pairing needs an internet connection.');return false}
   const {data,error}=await client.rpc('bloom_redeem_partner_code',{p_code:c});
   if(error&&String(error.message||'').includes('too many attempts')){onErr('Too many tries. Wait 10 minutes and try again.');return false}
@@ -2144,7 +2145,9 @@ function onboarding(){splashAppIsReady();try{fabSync()}catch(e){}const p=D.p;if(
 `<h2>Your cycle</h2>${chipField('cy','Typical cycle',[['','Not sure'],['reg','Fairly regular'],['irr','Irregular'],['none','Rarely/no periods']],p.cy||'')}<label for="food">Food preferences</label><input id="food" value="${E(p.food||'')}" placeholder="No pork, vegetarian">${chipField('act','Preferred activity',[['walk','Walking'],['strength','Strength'],['stretch','Stretching / yoga']],p.act||'walk')}`];
  if(onbStep===0){
   $('#app').innerHTML=`<div class="auth"><div class="card" style="display:flex;flex-direction:column;gap:22px;padding:28px 24px 32px"><h2 style="margin:0">Who is Bloom for?</h2><div style="display:flex;flex-direction:column;gap:18px">${steps[0]}</div><p class="note">You can change this later in your profile.</p></div></div>`;
-  document.querySelectorAll('.rolebtn').forEach(b=>b.onclick=()=>{p.role=b.dataset.role;setUnpaired(false);save();
+  document.querySelectorAll('.rolebtn').forEach(b=>b.onclick=()=>{
+   if(b.dataset.role==='partner'&&!user&&!sbUser){toast('Sign in or create an account first to follow someone.');return}
+   p.role=b.dataset.role;setUnpaired(false);save();
    if(p.role==='partner'){partnerOnboard();return}
    onbStep=1;onboarding()});
   if(pLocked()){const mb=document.querySelector('.rolebtn[data-role="me"]');if(mb)mb.remove()}
@@ -2155,7 +2158,7 @@ function onboarding(){splashAppIsReady();try{fabSync()}catch(e){}const p=D.p;if(
  bindFields();
  const grab=()=>{if(onbStep===1){p.name=$('#nm').value.trim();p.dx=$('#dx').value}if(onbStep===2)p.goals=[...document.querySelectorAll('#goals .chip[aria-pressed=true]')].map(c=>c.textContent);if(onbStep===3){p.cy=$('#cy').value;p.food=$('#food').value.trim();p.act=$('#act').value}};
  const nx=()=>{if(onbStep===3){p.done=true;save();pushProfile();view='cycle';return shell()}onbStep++;save();if(onbStep>1)pushProfile();onboarding()};
- const skipAll=()=>{if(onbStep<3){onbStep=3;save();onboarding();return}nx()};
+ const skipAll=()=>{onbStep=3;nx();onbStep=0};
  $('#nx').onclick=()=>{grab();nx()};$('#sk').onclick=()=>{grab();skipAll()}}
 function partnerOnboard(){
  const p=D.p;
