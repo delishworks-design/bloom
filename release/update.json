@@ -1,7 +1,7 @@
 {
-    "versionCode": 119,
-    "versionName": "1.2.104",
-    "notes": "Defensive: shows the exact runtime error on screen with a Reset app data button, and auto-recovers an empty-on-boot build. Install instead of 1.2.103 if you still see a blank page.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.104/bloom-1.2.104.apk",
+    "versionCode": 120,
+    "versionName": "1.2.105",
+    "notes": "Fix: app broke on startup (missing $ helper). Includes recovery screen that catches future boot failures with a Reset data button. Install instead of 1.2.103/1.2.104.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.105/bloom-1.2.105.apk",
     "publishedAt": "2026-11-16"
 }
