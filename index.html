@@ -500,7 +500,7 @@ details{border-bottom:1px solid var(--line);padding:14px 0}summary{cursor:pointe
 .weeknav{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
 .monthgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:4px}
 .mg-hd{text-align:center;font-size:.62rem;font-weight:700;color:var(--mut);padding:4px 0}
-.mg-cell{background:var(--card);border:1px solid var(--line);border-radius:10px;min-height:54px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:4px 2px;cursor:pointer;color:var(--ink)}
+.mg-cell{background:var(--card);border:1px solid var(--line);border-radius:10px;min-height:0;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2px;cursor:pointer;color:var(--ink)}
 .mg-cell-empty{background:var(--bg2);border-color:transparent;cursor:default;opacity:.45}
 .mg-cell.cal-today{border-color:var(--rose) !important;border-width:2px}
 .mg-cell:hover{border-color:var(--rose)}
@@ -3199,10 +3199,27 @@ ${only?'':`<form id="af" style="margin-top:14px"><input id="nt" maxlength="80" p
  const afForm=document.getElementById('af');if(afForm)afForm.onsubmit=e=>{e.preventDefault();const t=$('#nt').value.trim();if(!t)return $('#er').textContent='Please type a task.';const when=$('#when').value||today();const time=$('#whenTime').value||undefined;const carry=!!$('#carry').checked;const note=$('#ptn').value.trim()||undefined;const repeat=$('#rp').value;D.tasks.push({id:uid(),t,from:when,repeat,time,carry:carry||undefined,note:note||undefined});save();planner()};
  document.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{D.tasks=D.tasks.filter(t=>t.id!=b.dataset.del);save();planner()});
  document.querySelectorAll('[data-cmp]').forEach(b=>b.onclick=()=>{toggle(b.dataset.cmp,d);planner()})}
+function dayTasksSheet(d, doc, only){
+ const src = doc || D;
+ const ts = tasksFor(d, src);
+ const n = ts.filter(t => isDone(t.id, d, src)).length;
+ const rows = ts.length ? ts.map(t => {
+   const done = isDone(t.id, d, src);
+   const tflag = t.time ? ' <span class="time-badge">'+E(t.time)+'</span>' : '';
+   const note = t.note ? ' <span class="note-chip">note</span>' : '';
+   if (only) return '<div class="taskrow"><span class="ckt" style="'+(done?'opacity:.55':'')+'">'+(done?'&#10003; ':'')+E(t.t)+tflag+note+'</span></div>';
+   return '<div class="taskrow"><label class="ck"><input type="checkbox" data-dayt="'+t.id+'"'+(done?' checked':'')+'><span class="ckt" style="'+(done?'opacity:.55':'')+'">'+E(t.t)+tflag+note+'</span></label></div>';
+ }).join('') : '<p class="meta">No tasks for this day.</p>';
+ sheet(`<h2>${fmt(d,{weekday:'long',month:'long',day:'numeric'})}</h2><p class="meta" style="margin:0 0 12px">${n} of ${ts.length} done</p>${rows}`);
+ document.querySelectorAll('[data-dayt]').forEach(c => c.onchange = () => {
+   toggle(c.dataset.dayt, d);
+   dayTasksSheet(d, src, only);
+ });
+}
 function pMonth(src,ro){const doc=src||D,only=ro==null?RO:ro;
  const now=today();const base=new Date(now+'T12:00');
  const y=base.getFullYear();
- $('#pb').innerHTML=`<div class="card"><div class="card-h"><h3>Calendar</h3></div><div class="calsheet" style="height:auto;max-height:none;margin:0 -2px"><div class="calsheet-scroll" id="pCalScroll" style="padding:0;overflow:visible"></div></div><div id="mgDetail"></div></div>`;
+ $('#pb').innerHTML=`<div class="card"><div class="card-h"><h3>Calendar</h3></div><div class="calsheet" style="height:auto;max-height:none;width:100%;max-width:100%"><div class="calsheet-scroll" id="pCalScroll" style="padding:0;overflow:visible"></div></div></div>`;
  const scroll=document.getElementById('pCalScroll');
  const todayStr=now;
  const renderYear = (yr) => {
@@ -3228,9 +3245,8 @@ function pMonth(src,ro){const doc=src||D,only=ro==null?RO:ro;
      scroll.addEventListener('click', e => {
        const btn = e.target.closest('[data-d].mg-cell');
        if (btn) {
-         const d = btn.dataset.d; const det = document.getElementById('mgDetail'); if (!det) return;
-         const ts = tasksFor(d, doc);
-         det.innerHTML = `<div class="divider"></div><div class="card-h"><h3 style="font-size:1rem">${fmt(d,{weekday:'long',month:'short',day:'numeric'})}</h3></div>${ts.length?ts.map(t=>`<div class="taskrow"><span class="ckt" style="${isDone(t.id,d,doc)?'opacity:.55':''}">${isDone(t.id,d,doc)?'&#10003; ':''}${E(t.t)}${t.time?' <span class="meta" style="margin-left:6px">'+E(t.time)+'</span>':''}${t.note?' <span class="note-chip">note</span>':''}</span></div>`).join(''):'<p class="meta">No tasks</p>'}`;
+         const d = btn.dataset.d;
+         dayTasksSheet(d, doc, only);
          return;
        }
        const next = e.target.closest('[data-cal-next]');
