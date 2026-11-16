@@ -1642,8 +1642,10 @@ function authView(mode){try{splashSkip()}catch(e){}mode=mode||'in';try{fabSync()
    <div class="auth-foot">
    ${up?'':`<p style="text-align:center;margin:0 0 8px"><button type="button" class="link" id="fg">Forgot password?</button></p>`}
     <p class="switch">${up?'Already have an account?':'New here?'} <button type="button" class="link" id="sw">${up?'Log in':'Create an account'}</button></p>
+  ${(D&&D._anon)?'<p style="text-align:center;margin:10px 0 0"><button type="button" class="link" id="authBack">Back to app</button></p>':''}
    </div></div></div>`;
  $('#sw').onclick=()=>{window.__signupStep=1;authView(up?'in':'up')};
+  const ab=document.getElementById('authBack');if(ab)ab.onclick=()=>{localAnonBoot()};
  const fg=document.getElementById('fg');if(fg)fg.onclick=forgotPasswordSheet;
  const g=id=>document.getElementById(id);
  if(up&&authPrefill)g('u').value=authPrefill;else if(authPrefill)g('u').value=authPrefill;
@@ -2144,7 +2146,8 @@ function onboarding(){splashAppIsReady();try{fabSync()}catch(e){}const p=D.p;if(
 `<h2>Your goals</h2><div class="row" id="goals" style="flex-wrap:wrap;gap:8px">${GOALS.map(g=>`<button class="chip" aria-pressed="${(p.goals||[]).includes(g)}">${g}</button>`).join('')}</div>`,
 `<h2>Your cycle</h2>${chipField('cy','Typical cycle',[['','Not sure'],['reg','Fairly regular'],['irr','Irregular'],['none','Rarely/no periods']],p.cy||'')}<label for="food">Food preferences</label><input id="food" value="${E(p.food||'')}" placeholder="No pork, vegetarian">${chipField('act','Preferred activity',[['walk','Walking'],['strength','Strength'],['stretch','Stretching / yoga']],p.act||'walk')}`];
  if(onbStep===0){
-  $('#app').innerHTML=`<div class="auth"><div class="card" style="display:flex;flex-direction:column;gap:22px;padding:28px 24px 32px"><h2 style="margin:0">Who is Bloom for?</h2><div style="display:flex;flex-direction:column;gap:18px">${steps[0]}</div><p class="note">You can change this later in your profile.</p></div></div>`;
+  $('#app').innerHTML=`<div class="auth"><div class="card" style="display:flex;flex-direction:column;gap:22px;padding:28px 24px 32px"><h2 style="margin:0">Who is Bloom for?</h2><div style="display:flex;flex-direction:column;gap:18px">${steps[0]}</div><p class="note">You can change this later in your profile.</p>${(!user&&!sbUser)?'<button type="button" class="btn ghost" id="obSignIn" style="width:100%">Already have an account? Sign in</button>':''}</div></div>`;
+  const obs=document.getElementById('obSignIn');if(obs)obs.onclick=()=>authView('in');
   document.querySelectorAll('.rolebtn').forEach(b=>b.onclick=()=>{
    if(b.dataset.role==='partner'&&!user&&!sbUser){toast('Sign in or create an account first to follow someone.');return}
    p.role=b.dataset.role;setUnpaired(false);save();
