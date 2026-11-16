@@ -1,7 +1,7 @@
 {
-    "versionCode": 116,
-    "versionName": "1.2.101",
-    "notes": "Fix: library and book progress kept when logging out and logging back in, backup restore and fresh-login keep library state, offline boot works with missing session flag, search no longer loses focus.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.101/bloom-1.2.101.apk",
-    "publishedAt": "2026-11-15"
+    "versionCode": 117,
+    "versionName": "1.2.102",
+    "notes": "Reader is justified. Book view theme toggle now flips immediately. Dark mode everywhere (System/Light/Dark in Settings > Appearance). Sign-up is two steps: email first, then password. Works fully without network \u2014 local, anonymous reading and logging until sign-in.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.102/bloom-1.2.102.apk",
+    "publishedAt": "2026-11-16"
 }
