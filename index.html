@@ -386,6 +386,35 @@ label{display:block;font-size:.86rem;color:var(--mut) !important;margin-top:16px
 .mealrow .ckt{flex:1 1 0}
 
 /* Calendar */
+.calsheet{display:flex;flex-direction:column;height:78vh;max-height:78vh;margin:0;padding:0}
+.calsheet-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px 12px;border-bottom:1px solid var(--line)}
+.calsheet-head h2{margin:0;font-size:1.1rem}
+.calsheet-scroll{overflow-y:auto;flex:1;padding:0 12px 20px;-webkit-overflow-scrolling:touch}
+.cal-month{padding:14px 4px 10px;border-bottom:1px solid var(--line)}
+.cal-month-h{margin:0 0 8px;font-size:1rem;color:var(--ink);letter-spacing:.02em}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-wd{text-align:center;font-size:.6rem;font-weight:800;letter-spacing:.08em;color:var(--mut);padding:2px 0 4px}
+.cal-cell{aspect-ratio:1;border:1px solid var(--line2);border-radius:10px;background:var(--card);color:var(--ink);font-size:.88rem;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.cal-cell:hover{border-color:var(--rose)}
+.cal-empty{aspect-ratio:1}
+.cal-today{outline:2px solid #2A8A87;outline-offset:1px}
+.cal-sel{background:var(--rose) !important;color:#fff !important;border-color:var(--rose) !important}
+.cal-continue{width:100%;margin:14px 0 4px;padding:14px;border:1.5px dashed var(--line2);border-radius:14px;background:transparent;color:var(--rose);font-weight:800;letter-spacing:.06em;cursor:pointer}
+.cal-continue:hover{border-color:var(--rose);background:var(--pinkS)}
+.pickfield{width:100%;text-align:left;border:1px solid var(--line2);border-radius:12px;padding:12px 14px;background:var(--card);color:var(--ink);font-size:1rem;display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer}
+.pickfield .pf-val{font-weight:600}
+.pickfield .pf-icon{color:var(--mut);display:flex}
+.field-pick-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line2);border-radius:10px;padding:10px 12px;background:var(--card);color:var(--ink);font-weight:600;cursor:pointer}
+.wheeltime{display:flex;flex-direction:column;align-items:center;padding:4px 6px 0}
+.wt-preview{font-family:'Playfair Display',serif;font-size:2rem;color:var(--rose);margin:4px 0 10px;letter-spacing:.02em}
+.wt-wheels{display:flex;gap:14px;align-items:center;justify-content:center;position:relative;height:220px}
+.wt-col{height:176px;overflow-y:auto;scroll-snap-type:y mandatory;width:72px;-webkit-overflow-scrolling:touch}
+.wt-col::-webkit-scrollbar{display:none}
+.wt-item{height:44px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;color:var(--mut);scroll-snap-align:center;font-weight:600}
+.wt-ampm{display:flex;flex-direction:column;gap:10px}
+.wt-ampm-btn{width:64px;height:40px;border-radius:12px;border:1px solid var(--line2);background:var(--card);color:var(--mut);font-weight:800;cursor:pointer}
+.wt-ampm-btn.on{background:var(--rose);border-color:var(--rose);color:#fff}
+.wt-wheels::before{content:"";position:absolute;left:0;right:0;top:66px;height:44px;border-top:1px solid var(--line2);border-bottom:1px solid var(--line2);pointer-events:none}
 .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;text-align:center}
 .calh{font-size:.68rem;font-weight:700;color:var(--mut);line-height:1;text-align:center;padding:4px 0 2px}
 .cal button{position:relative !important;aspect-ratio:1;border:1.5px solid var(--line) !important;border-radius:11px !important;background:var(--card) !important;min-height:36px !important;display:flex !important;align-items:center !important;justify-content:center !important;flex-direction:column !important;gap:2px !important;line-height:1 !important;color:var(--ink) !important;font-weight:700 !important;font-size:.9rem !important;box-shadow:0 1px 3px rgba(120,70,80,.05) !important}
@@ -467,6 +496,8 @@ details{border-bottom:1px solid var(--line);padding:14px 0}summary{cursor:pointe
 .monthgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:4px}
 .mg-hd{text-align:center;font-size:.62rem;font-weight:700;color:var(--mut);padding:4px 0}
 .mg-cell{background:var(--card);border:1px solid var(--line);border-radius:10px;min-height:54px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:4px 2px;cursor:pointer;color:var(--ink)}
+.mg-cell-empty{background:var(--bg2);border-color:transparent;cursor:default;opacity:.45}
+.mg-cell.cal-today{border-color:var(--rose) !important;border-width:2px}
 .mg-cell:hover{border-color:var(--rose)}
 .mg-off{opacity:.42}
 .mg-today{border-color:var(--rose) !important;border-width:2px}
@@ -478,19 +509,8 @@ details{border-bottom:1px solid var(--line);padding:14px 0}summary{cursor:pointe
 .note-chip{display:inline-block;font-size:.66rem;font-weight:700;color:var(--mut);border:1px solid var(--line);border-radius:999px;padding:1px 6px;text-transform:uppercase;letter-spacing:.06em}
 .rose-warn{background:rgba(184,69,107,.07)!important;border:1px solid rgba(184,69,107,.34)!important}
 .tabsrow{display:flex;flex-wrap:nowrap;gap:8px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:4px 0 8px;align-items:center}
-.advsched{border:1px dashed var(--line2);border-radius:12px;padding:8px 10px 10px;margin:10px 0 0;background:var(--bg2)}
 .adv-sum{cursor:pointer;font-weight:700;list-style:none;display:flex;align-items:center;gap:6px;font-size:.82rem;color:var(--ink)}
-.adv-sum::-webkit-details-marker{display:none}
-.adv-caret{display:inline-block;transition:transform .18s}
-.advsched[open] .adv-caret{transform:rotate(90deg)}
-.advbody{padding-top:8px;display:flex;flex-direction:column;gap:6px}
 .adv-field{border:0;padding:0;margin:0}
-.adv-field legend{display:none}
-.adv-weeks{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 0}
-.adv-wd{width:36px;height:36px;border-radius:50%;border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;cursor:pointer;color:var(--ink);background:var(--card)}
-.adv-wd.on{background:var(--rose);border-color:var(--rose);color:#fff}
-.adv-num{border:1px solid var(--line2);border-radius:8px;padding:6px 8px;background:var(--card);color:var(--ink);font-size:.85rem}
-.adv-grp{display:flex;flex-direction:column;gap:6px}
 .tabsrow::-webkit-scrollbar{display:none}
 .tabsrow .chip{flex:0 0 auto;padding:0 14px !important;min-height:38px !important;font-size:.86rem !important}
 .kv{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px dashed var(--line)}
@@ -826,6 +846,7 @@ const J=(k,d)=>{try{return JSON.parse(ST.get(k))??d}catch(e){return d}};
 const iso=d=>{d=new Date(d);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const today=()=>iso(new Date());const addD=(s,n)=>{const d=new Date(s+'T12:00');d.setDate(d.getDate()+n);return iso(d)};
 const fmt=(s,o)=>new Date(s+'T12:00').toLocaleDateString(undefined,o||{month:'short',day:'numeric'});
+const fmtTime12=(t)=>{if(!t||!/^\d{2}:\d{2}$/.test(t))return '';const [H,M]=t.split(':').map(Number);const h=H===0?12:(H>12?H-12:H);const ap=H<12?'AM':'PM';return h+':'+String(M).padStart(2,'0')+' '+ap};
 let user=null,D=null,view='cycle',tab='',calM=today().slice(0,7),range=14,onbStep=0,learnTab='today',foodCat='All',tipCat='All';
 const GOALS=['Understand my cycle','Steadier energy','Better sleep','Move more','Eat regularly','Manage stress','Prepare for doctor visits'];
 const TAGS=['Acne','Hair changes','Bloating','Cramps','Fatigue','Cravings','Headache','Low mood','Anxious','Breast tenderness'];
@@ -2117,60 +2138,7 @@ function overdueList(doc, ref){
 }
 // @test-end plannerAdvance
 
-// @test-begin plannerAdvancedUI
-function advSchedulingHTML(p, cur){
- const months = (() => { let s = ''; for (let d = 1; d <= 31; d++) s += `<option value="${d}"${cur.monthDay === d ? ' selected' : ''}>${d}</option>`; return s; })();
- const wkd = ['S','M','T','W','T','F','S'];
- return `<details class="advsched" id="${p}advDet"><summary class="adv-sum"><span class="adv-caret">▸</span> Advanced Scheduling</summary>
-  <div class="advbody">
-   <div class="row" style="gap:10px;margin:6px 0 10px;flex-wrap:wrap">
-    <label class="row" style="gap:6px;margin:0"><input type="radio" name="${p}advMode" value="basic"${(cur.advMode||'basic')==='basic'?' checked':''}> <span class="meta" style="margin:0">Use quick repeat above</span></label>
-    <label class="row" style="gap:6px;margin:0"><input type="radio" name="${p}advMode" value="advanced"${(cur.advMode||'basic')==='advanced'?' checked':''}> <span class="meta" style="margin:0">Advanced rule</span></label>
-   </div>
-   <div class="adv-grp" id="${p}advGrp" style="${(cur.advMode||'basic')==='advanced'?'':'display:none'}">
-    <fieldset class="adv-field"><legend class="meta" style="margin-bottom:6px">Rule</legend>
-     <label class="row" style="gap:6px;margin:4px 0"><input type="radio" name="${p}advRep" value="custom"${(cur.repeat||'custom')==='custom'?' checked':''}> <span class="meta" style="margin:0">Custom weekdays</span></label>
-     <div class="adv-weeks" role="group" aria-label="Custom weekdays">${wkd.map((l,i)=>`<label class="adv-wd${(cur.weekdays||[]).includes(i)?' on':''}"><input type="checkbox" data-wd="${i}" value="${i}"${(cur.weekdays||[]).includes(i)?' checked':''} style="display:none"><span>${l}</span></label>`).join('')}</div>
-     <label class="row" style="gap:6px;margin:8px 0"><input type="radio" name="${p}advRep" value="every-x-days"${cur.repeat==='every-x-days'?' checked':''}> <span class="meta" style="margin:0">Every</span><input type="number" class="adv-num" id="${p}advDays" min="1" max="365" value="${cur.interval||2}" style="width:64px;margin:0"> <span class="meta" style="margin:0">days</span></label>
-     <label class="row" style="gap:6px;margin:6px 0"><input type="radio" name="${p}advRep" value="every-x-weeks"${cur.repeat==='every-x-weeks'?' checked':''}> <span class="meta" style="margin:0">Every</span><input type="number" class="adv-num" id="${p}advWeeks" min="1" max="52" value="${cur.interval||2}" style="width:64px;margin:0"> <span class="meta" style="margin:0">weeks</span></label>
-     <label class="row" style="gap:6px;margin:6px 0"><input type="radio" name="${p}advRep" value="monthly"${cur.repeat==='monthly'?' checked':''}> <span class="meta" style="margin:0">Monthly on day</span><select class="adv-num" id="${p}advMonthDay" style="margin:0">${months}</select></label>
-    </fieldset>
-    <div class="row" style="gap:8px;margin:10px 0 0">
-     <input id="${p}advStart" type="date" aria-label="Start date" value="${E(cur.from||'')}" style="flex:1;margin:0">
-     <input id="${p}advUntil" type="date" aria-label="End date (optional)" value="${E(cur.until||'')}" style="flex:1;margin:0">
-    </div>
-    <p class="hint" style="margin:6px 0 0">Start date is when the rule begins. End date is optional and exclusive.</p>
-   </div>
-  </div></details>`;
-}
-function advBind(p){
- const det=document.getElementById(p+'advDet');if(!det)return;
- const grp=document.getElementById(p+'advGrp');
- const modes=det.querySelectorAll('input[name="'+p+'advMode"]');
- const reps=det.querySelectorAll('input[name="'+p+'advRep"]');
- const syncMode=()=>{const m=[...modes].find(x=>x.checked);if(grp)grp.style.display=(m&&m.value==='advanced')?'':'none'};
- modes.forEach(r=>r.addEventListener('change',syncMode));syncMode();
- const wds=det.querySelectorAll('.adv-wd');
- wds.forEach(w=>{const inp=w.querySelector('input[type=checkbox]');const sync=()=>w.classList.toggle('on',!!inp.checked);inp.addEventListener('change',sync);sync()});
-}
-function advRead(p){
- const det=document.getElementById(p+'advDet');if(!det)return null;
- const mode=(det.querySelector('input[name="'+p+'advMode"]:checked')||{}).value||'basic';
- const start=document.getElementById(p+'advStart');
- const until=document.getElementById(p+'advUntil');
- const out={advMode:mode,from:start&&start.value?start.value:undefined,until:until&&until.value?until.value:undefined};
- if(mode==='advanced'){
-  const rep=(det.querySelector('input[name="'+p+'advRep"]:checked')||{}).value||'custom';
-  out.repeat=rep;
-  if(rep==='custom'){out.weekdays=Array.from(det.querySelectorAll('.adv-wd input[type=checkbox]:checked')).map(i=>+i.value);if(!out.weekdays.length)return {error:'Pick at least one weekday for Custom weekdays.'}}
-  if(rep==='every-x-days'){const n=+document.getElementById(p+'advDays').value;if(!Number.isFinite(n)||n<1)return {error:'Every X days must be at least 1.'};out.interval=Math.floor(n)}
-  if(rep==='every-x-weeks'){const n=+document.getElementById(p+'advWeeks').value;if(!Number.isFinite(n)||n<1)return {error:'Every X weeks must be at least 1.'};out.interval=Math.floor(n)}
-  if(rep==='monthly'){const n=+document.getElementById(p+'advMonthDay').value;if(!Number.isFinite(n)||n<1||n>31)return {error:'Monthly day must be between 1 and 31.'};out.monthDay=Math.floor(n)}
- }
- if(out.until&&out.until<=out.from)return {error:'End date must be after the start date.'};
- return out;
-}
-// @test-end plannerAdvancedUI
+
 const isDone=(id,d,doc)=>!!(((doc||D).done||{})[d]||{})[id];
 function toggle(id,d){D.done[d]=D.done[d]||{};D.done[d][id]=!D.done[d][id];save()}
 const uid=()=>Math.random().toString(36).slice(2,9);
@@ -2203,6 +2171,125 @@ function chipField(id,label,opts,current){const cur=current==null?'':String(curr
  <div class="row" role="group" aria-label="${E(label)}" data-fg="${id}" style="flex-wrap:wrap;gap:8px">${opts.map(o=>`<button type="button" class="chip" data-v="${E(o[0])}" aria-pressed="${String(o[0])===cur}">${E(o[1])}</button>`).join('')}</div></div>`}
 function bindFields(){document.querySelectorAll('[data-fg]').forEach(g=>{const inp=document.getElementById(g.dataset.fg);if(!inp)return;
  g.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{g.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed',x===c));inp.value=c.dataset.v})})}
+// @test-begin bloomcal
+function calMonthBlock(y, m /* 0-indexed */){
+  const first=new Date(y,m,1), dim=new Date(y,m+1,0).getDate(), off=(first.getDay()+6)%7;
+  const monthName=first.toLocaleDateString(undefined,{month:'long',year:'numeric'});
+  let cells='';
+  for(let i=0;i<off;i++)cells+='<span class="cal-cell cal-empty"></span>';
+  for(let d=1;d<=dim;d++){
+    const iso=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    cells+='<button type="button" class="cal-cell" data-cal-d="'+iso+'">'+d+'</button>';
+  }
+  return '<section class="cal-month" data-cal-ym="'+y+'-'+String(m+1).padStart(2,'0')+'"><h3 class="cal-month-h">'+E(monthName)+'</h3><div class="cal-grid">'+['S','M','T','W','T','F','S'].map(d=>'<div class="cal-wd">'+d+'</div>').join('')+cells+'</div></section>';
+}
+function calContinueBtn(y){return '<button class="cal-continue" data-cal-next="'+(y+1)+'">Continue to '+(y+1)+' →</button>'}
+// @test-end bloomcal
+function calSheet(opts){
+ opts = opts || {};
+ const title = opts.title || 'Choose a date';
+ const year = opts.year != null ? +opts.year : new Date().getFullYear();
+ const current = opts.current || null;
+ const todayStr = today();
+ sheet(`<div class="calsheet"><div class="calsheet-head"><h2>${E(title)}</h2><button class="btn ghost sm" id="calDone" style="flex:0 0 auto">Done</button></div><div class="calsheet-scroll" id="calScroll"></div></div>`);
+ const scroll = document.getElementById('calScroll');
+ const today_ = todayStr;
+ const renderYear = (y) => {
+   let html = '';
+   for (let m = 0; m < 12; m++) html += calMonthBlock(y, m);
+   html += calContinueBtn(y);
+   scroll.insertAdjacentHTML('beforeend', html);
+   if (!scroll.__calBound) {
+     scroll.__calBound = true;
+     scroll.addEventListener('click', e => {
+       const btn = e.target.closest('[data-cal-d]');
+       if (btn) {
+         if (opts.onPick) opts.onPick(btn.dataset.calD);
+         sheet();
+         return;
+       }
+       const next = e.target.closest('[data-cal-next]');
+       if (next) {
+         const y = +next.dataset.calNext;
+         next.remove();
+         renderYear(y);
+         scroll.scrollTop = scroll.scrollHeight - next.offsetHeight - 20;
+       }
+     });
+   }
+ };
+ renderYear(year);
+ // decorate cells: today outline + selected fill + highlight current if provided
+ requestAnimationFrame(() => {
+   scroll.querySelectorAll('[data-cal-d]').forEach(cell => {
+     const d = cell.dataset.calD;
+     if (d === today_) cell.classList.add('cal-today');
+     if (current && d === current) cell.classList.add('cal-sel');
+     if (opts.disableFuture && d > today_) cell.disabled = true;
+     if (opts.markMap && opts.markMap[d]) cell.classList.add(opts.markMap[d]);
+   });
+ });
+ const done = document.getElementById('calDone'); if (done) done.onclick = () => sheet();
+}
+function wheelTimeSheet(current, onPick, opts){
+ opts = opts || {};
+ const title = opts.title || 'Choose a time';
+ const clearable = opts.clearable !== false;
+ // current: 'HH:MM' 24h, or null
+ let h12 = 9, minute = 0, ampm = 'AM';
+ if (current && /^\d{1,2}:\d{2}$/.test(current)) {
+   const [H, M] = current.split(':').map(Number);
+   minute = M;
+   if (H === 0) { h12 = 12; ampm = 'AM'; }
+   else if (H === 12) { h12 = 12; ampm = 'PM'; }
+   else if (H < 12) { h12 = H; ampm = 'AM'; }
+   else { h12 = H - 12; ampm = 'PM'; }
+ }
+ sheet(`<div class="wheeltime"><div class="wt-preview" id="wtPrev">${h12}:${String(minute).padStart(2,'0')} ${ampm}</div>
+  <div class="wt-wheels"><div class="wt-col" id="wtHour">${Array.from({length:12},(_,i)=>'<div class="wt-item" data-h="'+(i+1)+'">'+(i+1)+'</div>').join('')}</div>
+   <div class="wt-col" id="wtMin">${Array.from({length:60},(_,i)=>'<div class="wt-item" data-m="'+i+'">'+String(i).padStart(2,'0')+'</div>').join('')}</div>
+   <div class="wt-ampm"><button class="wt-ampm-btn${ampm==='AM'?' on':''}" data-ampm="AM">AM</button><button class="wt-ampm-btn${ampm==='PM'?' on':''}" data-ampm="PM">PM</button></div>
+  </div>
+  <div class="row" style="gap:10px;margin-top:14px">${clearable ? '<button class="btn ghost" id="wtClear" style="flex:1">No time</button>' : ''}<button class="btn" id="wtDone" style="flex:1">Done</button></div>
+ </div>`);
+ const hour = document.getElementById('wtHour'), minn = document.getElementById('wtMin'), prev = document.getElementById('wtPrev');
+ const itemH = 44;
+ const setScroll = (col, idx) => { if (col) col.scrollTop = idx * itemH; };
+ const ampmState = { v: ampm };
+ const refreshPreview = () => { if (prev) prev.textContent = h12 + ':' + String(minute).padStart(2,'0') + ' ' + ampmState.v; };
+ const onScrollCol = (col, max, cb) => {
+   if (!col) return;
+   let t;
+   col.addEventListener('scroll', () => {
+     clearTimeout(t);
+     t = setTimeout(() => {
+       const idx = Math.round(col.scrollTop / itemH);
+       const clamped = Math.max(0, Math.min(max, idx));
+       col.scrollTop = clamped * itemH;
+       cb(clamped);
+       refreshPreview();
+     }, 60);
+   }, { passive: true });
+ };
+ onScrollCol(hour, 11, idx => { h12 = idx + 1; });
+ onScrollCol(minn, 59, idx => { minute = idx; });
+ setScroll(hour, h12 - 1);
+ setScroll(minn, minute);
+ document.querySelectorAll('.wt-ampm-btn').forEach(b => b.onclick = () => {
+   document.querySelectorAll('.wt-ampm-btn').forEach(x => x.classList.toggle('on', x === b));
+   ampmState.v = b.dataset.ampm;
+   refreshPreview();
+ });
+ if (clearable) { const cl = document.getElementById('wtClear'); if (cl) cl.onclick = () => { if (onPick) onPick(null); sheet(); }; }
+ const done = document.getElementById('wtDone');
+ if (done) done.onclick = () => {
+   let H = h12 % 12;
+   if (ampmState.v === 'PM') H += 12;
+   const value = String(H).padStart(2,'0') + ':' + String(minute).padStart(2,'0');
+   if (onPick) onPick(value);
+   sheet();
+ };
+}
 function sheetPick(title,items,onPick,ph){sheet(`<h2>${E(title)}</h2>${ph?`<input id="spq" type="search" placeholder="${E(ph)}" style="margin:0 0 10px">`:''}
  <div id="spList" style="display:flex;flex-direction:column;gap:8px;max-height:54vh;overflow:auto">${items.map((it,i)=>`<button class="pickrow" data-i="${i}"><span>${E(it.t)}</span>${it.sub?`<span class="sub">${E(it.sub)}</span>`:''}</button>`).join('')}</div>`);
  const list=document.getElementById('spList');
@@ -2901,35 +2988,31 @@ function renameTaskIn(doc,id,name){const v=String(name||'').trim();if(!v||!doc||
 function renameMealIn(doc,day,idx,name){const v=String(name||'').trim();if(!v||!doc||!doc.meals)return false;const arr=doc.meals[day];if(!Array.isArray(arr)||!arr[idx])return false;arr[idx].n=v.slice(0,60);return true}
 // @test-end rename
 function editTask(id){const t=(D.tasks||[]).find(x=>String(x.id)===String(id));if(!t)return;
- const curRepeat=(()=>{const o=normalizeTask(t);return {repeat:o.repeat,weekdays:o.weekdays||[],interval:o.interval||1,monthDay:o.monthDay||new Date((o.from||today())+'T12:00').getDate()}})();
- const advMode=(['custom','every-x-days','every-x-weeks','monthly'].includes(curRepeat.repeat)?'advanced':'basic');
+ const from0 = t.from || t.once || today();
+ const state = { from: from0, time: t.time || null };
  sheet(`<h2>Edit task</h2><label for="etName">Task</label><input id="etName" maxlength="80" value="${E(t.t)}">
- <div class="row" style="gap:8px;margin:10px 0"><input id="etFrom" type="date" aria-label="Scheduled date" value="${E(t.from||t.once||today())}" style="flex:1;margin:0"><input id="etTime" type="time" aria-label="Time (optional)" value="${E(t.time||'')}" style="flex:0 0 110px;margin:0"></div>
+ <div class="row" style="gap:8px;margin:10px 0"><input id="etFrom" type="hidden" value="${E(from0)}"><button type="button" class="pickfield" id="etFromBtn" style="flex:1;justify-content:space-between"><span class="pf-val">${E(fmt(from0,{weekday:'short',month:'short',day:'numeric'}))}</span><span class="pf-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="16" rx="2"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg></span></button><input id="etTime" type="hidden" value="${E(state.time||'')}"><button type="button" class="pickfield" id="etTimeBtn" style="flex:0 0 auto;min-width:110px;padding:12px 14px;justify-content:space-between"><span class="pf-val">${state.time ? fmtTime12(state.time) : 'Any time'}</span><span class="pf-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.5l3 1.8"/></svg></span></button></div>
  ${chipField('etRep','Quick repeat',[['none','Once'],['daily','Daily'],['weekdays','Weekdays'],['weekly','Weekly']],(['none','daily','weekdays','weekly'].includes(t.repeat)?t.repeat:'none'))}
- ${advSchedulingHTML('e',{advMode,repeat:curRepeat.repeat,weekdays:curRepeat.weekdays,interval:curRepeat.interval,monthDay:curRepeat.monthDay,from:t.from||t.once||today(),until:t.until||''})}
  <label class="row" style="color:var(--ink);margin-top:4px;gap:8px"><input id="etCarry" type="checkbox" style="width:20px;margin:0" ${t.carry?'checked':''}><span class="meta" style="margin:0">Carry forward if missed</span></label>
  <label for="etNote" style="margin-top:10px">Notes or details (optional)</label><textarea id="etNote" rows="3" aria-label="Notes" style="width:100%">${E(t.note||'')}</textarea>
  <div class="row sp" style="margin-top:14px;gap:10px"><button class="btn ghost" id="etc" style="flex:1">Cancel</button><button class="btn" id="ets" style="flex:1">Save</button></div>
  <button class="btn ghost" id="etd" style="width:100%;margin-top:10px;color:var(--rose)">Delete task</button>`);
- advBind('e');
- if(document.querySelectorAll('[data-fg="etRep"] .chip').length)bindFields();
+ bindFields();
+ const etFromBtn=document.getElementById('etFromBtn');
+ if(etFromBtn)etFromBtn.onclick=()=>calSheet({title:'Scheduled date',current:state.from,onPick:v=>{state.from=v;const h=document.getElementById('etFrom');if(h)h.value=v;etFromBtn.querySelector('.pf-val').textContent=fmt(v,{weekday:'short',month:'short',day:'numeric'})}});
+ const etTimeBtn=document.getElementById('etTimeBtn');
+ if(etTimeBtn)etTimeBtn.onclick=()=>wheelTimeSheet(state.time,v=>{state.time=v;const h=document.getElementById('etTime');if(h)h.value=v||'';etTimeBtn.querySelector('.pf-val').textContent=v?fmtTime12(v):'Any time'},{title:'Time',clearable:true});
  document.getElementById('ets').onclick=()=>{
   const v=$('#etName').value.trim();if(!v)return toast('Type a task name');
-  const adv=advRead('e')||{};if(adv.error)return toast(adv.error);
   const quickRepeat=((document.getElementById('etRep')||{}).value)||'none';
-  const repeat=adv.advMode==='advanced'?adv.repeat:quickRepeat;
-  const from=(adv.advMode==='advanced'&&adv.from)||$('#etFrom').value||today();
+  const from=$('#etFrom').value||today();
   const time=$('#etTime').value||'';
-  const until=(adv.advMode==='advanced'&&adv.until)||'';
   const carry=!!$('#etCarry').checked;
   const note=$('#etNote').value.trim();
-  t.t=v.slice(0,80);t.from=from;t.repeat=repeat;
-  if(adv.advMode==='advanced'){
-   if(repeat==='custom'){t.weekdays=adv.weekdays;delete t.interval;delete t.monthDay}
-   else if(repeat==='every-x-days'||repeat==='every-x-weeks'){t.interval=adv.interval;delete t.weekdays;delete t.monthDay}
-   else if(repeat==='monthly'){t.monthDay=adv.monthDay;delete t.weekdays;delete t.interval}
-  } else { delete t.weekdays; delete t.interval; delete t.monthDay; }
-  if(time)t.time=time;else delete t.time;if(until)t.until=until;else delete t.until;if(carry)t.carry=true;else delete t.carry;if(note)t.note=note;else delete t.note;
+  t.t=v.slice(0,80);t.from=from;t.repeat=quickRepeat;
+  // keep legacy advanced payloads; only clear them when the user picked a quick repeat
+  if(['none','daily','weekdays','weekly'].includes(quickRepeat)){delete t.weekdays;delete t.interval;delete t.monthDay}
+  if(time)t.time=time;else delete t.time;if(carry)t.carry=true;else delete t.carry;if(note)t.note=note;else delete t.note;
   save();sheet();planner()};
  document.getElementById('etd').onclick=()=>{D.tasks=(D.tasks||[]).filter(x=>x.id!==t.id);save();sheet();planner()};
  document.getElementById('etc').onclick=()=>sheet();
@@ -2985,15 +3068,41 @@ function bindCk(d,re){document.querySelectorAll('input[data-t]').forEach(i=>i.on
     const wt=$('#wt').value,exMin=$('#exMin').value;
     const out=Object.assign(draft,{tags,customSx:customSx.length?customSx:undefined,sleep:s===''?undefined:+s,weight:wt===''?undefined:+wt,exMin:exMin===''?undefined:+exMin,sidefx:$('#sfx').value.trim()||undefined});if(out.flow=='none')delete out.flow;delete out.note;
   D.logs[d]=Object.assign({water:L(d).water},out);if(!Object.values(D.logs[d]).some(v=>v!==undefined&&!(Array.isArray(v)&&!v.length)))delete D.logs[d];save();sheet();toast('Saved');shell()}}
-function monthView(){const [y,mo]=calM.split('-').map(Number),first=new Date(y,mo-1,1),dim=new Date(y,mo,0).getDate(),off=first.getDay(),c=cycleStats(),s=starts();
- let cells=['S','M','T','W','T','F','S'].map(x=>`<div class="calh" aria-hidden="true">${x}</div>`).join('');
- for(let i=1;i<=dim;i++){const d=calM+'-'+String(i).padStart(2,'0'),l=L(d);cells+=`<button${i===1?` style="grid-column-start:${off+1}"`:''} ${d>today()?'disabled':''} class="${bleed(d)?'p':l.flow=='spotting'?'s':''} ${d==today()?'t':''} ${Object.keys(l).filter(k=>k!='flow'&&k!='water'&&l[k]!==undefined).length?'d':''}" data-d="${d}" aria-label="${fmt(d,{month:'long',day:'numeric'})}${l.flow?', '+l.flow+' bleeding':''}">${i}</button>`}
- $('#main').innerHTML=`<button class="btn ghost sm" id="bk" style="margin-bottom:10px">\u2039 Back</button><h1>Month calendar</h1><div class="card"><div class="row sp"><button class="btn ghost sm" id="pv" aria-label="Previous month">\u2039</button><h2 style="margin:0">${first.toLocaleDateString(undefined,{month:'long',year:'numeric'})}</h2><button class="btn ghost sm" id="nxm" aria-label="Next month">\u203a</button></div><div class="cal" style="margin-top:10px">${cells}</div><div class="row" style="margin-top:10px;gap:14px"><span class="meta"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--pink);vertical-align:-1px"></span> Bleeding</span><span class="meta"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--pinkS);vertical-align:-1px"></span> Spotting</span><span class="meta"><span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--teal);vertical-align:2px"></span> Logged</span></div></div>
+function monthView(){
+ const y = new Date().getFullYear();
+ const c = cycleStats(); const s = starts();
+ $('#main').innerHTML=`<button class="btn ghost sm" id="bk" style="margin-bottom:10px">\u2039 Back</button><h1>Month calendar</h1><div class="calsheet" style="height:auto;max-height:none;margin:0 -2px 14px"><div class="calsheet-scroll" id="calScroll" style="padding:0;overflow:visible"></div></div>
 <div class="card"><div class="card-h"><h3>Estimates</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Calculated</span></div><p class="meta">${cycleLine()}</p>${c.n>=2?`<p class="meta" style="margin-top:6px">Ovulation is not estimated.</p>`:''}</div>
 <div class="card"><div class="card-h"><h3>History</h3></div>${s.length?s.slice().reverse().map((x,i,a)=>{const idx=s.length-1-i;const ln=idx>0?Math.round((new Date(x)-new Date(s[idx-1]))/864e5):null;let e=x;while(bleed(addD(e,1)))e=addD(e,1);return`<div class="kv"><span>${fmt(x,{month:'short',day:'numeric',year:'numeric'})}  ${fmt(e)}</span><b>${ln?ln+' d':'First'}</b></div>`}).join(''):'<p class="meta">No periods logged</p>'}</div>`;
  $('#bk').onclick=()=>{view='cycle';shell()};
- $('#pv').onclick=()=>{calM=iso(new Date(y,mo-2,1)).slice(0,7);monthView()};$('#nxm').onclick=()=>{calM=iso(new Date(y,mo,1)).slice(0,7);monthView()};
- if(!RO)document.querySelectorAll('.cal [data-d]').forEach(b=>b.onclick=()=>dayLog(b.dataset.d))}
+ const scroll=document.getElementById('calScroll');
+ const renderYear = (yr) => {
+   let html='';
+   for (let m=0; m<12; m++) html += calMonthBlock(yr, m);
+   html += calContinueBtn(yr);
+   scroll.insertAdjacentHTML('beforeend', html);
+   if (!scroll.__bound) {
+     scroll.__bound = true;
+     scroll.addEventListener('click', e => {
+       const btn = e.target.closest('[data-cal-d]');
+       if (btn) { if (!RO) dayLog(btn.dataset.calD); return; }
+       const next = e.target.closest('[data-cal-next]');
+       if (next) { const y2 = +next.dataset.calNext; next.remove(); renderYear(y2); }
+     });
+   }
+   requestAnimationFrame(() => {
+     scroll.querySelectorAll('[data-cal-d]').forEach(cell => {
+       const d = cell.dataset.calD, l = L(d);
+       if (d === today()) cell.classList.add('cal-today');
+       if (d > today()) cell.disabled = true;
+       if (bleed(d)) cell.classList.add('p');
+       else if (l && l.flow === 'spotting') cell.classList.add('s');
+       if (l && Object.keys(l).filter(k => k !== 'flow' && k !== 'water' && l[k] !== undefined).length) cell.classList.add('d');
+     });
+   });
+ };
+ renderYear(y);
+}
 function plannerPanels(){
  if(ownMode)return{partner:true,name:ownPeerName||'Partner'};
  if(RO)return{partner:true,name:((D.p&&D.p.name)||'Partner')};
@@ -3055,27 +3164,70 @@ function planner(){tab=tab||'day';
 }
 function taskTimeNote(t){const p=[];if(t.time)p.push('<span class="time-badge">'+E(t.time)+'</span>');if(t.note)p.push('<span class="note-chip" title="Has note" aria-label="Has note">note</span>');return p.join(' ')}
 function overdueBanner(doc,d,only){if(only||!doc||doc!==D)return '';const list=overdueList(doc,d);if(!list.length)return '';return `<div class="card rose-warn" style="margin-bottom:10px"><div class="card-h"><h3>Overdue</h3><span class="meta">${list.length}</span></div>${list.slice(0,5).map(t=>`<div class="taskrow"><button class="btn ghost sm cmp" data-cmp="${t.id}" aria-label="Mark ${E(t.t)} done">Done</button><span class="ckt">${E(t.t)}${t.time?' <span class="meta" style="margin-left:6px">'+E(t.time)+'</span>':''}${t.note?' <span class="note-chip" title="Has note">note</span>':''}</span></div>`).join('')}</div>`}
-function pDay(src,ro){const doc=src||D,only=ro==null?RO:ro;const d=today(),ts=tasksFor(d,doc);$('#pb').innerHTML=`${overdueBanner(doc,d,only)}<div class="card"><div class="card-h"><h3>Today</h3></div><div style="margin-top:6px">${ts.length?ts.map(t=>only?`<div class="taskrow"><span class="ckt" style="${isDone(t.id,d,doc)?'opacity:.55':''}">${isDone(t.id,d,doc)?'&#10003;':''} ${E(t.t)}${t.time?' <span class="meta" style="margin-left:6px">'+E(t.time)+'</span>':''}${t.note?' <span class="note-chip">note</span>':''}</span></div>`:`<div class="taskrow">${ck(t,d)}${taskTimeNote(t)}<button class="btn ghost sm del" data-del="${t.id}" aria-label="Delete ${E(t.t)}">\u00d7</button></div>`).join(''):'<p class="meta">No tasks yet.'+(only?'':' Add one below.')+'</p>'}</div>
-${only?'':`<form id="af" style="margin-top:14px"><input id="nt" maxlength="80" placeholder="Add a task" aria-label="New task" style="width:100%;margin:0 0 10px"><div class="row" style="gap:8px;margin:0 0 10px"><input id="when" type="date" aria-label="Scheduled date" style="flex:1;margin:0" value="${d}"><input id="whenTime" type="time" aria-label="Time (optional)" style="flex:0 0 110px;margin:0"></div>${chipField('rp','Repeat',[['none','Once'],['daily','Daily'],['weekdays','Weekdays'],['weekly','Weekly']],'none')}${advSchedulingHTML('a',{advMode:'basic',from:d,until:''})}<details style="border:0;padding:0;margin:10px 0"><summary class="meta" style="cursor:pointer;font-weight:700">Notes or details</summary><textarea id="ptn" rows="2" placeholder="Notes or details (optional)" aria-label="Task notes" style="width:100%;margin:8px 0 0"></textarea></details><label class="row" style="color:var(--ink);margin-top:10px;gap:8px"><input id="carry" type="checkbox" style="width:20px;margin:0"><span class="meta" style="margin:0">Carry forward if missed</span></label><button class="btn" type="submit" style="width:100%;margin-top:12px">Add task</button></form><div class="err" id="er"></div>`}</div>`;
+function pDayTaskRow(t,d,doc,only){
+ const noteFlag = t.note ? ' <span class="note-chip">note</span>' : '';
+ const timeFlag = t.time ? ' <span class="meta" style="margin-left:6px">'+E(t.time)+'</span>' : '';
+ if (only) return '<div class="taskrow"><span class="ckt" style="' + (isDone(t.id,d,doc) ? 'opacity:.55' : '') + '">' + (isDone(t.id,d,doc) ? '&#10003;' : '') + ' ' + E(t.t) + timeFlag + noteFlag + '</span></div>';
+ const timeNote = taskTimeNote(t);
+ return '<div class="taskrow">' + ck(t,d) + timeNote + '<button class="btn ghost sm del" data-del="' + t.id + '" aria-label="Delete ' + E(t.t) + '">\u00d7</button></div>';
+}
+function pDay(src,ro){const doc=src||D,only=ro==null?RO:ro;const d=today(),ts=tasksFor(d,doc);
+ const state = window.__pDayState = window.__pDayState || { when: d, time: null };
+ $('#pb').innerHTML=`${overdueBanner(doc,d,only)}<div class="card"><div class="card-h"><h3>Today</h3></div><div style="margin-top:6px">${ts.length?ts.map(t=>pDayTaskRow(t,d,doc,only)).join(''):'<p class="meta">No tasks yet.'+(only?'':' Add one below.')+'</p>'}</div>
+${only?'':`<form id="af" style="margin-top:14px"><input id="nt" maxlength="80" placeholder="Add a task" aria-label="New task" style="width:100%;margin:0 0 10px"><div class="row" style="gap:8px;margin:0 0 10px"><input id="when" type="hidden" value="${E(state.when)}"><button type="button" class="pickfield" id="whenBtn" style="flex:1;justify-content:space-between"><span class="pf-val">${E(fmt(state.when,{weekday:'short',month:'short',day:'numeric'}))}</span><span class="pf-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="16" rx="2"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg></span></button><input id="whenTime" type="hidden" value="${state.time ? E(state.time) : ''}"><button type="button" class="pickfield slim" id="whenTimeBtn" style="flex:0 0 auto;min-width:108px;padding:12px 14px;justify-content:space-between"><span class="pf-val">${state.time ? fmtTime12(state.time) : 'Any time'}</span><span class="pf-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.5l3 1.8"/></svg></span></button></div>${chipField('rp','Repeat',[['none','Once'],['daily','Daily'],['weekdays','Weekdays'],['weekly','Weekly']],'none')}<details style="border:0;padding:0;margin:10px 0"><summary class="meta" style="cursor:pointer;font-weight:700">Notes or details</summary><textarea id="ptn" rows="2" placeholder="Notes or details (optional)" aria-label="Task notes" style="width:100%;margin:8px 0 0"></textarea></details><label class="row" style="color:var(--ink);margin-top:10px;gap:8px"><input id="carry" type="checkbox" style="width:20px;margin:0"><span class="meta" style="margin:0">Carry forward if missed</span></label><button class="btn" type="submit" style="width:100%;margin-top:12px">Add task</button></form><div class="err" id="er"></div>`}</div>`;
  bindCk(d,planner);bindFields();
  if(only)return;
  bindLongPress(document.getElementById('pb'),'task','[data-task]',el=>editTask(el.dataset.task));
-  advBind('a');
- const afForm=document.getElementById('af');if(afForm)afForm.onsubmit=e=>{e.preventDefault();const t=$('#nt').value.trim();if(!t)return $('#er').textContent='Please type a task.';const adv=advRead('a')||{};if(adv.error)return $('#er').textContent=adv.error;const quickRepeat=$('#rp').value;const repeat=adv.advMode==='advanced'?adv.repeat:quickRepeat;const weekdays=adv.advMode==='advanced'&&adv.repeat==='custom'?adv.weekdays:undefined;const interval=adv.advMode==='advanced'&&(adv.repeat==='every-x-days'||adv.repeat==='every-x-weeks')?adv.interval:undefined;const monthDay=adv.advMode==='advanced'&&adv.repeat==='monthly'?adv.monthDay:undefined;const from=(adv.advMode==='advanced'&&adv.from)||$('#when').value||today();const time=$('#whenTime').value||undefined;const until=(adv.advMode==='advanced'&&adv.until)||undefined;const carry=!!$('#carry').checked;const note=$('#ptn').value.trim()||undefined;const tObj={id:uid(),t,from,repeat,time,until,carry:carry||undefined,note:note||undefined};if(weekdays)tObj.weekdays=weekdays;if(interval)tObj.interval=interval;if(monthDay)tObj.monthDay=monthDay;D.tasks.push(tObj);save();planner()};
+ const whenBtn=document.getElementById('whenBtn');
+ if(whenBtn)whenBtn.onclick=()=>calSheet({title:'Scheduled date',current:state.when,onPick:v=>{state.when=v;const h=document.getElementById('when');if(h)h.value=v;whenBtn.querySelector('.pf-val').textContent=fmt(v,{weekday:'short',month:'short',day:'numeric'})}});
+ const whenTimeBtn=document.getElementById('whenTimeBtn');
+ if(whenTimeBtn)whenTimeBtn.onclick=()=>wheelTimeSheet(state.time,v=>{state.time=v;const h=document.getElementById('whenTime');if(h)h.value=v||'';whenTimeBtn.querySelector('.pf-val').textContent=v?fmtTime12(v):'Any time'},{title:'Time',clearable:true});
+ const afForm=document.getElementById('af');if(afForm)afForm.onsubmit=e=>{e.preventDefault();const t=$('#nt').value.trim();if(!t)return $('#er').textContent='Please type a task.';const when=$('#when').value||today();const time=$('#whenTime').value||undefined;const carry=!!$('#carry').checked;const note=$('#ptn').value.trim()||undefined;const repeat=$('#rp').value;D.tasks.push({id:uid(),t,from:when,repeat,time,carry:carry||undefined,note:note||undefined});save();planner()};
  document.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{D.tasks=D.tasks.filter(t=>t.id!=b.dataset.del);save();planner()});
  document.querySelectorAll('[data-cmp]').forEach(b=>b.onclick=()=>{toggle(b.dataset.cmp,d);planner()})}
 function pMonth(src,ro){const doc=src||D,only=ro==null?RO:ro;
- const now=today();const off=window.monthOffset||0;
- const base=new Date(now+'T12:00');base.setDate(1);base.setMonth(base.getMonth()+off);
- const y=base.getFullYear(),m=base.getMonth();
- const startDow=(new Date(y,m,1).getDay()+6)%7;
- const days=[];for(let i=0;i<42;i++){const d=new Date(y,m,1-startDow+i);days.push(iso(d))}
- const monthName=base.toLocaleDateString(undefined,{month:'long',year:'numeric'});
- $('#pb').innerHTML=`<div class="card"><div class="card-h"><h3>${E(monthName)}</h3><div class="row" style="gap:6px"><button class="btn ghost sm" id="moPrev" aria-label="Previous month">&larr;</button><button class="btn ghost sm" id="moToday">Today</button><button class="btn ghost sm" id="moNext" aria-label="Next month">&rarr;</button></div></div><div class="monthgrid">${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d=>`<div class="mg-hd">${d[0]}</div>`).join('')}${days.map(d=>{const inM=new Date(d+'T12:00').getMonth()===m;const ts=tasksFor(d,doc);const n=ts.filter(t=>isDone(t.id,d,doc)).length;const over=ts.length>n&&d<now;const done=ts.length>0&&n===ts.length;return `<button class="mg-cell${inM?'':' mg-off'}${d===now?' mg-today':''}" data-d="${d}" aria-label="${d}: ${n}/${ts.length} tasks"><div class="mg-day${over?' overdue':done?' done':''}">${new Date(d+'T12:00').getDate()}</div>${ts.length?`<div class="mg-n">${n}/${ts.length}</div>`:''}</button>`}).join('')}</div><div id="mgDetail"></div></div>`;
- $('#moPrev').onclick=()=>{window.monthOffset=(window.monthOffset||0)-1;planner()};
- $('#moToday').onclick=()=>{window.monthOffset=0;planner()};
- $('#moNext').onclick=()=>{window.monthOffset=(window.monthOffset||0)+1;planner()};
- document.querySelectorAll('.mg-cell').forEach(c=>c.onclick=()=>{const d=c.dataset.d;const det=document.getElementById('mgDetail');if(!det)return;const ts=tasksFor(d,doc);det.innerHTML=`<div class="divider"></div><div class="card-h"><h3 style="font-size:1rem">${fmt(d,{weekday:'long',month:'short',day:'numeric'})}</h3></div>${ts.length?ts.map(t=>`<div class="taskrow"><span class="ckt" style="${isDone(t.id,d,doc)?'opacity:.55':''}">${isDone(t.id,d,doc)?'&#10003; ':''}${E(t.t)}${t.time?' <span class="meta" style="margin-left:6px">'+E(t.time)+'</span>':''}${t.note?' <span class="note-chip">note</span>':''}</span></div>`).join(''):'<p class="meta">No tasks</p>'}`});
+ const now=today();const base=new Date(now+'T12:00');
+ const y=base.getFullYear();
+ $('#pb').innerHTML=`<div class="card"><div class="card-h"><h3>Calendar</h3></div><div class="calsheet" style="height:auto;max-height:none;margin:0 -2px"><div class="calsheet-scroll" id="pCalScroll" style="padding:0;overflow:visible"></div></div><div id="mgDetail"></div></div>`;
+ const scroll=document.getElementById('pCalScroll');
+ const todayStr=now;
+ const renderYear = (yr) => {
+   let html='';
+   for (let m=0; m<12; m++) {
+     const first=new Date(yr,m,1); const dim=new Date(yr,m+1,0).getDate(); const off=(first.getDay()+6)%7;
+     let cells='';
+     for (let i=0;i<off;i++) cells += '<span class="cal-cell cal-empty mg-cell-empty"></span>';
+     for (let d=1;d<=dim;d++) {
+       const dstr = yr+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+       const ts = tasksFor(dstr, doc);
+       const n = ts.filter(t => isDone(t.id, dstr, doc)).length;
+       const over = ts.length > n && dstr < todayStr;
+       const done = ts.length > 0 && n === ts.length;
+       cells += '<button type="button" class="cal-cell mg-cell" data-d="'+dstr+'" aria-label="'+dstr+': '+n+'/'+ts.length+' tasks"><div class="mg-day'+(over?' overdue':done?' done':'')+'">'+d+'</div>'+(ts.length?'<div class="mg-n">'+n+'/'+ts.length+'</div>':'')+'</button>';
+     }
+     html += '<section class="cal-month"><h3 class="cal-month-h">'+first.toLocaleDateString(undefined,{month:'long',year:'numeric'})+'</h3><div class="cal-grid">'+['S','M','T','W','T','F','S'].map(d=>'<div class="cal-wd">'+d+'</div>').join('')+cells+'</div></section>';
+   }
+   html += calContinueBtn(yr);
+   scroll.insertAdjacentHTML('beforeend', html);
+   if (!scroll.__bound) {
+     scroll.__bound = true;
+     scroll.addEventListener('click', e => {
+       const btn = e.target.closest('[data-d].mg-cell');
+       if (btn) {
+         const d = btn.dataset.d; const det = document.getElementById('mgDetail'); if (!det) return;
+         const ts = tasksFor(d, doc);
+         det.innerHTML = `<div class="divider"></div><div class="card-h"><h3 style="font-size:1rem">${fmt(d,{weekday:'long',month:'short',day:'numeric'})}</h3></div>${ts.length?ts.map(t=>`<div class="taskrow"><span class="ckt" style="${isDone(t.id,d,doc)?'opacity:.55':''}">${isDone(t.id,d,doc)?'&#10003; ':''}${E(t.t)}${t.time?' <span class="meta" style="margin-left:6px">'+E(t.time)+'</span>':''}${t.note?' <span class="note-chip">note</span>':''}</span></div>`).join(''):'<p class="meta">No tasks</p>'}`;
+         return;
+       }
+       const next = e.target.closest('[data-cal-next]');
+       if (next) { const y2 = +next.dataset.calNext; next.remove(); renderYear(y2); }
+     });
+   }
+   requestAnimationFrame(() => {
+     scroll.querySelectorAll('[data-d]').forEach(cell => { if (cell.dataset.d === todayStr) cell.classList.add('cal-today'); });
+   });
+ };
+ renderYear(y);
 }
 function pWeek(src,ro){const doc=src||D,only=ro==null?RO:ro;const off=window.weekOffset||0;const anchor=addD(today(),off*7-new Date().getDay());const days=[...Array(7)].map((_,i)=>addD(anchor,i));
  const hdr=`<div class="weeknav" role="navigation" aria-label="Navigate weeks"><button class="btn ghost sm" id="wkPrev" aria-label="Previous week">&larr;</button><button class="btn ghost sm" id="wkToday" style="flex:0 0 auto">${off===0?'This week':'Jump to today'}</button><button class="btn ghost sm" id="wkNext" aria-label="Next week">&rarr;</button></div>`;
@@ -6328,7 +6480,7 @@ $('#main').innerHTML=`${anon?`<div class="card" style="background:var(--pinkS)!i
  <button class="btn" id="sv" style="width:100%;margin-top:12px">Save</button>
 </div>
 ${isOffline()?'':'<div class="card" id="pairCard"><p class="meta" style="margin:0">Loading\u2026</p></div>'}
-<div class="card"><div class="card-h"><h3>Reminder</h3></div><label class="row" style="color:var(--ink)"><input type="checkbox" id="rm" style="width:22px;margin:0" ${D.rem.on?'checked':''}> Daily logging reminder</label><label for="rt">Time</label><input id="rt" type="time" value="${D.rem.time}"><label class="row" style="color:var(--ink);margin-top:12px"><input type="checkbox" id="wm" style="width:22px;margin:0" ${D.rem.water?'checked':''}> Hourly water reminder <span class="meta" style="margin-left:4px">8:00\u201322:00</span></label><label class="row" style="color:var(--ink);margin-top:12px"><input type="checkbox" id="rd" style="width:22px;margin:0" ${D.rem.readOn?'checked':''}> Daily reading reminder <span class="meta" style="margin-left:4px">Two reminders: one at the set time and one per hour until you hit your goal.</span></label><label for="rrt">Reading reminder time</label><input id="rrt" type="time" value="${D.rem.readTime||'20:00'}"><button class="btn ghost" id="rs" style="width:100%;margin-top:4px">Save reminders</button><p class="meta" id="remNote" style="margin:10px 0 0"></p></div>
+<div class="card"><div class="card-h"><h3>Reminder</h3></div><label class="row" style="color:var(--ink)"><input type="checkbox" id="rm" style="width:22px;margin:0" ${D.rem.on?'checked':''}> Daily logging reminder</label><label>Time</label><input id="rt" type="hidden" value="${D.rem.time}"><button type="button" class="pickfield" id="rtBtn" style="padding:10px 14px"><span class="pf-val">${fmtTime12(D.rem.time)}</span><span class="pf-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.5l3 1.8"/></svg></span></button><label class="row" style="color:var(--ink);margin-top:12px"><input type="checkbox" id="wm" style="width:22px;margin:0" ${D.rem.water?'checked':''}> Hourly water reminder <span class="meta" style="margin-left:4px">8:00\u201322:00</span></label><label class="row" style="color:var(--ink);margin-top:12px"><input type="checkbox" id="rd" style="width:22px;margin:0" ${D.rem.readOn?'checked':''}> Daily reading reminder <span class="meta" style="margin-left:4px">Two reminders: one at the set time and one per hour until you hit your goal.</span></label><label>Reading reminder time</label><input id="rrt" type="hidden" value="${D.rem.readTime||'20:00'}"><button type="button" class="pickfield" id="rrtBtn" style="padding:10px 14px"><span class="pf-val">${fmtTime12(D.rem.readTime||'20:00')}</span><span class="pf-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.5l3 1.8"/></svg></span></button><button class="btn ghost" id="rs" style="width:100%;margin-top:4px">Save reminders</button><p class="meta" id="remNote" style="margin:10px 0 0"></p></div>
   <div class="card"><button class="btn ghost" id="stg" style="width:100%">Settings</button></div>
   <button class="btn ghost" id="lo" style="width:100%">Log out</button>`;
  document.querySelectorAll('#goals .chip').forEach(c=>c.onclick=()=>c.setAttribute('aria-pressed',c.getAttribute('aria-pressed')!=='true'));
@@ -6341,7 +6493,9 @@ ${isOffline()?'':'<div class="card" id="pairCard"><p class="meta" style="margin:
   else if(r.off){if(note)note.textContent='Turn on to get one reminder a day.'}
   else if(r.error){if(note)note.textContent='The reminder could not be scheduled. Try again.'}
   else if(note)note.textContent='One reminder a day at '+D.rem.time+'.'};
- $('#rs').onclick=saveRem;$('#rt').onchange=saveRem;$('#rm').onchange=saveRem;$('#rd').onchange=saveRem;$('#rrt').onchange=saveRem;
+ $('#rs').onclick=saveRem;$('#rm').onchange=saveRem;$('#rd').onchange=saveRem;
+ const rtBtn=document.getElementById('rtBtn');if(rtBtn)rtBtn.onclick=()=>wheelTimeSheet($('#rt').value||'20:00',v=>{$('#rt').value=v||'20:00';rtBtn.querySelector('.pf-val').textContent=fmtTime12(v||'20:00');saveRem()},{title:'Daily reminder'});
+ const rrtBtn=document.getElementById('rrtBtn');if(rrtBtn)rrtBtn.onclick=()=>wheelTimeSheet($('#rrt').value||'20:00',v=>{$('#rrt').value=v||'20:00';rrtBtn.querySelector('.pf-val').textContent=fmtTime12(v||'20:00');saveRem()},{title:'Reading reminder'});
  $('#lo').onclick=confirmLogout;loadPairCard();
  syncPartnerCode().then(ch=>{if(ch&&view==='me'&&!RO)me()});
   $('#stg').onclick=()=>{view='settings';shell()};}
