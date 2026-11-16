@@ -1,7 +1,7 @@
 {
-    "versionCode": 124,
-    "versionName": "1.2.109",
-    "notes": "Partner devices work fully offline: the followed person's doc is cached, your own planner opens from cache, and sync resumes automatically on reconnect instead of waiting for the online event.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.109/bloom-1.2.109.apk",
+    "versionCode": 125,
+    "versionName": "1.2.110",
+    "notes": "Hotfix: old APKs no longer write partial doc to the authenticated user's own row when in read-only follow mode. Server also rejects mismatched _uid. Includes all prior 2026-11-16 fixes.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.110/bloom-1.2.110.apk",
     "publishedAt": "2026-11-16"
 }
