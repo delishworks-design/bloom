@@ -449,7 +449,8 @@ details{border-bottom:1px solid var(--line);padding:14px 0}summary{cursor:pointe
 .linkrow{display:flex;align-items:center;gap:10px;margin-top:12px}
 .linkbtn{background:none;border:0;padding:2px 0;font:inherit;font-size:.82rem;font-weight:600;color:var(--rose);cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px;text-decoration-color:rgba(184,69,107,.3)}
 .linkdot{color:var(--mut);font-size:.8rem}
-.fun{background:linear-gradient(180deg,#FDF3F0 0%,#F9DDE5 100%) !important;border-color:rgba(232,160,180,.35) !important;padding:12px 14px !important}
+.fun{background:var(--pinkS) !important;border-color:rgba(184,69,107,.35) !important;padding:12px 14px !important}
+html[data-theme=dark] .fun{border-color:rgba(217,107,140,.45) !important}
 .funtext{font-family:'Playfair Display',serif;font-size:13.5px;line-height:1.4;color:var(--ink);margin:0}
 .artbody{font-size:.88rem;line-height:1.55;color:#5C4A50}
 .art-glance{background:#F9DDE5;border:1.5px solid rgba(232,160,180,.45);border-radius:16px;padding:14px 16px;margin:0 0 18px}
@@ -1340,7 +1341,7 @@ async function sbSignUp(email,pw){await sbInit();if(!sb)return 'offline';
 // ---------- storage
 const key=u=>'bloom_d_'+u;
 const blank=()=>({p:{},logs:{},tasks:[],done:{},meals:{},journal:[],plan:{},games:{},cons:true,rem:{on:false,time:'20:00'},library:{books:{},articles:{}}});
-function save(){if(RO)return;if(D&&D._uid&&sbUser&&D._uid!==sbUser.id){reportErr('save.guard','doc belongs to another account');return}D.savedAt=Date.now();try{if(user)ST.set('bloom_dirty_'+user,'1')}catch(e){};ST.set(user?key(user):'bloom_anon',JSON.stringify(D));sbPushSoon()}
+function save(){if(RO){if(!ownMode){try{const L=libEnsure();libStoreWrite(L)}catch(e){}}return}if(D&&D._uid&&sbUser&&D._uid!==sbUser.id){reportErr('save.guard','doc belongs to another account');return}D.savedAt=Date.now();try{if(user)ST.set('bloom_dirty_'+user,'1')}catch(e){};ST.set(user?key(user):'bloom_anon',JSON.stringify(D));sbPushSoon()}
 // session must survive an app kill -> localStorage, not sessionStorage
 const setSession=v=>{try{ST.set('bloom_s',v);sessionStorage.setItem('bloom_s',v)}catch(e){}};
 const clearSession=()=>{try{ST.del('bloom_s');sessionStorage.removeItem('bloom_s')}catch(e){}delete mem.s};
@@ -1603,7 +1604,7 @@ function authView(mode){try{splashSkip()}catch(e){}mode=mode||'in';try{fabSync()
   <p class="hint" id="e-${id}"></p></div>`;
  $('#app').innerHTML=`<div class="auth"><div class="card">
   <div class="auth-head"><div class="brand">Bloom</div>
-   <h2>${up?'Step 1: Email':'Welcome back'}</h2>
+   <h2>${up?'Create account':'Welcome back'}</h2>
    <p class="lede">${up?'Enter the email you want for your account.':'Sign in to pick up where you left off.'}</p></div>
   <form id="authForm" novalidate>
    <div class="field" id="f-u"><label for="u">Email</label>
@@ -1679,7 +1680,7 @@ function signupStep2(){
   <p class="hint" id="e-${id}"></p></div>`;
  $('#app').innerHTML=`<div class="auth"><div class="card">
   <div class="auth-head"><div class="brand">Bloom</div>
-   <h2>Step 2: Password</h2>
+   <h2>Set a password</h2>
    <p class="lede">Create a password for <b>${E(email)}</b></p></div>
   <form id="authForm" novalidate>
    ${pwBlock('pw','Password','new-password')}
@@ -1835,7 +1836,7 @@ function wipeLocalData(){
   try{Object.keys(localStorage).filter(k=>k.indexOf('bloom_d_')===0||k.indexOf('bloom_backup_')===0||k.indexOf('bloom_dirty_')===0||k.indexOf('bloom_rev_')===0||k==='bloom_s'||k==='bloom_own'||k==='bloom_last_bg'||k==='bloom_upd_skip'||k==='bloom_pname'||k==='bloom_pavatar'||k==='bloom_pown'||k==='bloom_puid'||k==='bloom_powner'||k==='bloom_role'||k==='bloom_unpaired'||k==='bloom_lastcode'||k==='bloom_plocked'||k==='bloom_read'||k==='bloom_errlog'||k==='bloom_nav').forEach(k=>localStorage.removeItem(k))}catch(e){}
 }
 // @test-end auth
-function themeMode(){try{const v=ST.get('bloom_theme');if(v==='light'||v==='dark'||v==='system')return v}catch(e){}try{const r=ST.get('bloom_reader_theme');if(r==='light'||r==='dark'){ST.set('bloom_theme',r);return r}}catch(e){}return 'system'}
+function themeMode(){try{const v=ST.get('bloom_theme');if(v==='light'||v==='dark'||v==='system')return v}catch(e){}try{const r=ST.get('bloom_reader_theme');if(r==='light'||r==='dark'){ST.set('bloom_theme',r);return r}}catch(e){}return 'light'}
 function effectiveTheme(){try{const m=themeMode();if(m!=='system')return m;if(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)return 'dark'}catch(e){}return 'light'}
 function applyTheme(){const t=effectiveTheme();const root=document.documentElement;if(t)root.setAttribute('data-theme',t);else root.removeAttribute('data-theme')}
 function setThemeMode(m){try{ST.set('bloom_theme',m)}catch(e){}applyTheme()}
@@ -4748,7 +4749,11 @@ async function idbPut(id,buf){const db=await idbDB();const tx=db.transaction('bo
 async function idbDelete(id){const db=await idbDB();const tx=db.transaction('books','readwrite');const st=tx.objectStore('books');st.delete(id);return new Promise((res)=>{tx.oncomplete=res;tx.onerror=res})}
 
 // account-bound library state lives in D.library and syncs with the user doc
+function libStoreKey(){ if(RO&&ROowner)return 'bloom_reader_ro_'+ROowner; if(user)return 'bloom_reader_u_'+user; return 'bloom_reader_anon'; }
+function libStoreRead(){ let s=null;try{s=JSON.parse(ST.get(libStoreKey())||'null')}catch(e){};if(!s||typeof s!=='object')s={books:{},articles:{}};if(!s.books)s.books={};if(!s.articles)s.articles={};return s; }
+function libStoreWrite(s){ try{ST.set(libStoreKey(),JSON.stringify(s))}catch(e){} }
 function libEnsure(){
+ if(RO&&!ownMode&&ROowner){ return libStoreRead(); }
  const L=D.library||(D.library={books:{},articles:{}});
  if(!L.books)L.books={};if(!L.articles)L.articles={};
  return L;
