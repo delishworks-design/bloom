@@ -1223,6 +1223,7 @@ function sbScheduleRetry(){if(sbRetryTimer||!sbUser)return;const delays=[15000,3
 function sbNoteFailure(e){reportErr('sync.push',e);SYNC.fails++;if(SYNC.fails===3)toast('Cloud sync is having trouble. Your data is safe on this phone.');setSyncState(/fetch|network|ENOTFOUND|ETIMEDOUT|timeout|Failed to fetch/i.test(String(e&&e.message||e))?'offline':'error');sbScheduleRetry()}
 async function sbPush(){if(!sb||!sbUser||RO)return;
  if(D&&D._uid&&D._uid!==sbUser.id){reportErr('sync.guard','refusing to push another account doc');return}
+ if(ownMode&&(!D||D._uid!==sbUser.id)){reportErr('sync.guard','own-mode doc has no matching _uid, not pushing');return}
  if(sbPushing){sbPushAgain=true;return}
  sbPushing=true;
  try{
@@ -1259,7 +1260,7 @@ async function sbPull(){if(!sb||!sbUser||RO||document.hidden)return;
   if(error||!data)return;
   const rev=+(data.rev||0);if(rev<=sbRev)return;
   if(JSON.stringify(D)!==sbLastPush)return;
-  backupLocal();const row=await sbFetchDocWithRev(sbUser.id);if(!row)return;
+  backupLocal();const row=await sbFetchDocWithRev(sbUser.id);if(!row)return;if(RO)return;
    if(row.doc&&row.doc._uid&&row.doc._uid!==sbUser.id){reportErr('sync.pull.guard','row belongs to another account');return}
    if(!docHasContent(row.doc)&&docHasContent(D)){reportErr('sync.pull.guard','ignoring an empty cloud copy');return}
    D=Object.assign(blank(),row.doc);D._uid=sbUser.id;sbRev=row.rev;saveRev();setDirtyFlag(0);sbLastPush=JSON.stringify(D);
@@ -1398,6 +1399,7 @@ async function enterPartnerMode(owner,code,quiet){
    else if(prof&&!prof.avatar){ST.del('bloom_pavatar')}
   }catch(e){reportErr('partner.profile',e)}}
  let doc=null;try{doc=await withTimeout(sbFetchDoc(owner),4000)}catch(e){reportErr('partner.doc',e)}
+ if(ownMode||ownLoading){if(doc){try{ST.set(key(owner),JSON.stringify(doc))}catch(e){}}return true}
  if(doc){D=Object.assign(blank(),doc);roHash=roHashOf(JSON.stringify(doc));try{ST.set(key(owner),JSON.stringify(doc))}catch(e){}}
  else{const cached=J(key(owner),null);if(cached)D=Object.assign(blank(),cached)}
  setSession('p:'+owner);
@@ -2085,8 +2087,9 @@ function roHashOf(s){let h=0;for(let i=0;i<s.length;i++){h=(h*31+s.charCodeAt(i)
 let roProbeAt=0;
 async function roReload(){if(!RO||document.hidden)return;
  if(ROcloud){if(!sb&&Date.now()-roProbeAt>20000){roProbeAt=Date.now();try{if(await probeNet()){try{ST.set('bloom_net','1')}catch(e){}await sbInit()}}catch(e){}}const doc=await sbFetchDoc(ROowner);
+  if(!RO||ownMode||ownLoading)return;
   if(!doc){ // empty could be a network blip: ask the link itself
-   const q=await cloudPairing();if(q.ok&&!q.pair)await partnerDropped();return}
+   const q=await cloudPairing();if(!RO||ownMode||ownLoading)return;if(q.ok&&!q.pair)await partnerDropped();return}
   const h=roHashOf(JSON.stringify(doc));if(h===roHash)return;roHash=h;D=Object.assign(blank(),doc);try{ST.set(key(ROowner),JSON.stringify(doc))}catch(e){}shell();return}
  const raw=ST.get(key(ROowner));if(raw==null)return;const h=roHashOf(raw);if(h===roHash)return;roHash=h;D=Object.assign(blank(),J(key(ROowner),{}));shell()}
 // ---------- navigation persistence (survive an Android WebView reload)
@@ -6077,13 +6080,14 @@ if(splashShouldShow())splashPlay();else splashSkip();  // only after 3 minutes a
   sbInit().then(async()=>{try{
    if(sbUser){
     const q=await cloudPairing();
+    if(ownMode||ownLoading)return;
     // the link may have been stopped while this phone was closed
     if(q.ok&&!q.pair){await partnerDropped();return}
     if(q.ok&&q.pair){await enterPartnerMode(q.pair.owner,q.pair.code,true);return}
    }
     const doc=await sbFetchDoc(owner);
     if(doc&&(Object.keys(doc.logs||{}).length||Object.keys(doc.tasks||[]).length)){
-     D=Object.assign(blank(),doc);roHash=roHashOf(JSON.stringify(doc));try{ST.set(key(owner),JSON.stringify(doc))}catch(e){}shell()}}catch(e){reportErr('boot.partner',e)}});
+     try{ST.set(key(owner),JSON.stringify(doc))}catch(e){}if(!ownMode&&!ownLoading&&RO){D=Object.assign(blank(),doc);roHash=roHashOf(JSON.stringify(doc));shell()}}}catch(e){reportErr('boot.partner',e)}});
   return}
  await sbInit();
  if(sbUser&&!RO){try{await sbAfterLogin(sbUser);backfillMeals();setTimeout(()=>checkUpdate(false),1500);return}catch(e){reportErr('login.after',e)}}
