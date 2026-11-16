@@ -94,32 +94,29 @@ p{margin:0;line-height:1.5}
 .bookcard-foot{display:flex;gap:10px;align-items:center;margin-top:6px;font-size:.66rem;color:var(--faded);padding:0 12px 11px}
 .bookcard-bm{margin-left:auto;color:var(--rose);font-weight:700}
 .lib-sub{font-size:.74rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);margin:16px 2px 8px}
-.readgoal-card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 14px 12px;margin:2px 0 14px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--sh)}
-.rg-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.rg-title{font-size:.72rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
-.rg-streak{display:inline-flex}
-.rg-streakrow{min-height:18px}
-.rg-streakN{font-size:.7rem;font-weight:800;letter-spacing:.08em;color:var(--rose);text-transform:uppercase}
-.rg-row{display:flex;align-items:center;gap:14px}
-.rg-arc{width:96px;flex:0 0 auto}
-.rg-meta{display:flex;flex-direction:column;gap:2px;min-width:0}
-.rg-progress{font-size:1.5rem;font-weight:700;color:var(--ink);font-family:'Playfair Display',serif;letter-spacing:-.02em;line-height:1.1}
-.rg-of{font-size:.78rem;color:var(--mut);font-family:inherit;font-weight:400}
-.rg-caption{font-size:.66rem;color:var(--mut);line-height:1.35}
-.rg-note{font-size:.78rem;color:var(--ink);margin-top:4px;line-height:1.35}
+.readgoal-card{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;width:100%;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px 14px 12px;margin:2px 0 14px;box-shadow:var(--sh);cursor:pointer;text-align:center;color:var(--ink)}
+.rg-arc-wrap{position:relative;width:150px;height:94px;display:flex;align-items:flex-start;justify-content:center}
+.rg-arc{width:150px;height:94px;display:block}
+.rg-arc-center{position:absolute;top:26px;left:0;right:0;display:flex;flex-direction:column;align-items:center;line-height:1.15}
+.rg-arc-center b{font-family:'Playfair Display',serif;font-size:1.85rem;font-weight:700;letter-spacing:-.02em;color:var(--ink)}
+.rg-arc-center span{font-size:.76rem;color:var(--mut);font-weight:600}
+.rg-caption{font-size:.8rem;color:var(--ink);margin:6px 0 0;font-weight:600;line-height:1.35}
+.rg-note{font-size:.78rem;color:var(--mut);margin:2px 0 0;line-height:1.35}
 .rg-note b{color:var(--rose)}
-.rg-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px dashed var(--line);padding-top:10px;flex-wrap:wrap}
-.rg-books{font-size:.72rem;color:var(--mut);font-weight:600}
-.rg-books b{color:var(--ink);font-weight:700}
-.rg-goalchips{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
-.rg-chip{border:1px solid var(--line2);background:var(--bg2);border-radius:999px;padding:4px 12px;font-size:.76rem;font-weight:700;color:var(--ink);cursor:pointer}
+.rg-streak{display:flex;justify-content:center;margin-top:12px;flex-wrap:wrap}
+.rg-goalchips{display:flex;gap:8px;flex-wrap:wrap}
+.rg-chip{border:1px solid var(--line2);background:var(--bg2);border-radius:999px;padding:7px 14px;font-size:.82rem;font-weight:700;color:var(--ink);cursor:pointer}
 .rg-chip.on{background:var(--rose);border-color:var(--rose);color:#fff}
-.rg-dot{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--line2);color:var(--mut);font-size:.62rem;font-weight:800;margin-right:4px}
+.rg-slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:8px;margin-top:14px}
+.rg-slot{position:relative;aspect-ratio:1;border-radius:12px;border:1.5px dashed var(--line2);background:var(--bg2);display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;padding:4px;color:var(--mut)}
+.rg-slot.filled{border:1.5px solid var(--line);background:var(--card);cursor:pointer}
+.rg-slot img{width:100%;height:100%;object-fit:cover;border-radius:8px}
+.rg-slot-title{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.55);color:#fff;font-size:.58rem;font-weight:700;padding:3px 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rg-slot-empty-icon{font-size:1.4rem;color:var(--faded);font-weight:700}
+.rg-dot{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--line2);color:var(--mut);font-size:.66rem;font-weight:800;margin:0 3px}
 .rg-dot.on{background:var(--rose);color:#fff}
 .rg-dot.today{box-shadow:0 0 0 2px var(--rose)}
-.rg-year{margin:0;border:0;padding:0}
-.rg-year summary{cursor:pointer;font-weight:700;padding:6px 0}
-@media (max-width:420px){.rg-row{gap:10px}.rg-arc{width:84px}.rg-progress{font-size:1.2rem}}
+@media (max-width:420px){.rg-arc-wrap,.rg-arc{width:132px;height:84px}.rg-arc-center{top:22px}.rg-arc-center b{font-size:1.55rem}}
 .libempty{padding:18px 16px;background:var(--bg2);border:1px dashed var(--line);border-radius:14px;text-align:center}
 .libempty p{margin:0;font-weight:700;color:var(--mut)}
 .recentrow{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;padding:2px 2px 6px;scrollbar-width:none;margin:4px -2px 0}
@@ -5396,29 +5393,59 @@ function readSafeCard(){try{return readCardHTML()}catch(e){reportErr('library.re
 function readArcSVG(pct){const R=40,C=Math.PI*R;const off=(C*(1-Math.max(0,Math.min(1,pct)))).toFixed(2);return `<svg viewBox="0 0 100 60" class="rg-arc" role="img" aria-label="${Math.round(pct*100)}% of daily goal"><path d="M10 55 A ${R} ${R} 0 0 1 90 55" stroke="var(--line2)" stroke-width="10" fill="none" stroke-linecap="round"/><path d="M10 55 A ${R} ${R} 0 0 1 90 55" stroke="var(--rose)" stroke-width="10" fill="none" stroke-linecap="round" stroke-dasharray="${C.toFixed(2)}" stroke-dashoffset="${off}" style="transition:stroke-dashoffset .6s"/></svg>`}
 function readStreakHTML(log){const dots=weekDots(log||{},new Date());const labels=['S','M','T','W','T','F','S'];const todayDow=new Date().getDay();return `<div class="rg-streak" title="Reading streak — this week">${labels.map((l,i)=>`<span class="rg-dot${dots[i]?' on':''}${i===todayDow?' today':''}">${l}</span>`).join('')}</div>`}
 function readCurrentBook(){const L=libEnsure();const list=Object.keys(L.books).map(id=>({id,e:L.books[id]})).filter(x=>!x.e.finished&&(+x.e.lastRead||0)>0);if(!list.length)return null;list.sort((a,b)=>(+b.e.lastRead||0)-(+a.e.lastRead||0));const id=list[0].id;return (libCached().find(b=>b.id===id)||null)}
+function readArcSVG(pct, todaySec, goalSec){
+ const R=44,C=Math.PI*R;
+ const off=(C*(1-Math.max(0,Math.min(1,pct)))).toFixed(2);
+ return `<div class="rg-arc-wrap">
+  <svg viewBox="0 0 120 72" class="rg-arc" role="img" aria-label="${Math.round(pct*100)}% of daily goal">
+   <path d="M12 64 A ${R} ${R} 0 0 1 108 64" stroke="var(--line2)" stroke-width="11" fill="none" stroke-linecap="round"/>
+   <path d="M12 64 A ${R} ${R} 0 0 1 108 64" stroke="var(--rose)" stroke-width="11" fill="none" stroke-linecap="round" stroke-dasharray="${C.toFixed(2)}" stroke-dashoffset="${off}" style="transition:stroke-dashoffset .6s"/>
+  </svg>
+  <div class="rg-arc-center"><b>${formatMS(todaySec)}</b><span>of ${formatMS(goalSec)}</span></div>
+ </div>`;
+}
+function readGoalSheet(){
+ const r=readNormalize(D);
+ const books=(D.library&&D.library.books)||{};
+ const year=new Date().getFullYear();
+ const finished=Object.keys(books).map(id=>({id,b:books[id]})).filter(x=>x.b&&x.b.finished&&+x.b.finishedAt&&new Date(+x.b.finishedAt).getFullYear()===year);
+ finished.sort((a,b)=>+b.b.finishedAt - +a.b.finishedAt);
+ const meta=libCached(); const byId={}; meta.forEach(x=>byId[x.id]=x);
+ const slots=[];
+ for(let i=0;i<Math.max(r.goalBooks,finished.length);i++){
+   const f=finished[i];
+   if(f){
+     const m=byId[f.id];
+     const cover=m&&m.cover;
+     slots.push(`<button type="button" class="rg-slot filled" data-rgbook="${E(f.id)}">${cover?`<img src="${escCssUrl(cover)}" alt="" onload="this.classList.add('done')" onerror="this.onerror=null;this.parentNode.classList.add('broken')">`:'<span class="rg-slot-empty-icon">?</span>'}<span class="rg-slot-title">${E(m&&m.title||'Book')}</span></button>`);
+   }else{
+     slots.push(`<div class="rg-slot empty" aria-label="Empty reading goal slot"><span class="rg-slot-empty-icon">+</span></div>`);
+   }
+ }
+ const dayMin=[1,2,5,10,15,30], yearN=[1,3,6,12,24,50];
+ sheet(`<h2>Reading goals</h2>
+ <p class="meta" style="margin:0 0 6px">Daily goal</p>
+ <div class="rg-goalchips" role="group" aria-label="Daily goal">${dayMin.map(n=>`<button class="rg-chip${n===r.goalMin?' on':''}" data-rg="${n}">${n} min</button>`).join('')}</div>
+ <p class="meta" style="margin:16px 0 6px">Books this year · ${finished.length} of ${r.goalBooks}</p>
+ <div class="rg-goalchips" role="group" aria-label="Yearly goal">${yearN.map(n=>`<button class="rg-chip${n===r.goalBooks?' on':''}" data-year="${n}">${n}</button>`).join('')}</div>
+ <div class="rg-slots">${slots.join('')}</div>
+ <p class="meta" style="margin:10px 0 0">Tap a finished book to open it. Empty slots show how many books are left in your goal.</p>`);
+ document.querySelectorAll('[data-rg]').forEach(b=>b.onclick=()=>{D.read=Object.assign({goalMin:5,goalBooks:1,log:{}},(D.read||{}));D.read.goalMin=+b.dataset.rg;save();sheet();readGoalSheet();library()});
+ document.querySelectorAll('[data-year]').forEach(b=>b.onclick=()=>{D.read=Object.assign({goalMin:5,goalBooks:1,log:{}},(D.read||{}));D.read.goalBooks=+b.dataset.year;save();sheet();readGoalSheet();library()});
+ document.querySelectorAll('[data-rgbook]').forEach(b=>b.onclick=()=>{const id=b.dataset.rgbook;sheet();openBook(id)});
+}
 function readCardHTML(){
  const r=readNormalize(D);
  const todaySec=readGoalCount(D);
  const goalSec=r.goalMin*60;
  const pct=readGoalPct(todaySec,r.goalMin);
- const streak=computeStreak(r.log||{});
- const booksYear=booksThisYear((D.library&&D.library.books)||{},new Date().getFullYear());
  const cur=readCurrentBook();
- return `<div class="readgoal-card" id="readGoalCard">
-  <div class="rg-head"><span class="rg-title">Today's reading</span><span class="rg-streak" aria-label="Reading streak, ${streak} day${streak===1?'':'s'}" title="Reading streak — this week">${readStreakHTML(r.log)}</span></div>
-  <div class="rg-row">${readArcSVG(pct)}
-   <div class="rg-meta">
-    <div class="rg-streakrow">${streak>0?`<span class="rg-streakN">${streak}-day streak</span>`:''}</div>
-    <div class="rg-progress">${formatMS(todaySec)} <span class="rg-of">of ${formatMS(goalSec)}</span></div>
-    <div class="rg-caption">Today's reading ${formatMS(todaySec)} of your ${r.goalMin}-minute goal</div>
-    ${cur?`<div class="rg-note">Keep reading <b>${E(cur.title)}</b></div>`:'<div class="rg-note">Pick a book to keep the streak going</div>'}
-   </div></div>
-  <div class="rg-foot">
-   <div class="rg-books"><b>${booksYear}</b> / ${r.goalBooks} books this year</div>
-   <div class="rg-goalchips" role="group" aria-label="Daily goal">${[1,2,5,10,15,30].map(n=>`<button class="rg-chip${n===r.goalMin?' on':''}" data-rg="${n}" aria-pressed="${n===r.goalMin}">${n}m</button>`).join('')}</div>
-  </div>
-  <details class="rg-year"><summary class="meta">Yearly goal</summary><div class="rg-goalchips" role="group" aria-label="Yearly goal" style="margin-top:8px">${[1,3,6,12,24,50].map(n=>`<button class="rg-chip${n===r.goalBooks?' on':''}" data-year="${n}" aria-pressed="${n===r.goalBooks}">${n}</button>`).join('')}</div></details>
- </div>`;
+ return `<button type="button" class="readgoal-card" id="readGoalCard" aria-label="Reading goals and progress">
+  ${readArcSVG(pct,todaySec,goalSec)}
+  <p class="rg-caption">Today's reading ${formatMS(todaySec)} of your ${r.goalMin}-minute goal</p>
+  <p class="rg-note">${cur?`Keep reading <b>${E(cur.title)}</b>`:'Pick a book to keep the streak going'}</p>
+  ${readStreakHTML(r.log)}
+ </button>`;
 }
 function library(){
  const tabLabel=libTab==='books'?'Books':'Articles';
@@ -5427,8 +5454,7 @@ function library(){
  <div class="dr-search"><input id="ls" type="search" placeholder="Search ${tabLabel}" value="${E(libSearch)}" autocomplete="off"></div>
  <div id="lb"></div>
  <p class="dr-warn">Educational content only. Not personal medical advice. Severe pelvic pain, soaking through a pad every hour, fainting, or sudden severe symptoms need urgent care.</p>`;
- document.querySelectorAll('[data-rg]').forEach(b=>b.onclick=()=>{D.read=Object.assign({goalMin:5,goalBooks:1,log:{}},(D.read||{}));D.read.goalMin=+b.dataset.rg;D.read=Object.assign({},D.read,{log:D.read.log||{}});save();library()});
- document.querySelectorAll('[data-year]').forEach(b=>b.onclick=()=>{D.read=Object.assign({goalMin:5,goalBooks:1,log:{}},(D.read||{}));D.read.goalBooks=+b.dataset.year;save();library()});
+ const rc=document.getElementById('readGoalCard');if(rc)rc.onclick=()=>readGoalSheet();
  document.querySelectorAll('[data-lt]').forEach(b=>b.onclick=()=>{libTab=b.dataset.lt;libSearch='';libFilter='all';library()});
  const ls=document.getElementById('ls');
  if(ls)ls.oninput=e=>{libSearch=e.target.value;renderLibList()};
