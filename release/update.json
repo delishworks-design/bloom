@@ -1,7 +1,7 @@
 {
-    "versionCode": 126,
-    "versionName": "1.2.111",
-    "notes": "Partner library now syncs to its own cloud bucket isolated per account. Sign-up email confirm link now returns to the deployed app instead of localhost. Login screen no longer shows two stray dots.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.111/bloom-1.2.111.apk",
+    "versionCode": 127,
+    "versionName": "1.2.112",
+    "notes": "Resend confirmation email now also returns to the deployed app. Site URL correction makes sign-up links land on the deployed app instead of localhost.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.112/bloom-1.2.112.apk",
     "publishedAt": "2026-11-16"
 }

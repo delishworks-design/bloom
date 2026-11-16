@@ -1802,7 +1802,7 @@ function showCheckEmail(email){
   try{
    const cl=await sbInit();
    if(!cl){er.textContent='Could not start the cloud service.';return}
-   const {error}=await cl.auth.resend({type:'signup',email:mail});
+   const {error}=await cl.auth.resend({type:'signup',email:mail,options:{emailRedirectTo:location.origin+(location.pathname||'/')}});
    if(error){er.textContent=errText(error.message||error);return}
    sends++;coolUntil=Date.now()+60000;
    er.textContent='Email sent. Check your inbox and spam.';
