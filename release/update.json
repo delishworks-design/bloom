@@ -1,7 +1,7 @@
 {
-    "versionCode": 130,
-    "versionName": "1.2.115",
-    "notes": "Advanced Scheduling for Planner tasks: custom weekdays, every X days, every X weeks, monthly on a chosen day, optional start and end dates. Validation prevents invalid schedules. Add Task and Edit Task share the same scheduling logic. Notes preserved across edits.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.115/bloom-1.2.115.apk",
+    "versionCode": 131,
+    "versionName": "1.2.116",
+    "notes": "Themed calendar + wheel time pickers replace native inputs; scrollable year view in Cycle and Planner months; drop Advanced Scheduling UI.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.116/bloom-1.2.116.apk",
     "publishedAt": "2026-11-16"
 }
