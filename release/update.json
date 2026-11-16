@@ -1,7 +1,7 @@
 {
-    "versionCode": 121,
-    "versionName": "1.2.106",
-    "notes": "Default theme now Light. Partner accounts keep their own private reading progress, not the owner's. Dropped the Step-1/Step-2 labels in signup. Did-you-know and food-tip text now visible in dark mode.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.106/bloom-1.2.106.apk",
+    "versionCode": 122,
+    "versionName": "1.2.107",
+    "notes": "Partner accounts keep own reading progress even when following someone. Done and onboarding sign-in links, Back to app on the login screen, recovery screen no longer shows on ordinary resource errors, skip button ends onboarding.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.107/bloom-1.2.107.apk",
     "publishedAt": "2026-11-16"
 }
