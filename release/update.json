@@ -1,7 +1,7 @@
 {
-    "versionCode": 125,
-    "versionName": "1.2.110",
-    "notes": "Hotfix: old APKs no longer write partial doc to the authenticated user's own row when in read-only follow mode. Server also rejects mismatched _uid. Includes all prior 2026-11-16 fixes.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.110/bloom-1.2.110.apk",
+    "versionCode": 126,
+    "versionName": "1.2.111",
+    "notes": "Partner library now syncs to its own cloud bucket isolated per account. Sign-up email confirm link now returns to the deployed app instead of localhost. Login screen no longer shows two stray dots.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.111/bloom-1.2.111.apk",
     "publishedAt": "2026-11-16"
 }
