@@ -1,7 +1,7 @@
 {
-    "versionCode": 127,
-    "versionName": "1.2.112",
-    "notes": "Resend confirmation email now also returns to the deployed app. Site URL correction makes sign-up links land on the deployed app instead of localhost.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.112/bloom-1.2.112.apk",
+    "versionCode": 128,
+    "versionName": "1.2.113",
+    "notes": "On native builds (APK/iOS), sign-up and resend confirmation links now point to the deployed web app instead of localhost.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.113/bloom-1.2.113.apk",
     "publishedAt": "2026-11-16"
 }

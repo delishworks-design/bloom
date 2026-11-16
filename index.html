@@ -1201,6 +1201,7 @@ function whenSupabase(){
  });
  return sbReady}
 const isNative=()=>{try{return !!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform())}catch(e){return false}};
+const authRedirectUrl=()=>isNative()?'https://delishworks-design.github.io/bloom/':location.origin+(location.pathname||'/');
 async function sbInit(){if(sb)return sb;
  if(isOffline())return null;
  await whenSupabase();
@@ -1355,7 +1356,7 @@ async function sbSignIn(email,pw){await sbInit();if(!sb)return 'offline';
  if(error)return String(error.message||error)==='offline'?OFFLINE_MSG:errText(resR.error.message||resR.error);
  const {data}=await sb.auth.getSession();if(data.session)await sbAfterLogin(data.session.user);return null}
 async function sbSignUp(email,pw){await sbInit();if(!sb)return 'offline';
- const resR=await withTimeout(sb.auth.signUp({email:email.trim(),password:pw,options:{emailRedirectTo:location.origin+(location.pathname||'/')}}),4500).catch(e=>({error:new Error('offline')}));
+ const resR=await withTimeout(sb.auth.signUp({email:email.trim(),password:pw,options:{emailRedirectTo:authRedirectUrl()}}),4500).catch(e=>({error:new Error('offline')}));
  const {error}=resR||{};
  if(error)return String(error.message||error)==='offline'?OFFLINE_MSG:errText(resR.error.message||resR.error);
  const {data}=await sb.auth.getSession();
@@ -1802,7 +1803,7 @@ function showCheckEmail(email){
   try{
    const cl=await sbInit();
    if(!cl){er.textContent='Could not start the cloud service.';return}
-   const {error}=await cl.auth.resend({type:'signup',email:mail,options:{emailRedirectTo:location.origin+(location.pathname||'/')}});
+   const {error}=await cl.auth.resend({type:'signup',email:mail,options:{emailRedirectTo:authRedirectUrl()}});
    if(error){er.textContent=errText(error.message||error);return}
    sends++;coolUntil=Date.now()+60000;
    er.textContent='Email sent. Check your inbox and spam.';
