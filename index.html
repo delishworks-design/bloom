@@ -5978,7 +5978,7 @@ function splashPlay(replay){
 }
 // called by the native layer when the app comes back to the foreground
 window.__bloomResume=(awayMs)=>{try{widgetConsume()}catch(e){}try{widgetSync()}catch(e){}if(splashPlaying||!splashShouldShow(awayMs))return;splashPlay(true)};
-window.addEventListener('online',()=>{try{ST.set('bloom_net','1')}catch(e){}sbInit().then(()=>{if(sbUser&&!RO){sbPush();sbPull()}});setTimeout(()=>checkUpdate(false),800)});
+window.addEventListener('online',()=>{try{ST.set('bloom_net','1')}catch(e){}sbInit().then(()=>{if(sbUser&&!RO){sbPush();sbPull();startCloudSync()}});setTimeout(()=>checkUpdate(false),800)});
 window.addEventListener('offline',()=>{try{ST.set('bloom_net','0')}catch(e){}if(!document.getElementById('authForm'))return;const e=document.getElementById('err');if(e&&!e.textContent){e.textContent=OFFLINE_MSG;e.classList.add('on')}});
 window.addEventListener('online',()=>{const e=document.getElementById('err');if(document.getElementById('authForm')&&e&&e.textContent===OFFLINE_MSG){e.textContent='';e.classList.remove('on')}});
 // called by the native layer when the app goes to the background
@@ -6022,8 +6022,26 @@ function localSessionBoot(sess){
  user=mail;D=Object.assign(blank(),cached);loadRev(mail);applyTheme();restoreNav();shell();
 
  setTimeout(()=>{try{sbInit().then(()=>{if(sbUser)sbPull()}).catch(()=>{})}catch(e){}},1500);
+ try{startReconnectWatch()}catch(e){}
  return true}
 // @test-end boot
+
+let reconnectTimer=null;
+function startReconnectWatch(){
+ if(reconnectTimer)return;
+ reconnectTimer=setInterval(async()=>{try{
+  if(!user||RO||sbUser)return;
+  if(!safeToRender())return;
+  const ok=await probeNet();if(!ok)return;
+  try{ST.set('bloom_net','1')}catch(e){}
+  const c=await sbInit();if(!c)return;
+  if(!sbUser){const r=await c.auth.getSession();if(r&&r.data&&r.data.session&&r.data.session.user)sbUser=r.data.session.user}
+  if(!sbUser)return;
+  clearInterval(reconnectTimer);reconnectTimer=null;
+  await sbAfterLogin(sbUser);startCloudSync();
+ }catch(e){}},15000);
+}
+
 // ---------- start
 // big faded logo silhouette behind everything (theme tinted)
 (function(){try{const st=document.createElement('style');
@@ -6039,7 +6057,7 @@ if(splashShouldShow())splashPlay();else splashSkip();  // only after 3 minutes a
  // reachability probe: navigator.onLine lies in WebViews, and a stuck token-refresh loop
  // would strand the app on the login screen. Trust nothing but a real round-trip.
  const reachable=await probeNet();
- if(isOffline()||!reachable){
+ if(!(s&&String(s).indexOf('p:')===0)&&(isOffline()||!reachable)){
   if(localSessionBoot(s))return;
   if(localAnonBoot())return;
   authView('in');
