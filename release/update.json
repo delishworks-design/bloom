@@ -1,7 +1,7 @@
 {
-    "versionCode": 132,
-    "versionName": "1.2.117",
-    "notes": "Fix Planner Month calendar overflow; lock background scroll when a sheet/picker is open and add a Back button to sheets.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.117/bloom-1.2.117.apk",
+    "versionCode": 133,
+    "versionName": "1.2.118",
+    "notes": "Library: Explore now shows one category at a time via chips, cutting scroll length. Also includes reading-progress cloud sync across devices.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.118/bloom-1.2.118.apk",
     "publishedAt": "2026-11-17"
 }

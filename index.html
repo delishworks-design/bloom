@@ -216,6 +216,11 @@ body.reader-open{overflow:hidden}
 .lib-genre:before{content:'';width:3px;height:14px;border-radius:2px;background:var(--rose)}
 .lib-genre-n{font-size:.62rem;font-weight:800;color:var(--mut);letter-spacing:.06em;background:var(--chip);border:1px solid var(--line2);border-radius:999px;padding:1px 7px}
 .lib-chips{display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 12px}
+.lib-expchips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:2px 0 10px;margin:0 0 4px}
+.lib-expchips::-webkit-scrollbar{display:none}
+.lib-expchip{flex:0 0 auto;border:1px solid var(--line2);background:var(--bg2);border-radius:999px;padding:7px 13px;font-size:.78rem;font-weight:700;color:var(--ink);cursor:pointer;white-space:nowrap}
+.lib-expchip.on{background:var(--rose);border-color:var(--rose);color:#fff}
+.lib-expchip-n{font-size:.66rem;opacity:.7;margin-left:3px}
 .lib-chip{border:1.5px solid var(--line);background:var(--card);border-radius:999px;padding:7px 12px;font:inherit;font-size:.82rem;color:var(--mut);font-weight:700;cursor:pointer}
 .lib-chip.on{background:var(--rose);border-color:var(--rose);color:#FBF4EA}
 .lib-chip-n{font-size:.72rem;opacity:.85;margin-left:4px}
@@ -5542,7 +5547,7 @@ function renderBookList(){const el=document.getElementById('lb');
  el.innerHTML=head+filters+mineHTML+exploreHTML;
  el.querySelectorAll('.lib-chip').forEach(b=>b.onclick=()=>{libFilter=b.dataset.lf;library()});
  el.querySelectorAll('.recentcard[data-bid]').forEach(b=>b.addEventListener('click',()=>{const id=b.dataset.bid;const e=libEntry(id);if(e)openBook(id);else{showExploreSheet(id);library()}}));
- el.querySelectorAll('[data-seeall]').forEach(b=>b.onclick=()=>{const g=b.dataset.seeall;exploreShown[g]=!exploreShown[g];library()});
+ el.querySelectorAll('[data-expcat]').forEach(b=>b.onclick=()=>{exploreCat=b.dataset.expcat;renderLibList()});
  el.querySelectorAll('.bookcard[data-bid]').forEach(b=>{
   const id=b.dataset.bid;const added=!!L.books[id];
   const holdMs=450,move=14;let timer=0,sx=0,sy=0;
@@ -5576,23 +5581,44 @@ function bookcardHTML(b,entry,isExplore){
  const pct=Math.min(100,Math.max(0,+entry.pct||0));
  const prog=pct>0&&!fin?`<span class="bookcard-progress"><i style="width:${pct}%"></i></span>`:'';
  return `<button class="bookcard" data-bid="${E(b.id)}"><span class="bookcard-cover"><img class="cover-img" loading="lazy" src="${escCssUrl(b.cover||'')}" alt="" onload="this.classList.add('done');this.parentNode.classList.add('done')" onerror="this.onerror=null;this.parentNode.classList.add('done','broken')">${genrePill(b.category)}${star}${chips}</span>${prog}<span class="bookcard-meta"><span class="bookcard-title">${E(b.title)}</span><span class="bookcard-author">${E(b.author||'')}</span></span><span class="bookcard-foot"><span>${pages}</span></span></button>`}
-const exploreShown={};
-const EXPLORE_GRID_MAX=10;
-function exploreByGenreHTML(all){
+// @test-begin libraryExplore
+let exploreCat = null;
+function exploreGroups(all){
  const groups=new Map();
- all.forEach(b=>{const g=(b.category||'Other').trim()||'Other';if(!groups.has(g))groups.set(g,[]);groups.get(g).push(b)});
+ (all||[]).forEach(b=>{const g=(b.category||'Other').trim()||'Other';if(!groups.has(g))groups.set(g,[]);groups.get(g).push(b)});
+ return groups;
+}
+function exploreOrder(groups){
  const healthFirst={"PCOS/PMOS":0,"Women's Health":1,"Health":2,"Endocrine":3,"Pain":4};
- const order=[...groups.keys()].sort((a,b)=>{
+ return [...groups.keys()].sort((a,b)=>{
   const r=(healthFirst[a]??99)-(healthFirst[b]??99);
-  if(r) return r;
+  if(r)return r;
   return groups.get(b).length-groups.get(a).length||a.localeCompare(b)
  });
- return '<p class="lib-sub">Explore by category</p>'+order.map(g=>{
-  const items=groups.get(g);
-  const open=Object.prototype.hasOwnProperty.call(exploreShown,g)?!!exploreShown[g]:false;
-  const slice=open?items:items.slice(0,EXPLORE_GRID_MAX);
-  return `<p class="lib-genre">${E(g)}<span class="lib-genre-n">${items.length}</span></p><div class="bookgrid">${slice.map(b=>bookcardHTML(b,libEntry(b.id),true)).join('')}</div>${items.length>EXPLORE_GRID_MAX?`<button class="seeall" data-seeall="${E(g)}">${open?'Show fewer':'See all '+items.length+' '+(items.length===1?'book':'books')}</button>`:''}`;
- }).join('');
+}
+function exploreDefaultCategory(groups){
+ if(!groups||!groups.size)return null;
+ if(groups.has('PCOS/PMOS'))return 'PCOS/PMOS';
+ return exploreOrder(groups)[0];
+}
+function exploreBooks(all,cat){
+ const groups=exploreGroups(all);
+ if(cat==='all')return (all||[]).slice();
+ if(cat&&groups.has(cat))return groups.get(cat).slice();
+ return groups.get(exploreDefaultCategory(groups))||[];
+}
+// @test-end libraryExplore
+function exploreByGenreHTML(all){
+ const groups=exploreGroups(all);
+ const order=exploreOrder(groups);
+ if(!order.length)return '';
+ if(exploreCat&&!order.includes(exploreCat)&&exploreCat!=='all')exploreCat=null;
+ if(!exploreCat)exploreCat=exploreDefaultCategory(groups);
+ const books=exploreBooks(all,exploreCat);
+ const chips=[{k:'all',label:'All',n:(all||[]).length}].concat(order.map(g=>({k:g,label:g,n:groups.get(g).length})));
+ return `<p class="lib-sub">Explore by category</p>
+ <div class="lib-expchips" role="tablist" aria-label="Book categories">${chips.map(c=>`<button class="lib-expchip${exploreCat===c.k?' on':''}" role="tab" aria-pressed="${exploreCat===c.k}" data-expcat="${E(c.k)}">${E(c.label)} <span class="lib-expchip-n">${c.n}</span></button>`).join('')}</div>
+ <div class="bookgrid">${books.map(b=>bookcardHTML(b,libEntry(b.id),true)).join('')}</div>`;
 }
 function renderArticleList(){const el=document.getElementById('lb');
  const q=String(libSearch||'').trim().toLowerCase();
