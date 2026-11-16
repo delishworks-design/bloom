@@ -1,7 +1,7 @@
 {
-    "versionCode": 117,
-    "versionName": "1.2.102",
-    "notes": "Reader is justified. Book view theme toggle now flips immediately. Dark mode everywhere (System/Light/Dark in Settings > Appearance). Sign-up is two steps: email first, then password. Works fully without network \u2014 local, anonymous reading and logging until sign-in.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.102/bloom-1.2.102.apk",
+    "versionCode": 118,
+    "versionName": "1.2.103",
+    "notes": "Fix: blanks screen after 1.2.102 update \u2014 CSS variables were malformed by an unplanned edit and the entire app rendered blank. This build restores both light and dark palettes. Install instead of 1.2.102.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.103/bloom-1.2.103.apk",
     "publishedAt": "2026-11-16"
 }
