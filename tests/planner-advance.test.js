@@ -161,3 +161,17 @@ test('plannerTabSet has no Week tab and labels the day tab Task', () => {
   assert.equal(partner.some(([k]) => k === 'week'), false);
   assert.ok(partner.some(([k, l]) => k === 'day' && l === 'Task'));
 });
+
+test('focusVoiceFor is stable per date, stays in list, rotates across days', () => {
+  const { focusVoiceFor, SMART_FOCUS_VOICE } = load();
+  const goals = Object.keys(SMART_FOCUS_VOICE);
+  assert.equal(goals.length, 7);
+  for (const g of goals) {
+    const first = focusVoiceFor(g, '2026-11-17');
+    assert.equal(focusVoiceFor(g, '2026-11-17'), first);
+    assert.ok(SMART_FOCUS_VOICE[g].includes(first));
+    const seen = new Set(Array.from({ length: 14 }, (_, i) => focusVoiceFor(g, '2026-11-' + String(i + 1).padStart(2, '0'))));
+    assert.ok(seen.size > 1, g + ' should rotate lines');
+  }
+  assert.equal(focusVoiceFor('nonsense', '2026-11-17'), 'I\u2019m growing at your pace.');
+});

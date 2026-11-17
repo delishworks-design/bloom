@@ -1421,7 +1421,7 @@ async function sbAfterLoginOnce(u){ownMode=false;ownStash=null;ownLoaded=false;o
  if(ST.get('bloom_unpaired')==='1'){setUnpaired(false);D.p.done=false;D.p.role='';onbStep=0}
  save();restoreNav();shell();
  startCloudSync();
- setTimeout(()=>{try{reminderSync(true)}catch(e){}try{readReminderSync(true)}catch(e){}},1200);
+ setTimeout(()=>{try{reminderSync(true)}catch(e){}try{readReminderSync(true)}catch(e){}try{sidesSync(true)}catch(e){}},1200);
 }
 let afterLoginInFlight=null,afterLoginUid='';
 function sbAfterLogin(u){
@@ -2464,7 +2464,7 @@ async function widgetConsume(){
   try{ST.set(key(mail),JSON.stringify(doc));ST.set('bloom_dirty_'+mail,'1')}catch(e){}
   widgetSync();return;
  }
- D=doc;save();try{waterReminderSync(true)}catch(e){}try{readReminderSync(true)}catch(e){}shell();
+ D=doc;save();try{waterReminderSync(true)}catch(e){}try{readReminderSync(true)}catch(e){}try{sidesSync(true)}catch(e){}shell();
 }
 let lastUpdV=null;
 function updateQuietOk(){
@@ -3086,7 +3086,7 @@ function cyclePage(){const d=today(),l=L(d),ts=tasksFor(d),n=ts.filter(t=>isDone
  startFun();
  initPartnerCarousel();
  document.querySelectorAll('[data-mood]').forEach(b=>b.onclick=()=>{const x=L(d);D.logs[d]=Object.assign(x,{mood:+b.dataset.mood});save();cyclePage()});
- const setWater=v=>{const x=L(d);D.logs[d]=Object.assign(x,{water:Math.max(0,Math.min(goal,v))});save();cyclePage();try{waterReminderSync(true)}catch(e){}try{readReminderSync(true)}catch(e){}};
+ const setWater=v=>{const x=L(d);D.logs[d]=Object.assign(x,{water:Math.max(0,Math.min(goal,v))});save();cyclePage();try{waterReminderSync(true)}catch(e){}try{readReminderSync(true)}catch(e){}try{sidesSync(true)}catch(e){}};
  if(!RO){$('#wplus').onclick=()=>setWater((l.water||0)+1);
  $('#wminus').onclick=()=>setWater((l.water||0)-1);
  document.querySelectorAll('[data-goal]').forEach(b=>b.onclick=()=>{D.p.waterGoal=+b.dataset.goal||8;save();cyclePage()});
@@ -4452,15 +4452,7 @@ function smartGoalProgress(goal,ctx){
 }
 function smartRowFor(rows,date){for(const r of rows)if(r.date===date)return r;return null}
 function L2(rows,date,key){const r=smartRowFor(rows,date);return r?r.log[key]:null}
-const SMART_FOCUS_VOICE={
- 'Understand my cycle':'I bloom on my own schedule.',
- 'Steadier energy':'Face the light, one day at a time.',
- 'Move more':'Petals open — so do legs.',
- 'Better sleep':'Soft nights make full blooms.',
- 'Manage stress':'Even the brightest bracts bend, they don’t break.',
- 'Eat regularly':'Fed on time, petals shine.',
- 'Prepare for doctor visits':'Bringing sunny notes to your visit.'
-};
+
 function smartFocusHTML(goal,goals,noGoals,cards){
  const kicker=`<div class="smart-focus-head standalone"><p class="smart-kicker" id="smart-focus-title">Your focus</p></div>`;
  if(noGoals){
@@ -4473,7 +4465,7 @@ function smartFocusHTML(goal,goals,noGoals,cards){
    <button class="smart-focus-tap" type="button" onclick="focusSheet(${i})" aria-label="${E(it.name)} - details">
     <span class="smart-focus-meter">${smartFlowerSVG(it.goal,it.stage)}</span>
     <span class="smart-focus-copy">
-     <span class="smart-focus-bubble">${E(SMART_FOCUS_VOICE[it.goal]||'I\u2019m growing at your pace.')}</span>
+     <span class="smart-focus-bubble">${E(focusVoiceFor(it.goal,today()))}</span>
      <span class="smart-focus-stage">${E(it.stageName)}</span>
      <h3 class="smart-focus-card-title">${E(it.name)}</h3>
      <span class="smart-focus-caption">${E(it.caption)}</span>
@@ -4894,6 +4886,22 @@ function smartEmptyPatternLine(logs){
  return `Log ${m[1]} on ${words[n]||'a few'} more ${n===1?'day':'days'} and a gentle picture will start to appear.`;
 }
 // @test-end smart
+// @test-begin focusVoice
+const SMART_FOCUS_VOICE={
+ 'Understand my cycle':['I bloom on my own schedule.','Expecting company? Log it.','Cycle day gossip, coming right up.'],
+ 'Steadier energy':['Face the light, one day at a time.','8am and… still sleepy?','Nap, coffee, or silence. Choose.'],
+ 'Move more':['Petals open — so do legs.','Run. I\u2019ll watch.','Mum counts. Fifteen minutes.'],
+ 'Better sleep':['Soft nights make full blooms.','It\u2019s 9pm. Time for bed.','I\u2019m asleep. You?'],
+ 'Manage stress':['Even the brightest bracts bend, they don\u2019t break.','Journal first. Then cope.','How are you, honestly?'],
+ 'Eat regularly':['Fed on time, petals shine.','You eaten?','Coffee is not lunch.'],
+ 'Prepare for doctor visits':['Bringing sunny notes to your visit.','Questions for the doctor? Write them down.','Let\u2019s be ready.']
+};
+function focusVoiceFor(goal,dateStr){
+ const list=SMART_FOCUS_VOICE[goal]||['I\u2019m growing at your pace.'];
+ let h=0;String(dateStr||'').split('').forEach(ch=>{h=((h<<5)-h+ch.charCodeAt(0))|0});
+ return list[Math.abs(h)%list.length];
+}
+// @test-end focusVoice
 
 
 function wireSmartFocus(root){
@@ -6361,7 +6369,7 @@ async function reminderSync(quiet){
     // Android still delivers the daily reminder, only a few minutes late.
     const [h,mi]=String(rem.time||'20:00').split(':').map(Number);
     await LN.schedule({notifications:[{
-     id:REM_ID,title:'Bloom',body:'A moment to log how you feel today.',
+     id:REM_ID,title:'Bloom',body:'Rosalyn: Log time. Your day won\u2019t archive itself.',
      channelId:'bloom_reminders',sound:'beep.wav',
      schedule:{on:{hour:isNaN(h)?20:h,minute:isNaN(mi)?0:mi},allowWhileIdle:true},
     smallIcon:'ic_stat_bloom',iconColor:'#B8456B'}]});
@@ -6391,14 +6399,51 @@ async function readReminderSync(quiet){
   const r=(D.read||{});const goalSec=(r.goalMin||5)*60;
   if((r.log||{})[today()]>=goalSec)return; // already hit today's goal
   const [h,mi]=String(D.rem.readTime||'20:00').split(':').map(Number);
-  const items=[{id:REM_READ_ID,title:'Bloom',body:'Today\u2019s reading goal is waiting.',channelId:'bloom_reminders',sound:'beep.wav',schedule:{on:{hour:isNaN(h)?20:h,minute:isNaN(mi)?0:mi},allowWhileIdle:true},smallIcon:'ic_stat_bloom',iconColor:'#B8456B'}];
+  const items=[{id:REM_READ_ID,title:'Bloom',body:'Rosalyn: Ten pages before bed. Your book misses you.',channelId:'bloom_reminders',sound:'beep.wav',schedule:{on:{hour:isNaN(h)?20:h,minute:isNaN(mi)?0:mi},allowWhileIdle:true},smallIcon:'ic_stat_bloom',iconColor:'#B8456B'}];
   // hourly nudges after the reminder hour, until 22:00 — Android only schedules this device-locally
   const [hh]=String(D.rem.readTime||'20:00').split(':').map(Number);
   for(let hr=(isNaN(hh)?20:hh)+1;hr<=22;hr++){
-   items.push({id:REM_READ_HR+hr,title:'Bloom',body:'Keep the streak alive\u2014a few minutes today.',channelId:'bloom_reminders',sound:'beep.wav',schedule:{on:{hour:hr,minute:0},allowWhileIdle:true},smallIcon:'ic_stat_bloom',iconColor:'#B8456B'});
+   items.push({id:REM_READ_HR+hr,title:'Bloom',body:'Rosalyn: The streak is judging. Five minutes?',channelId:'bloom_reminders',sound:'beep.wav',schedule:{on:{hour:hr,minute:0},allowWhileIdle:true},smallIcon:'ic_stat_bloom',iconColor:'#B8456B'});
   }
   if(items.length)await LN.schedule({notifications:items});
  }catch(e){reportErr('reminder.read',e)}
+}
+const SLEEP_BASE=1600,MEAL_BASE=1700,MOVE_BASE=1800,CALM_BASE=1900,ENERGY_BASE=2000,CYCLE_BASE=2100,VISIT_BASE=2200;
+const SIDES_IDS=[SLEEP_BASE+21,SLEEP_BASE+22,MEAL_BASE+8,MEAL_BASE+12,MEAL_BASE+18,MOVE_BASE,CALM_BASE,ENERGY_BASE,CYCLE_BASE,VISIT_BASE];
+async function sidesSync(quiet){
+ const LN=notifPlugin();if(!LN)return 'native';
+ const rem=(D&&D.rem)||{};const d=today();const log=(D&&D.logs&&D.logs[d])||{};
+ try{await LN.cancel({notifications:SIDES_IDS.map(id=>({id}))})}catch(e){}
+ const want=[];
+ const ch='bloom_reminders',Snd='beep.wav',ico='ic_stat_bloom';
+ if(rem.sleepOn&&log.sleep==null){
+  want.push({id:SLEEP_BASE+21,title:'Bloom',body:'Hydrangea: It\u2019s 9pm. Time for bed.',channelId:ch,sound:Snd,schedule:{on:{hour:21,minute:0},allowWhileIdle:true},smallIcon:ico,iconColor:'#B8456B'});
+  want.push({id:SLEEP_BASE+22,title:'Bloom',body:'Hydrangea: 10pm. Seriously. Lights out.',channelId:ch,sound:Snd,schedule:{on:{hour:22,minute:0},allowWhileIdle:true},smallIcon:ico,iconColor:'#B8456B'});
+ }
+ if(rem.mealOn){
+  want.push({id:MEAL_BASE+8,title:'Bloom',body:'Zin: Morning. Coffee is not breakfast.',channelId:ch,sound:Snd,schedule:{on:{hour:8,minute:0},allowWhileIdle:true},smallIcon:ico,iconColor:'#E89478'});
+  want.push({id:MEAL_BASE+12,title:'Bloom',body:'Zin: Lunch o\u2019clock. Actual food this time.',channelId:ch,sound:Snd,schedule:{on:{hour:12,minute:0},allowWhileIdle:true},smallIcon:ico,iconColor:'#E89478'});
+  want.push({id:MEAL_BASE+18,title:'Bloom',body:'Zin: Dinner. Before it gets late-ish.',channelId:ch,sound:Snd,schedule:{on:{hour:18,minute:30},allowWhileIdle:true},smallIcon:ico,iconColor:'#E89478'});
+ }
+ if(rem.moveOn&&!(+log.exMin>=20)&&!(log.exercise&&log.exercise!=='Rest')){
+  want.push({id:MOVE_BASE,title:'Bloom',body:'Mum: Hours of sitting. Fifteen minutes — any move counts.',channelId:ch,sound:Snd,schedule:{on:{hour:16,minute:0},allowWhileIdle:true},smallIcon:ico,iconColor:'#DE9553'});
+ }
+ if(rem.calmOn&&!(D.journal||[]).some(j=>j&&j.d===d)){
+  want.push({id:CALM_BASE,title:'Bloom',body:'Bougie: Heavy head? Journal it out before sleep.',channelId:ch,sound:Snd,schedule:{on:{hour:20,minute:30},allowWhileIdle:true},smallIcon:ico,iconColor:'#87AA90'});
+ }
+ if(rem.energyOn&&log.energy==null){
+  want.push({id:ENERGY_BASE,title:'Bloom',body:'Sunflower: 3pm crash? Energy check — log it.',channelId:ch,sound:Snd,schedule:{on:{hour:15,minute:0},allowWhileIdle:true},smallIcon:ico,iconColor:'#E0A93F'});
+ }
+ if(rem.cycleOn){try{const s2=starts();const pred=s2.length>=2?smartPredictionHistory(s2,d):null;const exp=pred&&pred.state==='predicted'?pred.expected:null;if(exp===d&&!bleed(d))want.push({id:CYCLE_BASE,title:'Bloom',body:'Rosie: Expected day. Log your period — don\u2019t make me guess.',channelId:ch,sound:Snd,schedule:{on:{hour:20,minute:0},allowWhileIdle:true},smallIcon:ico,iconColor:'#C96B87'})}catch(e){reportErr('reminder.sides.cycle',e)}}
+ if(rem.visitOn){
+  want.push({id:VISIT_BASE,title:'Bloom',body:'Daisy: Sunday. Questions for the doctor — list them.',channelId:ch,sound:Snd,schedule:{on:{weekday:1,hour:10,minute:0},allowWhileIdle:true,repeats:true},smallIcon:ico,iconColor:'#9DC3D9'});
+ }
+ if(!want.length)return 'ok';
+ let p=await LN.checkPermissions();
+ if(p.display!=='granted'){if(quiet)return 'blocked';try{p=await LN.requestPermissions()}catch(e){return 'blocked'}}
+ if(p.display!=='granted'){if(!quiet)toast('Allow notifications for Bloom in Android settings');return 'blocked'}
+ try{try{await LN.createChannel({id:ch,name:'Bloom reminders',description:'Cheeky reminders from your focus flowers',sound:Snd,importance:4})}catch(e){}
+  await LN.schedule({notifications:want});return 'ok'}catch(e){reportErr('reminder.sides',e);if(!quiet)toast('Could not set the cheeky reminders');return 'error'}
 }
 const WATER_BASE=1200;
 const WATER_IDS=[...Array(14)].map((_,i)=>WATER_BASE+8+i);
@@ -6417,7 +6462,7 @@ async function waterReminderSync(quiet){
   const now=new Date(),items=[];
   for(let h=8;h<=21;h++){
    if(h<=now.getHours())continue;
-   items.push({id:WATER_BASE+h,title:'Bloom',body:'No water logged yet \u2014 time for a glass.',channelId:'bloom_reminders',sound:'beep.wav',schedule:{on:{hour:h,minute:0},allowWhileIdle:true},smallIcon:'ic_stat_bloom',iconColor:'#2A8A87'});
+   items.push({id:WATER_BASE+h,title:'Bloom',body:'Sprinkles: Not a drop all day? Big glass. Right now.',channelId:'bloom_reminders',sound:'beep.wav',schedule:{on:{hour:h,minute:0},allowWhileIdle:true},smallIcon:'ic_stat_bloom',iconColor:'#2A8A87'});
   }
   if(items.length){await LN.schedule({notifications:items});if(!quiet)toast('Water reminders on for today')}
   else if(!quiet)toast('Water reminders start tomorrow morning');
@@ -6841,20 +6886,29 @@ $('#main').innerHTML=`${anon?`<div class="card" style="background:var(--pinkS)!i
  <button class="btn" id="sv" style="width:100%;margin-top:12px">Save</button>
 </div>
 ${isOffline()?'':'<div class="card" id="pairCard"><p class="meta" style="margin:0">Loading\u2026</p></div>'}
-<div class="card"><div class="card-h"><h3>Reminder</h3></div><label class="row" style="color:var(--ink)"><input type="checkbox" id="rm" style="width:22px;margin:0" ${D.rem.on?'checked':''}> Daily logging reminder</label><label>Time</label><input id="rt" type="hidden" value="${D.rem.time}"><button type="button" class="pickfield" id="rtBtn" style="padding:10px 14px"><span class="pf-val">${fmtTime12(D.rem.time)}</span><span class="pf-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.5l3 1.8"/></svg></span></button><label class="row" style="color:var(--ink);margin-top:12px"><input type="checkbox" id="wm" style="width:22px;margin:0" ${D.rem.water?'checked':''}> Hourly water reminder <span class="meta" style="margin-left:4px">8:00\u201322:00</span></label><label class="row" style="color:var(--ink);margin-top:12px"><input type="checkbox" id="rd" style="width:22px;margin:0" ${D.rem.readOn?'checked':''}> Daily reading reminder <span class="meta" style="margin-left:4px">Two reminders: one at the set time and one per hour until you hit your goal.</span></label><label>Reading reminder time</label><input id="rrt" type="hidden" value="${D.rem.readTime||'20:00'}"><button type="button" class="pickfield" id="rrtBtn" style="padding:10px 14px"><span class="pf-val">${fmtTime12(D.rem.readTime||'20:00')}</span><span class="pf-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.5l3 1.8"/></svg></span></button><button class="btn ghost" id="rs" style="width:100%;margin-top:4px">Save reminders</button><p class="meta" id="remNote" style="margin:10px 0 0"></p></div>
+<div class="card"><div class="card-h"><h3>Reminder</h3></div><label class="row" style="color:var(--ink)"><input type="checkbox" id="rm" style="width:22px;margin:0" ${D.rem.on?'checked':''}> Daily logging reminder</label><label>Time</label><input id="rt" type="hidden" value="${D.rem.time}"><button type="button" class="pickfield" id="rtBtn" style="padding:10px 14px"><span class="pf-val">${fmtTime12(D.rem.time)}</span><span class="pf-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.5l3 1.8"/></svg></span></button><label class="row" style="color:var(--ink);margin-top:12px"><input type="checkbox" id="wm" style="width:22px;margin:0" ${D.rem.water?'checked':''}> Hourly water reminder <span class="meta" style="margin-left:4px">8:00\u201322:00</span></label><label class="row" style="color:var(--ink);margin-top:12px"><input type="checkbox" id="rd" style="width:22px;margin:0" ${D.rem.readOn?'checked':''}> Daily reading reminder <span class="meta" style="margin-left:4px">Two reminders: one at the set time and one per hour until you hit your goal.</span></label><label>Reading reminder time</label><input id="rrt" type="hidden" value="${D.rem.readTime||'20:00'}"><button type="button" class="pickfield" id="rrtBtn" style="padding:10px 14px"><span class="pf-val">${fmtTime12(D.rem.readTime||'20:00')}</span><span class="pf-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.5l3 1.8"/></svg></span></button><div class="divider"></div>
+<p class="meta" style="margin:2px 0 8px;font-weight:700">Cheeky sides</p>
+<label class="row" style="color:var(--ink)"><input type="checkbox" id="sm" style="width:22px;margin:0" ${D.rem.sleepOn?'checked':''}> Hydrangea — sleep nudge <span class="meta" style="margin-left:4px">9:00 &amp; 10:00pm, if no sleep logged today</span></label>
+<label class="row" style="color:var(--ink);margin-top:8px"><input type="checkbox" id="mg" style="width:22px;margin:0" ${D.rem.mealOn?'checked':''}> Zin — meal nudges <span class="meta" style="margin-left:4px">8:00am · 12:00pm · 6:30pm</span></label>
+<label class="row" style="color:var(--ink);margin-top:8px"><input type="checkbox" id="mv" style="width:22px;margin:0" ${D.rem.moveOn?'checked':''}> Mum — move nudge <span class="meta" style="margin-left:4px">4:00pm, if no exercise logged today</span></label>
+<label class="row" style="color:var(--ink);margin-top:8px"><input type="checkbox" id="cl" style="width:22px;margin:0" ${D.rem.calmOn?'checked':''}> Bougie — journal nudge <span class="meta" style="margin-left:4px">8:30pm, if no journal entry today</span></label>
+<label class="row" style="color:var(--ink);margin-top:8px"><input type="checkbox" id="en" style="width:22px;margin:0" ${D.rem.energyOn?'checked':''}> Sunflower — energy nudge <span class="meta" style="margin-left:4px">3:00pm, if no energy logged today</span></label>
+<label class="row" style="color:var(--ink);margin-top:8px"><input type="checkbox" id="cy" style="width:22px;margin:0" ${D.rem.cycleOn?'checked':''}> Rosie — period check <span class="meta" style="margin-left:4px">8:00pm on the expected day, if no period logged</span></label>
+<label class="row" style="color:var(--ink);margin-top:8px"><input type="checkbox" id="vs" style="width:22px;margin:0" ${D.rem.visitOn?'checked':''}> Daisy — visit prep <span class="meta" style="margin-left:4px">Sundays 10:00am</span></label>
+<button class="btn ghost" id="rs" style="width:100%;margin-top:12px">Save reminders</button><p class="meta" id="remNote" style="margin:10px 0 0"></p></div>
   <div class="card"><button class="btn ghost" id="stg" style="width:100%">Settings</button></div>
   <button class="btn ghost" id="lo" style="width:100%">Log out</button>`;
  document.querySelectorAll('#goals .chip').forEach(c=>c.onclick=()=>c.setAttribute('aria-pressed',c.getAttribute('aria-pressed')!=='true'));
   $('#sv').onclick=()=>{p.goals=[...document.querySelectorAll('#goals .chip[aria-pressed=true]')].map(c=>c.textContent);D.rem={on:$('#rm').checked,time:$('#rt').value||'20:00',water:$('#wm').checked};save();pushProfile();applyTheme();waterReminderSync(true);toast('Saved');shell()};
  $('#av').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f)pickAvatar(f)};
- const saveRem=async()=>{D.rem={on:$('#rm').checked,time:$('#rt').value||'20:00',water:$('#wm').checked,readOn:$('#rd').checked,readTime:$('#rrt').value||'20:00'};save();try{waterReminderSync(true)}catch(e){}try{readReminderSync(true)}catch(e){}
+ const saveRem=async()=>{D.rem={on:$('#rm').checked,time:$('#rt').value||'20:00',water:$('#wm').checked,readOn:$('#rd').checked,readTime:$('#rrt').value||'20:00',sleepOn:$('#sm').checked,mealOn:$('#mg').checked,moveOn:$('#mv').checked,calmOn:$('#cl').checked,energyOn:$('#en').checked,cycleOn:$('#cy').checked,visitOn:$('#vs').checked};save();try{waterReminderSync(true)}catch(e){}try{readReminderSync(true)}catch(e){}try{sidesSync(true)}catch(e){}
   const r=await reminderSync(),note=document.getElementById('remNote');
   if(!r.native){toast('Saved');return}
   if(r.blocked){if(note)note.textContent='Notifications are blocked. Allow them in Android Settings \u203a Apps \u203a Bloom \u203a Notifications.'}
   else if(r.off){if(note)note.textContent='Turn on to get one reminder a day.'}
   else if(r.error){if(note)note.textContent='The reminder could not be scheduled. Try again.'}
   else if(note)note.textContent='One reminder a day at '+D.rem.time+'.'};
- $('#rs').onclick=saveRem;$('#rm').onchange=saveRem;$('#rd').onchange=saveRem;
+ $('#rs').onclick=saveRem;$('#rm').onchange=saveRem;$('#rd').onchange=saveRem;['sm','mg','mv','cl','en','cy','vs'].forEach(i=>{const el=document.getElementById(i);if(el)el.onchange=saveRem});
  const rtBtn=document.getElementById('rtBtn');if(rtBtn)rtBtn.onclick=()=>wheelTimeSheet($('#rt').value||'20:00',v=>{$('#rt').value=v||'20:00';rtBtn.querySelector('.pf-val').textContent=fmtTime12(v||'20:00');saveRem()},{title:'Daily reminder'});
  const rrtBtn=document.getElementById('rrtBtn');if(rrtBtn)rrtBtn.onclick=()=>wheelTimeSheet($('#rrt').value||'20:00',v=>{$('#rrt').value=v||'20:00';rrtBtn.querySelector('.pf-val').textContent=fmtTime12(v||'20:00');saveRem()},{title:'Reading reminder'});
  $('#lo').onclick=confirmLogout;loadPairCard();

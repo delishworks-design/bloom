@@ -66,6 +66,7 @@ function load() {
     partnerLibrary: ['libMergeDocs', 'libStoreKey', 'libStoreReset'],
     widget: ['ownWidgetDoc', 'widgetSnapshot', 'widgetSync', 'widgetReset'],
     planui: ['shareFlags', 'plannerTabSet', 'ringPillBare', 'peerLabel'],
+    focusVoice: ['focusVoiceFor', 'SMART_FOCUS_VOICE'],
     plannerAdvance: ['normalizeTask', 'taskOn', 'tasksFor', 'overdueList'],
     readingGoal: ['readNormalize', 'readGoalPct', 'formatMS', 'computeStreak', 'weekDots', 'booksThisYear'],
     readingSync: ['readingMerge', 'applyReadingDoc'],
@@ -73,7 +74,7 @@ function load() {
     bloomcal: ['calContinueBtn', 'calMonthsHTML', 'predictedBleedWindows'],
     sheetCancel: ['sheetHasCancel']
   };
-  for (const name of ['phases', 'esc', 'sync', 'netmsg', 'roWho', 'sxmig', 'backup', 'smart', 'auth', 'ownmode', 'widget', 'planui', 'library', 'reader', 'errorIgnore', 'partnerLibrary', 'plannerAdvance', 'readingGoal', 'readingSync', 'bloomcal', 'libraryExplore', 'sheetCancel']) {
+  for (const name of ['phases', 'esc', 'sync', 'netmsg', 'roWho', 'sxmig', 'backup', 'smart', 'auth', 'ownmode', 'widget', 'planui', 'library', 'reader', 'errorIgnore', 'partnerLibrary', 'plannerAdvance', 'readingGoal', 'readingSync', 'bloomcal', 'libraryExplore', 'sheetCancel', 'focusVoice']) {
     let code;
     try{ code = extract(html, name); }catch(e){ if(name==='auth') continue; throw e; }
     const names = exportsByName[name];
