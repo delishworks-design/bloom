@@ -41,3 +41,16 @@ test('classicCoverSVG applies to Women\u2019s Health and PCOS/PMOS with the PMOS
   assert.match(pm, /health-(lotus|woman|orchid)\.jpg/);
   assert.match(pm, />PMOS</);
 });
+
+test('every other category falls back to pastel artwork with a derived tag', () => {
+  const { classicCoverSVG } = load();
+  const horror = classicCoverSVG({ id: 'dracula', title: 'Dracula', author: 'Bram Stoker', category: 'Horror' });
+  assert.match(horror, /pastel-(mandala|butterflies|leaves|silk)\.jpg/);
+  assert.match(horror, />HORROR</);
+  const sf = classicCoverSVG({ id: 'flatland', title: 'Flatland', author: 'Abbott', category: 'Science Fiction' });
+  assert.match(sf, />SF</);
+  const ww = classicCoverSVG({ id: 'whyworry', title: 'Why Worry?', author: 'Horace Fletcher', category: 'Emotional Wellbeing' });
+  assert.match(ww, />WELLBEING</);
+  const ss = classicCoverSVG({ id: 'dubliners', title: 'Dubliners', author: 'Joyce', category: 'Short Stories' });
+  assert.match(ss, />STORIES</);
+});
