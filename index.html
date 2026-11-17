@@ -2359,7 +2359,7 @@ async function fetchManifest(){const bust='?t='+Date.now();
  const r=await fetch(UPDATE_MANIFEST+bust,{cache:'no-store'});if(!r.ok)throw new Error('manifest '+r.status);
  return await r.json()}
 // Baked-in build identity. Keep in sync with android/app/build.gradle (versionCode/versionName).
-const APP_VERSION={code:139,name:'1.2.124'};
+const APP_VERSION={code:140,name:'1.2.125'};
 const UPD_SKIP_KEY='bloom_upd_skip';
 const updater=()=>{const C=window.Capacitor;if(!C)return null;
  const P=C.Plugins&&C.Plugins.BloomUpdater;
@@ -2437,16 +2437,53 @@ async function widgetConsume(){
  D=doc;save();try{waterReminderSync(true)}catch(e){}try{readReminderSync(true)}catch(e){}shell();
 }
 let lastUpdV=null;
+function updateQuietOk(){
+ try{if(typeof navigator==='undefined')return true;const c=navigator.connection;if(!c)return true;const t=c.type||c.effectiveType||'';return t!=='cellular'&&t!=='none'}catch(e){return true}
+}
+function updateReadyText(m){return 'Bloom '+(m.versionName||'')+' ready to install'}
 async function checkUpdate(manual){
  const up=updater();if(!up){if(manual)toast('Updates are only available in the app');return}
  try{
   const v=await up.getVersion();lastUpdV=v;
   const m=await fetchManifest();
   if(!m||!m.versionCode||m.versionCode<=v.versionCode){hideUpdateBanner();if(manual)toast('You are on the latest version');return}
-  // "Later" is remembered per version, so the banner doesn't nag
-  if(!manual&&m.versionCode<=(Number(ST.get(UPD_SKIP_KEY))||0))return;
-  showUpdateBanner(m);
-  if(manual)showUpdateSheet(m,v);
+  // Older app version without the download methods — fall back to old banner
+  if(typeof up.downloadUpdate!=='function'||typeof up.getPendingUpdate!=='function'){
+    if(!manual&&m.versionCode<=(Number(ST.get(UPD_SKIP_KEY))||0))return;
+    showUpdateBanner(m);
+    if(manual)showUpdateSheet(m,v,null);
+    return
+  }
+  // Respect "Later" silently, but keep downloading in the background
+  // Already-downloaded file? Then show banner and stop.
+  let pendingSize=null;
+  try{
+   const pending=await up.getPendingUpdate();
+   if(pending&&pending.available&&pending.url===m.url){
+    pendingSize=pending.size||null;
+    if(!manual&&m.versionCode<=(Number(ST.get(UPD_SKIP_KEY))||0))return;
+    showUpdateBanner(m);
+    if(manual)showUpdateSheet(m,v,pendingSize);
+    return
+   }
+  }catch(e){}
+  // Silent autodownload — but only on good networks; otherwise fall back to old banner
+  if(!updateQuietOk()&&!manual){
+   showUpdateSheet(m,v);
+   return
+  }
+  try{
+   const args={url:m.url};
+   if(m.sha256)args.sha256=m.sha256;
+   const r=await up.downloadUpdate(args);
+   if(r&&r.status==='downloaded'){
+    if(!manual&&m.versionCode<=(Number(ST.get(UPD_SKIP_KEY))||0))return;
+    showUpdateBanner(m);
+    if(manual)showUpdateSheet(m,v)
+   }
+  }catch(e){
+   if(manual)toast('Could not download the update')
+  }
  }catch(e){if(manual)toast('Could not check for updates')}
 }
 // Persistent in-app notification, visible on any screen until dismissed or installed.
@@ -2464,25 +2501,29 @@ function showUpdateBanner(m){
 }
 function hideUpdateBanner(){const el=document.getElementById('updBanner');if(el)el.remove()}
 function fmtBytes(n){n=+n||0;if(n<1024)return n+' B';if(n<1048576)return (n/1024).toFixed(0)+' KB';return (n/1048576).toFixed(1)+' MB'}
-function showUpdateSheet(m,v){
- const st={phase:'idle'};
- sheet(`<h2>Update available</h2><p class="meta" style="margin:0 0 4px">Version ${E(m.versionName||'')} · you have ${E(v.versionName||'')}</p>${m.notes?`<p class="meta" style="margin:0 0 12px">${E(m.notes)}</p>`:''}
- <div class="upbar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Download progress"><i style="width:2%"></i></div>
- <div class="row sp upblk" style="gap:10px;margin-top:8px"><span class="upstate">Ready to install</span><span class="upbytes meta"></span></div>
+async function showUpdateSheet(m,v,pendingSize){
+ const bytes=pendingSize?' · '+fmtBytes(pendingSize):'';
+ sheet(`<h2>Update ready</h2><p class="meta" style="margin:0 0 4px">Bloom ${E(m.versionName||'')} downloaded${bytes} · you're on ${E(v.versionName||'')}</p>${m.notes?`<p class="meta" style="margin:0 0 12px">${E(m.notes)}</p>`:''}
+ <div class="upbar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" aria-label="Download progress"><i style="width:100%"></i></div>
+ <p class="meta" style="margin:6px 0 0">Tap Install to open the installer. Android will ask permission to install it.</p>
  <div class="row" style="gap:10px;margin-top:16px"><button class="btn ghost" id="upLater" style="flex:1">Later</button><button class="btn" id="upNow" style="flex:1">Install</button></div>`);
- const bar=()=>document.querySelector('.upbar'),fill=()=>document.querySelector('.upbar i'),state=()=>document.querySelector('.upstate'),bytesEl=()=>document.querySelector('.upbytes');
  const upNow=document.getElementById('upNow'),upLater=document.getElementById('upLater');
  upLater.onclick=()=>sheet();
- const setP=(txt,pct)=>{if(state())state().textContent=txt;if(fill())fill().style.width=pct+'%';if(bar())bar().setAttribute('aria-valuenow',String(Math.round(pct)))};
  upNow.onclick=async()=>{
-  const up=updater();let l=null,total=0,bytes=0;
-  try{const h=up.addListener&&up.addListener('downloadProgress',e=>{bytes=+(e&&e.bytes)||0;total=+(e&&e.total)||0;const pct=total>0?Math.min(99,Math.round(100*bytes/total)):2;setP('Downloading\u2026 '+(total>0?pct+'%':fmtBytes(bytes)),pct);if(bytesEl())bytesEl().textContent=total>0?fmtBytes(bytes)+' / '+fmtBytes(total):fmtBytes(bytes)});l=h}catch(e){l=null}
-  upNow.disabled=true;upNow.textContent='Downloading\u2026';st.phase='downloading';
-  try{const r=await up.installUpdate({url:m.url});
-   if(r&&r.status==='needsPermission'){setP('Allow installs from Bloom, then tap Install',100);upNow.textContent='Install';upNow.disabled=false;st.phase='needsPermission';return}
-   setP('Update downloaded',100);if(bytesEl())bytesEl().textContent='Installer opening\u2026';upNow.textContent='Opening\u2026';toast('Update downloaded');st.phase='done'}
-  catch(e){setP('Install failed',0);if(bytesEl())bytesEl().textContent=String(e&&e.message||e||'Unknown error').slice(0,80);upNow.textContent='Retry';upNow.disabled=false;st.phase='failed'}
-  finally{try{l&&l.remove&&l.remove()}catch(e){}}
+  const up=updater();upNow.disabled=true;upNow.textContent='Opening installer\u2026';
+  try{
+   if(typeof up.installDownloadedUpdate==='function'){
+    const r=await up.installDownloadedUpdate();
+    if(r&&r.status==='needsPermission'){upNow.textContent='Allow installs from Bloom, then tap Install';upNow.disabled=false;return}
+    upNow.textContent='Opening\u2026';toast('Installer opened');sheet();return
+   }
+   // Legacy fallback — re-download and open
+   const r=await up.installUpdate({url:m.url});
+   if(r&&r.status==='needsPermission'){upNow.textContent='Allow installs from Bloom, then tap Install';upNow.disabled=false;return}
+   upNow.textContent='Opening\u2026';toast('Installer opened');sheet()
+  }catch(e){
+   upNow.disabled=false;upNow.textContent='Retry';toast('Could not open the installer\u2014try again')
+  }
  };
 }
 function dateSheet(title,cb){let m=today().slice(0,7);
