@@ -3285,14 +3285,6 @@ function setPlanPanel(v){
  if(v==='partner'){planner();loadPeek(true);return}
  planner();
 }
-function attachPanelSwipe(el){
- if(!el||!plannerPanels())return;
- let x0=null,y0=null;
- el.addEventListener('touchstart',e=>{const t=e.touches&&e.touches[0];if(!t)return;x0=t.clientX;y0=t.clientY},{passive:true});
- el.addEventListener('touchend',e=>{const t=e.changedTouches&&e.changedTouches[0];if(!t||x0==null)return;const dx=t.clientX-x0,dy=t.clientY-y0;x0=null;if(Math.abs(dx)<70||Math.abs(dx)<Math.abs(dy)*1.4)return;
-  if(dx<0&&planPanel!=='partner')setPlanPanel('partner');
-  else if(dx>0&&planPanel==='partner')setPlanPanel('mine');},{passive:true});
-}
 function planner(){tab=tab||'day';
  const pp=plannerPanels();const partner=!!pp;if(!partner)planPanel='mine';
  const mine=planPanel!=='partner';
@@ -3305,7 +3297,6 @@ function planner(){tab=tab||'day';
  $('#main').innerHTML=`<h1>Planner</h1>${seg}<div class="tabsrow" role="tablist">${tabs.map(([k,l])=>`<button class="chip" role="tab" data-tb="${k}" aria-pressed="${tab==k}">${l}</button>`).join('')}</div><div id="pb" style="margin-top:12px"></div>`;
  document.querySelectorAll('[data-tb]').forEach(b=>b.onclick=()=>{tab=b.dataset.tb;planner()});
  document.querySelectorAll('[data-pp]').forEach(b=>b.onclick=()=>setPlanPanel(b.dataset.pp));
- attachPanelSwipe(document.getElementById('main'));
  if(!partner){({day:()=>pDay(D,RO),month:()=>pMonth(D,RO),meals:()=>pMeals(D,RO),journal:()=>pJournal(D,RO)})[tab]();return}
  if(!mine&&!src){
   if(!RO&&!peekDoc)loadPeek(true);
