@@ -122,8 +122,6 @@ p{margin:0;line-height:1.5}
 .store-row{margin-bottom:6px}
 .store-row-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 2px 4px}
 .store-seeall{background:none;border:0;color:var(--rose);font-size:.72rem;font-weight:800;cursor:pointer;padding:4px 2px;white-space:nowrap;flex:0 0 auto}
-.cal-jump{display:flex;align-items:center;gap:8px;margin:0 0 10px;background:var(--card2);border:1px solid var(--line2);border-radius:12px;padding:8px 12px;color:var(--mut);width:max-content;max-width:100%}
-.cal-jump select{border:0;background:transparent;font:inherit;font-weight:800;color:var(--ink);font-size:.95rem;outline:none;min-width:0}
 .cover-chip.free{background:rgba(38,92,84,.85);color:#F2FAF7}
 .lib-genre-label{font-size:.72rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);display:flex;align-items:center;margin:0}
 .store-genre-n{font-size:.62rem;font-weight:800;color:var(--mut);background:var(--chip);border-radius:999px;padding:1px 7px;margin-left:7px}
@@ -2260,7 +2258,6 @@ function predictedBleedWindows(startDates, o){
  }
  return out;
 }
-function calYearJump(y){const now=new Date().getFullYear();let o='';for(let yr=now+10;yr>=now-60;yr--){o+='<option value="'+yr+'"'+(yr===y?' selected':'')+'>'+yr+'</option>'}return '<label class="cal-jump" aria-label="Jump to year"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="16" rx="2"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg><select data-cal-jump="">'+o+'</select></label>'}
 function calContinueBtn(y){return '<button class="cal-continue" data-cal-next="'+(y+1)+'">Continue to '+(y+1)+' →</button>'}
 function calMonthsHTML(y,doc,mode,pred){
  let html='';
@@ -2977,10 +2974,11 @@ function qaAct(a){
 }
 let fabEl=null,fabCorner=(()=>{try{return localStorage.getItem('bloom_fab')||'br'}catch(e){return 'br'}})();
 const FAB_SZ=58;
+function safeTop(){try{const el=document.createElement('div');el.style.cssText='position:fixed;top:0;left:0;width:1px;height:env(safe-area-inset-top,0px);visibility:hidden;pointer-events:none';document.body.appendChild(el);const h=Math.max(0,el.offsetHeight||0);el.remove();return h||24}catch(e){return 24}}
 function fabBounds(){
  const W=Math.min(430,innerWidth),l0=(innerWidth-W)/2,r0=l0+W;
  const navTop=innerHeight-88;
- return {l:l0+8,r:r0-FAB_SZ-8,t:12,b:navTop-FAB_SZ};
+ return {l:l0+8,r:r0-FAB_SZ-8,t:safeTop()+70,b:navTop-FAB_SZ};
 }
 function fabPlace(){
  if(!fabEl)return;
@@ -3232,9 +3230,8 @@ function bindCk(d,re){document.querySelectorAll('input[data-t]').forEach(i=>i.on
 <div class="card"><div class="card-h"><h3>History</h3></div>${s.length?s.slice().reverse().map((x,i,a)=>{const idx=s.length-1-i;const ln=idx>0?Math.round((new Date(x)-new Date(s[idx-1]))/864e5):null;let e=x;while(bleed(addD(e,1)))e=addD(e,1);return`<div class="kv"><span>${fmt(x,{month:'short',day:'numeric',year:'numeric'})}  ${fmt(e)}</span><b>${ln?ln+' d':'First'}</b></div>`}).join(''):'<p class="meta">No periods logged</p>'}</div>`;
  $('#bk').onclick=()=>{view='cycle';shell()};
  const scroll=document.getElementById('calScroll');
- const renderYear = (yr, withJump) => {
+ const renderYear = (yr) => {
    let html='';
-   if(withJump)html+=calYearJump(yr);
    html += calMonthsHTML(yr, null, 'cycle', predictedBleedWindows(s,{avg:c.avg,plen,until:yr+'-12-31'}));
    html += calContinueBtn(yr);
    scroll.insertAdjacentHTML('beforeend', html);
@@ -3244,10 +3241,9 @@ function bindCk(d,re){document.querySelectorAll('input[data-t]').forEach(i=>i.on
        const btn = e.target.closest('[data-cal-d]');
        if (btn) { if (!RO) dayLog(btn.dataset.calD); return; }
        const next = e.target.closest('[data-cal-next]');
-       if (next) { const y2 = +next.dataset.calNext; next.remove(); renderYear(y2,false); }
+       if (next) { const y2 = +next.dataset.calNext; next.remove(); renderYear(y2); }
      });
    }
-   scroll.querySelectorAll('[data-cal-jump]').forEach(j=>{j.onchange=()=>{const y2=+j.value;scroll.textContent='';renderYear(y2,true);scroll.scrollTop=0}});
    requestAnimationFrame(() => {
      scroll.querySelectorAll('[data-cal-d]').forEach(cell => {
        const d = cell.dataset.calD, l = L(d);
@@ -3261,7 +3257,7 @@ function bindCk(d,re){document.querySelectorAll('input[data-t]').forEach(i=>i.on
    // start scrolled to the current month
    try{const ym=today().slice(0,7);const el=scroll.querySelector('[data-cal-ym="'+ym+'"]');if(el)requestAnimationFrame(()=>{try{el.scrollIntoView({block:'start'})}catch(e){}})}catch(e){}
  };
- renderYear(y,true);
+ renderYear(y);
 }
 function plannerPanels(){
  if(ownMode)return{partner:true,name:ownPeerName||'Partner'};
@@ -3366,9 +3362,8 @@ function pMonth(src,ro){const doc=src||D,only=ro==null?RO:ro;
  $('#pb').innerHTML=`<div class="calsheet" style="height:auto;max-height:none;margin:0 -2px 14px"><div class="calsheet-scroll" id="pCalScroll" style="padding:0;overflow:visible"></div></div>`;
  const scroll=document.getElementById('pCalScroll');
  const todayStr=now;
- const renderYear = (yr, withJump) => {
+ const renderYear = (yr) => {
    let html='';
-   if(withJump)html+=calYearJump(yr);
    html += calMonthsHTML(yr, doc, 'planner');
    html += calContinueBtn(yr);
    scroll.insertAdjacentHTML('beforeend', html);
@@ -3382,16 +3377,15 @@ function pMonth(src,ro){const doc=src||D,only=ro==null?RO:ro;
          return;
        }
        const next = e.target.closest('[data-cal-next]');
-       if (next) { const y2 = +next.dataset.calNext; next.remove(); renderYear(y2,false); }
+       if (next) { const y2 = +next.dataset.calNext; next.remove(); renderYear(y2); }
      });
    }
-   scroll.querySelectorAll('[data-cal-jump]').forEach(j=>{j.onchange=()=>{const y2=+j.value;scroll.textContent='';renderYear(y2,true);scroll.scrollTop=0}});
    requestAnimationFrame(() => {
      scroll.querySelectorAll('[data-d]').forEach(cell => { if (cell.dataset.d === todayStr) cell.classList.add('cal-today'); });
      const ym=todayStr.slice(0,7);const el=scroll.querySelector('[data-cal-ym="'+ym+'"]');if(el)try{el.scrollIntoView({block:'start'})}catch(e){}
    });
  };
- renderYear(y,true);
+ renderYear(y);
 }
 function pMeals(src,ro){const doc=src||D,only=ro==null?RO:ro;const d=today(),m=doc.meals[d]||[],bud=doc.p.bud||999;
  const pool=t=>MEALS.filter(x=>x.t==t&&x.c<=bud);
