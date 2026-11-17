@@ -1,7 +1,7 @@
 {
-    "versionCode": 135,
-    "versionName": "1.2.120",
-    "notes": "Fix reading progress loss on re-login via merge-before-push and dedicated reading table; calendar opens at current month; finished books counted from synced data.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.120/bloom-1.2.120.apk",
+    "versionCode": 136,
+    "versionName": "1.2.121",
+    "notes": "Fix calendars rendering from January (now all months, opened at current month) and reading progress reloading from the dedicated table after sign-out/before online boot",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.121/bloom-1.2.121.apk",
     "publishedAt": "2026-11-17"
 }
