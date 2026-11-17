@@ -1,8 +1,8 @@
 {
-    "versionCode": 146,
-    "versionName": "1.4.1",
-    "notes": "Fixed generated book covers rendering blurry/low quality in the library grid — artwork now loads as a plain image with the Bloom Press text overlay on top.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.4.1/bloom-1.4.1.apk",
-    "sha256": "df008db2f750dc33374ac8dbbf2cd87db2e63c382e6f7c3f3e3892a6abba4311",
+    "versionCode": 147,
+    "versionName": "1.4.2",
+    "notes": "Critical fix: book cover artwork was missing from the app — generated covers now render with images. (Sync exclude was emptying the assets folder.)",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.4.2/bloom-1.4.2.apk",
+    "sha256": "0a804d7682691d09d87771766535c84214fc5aeede23345ff3214417b062dfbf",
     "publishedAt": "2026-11-17"
 }
