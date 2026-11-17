@@ -1,7 +1,7 @@
 {
     "versionCode": 137,
     "versionName": "1.2.122",
-    "notes": "Reading sync loads before the Library renders on resume; update prompt now correctly references the current version instead of 1.2.90.",
+    "notes": "Reading sync before Library renders; in-app update prompt now references the correct current version.",
     "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.122/bloom-1.2.122.apk",
     "publishedAt": "2026-11-17"
 }
