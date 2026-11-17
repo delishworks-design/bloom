@@ -4276,31 +4276,76 @@ const SMART_FLOWER_PALETTES={
  'Prepare for doctor visits':{petal:'#9DC3D9',petal2:'#79A8C4',center:'#F4D58D',stem:'#5F8A6B',leaf:'#7BA887'}
 };
 function smartFlowerSVG(goal,stage){
- const p=SMART_FLOWER_PALETTES[goal]||SMART_FLOWER_PALETTES['Understand my cycle'];
+ const base=SMART_FLOWER_PALETTES[goal]||SMART_FLOWER_PALETTES['Understand my cycle'];
+ const hx=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
+ const toHex=v=>v.map(x=>Math.max(0,Math.min(255,Math.round(x))).toString(16).padStart(2,'0')).join('');
+ const mix=(a,b,t)=>{const A=hx(a),B=hx(b);return '#'+toHex(A.map((v,i)=>v+(B[i]-v)*t))};
+ const P=Object.assign({},base,{
+  petalHi:mix(base.petal,'#ffffff',.42),petalLo:mix(base.petal,'#000000',.17),
+  petal2Hi:mix(base.petal2,'#ffffff',.36),petal2Lo:mix(base.petal2,'#000000',.26),
+  centerHi:mix(base.center,'#ffffff',.5),centerLo:mix(base.center,'#000000',.24),
+  leafHi:mix(base.leaf,'#ffffff',.26),leafLo:mix(base.leaf,'#000000',.26),
+  stemHi:mix(base.stem,'#ffffff',.38),soilHi:'#8A7364',soilLo:'#55453A',seedLo:mix(base.petal2,'#000000',.3)
+ });
  const s=Math.max(0,Math.min(4,stage|0)),cx=36,baseY=64;
- let out=`<svg viewBox="0 0 72 72" aria-hidden="true" focusable="false"><ellipse cx="${cx}" cy="${baseY+2}" rx="19" ry="4" fill="${p.stem}" opacity=".16"/>`;
- if(s===0){
-  out+=`<ellipse cx="${cx}" cy="${baseY-1}" rx="6.5" ry="5" fill="${p.center}"/><ellipse cx="${cx}" cy="${baseY-2.5}" rx="3" ry="2" fill="${p.petal2}" opacity=".55"/>`;
-  return out+'</svg>';
- }
+ const uid='f'+s+'_'+((goal.length*13+goal.charCodeAt(0))%89);
+ const defs=`<defs>
+  <radialGradient id="${uid}Soil" cx="42%" cy="38%" r="75%"><stop offset="0" stop-color="${P.soilHi}"/><stop offset=".6" stop-color="${mix(P.soilHi,P.soilLo,.45)}"/><stop offset="1" stop-color="${P.soilLo}"/></radialGradient>
+  <radialGradient id="${uid}Disk" cx="46%" cy="42%" r="60%"><stop offset="0" stop-color="${P.centerHi}"/><stop offset=".55" stop-color="${base.center}"/><stop offset="1" stop-color="${P.centerLo}"/></radialGradient>
+  <linearGradient id="${uid}Petal" x1=".18" y1="1" x2=".72" y2="0"><stop offset="0" stop-color="${P.petalLo}"/><stop offset=".55" stop-color="${base.petal}"/><stop offset="1" stop-color="${P.petalHi}"/></linearGradient>
+  <linearGradient id="${uid}Petal2" x1=".18" y1="1" x2=".72" y2="0"><stop offset="0" stop-color="${P.petal2Lo}"/><stop offset=".55" stop-color="${base.petal2}"/><stop offset="1" stop-color="${P.petal2Hi}"/></linearGradient>
+  <linearGradient id="${uid}Leaf" x1=".15" y1="1" x2=".85" y2="0"><stop offset="0" stop-color="${P.leafLo}"/><stop offset=".5" stop-color="${base.leaf}"/><stop offset="1" stop-color="${P.leafHi}"/></linearGradient>
+  <linearGradient id="${uid}Stem" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="${mix(base.stem,'#000000',.15)}"/><stop offset=".55" stop-color="${base.stem}"/><stop offset="1" stop-color="${P.stemHi}"/></linearGradient>
+  <filter id="${uid}Drop" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="1.3" stdDeviation="1.5" flood-color="#2B1E1E" flood-opacity=".32"/></filter>
+ </defs>`;
+ const soil=`<ellipse cx="${cx}" cy="${baseY+2}" rx="22" ry="4.4" fill="#2B1E1E" opacity=".18"/><path d="M${cx-15} ${baseY+2} Q${cx} ${baseY-8} ${cx+15} ${baseY+2} Z" fill="url(#${uid}Soil)"/><path d="M${cx-11} ${baseY+.4} Q${cx} ${baseY-4.6} ${cx+8} ${baseY+.4}" stroke="${P.soilHi}" stroke-width=".7" fill="none" opacity=".55"/>`;
  const stemTop=s===1?baseY-14:s===2?baseY-24:s===3?baseY-30:baseY-34;
- out+=`<path d="M${cx} ${baseY} C ${cx-2} ${baseY-8} ${cx-1.5} ${stemTop+8} ${cx} ${stemTop}" stroke="${p.stem}" stroke-width="2.6" stroke-linecap="round" fill="none"/>`;
- out+=`<path d="M${cx-1} ${baseY-9} C ${cx-10} ${baseY-11} ${cx-13} ${baseY-19} ${cx-12} ${baseY-22} C ${cx-6} ${baseY-20} ${cx-2} ${baseY-15} ${cx-1} ${baseY-9} Z" fill="${p.leaf}"/>`;
- if(s>=3) out+=`<path d="M${cx+1} ${baseY-14} C ${cx+9} ${baseY-15} ${cx+12} ${baseY-23} ${cx+11} ${baseY-26} C ${cx+5} ${baseY-24} ${cx+2} ${baseY-19} ${cx+1} ${baseY-14} Z" fill="${p.leaf}" opacity=".85"/>`;
- const headY=stemTop+2;
- if(s===1) return out+'</svg>';
- const petal=(n,fill,scale,cy)=>`<g transform="translate(${cx} ${cy})">${Array.from({length:n},(_,i)=>`<path d="M0 0 C -6 -7 -5 -16 0 -21 C 5 -16 6 -7 0 0 Z" fill="${fill}" transform="rotate(${Math.round(i*360/n)}) scale(${scale})"/>`).join('')}</g>`;
- if(s===2){
-  out+=`<path d="M${cx} ${headY-16} C ${cx+7} ${headY-12} ${cx+7} ${headY+1} ${cx} ${headY+4} C ${cx-7} ${headY+1} ${cx-7} ${headY-12} ${cx} ${headY-16} Z" fill="${p.petal2}"/><path d="M${cx} ${headY-11} C ${cx+3} ${headY-8} ${cx+3} ${headY} ${cx} ${headY+2} C ${cx-3} ${headY} ${cx-3} ${headY-8} ${cx} ${headY-11} Z" fill="${p.petal}" opacity=".7"/>`;
- }else if(s===3){
-  out+=petal(5,p.petal,0.78,headY-4);
-  out+=`<circle cx="${cx}" cy="${headY-4}" r="4.2" fill="${p.center}"/>`;
- }else{
-  out+=petal(8,p.petal,1,headY-6);
-  out+=petal(8,p.petal2,0.72,headY-6);
-  out+=`<circle cx="${cx}" cy="${headY-6}" r="5.2" fill="${p.center}"/>`;
+ const stemPath=`M${cx} ${baseY} C ${cx-2} ${baseY-9} ${cx-1.5} ${stemTop+8} ${cx} ${stemTop}`;
+ const stem=`<path d="${stemPath}" stroke="url(#${uid}Stem)" stroke-width="2.6" stroke-linecap="round" fill="none"/><path d="${stemPath}" transform="translate(.85,0)" stroke="${P.stemHi}" stroke-width=".75" opacity=".6" fill="none" stroke-linecap="round"/>`;
+ const leaf=(dir,scale,rot)=>{const sx=dir>0?1:-1;return `<g transform="translate(${cx+sx*1.5} ${baseY-10-(scale-1)*8}) rotate(${rot*sx}) scale(${scale})"><path d="M0 0 C ${9*sx} ${-1} ${13*sx} ${-8} ${12.5*sx} ${-14} C ${6*sx} ${-12} ${2*sx} ${-7} 0 0 Z" fill="url(#${uid}Leaf)"/><path d="M0 ${-1} C ${6*sx} ${-4} ${10*sx} ${-8.5} ${12*sx} ${-13.2}" stroke="${P.leafLo}" stroke-width=".6" fill="none" opacity=".55"/><path d="M1 ${-2} C ${5*sx} ${-4.6} ${8*sx} ${-8.2} ${10.4*sx} ${-12.4}" stroke="${P.leafHi}" stroke-width=".55" fill="none" opacity=".8"/></g>`};
+ const petalPath=(len,w)=>`M0 0 C ${-w} ${-len*.32} ${-w*.88} ${-len*.74} 0 ${-len} C ${w*.88} ${-len*.74} ${w} ${-len*.32} 0 0 Z`;
+ const petal=(rot,len,w,grad,hi,lo,rim)=>`<g transform="rotate(${rot})"><path d="${petalPath(len+1.6,w+.9)}" fill="${lo}" opacity=".5" transform="translate(.8 1.1)"/><path d="${petalPath(len,w)}" fill="url(#${grad})"/><path d="${petalPath(len-5.2,w-1.9)}" fill="none" stroke="${hi}" stroke-width=".65" opacity=".8"/><path d="M0 ${-3} L0 ${-(len-4)}" stroke="${lo}" stroke-width=".55" opacity=".42"/></g>`;
+ const stamen=(rot,len)=>`<g transform="rotate(${rot})"><path d="M0 0 L0 ${-len}" stroke="${P.centerLo}" stroke-width=".55" opacity=".8"/><circle cy="${-len}" r=".95" fill="${P.centerHi}" opacity=".9"/></g>`;
+ if(s===0){
+  return `<svg viewBox="0 0 72 72" aria-hidden="true" focusable="false">${defs}${soil}
+  <g filter="url(#${uid}Drop)"><ellipse cx="${cx-4.5}" cy="${baseY-2.4}" rx="3.4" ry="1.9" fill="${P.seedLo}"/><path d="M${cx-7.4} ${baseY-2.4} L${cx-1.6} ${baseY-2.4}" stroke="#000" stroke-width=".5" opacity=".4"/><ellipse cx="${cx+4.5}" cy="${baseY-2.4}" rx="3.4" ry="1.9" fill="${P.seedLo}"/><path d="M${cx+1.6} ${baseY-2.4} L${cx+7.4} ${baseY-2.4}" stroke="#000" stroke-width=".5" opacity=".4"/>
+  <path d="M${cx} ${baseY-3} C ${cx-1} ${baseY-6} ${cx-2} ${baseY-7} ${cx-3.4} ${baseY-8.6} M${cx} ${baseY-3} C ${cx+1.2} ${baseY-6.4} ${cx+2.2} ${baseY-7.2} ${cx+3.6} ${baseY-9}" stroke="${P.stemHi}" stroke-width="1.05" fill="none" stroke-linecap="round"/></g></svg>`;
  }
- return out+'</svg>';
+ let out=`<svg viewBox="0 0 72 72" aria-hidden="true" focusable="false">${defs}${soil}`+(s>=2?stem:'');
+ if(s===1){
+  return out+`<g filter="url(#${uid}Drop)"><path d="${stemPath}" stroke="url(#${uid}Stem)" stroke-width="2.2" stroke-linecap="round" fill="none"/><path d="M${cx} ${stemTop} C ${cx-1.4} ${stemTop-2.4} ${cx-1} ${stemTop-4.4} ${cx+.4} ${stemTop-6.2}" stroke="${P.stemHi}" stroke-width="1" fill="none" stroke-linecap="round" opacity=".85"/><circle cx="${cx}" cy="${stemTop-6.4}" r="1.7" fill="${P.petal2Hi}" opacity=".9"/>
+  ${leaf(-1,1,0)}${leaf(1,.75,10)}</g></svg>`;
+ }
+ if(s===2){
+  const headY=stemTop+1;
+  return out+`<g filter="url(#${uid}Drop)">${leaf(-1,1.15,0)}${leaf(1,.95,8)}
+  <path d="M${cx-4.6} ${headY+3} L${cx-7.6} ${headY+8.6} L${cx-1.6} ${headY+5.6} Z" fill="${P.leafLo}"/><path d="M${cx+4.6} ${headY+3} L${cx+7.6} ${headY+8.6} L${cx+1.6} ${headY+5.6} Z" fill="${P.leafLo}"/>
+  <path d="M${cx} ${headY+4.2} C ${cx-7.4} ${headY+1} ${cx-7.6} ${headY-11.5} ${cx} ${headY-15.5} C ${cx+7.6} ${headY-11.5} ${cx+7.4} ${headY+1} ${cx} ${headY+4.2} Z" fill="url(#${uid}Petal2)"/>
+  <path d="M${cx-3.4} ${headY+3.4} C ${cx-8.9} ${headY+.6} ${cx-8.6} ${headY-10.5} ${cx-2.6} ${headY-14.4}" fill="none" stroke="${P.petal2Lo}" stroke-width=".6" opacity=".55"/>
+  <path d="M${cx+3.4} ${headY+3.4} C ${cx+8.9} ${headY+.6} ${cx+8.6} ${headY-10.5} ${cx+2.6} ${headY-14.4}" fill="none" stroke="${P.petal2Lo}" stroke-width=".6" opacity=".55"/>
+  <path d="M${cx} ${headY+3.6} C ${cx-2.1} ${headY} ${cx-2} ${headY-9} ${cx} ${headY-14.2} C ${cx+2} ${headY-9} ${cx+2.1} ${headY} ${cx} ${headY+3.6} Z" fill="url(#${uid}Petal)" opacity=".92"/>
+  <path d="M${cx-1.3} ${headY-2} C ${cx-2.6} ${headY-6.4} ${cx-2.2} ${headY-10.8} ${cx-.6} ${headY-13.4}" stroke="${P.petalHi}" stroke-width=".55" fill="none" opacity=".8"/>
+  </g></svg>`;
+ }
+ if(s===3){
+  const headY=stemTop+2;
+  return out+`<g transform="translate(${cx} ${headY-2})" filter="url(#${uid}Drop)">
+  ${[0,72,144,216,288].map(a=>petal(a,13.5,4.6,'Petal',P.petalHi,P.petalLo)).join('')}
+  <circle r="3.6" fill="url(#${uid}Disk)" stroke="${P.centerLo}" stroke-width=".7"/>
+  <circle cx="-1" cy="-1" r=".7" fill="${P.centerHi}"/><circle cx="1.2" cy=".6" r=".45" fill="${P.centerHi}" opacity=".9"/><circle cx="-.4" cy="1.3" r=".4" fill="${P.centerLo}" opacity=".7"/>
+  ${[30,150,270].map(a=>stamen(a,5.6)).join('')}
+  </g></svg>`;
+ }
+ const headY=stemTop+2;
+ return out+`<g transform="translate(${cx} ${headY-6})" filter="url(#${uid}Drop)">
+ ${[0,45,90,135,180,225,270,315].map(a=>petal(a,21,6.5,'Petal',P.petalHi,P.petalLo)).join('')}
+ ${[22,67,112,157,202,247,292,337].map(a=>petal(a,14,4.6,'Petal2',P.petal2Hi,P.petal2Lo)).join('')}
+ <circle r="5.3" fill="url(#${uid}Disk)" stroke="${P.centerLo}" stroke-width=".9"/>
+ <circle r="3.1" fill="none" stroke="${P.centerHi}" stroke-width=".45" opacity=".7"/>
+ ${[0,45,90,135,180,225,270,315].map(a=>{const r=2.4,x=(Math.cos((a-90)*Math.PI/180)*r).toFixed(2),y=(Math.sin((a-90)*Math.PI/180)*r).toFixed(2);return `<circle cx="${x}" cy="${y}" r=".55" fill="${P.centerLo}" opacity=".75"/>`}).join('')}
+ <circle cx="-1.4" cy="-1.5" r="1.05" fill="#fff" opacity=".75"/><circle cx="1.6" cy="1" r=".55" fill="#fff" opacity=".6"/><circle cx=".4" cy="-1.1" r=".35" fill="#fff" opacity=".85"/>
+ ${[0,45,90,135,180,225,270,315].map(a=>{const r=4.35,x=(Math.cos((a-90)*Math.PI/180)*r).toFixed(2),y=(Math.sin((a-90)*Math.PI/180)*r).toFixed(2);return `<circle cx="${x}" cy="${y}" r=".4" fill="${P.centerHi}" opacity=".85"/>`}).join('')}
+ </g></svg>`;
 }
 function smartGoalProgress(goal,ctx){
  ctx=ctx||{};
