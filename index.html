@@ -697,8 +697,6 @@ nav button[aria-current=page]{background:#B8456B !important;color:#fff !importan
 .dr-sec{font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);margin:0 0 10px}
 .dr-search{margin:0 0 14px}
 .dr-search input{margin:0 !important;padding:11px 14px !important;font-size:.88rem !important;line-height:1.3 !important}
-.dr-warn{font-size:.74rem;line-height:1.5;color:var(--mut);border-left:2.5px solid #E8A0B4;padding:1px 0 1px 10px;margin:24px 0 0}
-#lb:has(.article-full)~.dr-warn{display:none}
 #app::before{content:"";position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:4;pointer-events:none}
 .dr-h1{font-family:'Playfair Display',serif;font-size:1.42rem;font-weight:700;line-height:1.3;color:var(--ink);margin:0 0 14px}
 .readrow{display:flex;align-items:flex-start;gap:12px;padding:12px 13px;margin-bottom:8px;background:var(--card);border:1.5px solid var(--line);border-radius:14px;transition:all .15s}
@@ -5797,7 +5795,7 @@ function library(){
  <div class="lib-tabs" role="tablist"><button class="chip${libTab==='books'?' on':''}" role="tab" data-lt="books" aria-pressed="${libTab==='books'}">Books</button><button class="chip${libTab==='articles'?' on':''}" role="tab" data-lt="articles" aria-pressed="${libTab==='articles'}">Articles</button></div>
  <div class="dr-search"><input id="ls" type="search" placeholder="Search ${tabLabel}" value="${E(libSearch)}" autocomplete="off"></div>
  <div id="lb"></div>
- <p class="dr-warn">Educational content only. Not personal medical advice. Severe pelvic pain, soaking through a pad every hour, fainting, or sudden severe symptoms need urgent care.</p>`;
+`;
  const rc=document.getElementById('readGoalCard');if(rc)rc.onclick=()=>readGoalSheet();
  document.querySelectorAll('[data-lt]').forEach(b=>b.onclick=()=>{libTab=b.dataset.lt;libSearch='';libFilter='all';library()});
  const ls=document.getElementById('ls');
