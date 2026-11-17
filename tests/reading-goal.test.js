@@ -67,3 +67,10 @@ test('booksThisYear counts by finishedAt in given year', () => {
   assert.equal(booksThisYear(books, 2026), 2);
   assert.equal(booksThisYear(books, 2025), 1);
 });
+
+
+test('booksThisYear counts from D.read.finished even when library book is missing', () => {
+  const ctx = load();
+  ctx.D = { library: { books: {} }, read: { finished: { a: new Date('2026-03-01').getTime(), b: new Date('2025-01-01').getTime() } } };
+  assert.equal(ctx.booksThisYear({}, 2026), 1);
+});

@@ -65,3 +65,20 @@ test('blank() seeds a read bucket so cloud-doc replaces never drop it', () => {
   assert.equal(b.read.goalMin, 5);
   assert.equal(typeof b.read.log, 'object');
 });
+
+test('applyReadingDoc restores log, goals and finished map', () => {
+  const ctx = load();
+  ctx.D = { library: { books: {} } };
+  ctx.applyReadingDoc({ goalMin: 10, goalBooks: 24, log: { '2026-11-17': 90 }, finished: { book1: 1700000000000 } });
+  assert.equal(ctx.D.read.log['2026-11-17'], 90);
+  assert.equal(ctx.D.read.goalMin, 10);
+  assert.equal(ctx.D.read.goalBooks, 24);
+  assert.equal(ctx.D.read.finished.book1, 1700000000000);
+});
+
+test('applyReadingDoc copies finishedAt onto library books', () => {
+  const ctx = load();
+  ctx.D = { library: { books: { b1: { finished: true, finishedAt: 1 } } } };
+  ctx.applyReadingDoc({ goalMin: 5, goalBooks: 1, log: {}, finished: { b1: 999 } });
+  assert.equal(ctx.D.library.books.b1.finishedAt, 999);
+});

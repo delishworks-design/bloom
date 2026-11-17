@@ -68,9 +68,9 @@ function load() {
     planui: ['shareFlags', 'plannerTabSet', 'ringPillBare', 'peerLabel'],
     plannerAdvance: ['normalizeTask', 'taskOn', 'tasksFor', 'overdueList'],
     readingGoal: ['readNormalize', 'readGoalPct', 'formatMS', 'computeStreak', 'weekDots', 'booksThisYear'],
-    readingSync: ['readingMerge'],
+    readingSync: ['readingMerge', 'applyReadingDoc'],
     libraryExplore: ['exploreGroups', 'exploreOrder', 'exploreDefaultCategory', 'exploreBooks'],
-    bloomcal: ['calMonthBlock', 'calContinueBtn']
+    bloomcal: ['calMonthBlock', 'calContinueBtn', 'calStartMonth', 'calMonthsHTML']
   };
   for (const name of ['phases', 'esc', 'sync', 'netmsg', 'roWho', 'sxmig', 'backup', 'smart', 'auth', 'ownmode', 'widget', 'planui', 'library', 'reader', 'errorIgnore', 'partnerLibrary', 'plannerAdvance', 'readingGoal', 'readingSync', 'bloomcal', 'libraryExplore']) {
     let code;

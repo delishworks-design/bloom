@@ -29,3 +29,16 @@ test('calContinueBtn points to the following year', () => {
   assert.ok(calContinueBtn(2026).includes('data-cal-next="2027"'));
   assert.ok(calContinueBtn(2026).includes('Continue to 2027'));
 });
+
+
+test('calStartMonth returns current month for current year', () => {
+  const { calStartMonth } = load();
+  const now = new Date();
+  assert.equal(calStartMonth(now.getFullYear()), now.getMonth());
+});
+
+test('calStartMonth returns January for other years', () => {
+  const { calStartMonth } = load();
+  assert.equal(calStartMonth(new Date().getFullYear() + 1), 0);
+  assert.equal(calStartMonth(new Date().getFullYear() - 1), 0);
+});

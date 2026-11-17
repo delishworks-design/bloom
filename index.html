@@ -1349,7 +1349,9 @@ async function sbPull(){if(!sb||!sbUser||RO||document.hidden)return;
    if(!docHasContent(row.doc)&&docHasContent(D)){reportErr('sync.pull.guard','ignoring an empty cloud copy');return}
    const keepRead=D&&D.read;D=Object.assign(blank(),row.doc);if(keepRead&&!(row.doc&&row.doc.read))D.read=keepRead;D._uid=sbUser.id;sbRev=row.rev;saveRev();setDirtyFlag(0);sbLastPush=JSON.stringify(D);
    try{ST.set(key(user),JSON.stringify(D))}catch(e){}
-  if(safeToRender())shell();else sbPendingRender=true;
+   let reloaded=false;
+   try{reloaded=true;readingLoadOnce().then(()=>{if(safeToRender())shell();else sbPendingRender=true}).catch(()=>{if(safeToRender())shell();else sbPendingRender=true})}catch(e){}
+   if(!reloaded){if(safeToRender())shell();else sbPendingRender=true}
  }catch(e){reportErr('sync.pull',e)}}
 function safeToRender(){const sheetEl=document.getElementById('sheet');if(sheetEl&&sheetEl.innerHTML.trim())return false;const a=document.activeElement;return !(a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA'||a.tagName==='SELECT'))}
 function startCloudSync(){if(cloudTimer)clearInterval(cloudTimer);cloudTimer=setInterval(()=>{if(sbUser&&!document.hidden)sbPush()},15000);if(sbPullTimer)clearInterval(sbPullTimer);sbPullTimer=setInterval(sbPull,60000);if(pendRenderTimer)clearInterval(pendRenderTimer);pendRenderTimer=setInterval(()=>{if(sbPendingRender&&safeToRender()){sbPendingRender=false;shell()}},5000)}
@@ -2203,6 +2205,24 @@ function calMonthBlock(y, m /* 0-indexed */){
   return '<section class="cal-month" data-cal-ym="'+y+'-'+String(m+1).padStart(2,'0')+'"><h3 class="cal-month-h">'+E(monthName)+'</h3><div class="cal-grid">'+['S','M','T','W','T','F','S'].map(d=>'<div class="cal-wd">'+d+'</div>').join('')+cells+'</div></section>';
 }
 function calContinueBtn(y){return '<button class="cal-continue" data-cal-next="'+(y+1)+'">Continue to '+(y+1)+' →</button>'}
+function calStartMonth(y){const now=new Date();return y===now.getFullYear()?now.getMonth():0}
+function calMonthsHTML(y,doc,mode){
+ let html='';const start=calStartMonth(y);
+ for(let m=start;m<12;m++){
+  if(mode==='cycle'){html+=calMonthBlock(y,m);continue}
+  const first=new Date(y,m,1),dim=new Date(y,m+1,0).getDate(),off=(first.getDay()+6)%7;
+  let cells='';
+  for(let i=0;i<off;i++)cells+='<span class="cal-cell cal-empty mg-cell-empty"></span>';
+  for(let d=1;d<=dim;d++){
+   const dstr=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+   const ts=tasksFor(dstr,doc);const n=ts.filter(t=>isDone(t.id,dstr,doc)).length;
+   const over=ts.length>n&&dstr<today();const done=ts.length>0&&n===ts.length;
+   cells+='<button type="button" class="cal-cell mg-cell" data-d="'+dstr+'" aria-label="'+dstr+': '+n+'/'+ts.length+' tasks"><div class="mg-day'+(over?' overdue':done?' done':'')+'">'+d+'</div>'+(ts.length?'<div class="mg-n">'+n+'/'+ts.length+'</div>':'')+'</button>';
+  }
+  html+='<section class="cal-month"><h3 class="cal-month-h">'+first.toLocaleDateString(undefined,{month:'long',year:'numeric'})+'</h3><div class="cal-grid">'+['S','M','T','W','T','F','S'].map(dd=>'<div class="cal-wd">'+dd+'</div>').join('')+cells+'</div></section>';
+ }
+ return html;
+}
 // @test-end bloomcal
 function calSheet(opts){
  opts = opts || {};
@@ -3097,7 +3117,7 @@ function monthView(){
  const scroll=document.getElementById('calScroll');
  const renderYear = (yr) => {
    let html='';
-   for (let m=0; m<12; m++) html += calMonthBlock(yr, m);
+   html += calMonthsHTML(yr, null, 'cycle');
    html += calContinueBtn(yr);
    scroll.insertAdjacentHTML('beforeend', html);
    if (!scroll.__bound) {
@@ -3229,20 +3249,7 @@ function pMonth(src,ro){const doc=src||D,only=ro==null?RO:ro;
  const todayStr=now;
  const renderYear = (yr) => {
    let html='';
-   for (let m=0; m<12; m++) {
-     const first=new Date(yr,m,1); const dim=new Date(yr,m+1,0).getDate(); const off=(first.getDay()+6)%7;
-     let cells='';
-     for (let i=0;i<off;i++) cells += '<span class="cal-cell cal-empty mg-cell-empty"></span>';
-     for (let d=1;d<=dim;d++) {
-       const dstr = yr+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
-       const ts = tasksFor(dstr, doc);
-       const n = ts.filter(t => isDone(t.id, dstr, doc)).length;
-       const over = ts.length > n && dstr < todayStr;
-       const done = ts.length > 0 && n === ts.length;
-       cells += '<button type="button" class="cal-cell mg-cell" data-d="'+dstr+'" aria-label="'+dstr+': '+n+'/'+ts.length+' tasks"><div class="mg-day'+(over?' overdue':done?' done':'')+'">'+d+'</div>'+(ts.length?'<div class="mg-n">'+n+'/'+ts.length+'</div>':'')+'</button>';
-     }
-     html += '<section class="cal-month"><h3 class="cal-month-h">'+first.toLocaleDateString(undefined,{month:'long',year:'numeric'})+'</h3><div class="cal-grid">'+['S','M','T','W','T','F','S'].map(d=>'<div class="cal-wd">'+d+'</div>').join('')+cells+'</div></section>';
-   }
+   html += calMonthsHTML(yr, doc, 'planner');
    html += calContinueBtn(yr);
    scroll.insertAdjacentHTML('beforeend', html);
    if (!scroll.__bound) {
@@ -5401,10 +5408,23 @@ function readingMerge(local,remote){
 }
 function readingDocFromD(){
  const r=readNormalize(D);
- const finished={};
+ const finished=Object.assign({},(D&&D.read&&D.read.finished&&typeof D.read.finished==='object')?D.read.finished:{});
  const books=(D&&D.library&&D.library.books)||{};
- Object.keys(books).forEach(id=>{const b=books[id];if(b&&b.finished&&+b.finishedAt)finished[id]=+b.finishedAt});
+ Object.keys(books).forEach(id=>{const b=books[id];if(b&&b.finished&&+b.finishedAt&&(!finished[id]||+b.finishedAt>finished[id]))finished[id]=+b.finishedAt});
  return {goalMin:r.goalMin,goalBooks:r.goalBooks,log:r.log,finished};
+}
+function applyReadingDoc(doc){
+ if(!D)return;
+ if(!doc||typeof doc!=='object')return;
+ D.read={
+   goalMin:[1,2,5,10,15,30].includes(+doc.goalMin)?+doc.goalMin:5,
+   goalBooks:[1,3,6,12,24,50].includes(+doc.goalBooks)?+doc.goalBooks:1,
+   log:(doc.log&&typeof doc.log==='object')?doc.log:{},
+   finished:(doc.finished&&typeof doc.finished==='object')?doc.finished:{}
+ };
+ const finished=D.read.finished;
+ const books=(D.library&&D.library.books)||{};
+ Object.keys(books).forEach(id=>{const b=books[id];if(b&&b.finished&&finished[id]&&(!b.finishedAt||+b.finishedAt<finished[id]))b.finishedAt=finished[id]});
 }
 function readingFetch(){
  if(!sb||!sbUser||!sbUser.id)return Promise.resolve(null);
@@ -5421,20 +5441,22 @@ function readingPush(doc){
   return 'ok';
  }).catch(()=>{try{ST.set('bloom_reading_dirty_'+sbUser.id,'1')}catch(e){};return 'failed'});
 }
-function saveReading(){try{return readingPush(readingDocFromD())}catch(e){return Promise.resolve('failed')}}
-function readingLoadOnce(){
- if(!sb||!sbUser||!sbUser.id||RO)return Promise.resolve();
- return readingFetch().then(remote=>{
-  if(!remote||remote.error)return;
-  const local=readingDocFromD();
-  const merged=readingMerge(local,remote);
-  D.read={goalMin:merged.goalMin,goalBooks:merged.goalBooks,log:merged.log};
-  Object.keys(merged.finished).forEach(id=>{
-   const b=D.library&&D.library.books&&D.library.books[id];
-   if(b&&b.finished&&(!b.finishedAt||merged.finished[id]>b.finishedAt))b.finishedAt=merged.finished[id];
-  });
-  save();readingPush(merged).catch(()=>{});
- }).catch(()=>{});
+let readingPushT=null;
+function saveReading(){
+ try{
+  if(readingPushT)clearTimeout(readingPushT);
+  readingPushT=setTimeout(()=>{readingPushT=null;readingPush(readingDocFromD()).catch(()=>{})},1200);
+ }catch(e){}
+}
+async function readingLoadOnce(){
+ if(!sb||!sbUser||!sbUser.id||RO)return;
+ const remote=await readingFetch();
+ if(!remote||remote.error)return;
+ const local=readingDocFromD();
+ const merged=readingMerge(local,remote);
+ applyReadingDoc(merged);
+ save();
+ try{ST.del('bloom_reading_dirty_'+sbUser.id)}catch(e){}
 }
 // @test-end readingSync
 // @test-begin readingGoal
@@ -5443,9 +5465,17 @@ function readGoalPct(seconds,goalMin){const goal=(+goalMin||5)*60;if(goal<=0)ret
 function formatMS(seconds){const s=Math.max(0,Math.floor(+seconds||0));const m=Math.floor(s/60);const rem=s%60;return m+':'+String(rem).padStart(2,'0')}
 function computeStreak(log){if(!log||typeof log!=='object')return 0;let n=0;const d=new Date();for(let i=0;;i++){const dt=new Date(d);dt.setDate(d.getDate()-i);const key=dt.toISOString().slice(0,10);if((+log[key]||0)>=1)n++;else break;if(i>370)break}return n}
 function weekDots(log,now){const d=now?new Date(now):new Date();const out=[false,false,false,false,false,false,false];const dow=d.getDay();for(let i=0;i<7;i++){const dt=new Date(d);dt.setDate(d.getDate()-dow+i);out[i]=(+(log||{})[dt.toISOString().slice(0,10)]||0)>=1}return out}
-function booksThisYear(books,year){books=books||{};let n=0;const y=String(year||new Date().getFullYear());Object.keys(books).forEach(k=>{const b=books[k];if(!b||!b.finished)return;const ts=+b.finishedAt||0;if(ts){const dt=new Date(ts);if(String(dt.getFullYear())===y)n++}});return n}
+function booksThisYear(books,year){
+ const y=String(year||new Date().getFullYear());
+ const ids=new Set();
+ (D&&D.read&&D.read.finished&&typeof D.read.finished==='object')&&Object.keys(D.read.finished).forEach(k=>{const ts=+D.read.finished[k]||0;if(ts&&String(new Date(ts).getFullYear())===y)ids.add(k)});
+ books=books||{};Object.keys(books).forEach(k=>{const b=books[k];if(!b||!b.finished)return;const ts=+b.finishedAt||0;if(ts&&String(new Date(ts).getFullYear())===y)ids.add(k)});
+ return ids.size;
+}
 // @test-end readingGoal
-function libMarkFinished(id,v){const b=libBook(id);b.finished=!!v;if(v){b.pct=100;b.finishedAt=Date.now()}else{delete b.finishedAt}save();saveReading()}
+function libMarkFinished(id,v){const b=libBook(id);b.finished=!!v;if(v){b.pct=100;b.finishedAt=Date.now()}else{delete b.finishedAt}
+ try{D.read=D.read||{};D.read.finished=D.read.finished||{};if(v)D.read.finished[id]=b.finishedAt;else delete D.read.finished[id]}catch(e){}
+ save();saveReading()}
 function libTouchPage(id,page,total){
  const b=libBook(id);b.page=Math.max(1,+page||1);b.pct=Math.min(100,Math.max(0,Math.round(100*(b.page/Math.max(1,+total||1)))));b.lastRead=Date.now();save()}
 function libStarSVG(size,on){return '<svg viewBox="0 0 24 24" width="'+size+'" height="'+size+'" aria-hidden="true" fill="'+(on?'currentColor':'none')+'" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>'}
@@ -5472,8 +5502,13 @@ function readGoalSheet(){
  const r=readNormalize(D);
  const books=(D.library&&D.library.books)||{};
  const year=new Date().getFullYear();
- const finished=Object.keys(books).map(id=>({id,b:books[id]})).filter(x=>x.b&&x.b.finished&&+x.b.finishedAt&&new Date(+x.b.finishedAt).getFullYear()===year);
- finished.sort((a,b)=>+b.b.finishedAt - +a.b.finishedAt);
+ const finMap=(D.read&&D.read.finished&&typeof D.read.finished==='object')?D.read.finished:{};
+ const finIds=new Set([...Object.keys(finMap),...Object.keys(books)]);
+ const finished=[...finIds].map(id=>{
+   const ts=Math.max(+finMap[id]||0,+((books[id]&&books[id].finishedAt)||0));
+   return {id,ts,b:books[id]};
+ }).filter(x=>x.ts&&new Date(x.ts).getFullYear()===year);
+ finished.sort((a,b)=>b.ts-a.ts);
  const meta=libCached(); const byId={}; meta.forEach(x=>byId[x.id]=x);
  const slots=[];
  for(let i=0;i<Math.max(r.goalBooks,finished.length);i++){
