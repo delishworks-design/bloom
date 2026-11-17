@@ -442,7 +442,9 @@ label{display:block;font-size:.86rem;color:var(--mut) !important;margin-top:16px
 /* Sheet - light */
 .sheet{position:fixed;inset:0;background:rgba(58,46,51,.35) !important;backdrop-filter:blur(8px);z-index:260;display:flex;align-items:flex-end;justify-content:center}
 html.sheet-open,html.sheet-open body{overflow:hidden !important;overscroll-behavior:none}
-.sheet-back{display:inline-flex;align-items:center;gap:4px;background:none;border:0;padding:2px 4px;margin:0 0 6px;color:var(--rose);font:inherit;font-size:.84rem;font-weight:700;cursor:pointer}
+.sheet-grip{display:flex;justify-content:center;align-items:center;width:72px;padding:8px 0 6px;margin:-8px auto -2px;border:0;border-radius:14px;background:none;color:var(--mut);cursor:pointer;flex:0 0 auto;touch-action:none;-webkit-tap-highlight-color:transparent}
+.sheet-grip:active{color:var(--rose)}
+.sheet-grip svg{display:block}
 .sheet>div{background:var(--card) !important;width:100%;max-width:430px;max-height:92%;overflow:auto;border-radius:28px 28px 0 0 !important;padding:24px 20px 28px !important;box-shadow:0 -16px 40px rgba(120,70,80,.18) !important;display:flex;flex-direction:column;gap:14px;border:1.5px solid var(--line) !important;border-bottom:0 !important}
 .sheet>div{padding-bottom:calc(28px + env(safe-area-inset-bottom,0px)) !important}
 .sheet{animation:sheetFadeIn .22s ease both}
@@ -2202,13 +2204,6 @@ let sheetVV=null;
 function sheetFit(){const box=document.querySelector('#sh>div');if(!box)return;
  const vv=window.visualViewport;const h=vv?vv.height:window.innerHeight;
  box.style.maxHeight=Math.max(220,Math.round(h*0.88))+'px'}
-// @test-begin sheetCancel
-function sheetHasCancel(html){
- const s=String(html||'');
- if(/<button[^>]*>\s*(?:Cancel|Close|Not yet|No)\s*<\/button>/i.test(s))return true;
- return /\bid="(?:[^"]*Cancel|[^"]*No|cx|etc)"/i.test(s);
-}
-// @test-end sheetCancel
 function sheet(h){const s=$('#sheet');
  if(!h){
    s.innerHTML='';
@@ -2217,10 +2212,20 @@ function sheet(h){const s=$('#sheet');
    return;
  }
  document.documentElement.classList.add('sheet-open');
- const backHTML=sheetHasCancel(h)?'':'<button type="button" class="sheet-back" id="sheetBack" aria-label="Close">\u2039 Back</button>';
- s.innerHTML=`<div class="sheet" id="sh"><div role="dialog" aria-modal="true">${backHTML}${h}</div></div>`;
+ s.innerHTML=`<div class="sheet" id="sh"><div role="dialog" aria-modal="true"><button type="button" class="sheet-grip" id="sheetGrip" aria-label="Close"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>${h}</div></div>`;
  $('#sh').onclick=e=>{if(e.target.id=='sh')sheet()};
- const back=document.getElementById('sheetBack');if(back)back.onclick=()=>sheet();
+ const grip=document.getElementById('sheetGrip');
+ if(grip){
+  grip.onclick=()=>sheet();
+  const panel=s.querySelector('.sheet>div');
+  if(panel){
+   let sy=null,dy=0;
+   grip.addEventListener('pointerdown',e=>{sy=e.clientY;dy=0;panel.style.transition='none';try{grip.setPointerCapture(e.pointerId)}catch(err){}},{passive:true});
+   grip.addEventListener('pointermove',e=>{if(sy==null)return;dy=Math.max(0,e.clientY-sy);panel.style.transform='translateY('+dy+'px)'},{passive:true});
+   const end=()=>{if(sy==null)return;sy=null;panel.style.transition='transform .24s cubic-bezier(.22,1.15,.36,1)';if(dy>88)sheet();else panel.style.transform=''};
+   grip.addEventListener('pointerup',end);grip.addEventListener('pointercancel',end);
+  }
+ }
  // never auto-focus an input: the soft keyboard covers the sheet actions
  const f=s.querySelector('button,input,select,textarea');
  if(f&&!/^(INPUT|SELECT|TEXTAREA)$/.test(f.tagName))f.focus();
@@ -3315,8 +3320,8 @@ function planner(){tab=tab||'day';
  ({day:()=>pDay(src,ro),month:()=>pMonth(src,ro),meals:()=>pMeals(src,ro),journal:()=>pJournal(src,ro)})[tab]();
 }
 function taskNoteSheet(id){const t=(D.tasks||[]).find(x=>String(x.id)===String(id));if(!t||!t.note)return;const only=!!RO;
- sheet(`<h2 style="margin-bottom:2px">${E(t.t)}</h2>${t.time?`<p class="meta" style="margin:0">${E(String(t.time))}</p>`:''}<p class="task-note">${E(t.note)}</p><div class="row" style="gap:10px;margin-top:14px"><button class="btn ghost" id="tnClose" style="flex:1">Close</button>${only?'':`<button class="btn" id="tnEdit" style="flex:1">Edit</button>`}</div>`);
- document.getElementById('tnClose').onclick=()=>sheet();const e=document.getElementById('tnEdit');if(e)e.onclick=()=>{sheet();editTask(id)}}
+ sheet(`<h2 style="margin-bottom:2px">${E(t.t)}</h2>${t.time?`<p class="meta" style="margin:0">${E(String(t.time))}</p>`:''}<p class="task-note">${E(t.note)}</p><div class="row" style="gap:10px;margin-top:14px">${only?'':`<button class="btn" id="tnEdit" style="flex:1">Edit</button>`}</div>`);
+ const e=document.getElementById('tnEdit');if(e)e.onclick=()=>{sheet();editTask(id)}}
 function taskTimeNote(t){const p=[];if(t.time)p.push('<span class="time-badge">'+E(t.time)+'</span>');if(t.note)p.push('<button type="button" class="note-chip note-btn" data-note="'+E(t.id)+'" aria-label="View note for '+E(t.t)+'">note</button>');return p.join(' ')}
 function overdueBanner(doc,d,only){if(only||!doc||doc!==D)return '';const list=overdueList(doc,d);if(!list.length)return '';return `<div class="card rose-warn" style="margin-bottom:10px"><div class="card-h"><h3>Overdue</h3><span class="meta">${list.length}</span></div>${list.slice(0,5).map(t=>`<div class="taskrow"><button class="btn ghost sm cmp" data-cmp="${t.id}" aria-label="Mark ${E(t.t)} done">Done</button><span class="ckt">${E(t.t)}${t.time?' <span class="meta" style="margin-left:6px">'+E(t.time)+'</span>':''}${t.note?' <button type="button" class="note-chip note-btn" data-note="'+E(t.id)+'" aria-label="View note">note</button>':''}</span></div>`).join('')}</div>`}
 function pDayTaskRow(t,d,doc,only){
@@ -4506,8 +4511,7 @@ function smartFocusHTML(goal,goals,noGoals,cards){
 }
 function focusSheet(i){
  const items=(typeof window!=='undefined'&&window.__focusItems)||[];const it=items[i];if(!it)return;
- sheet(`<h2>${E(it.name)}</h2><p class="meta" style="margin:-8px 0 0">${E(it.stageName)}</p><div class="smart-focus-sheetflower">${smartFlowerSVG(it.goal,it.stage)}</div><p class="smart-focus-reason">${E(it.reason)}</p><p class="smart-focus-motivator">${E(it.motivator)}</p><button class="btn ghost" id="focusSheetClose" style="width:100%;margin-top:10px">Close</button>`);
- const c=document.getElementById('focusSheetClose');if(c)c.onclick=()=>sheet();
+ sheet(`<h2>${E(it.name)}</h2><p class="meta" style="margin:-8px 0 0">${E(it.stageName)}</p><div class="smart-focus-sheetflower">${smartFlowerSVG(it.goal,it.stage)}</div><p class="smart-focus-reason">${E(it.reason)}</p><p class="smart-focus-motivator">${E(it.motivator)}</p>`);
 }
 function smartFocusName(goal){
  const names={'Understand my cycle':'Understanding your cycle','Steadier energy':'Steadier energy','Better sleep':'Better sleep','Move more':'Moving more','Eat regularly':'Eating regularly','Manage stress':'Keeping stress steady'};
@@ -5997,7 +6001,7 @@ function showBookMenu(id){
    <button class="bookmenu-item" id="bmFin">${libCheckSVG(18)}<span>${fin?'Mark as unfinished':'Mark as finished'}</span></button>
    <button class="bookmenu-item danger" id="bmDel"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 7h16"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><path d="M7 7l1 14a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2l1-14"/></svg><span>Remove from library</span></button>
   </div>
-  <button class="btn ghost" id="bmClose" style="width:100%;margin-top:10px">Close</button>`);
+`);
  document.getElementById('bmFav').onclick=()=>{libToggleFavorite(id);sheet();library()};
  document.getElementById('bmDl').onclick=()=>{
   const next=!b.dl;
@@ -6006,7 +6010,7 @@ function showBookMenu(id){
   sheet();startDownload(id)};
  document.getElementById('bmFin').onclick=()=>{libMarkFinished(id,!fin);sheet();library()};
  document.getElementById('bmDel').onclick=()=>{libDel(id);idbDelete(id).catch(()=>{});if(pdfBookId===id)closeReader();sheet();library();toast('Removed from library')};
- document.getElementById('bmClose').onclick=()=>sheet()}
+}
 function textSize(){return +(ST.get('bloom_lib_fs')||1.02)}
 function fmtFS(v){return v.toFixed(2)+'rem'}
 function readerTheme(){try{const t=ST.get('bloom_reader_theme');if(t==='dark'||t==='light')return t}catch(e){}return effectiveTheme()}
@@ -6238,11 +6242,11 @@ function showExploreSheet(id){
   <button class="bookmenu-item" id="exDl">${libDlSVG(18,false)}<span>Download for offline</span></button>
   <button class="bookmenu-item" id="exRead">${IC.bookmark(18)}<span>Read now</span></button>
  </div>
- <button class="btn ghost" id="exClose" style="width:100%;margin-top:10px">Close</button>`);
+`);
  document.getElementById('exAdd').onclick=()=>{libAddBook(id);sheet();library();toast('Added to your library')};
  document.getElementById('exDl').onclick=()=>{libAddBook(id);sheet();startDownload(id)};
  document.getElementById('exRead').onclick=()=>{libAddBook(id);sheet();openBook(id)};
- document.getElementById('exClose').onclick=()=>sheet()}
+}
 function bookChapters(){const b=libCached().find(x=>x.id===pdfBookId);return b&&Array.isArray(b.chapters)?b.chapters:[]}
 function readerChapterIdx(){const ch=bookChapters();let idx=-1;for(let i=0;i<ch.length;i++){if((+ch[i].p||0)<=pdfPage)idx=i}return idx}
 function readerPageView(){return document.getElementById('readerPageView')}
@@ -6766,7 +6770,7 @@ function exportBackup(){
  if(RO)return;
  sheet(`<h2>Export backup</h2><p class="meta" style="margin:0 0 12px">This file contains your private notes. Keep it safe.</p><div class="row" style="gap:10px;margin-top:16px"><button class="btn ghost" id="expNo" style="flex:1">Cancel</button><button class="btn" id="expGo" style="flex:1">Export</button></div>`);
  const fallback=(text,fileName)=>{
-  sheet(`<h2>Export backup</h2><p class="meta" style="margin:0 0 10px">This file contains your private notes. Keep it safe.</p><textarea rows="10" readonly>${E(text)}</textarea><div class="row" style="gap:10px;margin-top:14px"><button class="btn ghost" id="expCopy" style="flex:1">Copy</button><button class="btn ghost" id="expDl" style="flex:1">Download file</button></div><button class="btn" id="expClose" style="margin-top:10px;width:100%">Close</button>`);
+  sheet(`<h2>Export backup</h2><p class="meta" style="margin:0 0 10px">This file contains your private notes. Keep it safe.</p><textarea rows="10" readonly>${E(text)}</textarea><div class="row" style="gap:10px;margin-top:14px"><button class="btn ghost" id="expCopy" style="flex:1">Copy</button><button class="btn ghost" id="expDl" style="flex:1">Download file</button></div>`);
   $('#expCopy').onclick=async()=>{
    try{await navigator.clipboard.writeText(text);toast('Copied')}
    catch(e){toast('Copy failed, select the text and copy it manually')}
@@ -6779,7 +6783,6 @@ function exportBackup(){
     toast('Download started, check your Downloads folder');
    }catch(e){toast('Could not download the file')}
   };
-  $('#expClose').onclick=()=>sheet();
  };
  $('#expNo').onclick=()=>sheet();
  $('#expGo').onclick=async()=>{
