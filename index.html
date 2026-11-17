@@ -3323,7 +3323,7 @@ function dayTasksSheet(d, doc, only){
 function pMonth(src,ro){const doc=src||D,only=ro==null?RO:ro;
  const now=today();const base=new Date(now+'T12:00');
  const y=base.getFullYear();
- $('#pb').innerHTML=`<div class="card"><div class="card-h"><h3>Calendar</h3></div><div class="calsheet" style="height:auto;max-height:none;width:100%;max-width:100%"><div class="calsheet-scroll" id="pCalScroll" style="padding:0;overflow:visible"></div></div></div>`;
+ $('#pb').innerHTML=`<div class="card"><div class="card-h"><h3>Calendar</h3></div><div class="calsheet" style="height:min(70vh,680px);max-height:none;margin:0;width:100%"><div class="calsheet-scroll" id="pCalScroll" style="padding:0"></div></div></div>`;
  const scroll=document.getElementById('pCalScroll');
  const todayStr=now;
  const renderYear = (yr) => {
