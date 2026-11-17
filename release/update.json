@@ -1,7 +1,7 @@
 {
-    "versionCode": 136,
-    "versionName": "1.2.121",
-    "notes": "Fix calendars rendering from January (now all months, opened at current month) and reading progress reloading from the dedicated table after sign-out/before online boot",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.121/bloom-1.2.121.apk",
+    "versionCode": 137,
+    "versionName": "1.2.122",
+    "notes": "Reading sync loads before the Library renders on resume; update prompt now correctly references the current version instead of 1.2.90.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.122/bloom-1.2.122.apk",
     "publishedAt": "2026-11-17"
 }

@@ -2359,7 +2359,7 @@ async function fetchManifest(){const bust='?t='+Date.now();
  const r=await fetch(UPDATE_MANIFEST+bust,{cache:'no-store'});if(!r.ok)throw new Error('manifest '+r.status);
  return await r.json()}
 // Baked-in build identity. Keep in sync with android/app/build.gradle (versionCode/versionName).
-const APP_VERSION={code:105,name:'1.2.90'};
+const APP_VERSION={code:137,name:'1.2.122'};
 const UPD_SKIP_KEY='bloom_upd_skip';
 const updater=()=>{const C=window.Capacitor;if(!C)return null;
  const P=C.Plugins&&C.Plugins.BloomUpdater;
@@ -6838,7 +6838,12 @@ function localSessionBoot(sess){
  if(!cached||typeof cached!=='object')return false;
  user=mail;D=Object.assign(blank(),cached);loadRev(mail);applyTheme();restoreNav();shell();
 
- setTimeout(()=>{try{sbInit().then(()=>{if(sbUser)sbAfterLogin(sbUser)}).catch(()=>{})}catch(e){}},1500);
+ // load fresh reading BEFORE the first render so the Library shows real progress
+ if(typeof isOffline!=='function'||!isOffline()){
+   (async()=>{try{const cl=await sbInit();if(cl&&sbUser)await sbAfterLogin(sbUser)}catch(e){}})();
+ }else{
+   try{sbInit().then(()=>{if(sbUser)sbAfterLogin(sbUser)}).catch(()=>{})}catch(e){}
+ }
  try{startReconnectWatch()}catch(e){}
  return true}
 // @test-end boot
