@@ -464,7 +464,12 @@ html.sheet-open,html.sheet-open body{overflow:hidden !important;overscroll-behav
 .sheet>div{animation:sheetSlideUp .38s cubic-bezier(.22,1.15,.36,1) both}
 @keyframes sheetFadeIn{from{opacity:0}to{opacity:1}}
 @keyframes sheetSlideUp{from{transform:translateY(96%);opacity:.85}to{transform:translateY(0);opacity:1}}
-@media (prefers-reduced-motion: reduce){.sheet,.sheet>div{animation:none !important}}
+ @media (prefers-reduced-motion: reduce){.sheet,.sheet>div{animation:none !important}}
+ .sheet.leaving{pointer-events:none;animation:sheetFadeOut .26s ease both}
+ .sheet.leaving>div{animation:sheetSlideDown .3s cubic-bezier(.55,0,.65,.35) both}
+ @keyframes sheetFadeOut{from{opacity:1}to{opacity:0}}
+ @keyframes sheetSlideDown{from{transform:translateY(var(--outfrom,0px))}to{transform:translateY(103%)}}
+ @media (prefers-reduced-motion: reduce){.sheet.leaving,.sheet.leaving>div{animation:none !important}}
 .upbar{height:4px;border-radius:2px;background:var(--line2);overflow:hidden}
 .upbar i{display:block;height:100%;background:var(--rose);border-radius:2px;transition:width .25s ease;min-width:2%}
 .upblk{align-items:center}
@@ -2196,16 +2201,29 @@ const isDone=(id,d,doc)=>!!(((doc||D).done||{})[d]||{})[id];
 function toggle(id,d){D.done[d]=D.done[d]||{};D.done[d][id]=!D.done[d][id];save()}
 const uid=()=>Math.random().toString(36).slice(2,9);
 let sheetVV=null;
+let sheetCloseToken=0;
 function sheetFit(){const box=document.querySelector('#sh>div');if(!box)return;
  const vv=window.visualViewport;const h=vv?vv.height:window.innerHeight;
  box.style.maxHeight=Math.max(220,Math.round(h*0.88))+'px'}
-function sheet(h){const s=$('#sheet');
+ function sheet(h){const s=$('#sheet');
  if(!h){
+   const cur=s.querySelector('.sheet');
+   if(sheetVV){window.visualViewport.removeEventListener('resize',sheetFit);sheetVV=null}
+   if(cur&&!cur.classList.contains('leaving')&&!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)){
+     sheetCloseToken++;
+     const tok=sheetCloseToken;
+     cur.classList.add('leaving');
+     const done=()=>{if(tok===sheetCloseToken)s.innerHTML=''};
+     const t=setTimeout(done,380);
+     cur.addEventListener('animationend',e=>{if(e.target===cur){clearTimeout(t);done()}},{once:true});
+     document.documentElement.classList.remove('sheet-open');
+     return;
+   }
    s.innerHTML='';
    document.documentElement.classList.remove('sheet-open');
-   if(sheetVV){window.visualViewport.removeEventListener('resize',sheetFit);sheetVV=null}
    return;
  }
+ sheetCloseToken++;
  document.documentElement.classList.add('sheet-open');
  s.innerHTML=`<div class="sheet" id="sh"><div role="dialog" aria-modal="true"><button type="button" class="sheet-grip" id="sheetGrip" aria-label="Close"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>${h}</div></div>`;
  $('#sh').onclick=e=>{if(e.target.id=='sh')sheet()};
@@ -2217,7 +2235,7 @@ function sheet(h){const s=$('#sheet');
    let sy=null,dy=0;
    grip.addEventListener('pointerdown',e=>{sy=e.clientY;dy=0;panel.style.transition='none';try{grip.setPointerCapture(e.pointerId)}catch(err){}},{passive:true});
    grip.addEventListener('pointermove',e=>{if(sy==null)return;dy=Math.max(0,e.clientY-sy);panel.style.transform='translateY('+dy+'px)'},{passive:true});
-   const end=()=>{if(sy==null)return;sy=null;panel.style.transition='transform .24s cubic-bezier(.22,1.15,.36,1)';if(dy>88)sheet();else panel.style.transform=''};
+    const end=()=>{if(sy==null)return;sy=null;panel.style.transition='transform .24s cubic-bezier(.22,1.15,.36,1)';if(dy>88){panel.style.setProperty('--outfrom',dy+'px');sheet()}else{panel.style.transform=''}};
    grip.addEventListener('pointerup',end);grip.addEventListener('pointercancel',end);
   }
  }
