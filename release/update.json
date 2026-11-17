@@ -1,7 +1,8 @@
 {
-    "versionCode": 139,
-    "versionName": "1.2.124",
-    "notes": "Partner view uses the follower's own reading progress; in-app update prompt references the current version.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.124/bloom-1.2.124.apk",
+    "versionCode": 140,
+    "versionName": "1.2.125",
+    "notes": "Auto-download the latest APK in the background; the banner and update sheet only appear after the download has finished. Tap Install to hand the package installer to Android.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.125/bloom-1.2.125.apk",
+    "sha256": "a906bac5534be7688fcf392342e730c7d74e07ca83824cd545a8669d0a690704",
     "publishedAt": "2026-11-17"
 }
