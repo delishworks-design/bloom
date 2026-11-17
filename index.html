@@ -1789,10 +1789,10 @@ function authView(mode){try{splashSkip()}catch(e){}mode=mode||'in';try{fabSync()
    <div class="auth-foot">
    ${up?'':`<p style="text-align:center;margin:0 0 8px"><button type="button" class="link" id="fg">Forgot password?</button></p>`}
     <p class="switch">${up?'Already have an account?':'New here?'} <button type="button" class="link" id="sw">${up?'Log in':'Create an account'}</button></p>
-  ${(D&&D._anon)?'<p style="text-align:center;margin:10px 0 0"><button type="button" class="link" id="authBack">Back to app</button></p>':''}
+
    </div></div></div>`;
  $('#sw').onclick=()=>{window.__signupStep=1;authView(up?'in':'up')};
-  const ab=document.getElementById('authBack');if(ab)ab.onclick=()=>{localAnonBoot()};
+ 
  const fg=document.getElementById('fg');if(fg)fg.onclick=forgotPasswordSheet;
  const g=id=>document.getElementById(id);
  if(up&&authPrefill)g('u').value=authPrefill;else if(authPrefill)g('u').value=authPrefill;
@@ -7149,13 +7149,6 @@ function backfillMeals(){try{if(!D||!D.meals)return;let fix=0;
 async function probeNet(){
  try{const c=new AbortController();const t=setTimeout(()=>c.abort(),3500);const r=await fetch(LIB_REMOTE+'?t='+Date.now(),{cache:'no-store',signal:c.signal});clearTimeout(t);try{ST.set('bloom_net',r.ok?'1':'0')}catch(e){}return !!r;}catch(e){try{ST.set('bloom_net','0')}catch(e){}return false}
 }
-// a device with no account renders the local, anonymous copy (Design A: local-only offline mode)
-function localAnonBoot(){
-  let cached=null;try{cached=J('bloom_anon',null)}catch(e){}
-  user=null;RO=false;ROcloud=false;ROowner=null;roHash='';ownMode=false;ownStash=null;planPanel='mine';
-  D=(cached&&typeof cached==='object')?Object.assign(blank(),cached):blank();D._anon=1;
-  applyTheme();restoreNav();shell();return true;
-}
 // boot without a live session (offline / failed token refresh): render the cached copy
 // @test-begin boot
 function localSessionBoot(sess){
@@ -7219,7 +7212,6 @@ const s=getSession();
  const reachable=await probeNet();
  if(!(s&&String(s).indexOf('p:')===0)&&(isOffline()||!reachable)){
   if(localSessionBoot(s))return;
-  if(localAnonBoot())return;
   authView('in');
   try{splashSkip()}catch(e){}
   return;
@@ -7245,8 +7237,8 @@ const s=getSession();
  await sbInit();
  if(sbUser&&!RO){try{await sbAfterLogin(sbUser);backfillMeals();setTimeout(()=>checkUpdate(false),1500);return}catch(e){reportErr('login.after',e)}}
  // no usable session: show the phone's saved copy before giving up
- if(localSessionBoot(s)||localAnonBoot())return;
- // no usable session and no local copy -> brand new user, show the account screen
+ if(localSessionBoot(s))return;
+ // no usable session -> account screen (offline mode is account holders only)
  authView('in')})();
 </script><div class="reader" id="reader" hidden aria-hidden="true"></div>
 <script>(function(){setTimeout(function(){try{var a=document.getElementById('app');var empty=!a||!a.innerHTML||a.innerHTML.trim().length<10;var ran=false;try{ran=localStorage.getItem('bloom_boot')==='1'}catch(e){}var ec=false;try{window.addEventListener('error',function(ev){ec=String((ev&&ev.message)||ev).slice(0,200)},{once:true})}catch(e){}if(empty){var d=document.getElementById('bloomErrTxt');if(d)d.textContent='bootRan:'+ran+' lastErr:'+(window.__lastErr||'')+' empty:'+empty;}}catch(e){}},7000);})();</script>
