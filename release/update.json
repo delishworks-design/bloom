@@ -1,7 +1,7 @@
 {
-    "versionCode": 137,
-    "versionName": "1.2.122",
-    "notes": "Reading sync before Library renders; in-app update prompt now references the correct current version.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.122/bloom-1.2.122.apk",
+    "versionCode": 138,
+    "versionName": "1.2.123",
+    "notes": "Fix: Today's reading progress is no longer overwritten in your account. Reading sync errors now show in Copy diagnostics.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.123/bloom-1.2.123.apk",
     "publishedAt": "2026-11-17"
 }
