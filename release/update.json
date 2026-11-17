@@ -1,8 +1,8 @@
 {
-    "versionCode": 143,
-    "versionName": "1.2.128",
-    "notes": "Focus flowers rebuilt with species per goal and cheeky voice bubbles; seven cheeky side reminders with toggles in Profile Reminder (sleep, meals, move, journal, energy, period check, visit prep). Finished books count toward the yearly goal on both accounts; calendar shows logged bleeding/spotting/logged days with legend; Ovulation label renamed.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.128/bloom-1.2.128.apk",
-    "sha256": "ffe9cff1cc144b12c01bc16bb8804d2322fbcc5d89656f18809d42431ef84557",
+    "versionCode": 144,
+    "versionName": "1.2.129",
+    "notes": "Focus flowers are bigger and livelier: faster sway, pop-in cards, rotating voice bubbles that roast you when your stats drop. Your focus now lives on the Cycle page below Log period. Bloomies reminders consolidated into one toggle. Finished books count toward the yearly goal on both accounts; cycle calendar shows logged days with the legend back.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.129/bloom-1.2.129.apk",
+    "sha256": "bc292769f153d5bbc559793c9e101afd028534fb7f0c5bc484d668221a21d688",
     "publishedAt": "2026-11-17"
 }
