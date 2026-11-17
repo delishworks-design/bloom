@@ -58,7 +58,7 @@ test('restoreNav brings the last screen back and validates values', () => {
   assert.equal(sandbox.restoreNav(), true);
   assert.equal(sandbox.view, 'insights');
   assert.equal(sandbox.tab, 'journal');
-  assert.equal(sandbox.planPanel, 'partner');
+  assert.equal(sandbox.planPanel, 'mine');
   assert.equal(sandbox.calM, '2026-03');
   assert.equal(sandbox.window.__navScroll, 250);
 });
