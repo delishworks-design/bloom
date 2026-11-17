@@ -1,8 +1,8 @@
 {
-    "versionCode": 148,
-    "versionName": "1.4.3",
-    "notes": "Fixed: generated cover maroon divider struck through author; Explore book cover showed fullscreen instead of thumbnail.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.4.3/bloom-1.4.3.apk",
-    "sha256": "f5a63c4ae28f76bd68dc1b03ffe527ed0aaee236e3c0ffd75f3cce6af76cee8c",
+    "versionCode": 149,
+    "versionName": "1.4.4",
+    "notes": "Create-account hardening: disposable email domains are blocked at signup; login has Remember me (uncheck to expire the session when the app closes) and the example.com placeholder is gone. New per-genre cover artwork (Adventure, Children, Classic, Emotional Wellbeing, Fantasy, Philosophy, Poetry, Psychology, Women's Health).",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.4.4/bloom-1.4.4.apk",
+    "sha256": "a77f16e9f4548c85f91eef570f6b8fdbc79321b9f22908dd5fda4bad8ff3eb39",
     "publishedAt": "2026-11-17"
 }
