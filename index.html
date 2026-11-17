@@ -3162,7 +3162,7 @@ function plannerPanels(){
  if(pLocked())return null;
  if(pairInfo===null)ensurePairInfo();
  if(!pairInfo)return null;
- return{partner:true,name:peerLabel(pairInfo.shName,pairInfo.prof&&pairInfo.prof.name,'Follower')};
+ return{partner:true,name:peerLabel(pairInfo.prof&&pairInfo.prof.name,pairInfo.shName,'Follower')};
 }
 async function ensurePairInfo(){
  if(pairInfo!==null)return;
