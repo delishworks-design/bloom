@@ -601,31 +601,27 @@ html[data-theme=dark] .fun{border-color:rgba(217,107,140,.45) !important}
 .appt-note{font-size:.78rem;color:var(--mut);font-style:italic;border-top:1px solid var(--line);margin-top:12px;padding-top:10px}
 .appt-foot{position:sticky;bottom:0;background:linear-gradient(180deg,rgba(251,244,234,0),var(--scrim) 40%);padding:12px 0 4px;display:flex;gap:10px}
 .appt-foot .btn{flex:1}
-.smart-focus-now{padding:16px 18px}
-.smart-focus-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.smart-focus-wrap{margin:0 0 16px}
+.smart-focus-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 2px 10px}
 .smart-focus-track{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding-bottom:2px;scrollbar-width:none}
 .smart-focus-track::-webkit-scrollbar{display:none}
-.smart-focus-card{flex:0 0 86%;scroll-snap-align:start;border:1px solid rgba(232,160,180,.4);border-radius:18px;padding:14px 16px;background:#FFF9F5;min-width:0;display:flex;flex-direction:column}
+.smart-focus-card{flex:0 0 86%;scroll-snap-align:start;border:1.5px solid var(--line);border-radius:20px;padding:12px 14px;background:var(--card);min-width:0;display:flex;flex-direction:column;box-shadow:0 2px 10px rgba(120,70,80,.08)}
 .smart-focus-card-title{font-size:.66rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--rose);margin:0}
-.smart-focus-tap{flex:1;display:grid;grid-template-columns:96px 1fr;align-items:center;gap:14px;width:100%;text-align:left;background:transparent;border:0;padding:10px 4px 2px;cursor:pointer;font:inherit}
+.smart-focus-tap{flex:1;display:grid;grid-template-columns:96px 1fr;align-items:center;gap:14px;width:100%;text-align:left;background:transparent;border:0;padding:8px 2px;cursor:pointer;font:inherit}
 .smart-focus-meter{width:96px;height:96px}
 .smart-focus-meter svg{width:100%;height:100%;display:block;overflow:visible}
 .smart-focus-copy{display:flex;flex-direction:column;gap:2px;min-width:0}
 .smart-focus-stage{font-size:.62rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--mut)}
 .smart-focus-caption{font-size:.82rem;line-height:1.32;color:var(--ink);margin-top:3px;font-weight:600}
-.smart-focus-card.is-expanded .smart-focus-tap{padding-bottom:6px}
-.smart-focus-detail{display:block;max-height:0;overflow:hidden;margin-top:0;transition:max-height .3s ease}
-.smart-focus-detail-in{overflow:hidden;min-height:0}
-.smart-focus-card.is-expanded .smart-focus-detail{max-height:320px;margin-top:8px}
 .smart-focus-hint{display:inline-flex;align-items:center;gap:4px;margin-top:7px;font-size:.56rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--faded)}
-.smart-focus-hint i{font-style:normal;font-size:.7rem;line-height:1;transform:rotate(90deg);transition:transform .25s ease}
-.smart-focus-card.is-expanded .smart-focus-hint{color:var(--rose)}
-.smart-focus-card.is-expanded .smart-focus-hint i{transform:rotate(-90deg)}
+.smart-focus-hint i{font-style:normal;font-size:.7rem;line-height:1}
 .smart-focus-prog{height:2px;border-radius:2px;background:rgba(184,69,107,.12);margin:10px 2px 0;overflow:hidden}
 .smart-focus-prog i{display:block;height:100%;border-radius:2px;background:var(--rose);opacity:.4;transition:transform .3s ease,width .3s ease}
 .smart-focus-prog[data-n="1"]{display:none}
-.smart-focus-reason{font-size:.82rem;line-height:1.45;color:var(--ink);margin:0;padding-top:8px;border-top:1px dashed var(--line)}
-.smart-focus-motivator{font-size:.8rem;line-height:1.45;color:var(--mut);margin:6px 0 0}
+.smart-focus-reason{font-size:.82rem;line-height:1.45;color:var(--ink);margin:0;padding-top:10px;border-top:1px dashed var(--line)}
+.smart-focus-motivator{font-size:.8rem;line-height:1.45;color:var(--mut);margin:8px 0 0}
+.smart-focus-sheetflower{width:110px;height:110px;margin:2px auto}
+.smart-focus-sheetflower svg{width:100%;height:100%}
 @media (prefers-reduced-motion:reduce){.smart-card *,.smart-focus-card *{animation:none !important;transition:none !important}}
 .smart-week-row{display:flex;align-items:baseline;gap:8px;margin-top:8px;font-size:.86rem}
 .smart-week-label{font-weight:800;color:var(--ink);min-width:56px}
@@ -643,7 +639,7 @@ html[data-theme=dark] .fun{border-color:rgba(217,107,140,.45) !important}
 .smart-ai-label{font-size:.76rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--mut)}
 .smart-ai-toggle{align-self:center}
 .smart-ai-toggle{align-self:flex-start}
-@media (max-width:430px){.smart-section{padding:16px 18px}.smart-focus-now{padding:14px 14px}.smart-focus-tap{grid-template-columns:84px 1fr;gap:12px}.smart-focus-meter,.smart-focus-meter svg{width:84px;height:84px}}
+@media (max-width:430px){.smart-section{padding:16px 18px}.smart-focus-wrap{margin-bottom:14px}.smart-focus-tap{grid-template-columns:84px 1fr;gap:12px}.smart-focus-meter,.smart-focus-meter svg{width:84px;height:84px}}
 .faces{display:flex;gap:8px;justify-content:space-between;margin:8px 0}
 .facebtn{flex:1;background:var(--card) !important;border:1.5px solid var(--line) !important;padding:8px 4px !important;border-radius:16px !important;opacity:.55;min-height:58px !important;display:grid !important;place-items:center !important}
 .facebtn.on{opacity:1 !important;transform:translateY(-2px);border-color:#B8456B !important;background:#F9DDE5 !important;box-shadow:0 2px 8px rgba(120,70,80,.08) !important}
@@ -4363,30 +4359,30 @@ function smartGoalProgress(goal,ctx){
 function smartRowFor(rows,date){for(const r of rows)if(r.date===date)return r;return null}
 function L2(rows,date,key){const r=smartRowFor(rows,date);return r?r.log[key]:null}
 function smartFocusHTML(goal,goals,noGoals,cards){
- const kicker=`<div class="smart-focus-head"><p class="smart-kicker" id="smart-focus-title">Your focus</p>`;
+ const kicker=`<div class="smart-focus-head standalone"><p class="smart-kicker" id="smart-focus-title">Your focus</p></div>`;
  if(noGoals){
-  return `<section class="card smart-focus-now" id="smart-focus" aria-labelledby="smart-focus-title">${kicker}</div><p class="smart-copy" style="margin-top:2px">Pick your goals in Profile to personalize this.</p></section>`;
+  return `<div class="smart-focus-wrap" id="smart-focus" aria-labelledby="smart-focus-title">${kicker}<p class="smart-copy" style="margin:0 2px">Pick your goals in Profile to personalize this.</p></div>`;
  }
  const list=Array.isArray(cards)&&cards.length?cards:(goals||[goal]).map(g=>({goal:g,name:smartFocusName(g),ctx:{}}));
- const html=list.map((c,i)=>{
-  const prog=smartGoalProgress(c.goal,c.ctx||{});
-  return `<article class="smart-focus-card${i===0?' is-active':''}" data-goal="${E(c.goal)}" role="listitem">
-   <button class="smart-focus-tap" type="button" aria-expanded="false" aria-controls="smart-focus-detail-${i}" onclick="focusToggle(this)">
-    <span class="smart-focus-meter">${smartFlowerSVG(c.goal,prog.stage)}</span>
+ const items=list.map(c=>{const prog=smartGoalProgress(c.goal,c.ctx||{});return {goal:c.goal,name:prog.name||c.name||c.goal,stageName:prog.stageName,caption:prog.caption,reason:prog.reason,motivator:prog.motivator,stage:prog.stage};});
+ try{window.__focusItems=items}catch(e){}
+ const html=items.map((it,i)=>`<article class="smart-focus-card${i===0?' is-active':''}" data-goal="${E(it.goal)}" data-focus="${i}" role="listitem">
+   <button class="smart-focus-tap" type="button" onclick="focusSheet(${i})" aria-label="${E(it.name)} - details">
+    <span class="smart-focus-meter">${smartFlowerSVG(it.goal,it.stage)}</span>
     <span class="smart-focus-copy">
-     <span class="smart-focus-stage">${E(prog.stageName)}</span>
-     <h3 class="smart-focus-card-title">${E(prog.name||c.name||c.goal)}</h3>
-     <span class="smart-focus-caption">${E(prog.caption)}</span>
+     <span class="smart-focus-stage">${E(it.stageName)}</span>
+     <h3 class="smart-focus-card-title">${E(it.name)}</h3>
+     <span class="smart-focus-caption">${E(it.caption)}</span>
      <span class="smart-focus-hint" aria-hidden="true">details <i>\u203a</i></span>
     </span>
    </button>
-   <div class="smart-focus-detail" id="smart-focus-detail-${i}"><div class="smart-focus-detail-in">
-    <p class="smart-focus-reason">${E(prog.reason)}</p>
-    <p class="smart-focus-motivator">${E(prog.motivator)}</p>
-   </div></div>
-  </article>`;
- }).join('');
- return `<section class="card smart-focus-now" id="smart-focus" aria-labelledby="smart-focus-title">${kicker}</div><div class="smart-focus-track" role="list" tabindex="0">${html}</div><div class="smart-focus-prog" data-n="${list.length}" aria-hidden="true"><i></i></div></section>`;
+  </article>`).join('');
+ return `<div class="smart-focus-wrap" id="smart-focus" aria-labelledby="smart-focus-title">${kicker}<div class="smart-focus-track" role="list" tabindex="0">${html}</div><div class="smart-focus-prog" data-n="${items.length}" aria-hidden="true"><i></i></div></div>`;
+}
+function focusSheet(i){
+ const items=(typeof window!=='undefined'&&window.__focusItems)||[];const it=items[i];if(!it)return;
+ sheet(`<h2>${E(it.name)}</h2><p class="meta" style="margin:-8px 0 0">${E(it.stageName)}</p><div class="smart-focus-sheetflower">${smartFlowerSVG(it.goal,it.stage)}</div><p class="smart-focus-reason">${E(it.reason)}</p><p class="smart-focus-motivator">${E(it.motivator)}</p><button class="btn ghost" id="focusSheetClose" style="width:100%;margin-top:10px">Close</button>`);
+ const c=document.getElementById('focusSheetClose');if(c)c.onclick=()=>sheet();
 }
 function smartFocusName(goal){
  const names={'Understand my cycle':'Understanding your cycle','Steadier energy':'Steadier energy','Better sleep':'Better sleep','Move more':'Moving more','Eat regularly':'Eating regularly','Manage stress':'Keeping stress steady'};
@@ -4796,18 +4792,6 @@ function smartEmptyPatternLine(logs){
 // @test-end smart
 
 
-function focusToggle(b){
- const card=b.closest('.smart-focus-card');if(!card)return;
- const want=!card.classList.contains('is-expanded');
- const track=card.parentNode;if(!track)return;
- [...track.querySelectorAll('.smart-focus-card')].forEach(c=>{
-  const open=(c===card&&want);
-  c.classList.toggle('is-expanded',open);
-  const tap=c.querySelector('.smart-focus-tap');if(tap)tap.setAttribute('aria-expanded',open?'true':'false');
-  const detail=c.querySelector('.smart-focus-detail');
-  if(detail)detail.style.maxHeight=open?((detail.scrollHeight||detail.offsetHeight||320)+2)+'px':'0px';
- });
-}
 function wireSmartFocus(root){
  if(smartFocusTimer){clearInterval(smartFocusTimer);smartFocusTimer=null}
  if(!root)return;
@@ -4821,14 +4805,12 @@ function wireSmartFocus(root){
  const step=()=>{const k=track.children;return k.length>1?Math.max(1,k[1].offsetLeft-k[0].offsetLeft):Math.max(1,track.clientWidth)};
  const at=()=>Math.max(0,Math.min(cards().length-1,Math.round(track.scrollLeft/step())));
  const goTo=i=>{const c=cards()[i];if(!c)return;try{c.scrollIntoView({behavior:reduced?'auto':'smooth',block:'nearest',inline:'start'})}catch(e){track.scrollLeft=i*step()}};
- const collapseExpanded=()=>{track.querySelectorAll('.smart-focus-card.is-expanded').forEach(c=>{c.classList.remove('is-expanded');const tap=c.querySelector('.smart-focus-tap');if(tap)tap.setAttribute('aria-expanded','false');const detail=c.querySelector('.smart-focus-detail');if(detail)detail.style.maxHeight='0px'})};
  const prog=root.querySelector('.smart-focus-prog i');
  const setProg=()=>{if(!prog)return;const n=cards().length;prog.style.width=(100/Math.max(1,n))+'%';prog.style.transform='translateX('+(at()*100)+'%)'};
  const advance=()=>{const n=cards().length;if(!n)return;const next=at()+1>=n?0:at()+1;goTo(next)};
  const auto=()=>{stop();setProg();smartFocusTimer=setInterval(advance,4000)};
  let swipe=null;
  track.addEventListener('pointerdown',e=>{swipe={x:e.clientX,closed:false};stop()},{passive:true});
- track.addEventListener('pointermove',e=>{if(swipe&&!swipe.closed&&Math.abs(e.clientX-swipe.x)>10){collapseExpanded();swipe.closed=true}},{passive:true});
  const endSwipe=()=>{swipe=null};
  track.addEventListener('pointerup',()=>{endSwipe();scheduleResume()},{passive:true});
  track.addEventListener('pointercancel',()=>{endSwipe();scheduleResume()},{passive:true});

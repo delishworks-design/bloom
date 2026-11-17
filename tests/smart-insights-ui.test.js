@@ -107,7 +107,9 @@ test('focus is a swipeable card per goal with the goal name as the card header, 
   assert.match(out, /class="smart-focus-card-title">Understanding your cycle</);
   assert.match(out, /Seed|Sprout|Bud|Blooming|In bloom/);
   assert.match(out, /5 of 7 nights at 7h\+/);
-  assert.match(out, /smart-focus-detail/);
+  assert.match(out, /onclick="focusSheet\(0\)"/);
+  assert.match(out, /data-focus="0"/);
+  assert.ok(!/smart-focus-detail|focusToggle/.test(out));
   assert.ok(!/is the goal you chose/i.test(out));
   assert.ok(!/smart-goal-chip|aria-pressed/.test(out));
 });
