@@ -1,7 +1,7 @@
 {
-    "versionCode": 134,
-    "versionName": "1.2.119",
-    "notes": "Fix reading progress loss across devices/sign-out: preserve reading log through login and cloud pull; larger arc, no zero-progress cap, book title caption.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.119/bloom-1.2.119.apk",
+    "versionCode": 135,
+    "versionName": "1.2.120",
+    "notes": "Fix reading progress loss on re-login via merge-before-push and dedicated reading table; calendar opens at current month; finished books counted from synced data.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.120/bloom-1.2.120.apk",
     "publishedAt": "2026-11-17"
 }
