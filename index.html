@@ -58,9 +58,9 @@ p{margin:0;line-height:1.5}
 .wrap>*{flex:0 0 auto}
 #main{display:flex;flex-direction:column;gap:20px}
 #pb{display:flex;flex-direction:column;gap:14px}
-.topbar{position:fixed;top:calc(6px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);width:min(390px,calc(100% - 40px));display:flex;align-items:center;justify-content:space-between;gap:16px;z-index:6;background:var(--scrim);padding:4px 0 10px;min-height:58px;border-bottom:1px solid var(--line)}
+.topbar{position:fixed;top:calc(6px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);width:min(390px,calc(100% - 40px));display:flex;align-items:center;justify-content:space-between;gap:16px;z-index:6;background:transparent;padding:4px 0 10px;min-height:58px;border-bottom:0}
 .pchip{display:inline-flex !important;align-items:center !important;height:38px !important;padding:0 14px !important;border-radius:999px !important;background:var(--pinkS) !important;border:1.5px solid rgba(232,160,180,.6) !important;color:var(--rose) !important;font-size:.74rem !important;font-weight:700 !important;white-space:nowrap}
-.wordmark{font-family:'Playfair Display',serif;font-size:30px;font-weight:700;color:#B8456B;line-height:1}
+.wordmark{font-family:'Playfair Display',serif;font-size:30px;font-weight:700;color:#B8456B;line-height:1;text-shadow:0 1px 12px var(--scrim),0 1px 3px var(--scrim)}
 .wordmark i{font-size:20px;font-weight:400;font-style:normal;vertical-align:super;margin-left:2px}
 
 /* Cards - hierarchy */
@@ -117,7 +117,8 @@ p{margin:0;line-height:1.5}
 .rg-dot.on{background:var(--rose);color:#fff}
 .rg-dot.today{box-shadow:0 0 0 2px var(--rose)}
 @media (max-width:420px){.rg-arc-wrap{max-width:260px}.rg-arc-center b{font-size:2rem}}
-.store-track{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 2px 14px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.store-track{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 20px 14px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+#store .store-track{margin:0 -20px}
 .store-track::-webkit-scrollbar{display:none}
 .store-track .bookcard{flex:0 0 128px;scroll-snap-align:start}
 .store-row{margin-bottom:6px}
