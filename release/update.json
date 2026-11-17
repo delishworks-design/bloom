@@ -1,8 +1,8 @@
 {
-    "versionCode": 141,
-    "versionName": "1.2.126",
-    "notes": "Month calendar now shows a legend (Bleeding, Spotting, Logged, Predicted) and highlights predicted bleeding days in future months. Finished books now count toward your yearly goal on both your account and the followed/follower accounts.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.126/bloom-1.2.126.apk",
-    "sha256": "26a2c51416465d40e4cbcf0e01310ff344e37a307ab11f301d3645cf9d6d57e6",
+    "versionCode": 142,
+    "versionName": "1.2.127",
+    "notes": "Month calendar shows your logged bleeding, spotting and other logged days again, with legend restored. Planner: Week tab removed, the Today card is now Tasks with the date picker as its title (it shows and adds tasks for the picked date). Date-picker crash fixed.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.127/bloom-1.2.127.apk",
+    "sha256": "b38dbeb18dc9a948cea1fc9649d0b8d801d4680328e31b011fdb4cdf4a0ab609",
     "publishedAt": "2026-11-17"
 }

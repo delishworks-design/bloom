@@ -66,3 +66,9 @@ test('calMonthsHTML cycle mode marks predicted days with class pr and never blee
   const jan = html.match(/data-cal-ym="2026-01"[\s\S]*?<\/section>/)[0];
   assert.equal((jan.match(/class="cal-cell pr"/g) || []).length, 0);
 });
+
+test('calMonthsHTML cycle mode without a pred argument emits zero pr cells (date picker stays clean)', () => {
+  const { calMonthsHTML } = load();
+  const html = calMonthsHTML(2026, null, 'cycle');
+  assert.equal((html.match(/class="cal-cell pr"/g) || []).length, 0);
+});

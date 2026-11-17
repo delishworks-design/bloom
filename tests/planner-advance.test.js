@@ -151,3 +151,13 @@ test('legacy weekday _weekdays still works for backward compat', () => {
   assert.equal(taskOn(legacy, '2026-01-07'), true);
   assert.equal(taskOn(legacy, '2026-01-06'), false);
 });
+
+test('plannerTabSet has no Week tab and labels the day tab Task', () => {
+  const { plannerTabSet } = load();
+  const mine = plannerTabSet(true, { tasks: true, meals: true, journal: true });
+  assert.equal(mine.some(([k]) => k === 'week'), false);
+  assert.ok(mine.some(([k, l]) => k === 'day' && l === 'Task'));
+  const partner = plannerTabSet(false, { tasks: true, meals: true, journal: false });
+  assert.equal(partner.some(([k]) => k === 'week'), false);
+  assert.ok(partner.some(([k, l]) => k === 'day' && l === 'Task'));
+});
