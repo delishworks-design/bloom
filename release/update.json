@@ -1,8 +1,8 @@
 {
-    "versionCode": 145,
-    "versionName": "1.4.0",
-    "notes": "100 new classics from Project Gutenberg across drama, poetry, classics, children, adventure, mystery, gothic, philosophy and sci-fi — 177 books in the library now.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.4.0/bloom-1.4.0.apk",
-    "sha256": "4a8107dd51e01a90adf36cee63211527cc14060e873516c05f7a5f2102d82703",
+    "versionCode": 146,
+    "versionName": "1.4.1",
+    "notes": "Fixed generated book covers rendering blurry/low quality in the library grid — artwork now loads as a plain image with the Bloom Press text overlay on top.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.4.1/bloom-1.4.1.apk",
+    "sha256": "df008db2f750dc33374ac8dbbf2cd87db2e63c382e6f7c3f3e3892a6abba4311",
     "publishedAt": "2026-11-17"
 }
