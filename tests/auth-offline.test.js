@@ -69,3 +69,16 @@ test('signUp sends emailRedirectTo from the current origin and pathname', async 
   assert.equal(captured.options.emailRedirectTo, 'https://bloom.test/bloom');
   assert.ok(captured.options.emailRedirectTo.indexOf('localhost') < 0);
 });
+
+test('disposable email domains are rejected, legit ones pass', () => {
+  const { isDisposableEmail, EMAIL_RE } = load();
+  for (const bad of ['a@mailinator.com','b@yopmail.com','c@tempmail.com','d@guerrillamail.com','e@10minutemail.com','f@dropmail.cc','g@spamgourmet.com','h@trashmail.net','i@getnada.com','j@maildrop.cc','k@e4ward.com','l@sharklasers.com']) {
+    assert.equal(isDisposableEmail(bad), true, bad);
+  }
+  for (const good of ['a@gmail.com','b@outlook.com','c@yahoo.com','d@example.ph','e@company.co.uk','f@proton.me','g@icloud.com']) {
+    assert.equal(isDisposableEmail(good), false, good);
+    assert.equal(EMAIL_RE.test(good), true);
+  }
+  assert.equal(EMAIL_RE.test('notanemail'), false);
+  assert.equal(EMAIL_RE.test('a@b'), false);
+});

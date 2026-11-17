@@ -8,7 +8,7 @@ test('classicCoverSVG renders a plain img background plus overlay text, escaped'
   const { classicCoverSVG } = load();
   const svg = classicCoverSVG(book('x1', 'Pride & Prejudice', 'Jane Austen'));
   assert.match(svg, /<img class="cover-bg"/);
-  assert.match(svg, /src="assets\/library\/(classic|health|pastel)-/);
+  assert.match(svg, /src="assets\/library\/(classic|health|pastel|cover)-/);
   assert.match(svg, /Pride &amp; Prejudice/);
   assert.match(svg, /<svg class="cover-overlay" viewBox="0 0 300 450"/);
   assert.match(svg, /stroke="#C9A961"/);
@@ -28,7 +28,7 @@ test('classicCoverSVG escapes xml and picks the image deterministically', () => 
   const a = classicCoverSVG(book('janeeyre', 'Jane Eyre', 'Charlotte Brontë'));
   const b = classicCoverSVG(book('janeeyre', 'Jane Eyre', 'Charlotte Brontë'));
   assert.equal(a, b);
-  const images = ['classic-rose.jpg','classic-camellia.jpg','classic-peony.jpg'];
+  const images = ['classic-rose.jpg','classic-camellia.jpg','classic-peony.jpg','cover-classic-hands.jpg','cover-classic-couple.jpg'];
   assert.ok(images.some((n) => a.includes('assets/library/' + n)));
   assert.doesNotMatch(a, /&(?!amp;)/);
 });
