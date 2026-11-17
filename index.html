@@ -401,6 +401,14 @@ label{display:block;font-size:.86rem;color:var(--mut) !important;margin-top:16px
 .cal-cell,.mg-cell{min-width:0;overflow:hidden;box-sizing:border-box}
 .calsheet,.calsheet-scroll{min-width:0;width:100%;max-width:100%}
 .cal-cell:hover{border-color:var(--rose)}
+.cal-cell.pr{background:#FDEEF2;border:1.5px dashed #E8A0B4;color:var(--rose);font-weight:600}
+.cal-legend{display:flex;flex-wrap:wrap;gap:10px 16px}
+.cal-leg{display:inline-flex;align-items:center;gap:7px;font-size:.76rem;color:var(--muted);font-weight:600}
+.cal-sw{display:inline-block;width:12px;height:12px;border-radius:4px}
+.sw-bleed{background:var(--pink)}
+.sw-spot{background:var(--pinkS)}
+.sw-logged{width:6px;height:6px;border-radius:50%;background:var(--teal)}
+.sw-pred{background:#FDEEF2;border:1.5px dashed #E8A0B4}
 .cal-empty{aspect-ratio:1}
 .cal-today{outline:2px solid #2A8A87;outline-offset:1px}
 .cal-sel{background:var(--rose) !important;color:#fff !important;border-color:var(--rose) !important}
@@ -2204,22 +2212,38 @@ function chipField(id,label,opts,current){const cur=current==null?'':String(curr
 function bindFields(){document.querySelectorAll('[data-fg]').forEach(g=>{const inp=document.getElementById(g.dataset.fg);if(!inp)return;
  g.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{g.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed',x===c));inp.value=c.dataset.v})})}
 // @test-begin bloomcal
-function calMonthBlock(y, m /* 0-indexed */){
-  const first=new Date(y,m,1), dim=new Date(y,m+1,0).getDate(), off=(first.getDay()+6)%7;
-  const monthName=first.toLocaleDateString(undefined,{month:'long',year:'numeric'});
-  let cells='';
-  for(let i=0;i<off;i++)cells+='<span class="cal-cell cal-empty"></span>';
-  for(let d=1;d<=dim;d++){
-    const iso=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
-    cells+='<button type="button" class="cal-cell" data-cal-d="'+iso+'">'+d+'</button>';
-  }
-  return '<section class="cal-month" data-cal-ym="'+y+'-'+String(m+1).padStart(2,'0')+'"><h3 class="cal-month-h">'+E(monthName)+'</h3><div class="cal-grid">'+['S','M','T','W','T','F','S'].map(d=>'<div class="cal-wd">'+d+'</div>').join('')+cells+'</div></section>';
+function predictedBleedWindows(startDates, o){
+ const oo=o||{};
+ const avg=+oo.avg||0;
+ if(avg<15||avg>120)return [];
+ const plen=Math.max(1,Math.min(14,+oo.plen||5));
+ const s=(startDates||[]).filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d)).slice().sort();
+ if(s.length<2)return [];
+ const base=Date.parse(s[s.length-1]+'T12:00');
+ if(isNaN(base))return [];
+ const cap=oo.until?Date.parse(String(oo.until)+'T12:00'):base+86400000*400;
+ const isoOf=t=>{const d=new Date(t);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+ const out=[];
+ for(let i=1;i<=48;i++){
+  const t=base+86400000*avg*i;
+  if(t>cap)break;
+  out.push({from:isoOf(t),to:isoOf(t+86400000*(plen-1))});
+ }
+ return out;
 }
 function calContinueBtn(y){return '<button class="cal-continue" data-cal-next="'+(y+1)+'">Continue to '+(y+1)+' →</button>'}
-function calMonthsHTML(y,doc,mode){
+function calMonthsHTML(y,doc,mode,pred){
  let html='';
  for(let m=0;m<12;m++){
-  if(mode==='cycle'){html+=calMonthBlock(y,m);continue}
+  if(mode==='cycle'){const first=new Date(y,m,1),dim=new Date(y,m+1,0).getDate(),off=(first.getDay()+6)%7;
+   let cells='';
+   for(let i=0;i<off;i++)cells+='<span class="cal-cell cal-empty"></span>';
+   for(let d=1;d<=dim;d++){
+    const iso=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const isPr=iso>today()&&pred&&pred.some(w=>iso>=w.from&&iso<=w.to);
+    cells+='<button type="button" class="cal-cell'+(isPr?' pr':'')+'" data-cal-d="'+iso+'">'+d+'</button>';
+   }
+   html+='<section class="cal-month" data-cal-ym="'+y+'-'+String(m+1).padStart(2,'0')+'"><h3 class="cal-month-h">'+E(first.toLocaleDateString(undefined,{month:'long',year:'numeric'}))+'</h3><div class="cal-grid">'+['S','M','T','W','T','F','S'].map(d=>'<div class="cal-wd">'+d+'</div>').join('')+cells+'</div></section>';continue}
   const first=new Date(y,m,1),dim=new Date(y,m+1,0).getDate(),off=(first.getDay()+6)%7;
   let cells='';
   for(let i=0;i<off;i++)cells+='<span class="cal-cell cal-empty mg-cell-empty"></span>';
@@ -2359,7 +2383,7 @@ async function fetchManifest(){const bust='?t='+Date.now();
  const r=await fetch(UPDATE_MANIFEST+bust,{cache:'no-store'});if(!r.ok)throw new Error('manifest '+r.status);
  return await r.json()}
 // Baked-in build identity. Keep in sync with android/app/build.gradle (versionCode/versionName).
-const APP_VERSION={code:140,name:'1.2.125'};
+const APP_VERSION={code:141,name:'1.2.126'};
 const UPD_SKIP_KEY='bloom_upd_skip';
 const updater=()=>{const C=window.Capacitor;if(!C)return null;
  const P=C.Plugins&&C.Plugins.BloomUpdater;
@@ -2574,6 +2598,7 @@ let navScrollT=null;
 window.addEventListener('scroll',()=>{if(navScrollT)clearTimeout(navScrollT);navScrollT=setTimeout(()=>{navScrollT=null;try{saveNav()}catch(e){}})},{passive:true});
 function shell(){splashAppIsReady();
  try{if(RO&&!ownMode&&D){roAdoptReading();if(sb&&sbUser&&sbUser.id&&!D.__ownReadLoaded){Object.defineProperty(D,'__ownReadLoaded',{value:true,enumerable:false,configurable:true,writable:true});readingLoadOnce().then(()=>{if(view==='library'&&safeToRender())shell()}).catch(()=>{})}}}catch(e){}
+ try{if(ownMode&&D&&!D.__ownReadLoaded){Object.defineProperty(D,'__ownReadLoaded',{value:true,enumerable:false,configurable:true,writable:true});readingLoadOnce().then(()=>{if(ownMode&&view==='library'&&safeToRender())shell()}).catch(()=>{})}}catch(e){}
  if(funTimer){clearInterval(funTimer);funTimer=null}if(foodTimer){clearInterval(foodTimer);foodTimer=null}if(roTimer){clearInterval(roTimer);roTimer=null}
  if(ownMode&&view!=='planner'){exitOwnMode(true);planPanel='partner'}
  if(RO&&!ROcloud){const raw=ST.get(key(ROowner));if(raw!=null){roHash=roHashOf(raw);D=Object.assign(blank(),J(key(ROowner),{}))}}
@@ -3160,17 +3185,19 @@ function bindCk(d,re){document.querySelectorAll('input[data-t]').forEach(i=>i.on
     const wt=$('#wt').value,exMin=$('#exMin').value;
     const out=Object.assign(draft,{tags,customSx:customSx.length?customSx:undefined,sleep:s===''?undefined:+s,weight:wt===''?undefined:+wt,exMin:exMin===''?undefined:+exMin,sidefx:$('#sfx').value.trim()||undefined});if(out.flow=='none')delete out.flow;delete out.note;
   D.logs[d]=Object.assign({water:L(d).water},out);if(!Object.values(D.logs[d]).some(v=>v!==undefined&&!(Array.isArray(v)&&!v.length)))delete D.logs[d];save();sheet();toast('Saved');shell()}}
-function monthView(){
+ function monthView(){
  const y = new Date().getFullYear();
  const c = cycleStats(); const s = starts();
+ const plen=(()=>{const runs=[];for(const x of s){let e=x,n=1;while(bleed(addD(e,1))&&n<14){e=addD(e,1);n++}runs.push(n)}return runs.length?Math.max(1,Math.round(runs.reduce((a,b)=>a+b,0)/runs.length)):5})();
  $('#main').innerHTML=`<button class="btn ghost sm" id="bk" style="margin-bottom:10px">\u2039 Back</button><h1>Month calendar</h1><div class="calsheet" style="height:auto;max-height:none;margin:0 -2px 14px"><div class="calsheet-scroll" id="calScroll" style="padding:0;overflow:visible"></div></div>
+<div class="card"><div class="card-h"><h3>Legend</h3></div><div class="cal-legend"><span class="cal-leg"><span class="cal-sw sw-bleed"></span>Bleeding</span><span class="cal-leg"><span class="cal-sw sw-spot"></span>Spotting</span><span class="cal-leg"><span class="cal-sw sw-logged"></span>Logged</span><span class="cal-leg"><span class="cal-sw sw-pred"></span>Predicted</span></div></div>
 <div class="card"><div class="card-h"><h3>Estimates</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Calculated</span></div><p class="meta">${cycleLine()}</p>${c.n>=2?`<p class="meta" style="margin-top:6px">Ovulation is not estimated.</p>`:''}</div>
 <div class="card"><div class="card-h"><h3>History</h3></div>${s.length?s.slice().reverse().map((x,i,a)=>{const idx=s.length-1-i;const ln=idx>0?Math.round((new Date(x)-new Date(s[idx-1]))/864e5):null;let e=x;while(bleed(addD(e,1)))e=addD(e,1);return`<div class="kv"><span>${fmt(x,{month:'short',day:'numeric',year:'numeric'})}  ${fmt(e)}</span><b>${ln?ln+' d':'First'}</b></div>`}).join(''):'<p class="meta">No periods logged</p>'}</div>`;
  $('#bk').onclick=()=>{view='cycle';shell()};
  const scroll=document.getElementById('calScroll');
  const renderYear = (yr) => {
    let html='';
-   html += calMonthsHTML(yr, null, 'cycle');
+   html += calMonthsHTML(yr, null, 'cycle', predictedBleedWindows(s,{avg:c.avg,plen,until:yr+'-12-31'}));
    html += calContinueBtn(yr);
    scroll.insertAdjacentHTML('beforeend', html);
    if (!scroll.__bound) {

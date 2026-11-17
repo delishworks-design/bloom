@@ -1,8 +1,8 @@
 {
-    "versionCode": 140,
-    "versionName": "1.2.125",
-    "notes": "Auto-download the latest APK in the background; the banner and update sheet only appear after the download has finished. Tap Install to hand the package installer to Android.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.125/bloom-1.2.125.apk",
-    "sha256": "a906bac5534be7688fcf392342e730c7d74e07ca83824cd545a8669d0a690704",
+    "versionCode": 141,
+    "versionName": "1.2.126",
+    "notes": "Month calendar now shows a legend (Bleeding, Spotting, Logged, Predicted) and highlights predicted bleeding days in future months. Finished books now count toward your yearly goal on both your account and the followed/follower accounts.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.126/bloom-1.2.126.apk",
+    "sha256": "26a2c51416465d40e4cbcf0e01310ff344e37a307ab11f301d3645cf9d6d57e6",
     "publishedAt": "2026-11-17"
 }
