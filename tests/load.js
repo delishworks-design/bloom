@@ -53,6 +53,7 @@ function load() {
     esc: ['E'],
     sync: ['isPlainObject', 'mergeDocs', 'chooseLoginDoc', 'docHasContent'],
     library: ['libEnsure', 'libBookEntry', 'libBlank', 'libVisibleIds', 'libRecentList', 'libArticleRead', 'migrateLibrary'],
+    classicCover: ['coverHash','coverLines','escXml','classicCoverSVG'],
     netmsg: ['errText', 'isOffline', 'OFFLINE_MSG'],
     roWho: ['roWho'],
     sxmig: ['migrateCustomSymptoms'],
@@ -74,7 +75,7 @@ function load() {
     bloomcal: ['calContinueBtn', 'calMonthsHTML', 'predictedBleedWindows'],
     sheetCancel: ['sheetHasCancel']
   };
-  for (const name of ['phases', 'esc', 'sync', 'netmsg', 'roWho', 'sxmig', 'backup', 'smart', 'auth', 'ownmode', 'widget', 'planui', 'library', 'reader', 'errorIgnore', 'partnerLibrary', 'plannerAdvance', 'readingGoal', 'readingSync', 'bloomcal', 'libraryExplore', 'sheetCancel', 'focusVoice']) {
+  for (const name of ['phases', 'esc', 'sync', 'netmsg', 'roWho', 'sxmig', 'backup', 'smart', 'auth', 'ownmode', 'widget', 'planui', 'library', 'reader', 'errorIgnore', 'partnerLibrary', 'plannerAdvance', 'readingGoal', 'readingSync', 'bloomcal', 'libraryExplore', 'sheetCancel', 'focusVoice', 'classicCover']) {
     let code;
     try{ code = extract(html, name); }catch(e){ if(name==='auth') continue; throw e; }
     const names = exportsByName[name];
