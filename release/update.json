@@ -1,8 +1,8 @@
 {
-  "versionCode": 150,
-  "versionName": "1.5.0",
-  "notes": "Bloom Store: buy HealHer's ebooks (The PCOS Reset, PCOS for the Newly Diagnosed) plus free featured picks, health recommendations, new releases and genre shelves",
-  "url": "https://github.com/delishworks-design/bloom/releases/download/v1.5.0/bloom-1.5.0.apk",
-  "sha256": "d70429b52c4d5c4d893e2565e5ff5ecc6f74e19febcb7a732c23f801582714aa",
+  "versionCode": 151,
+  "versionName": "1.6.0",
+  "notes": "My Library now shows an Explore shelf with See all into the Bloom Store (articles removed, books only). Planner's Month tab is now a full-width Calendar, same size as the Cycle page. Header is background-free and store shelves scroll edge to edge.",
+  "url": "https://github.com/delishworks-design/bloom/releases/download/v1.6.0/bloom-1.6.0.apk",
+  "sha256": "f53def21b3209722288e64f1cb923e7edfa3f9c232ee88082fbb9b75a785c919",
   "publishedAt": "2026-11-17"
 }

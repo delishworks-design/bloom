@@ -1258,7 +1258,7 @@ function shareFlags(doc){
 }
 function plannerTabSet(mine,flags){
  const f=typeof flags==='boolean'?{tasks:true,meals:true,journal:flags}:(flags||{tasks:true,meals:true,journal:false});
- const t=[];if(mine||f.tasks!==false)t.push(['day','Task'],['month','Month']);if(mine||f.meals!==false)t.push(['meals','Meals']);if(mine||f.journal)t.push(['journal','Journal']);return t;
+ const t=[];if(mine||f.tasks!==false)t.push(['day','Task'],['month','Calendar']);if(mine||f.meals!==false)t.push(['meals','Meals']);if(mine||f.journal)t.push(['journal','Journal']);return t;
 }
 function ringPillBare(state,irregular){return state==='estimated'&&!!irregular}
 function peerLabel(sharedName,profName,fallback){return String(sharedName||profName||'').trim()||fallback||'Follower'}
@@ -2409,7 +2409,7 @@ async function fetchManifest(){const bust='?t='+Date.now();
  const r=await fetch(UPDATE_MANIFEST+bust,{cache:'no-store'});if(!r.ok)throw new Error('manifest '+r.status);
  return await r.json()}
 // Baked-in build identity. Keep in sync with android/app/build.gradle (versionCode/versionName).
-const APP_VERSION={code:150,name:'1.5.0'};
+const APP_VERSION={code:151,name:'1.6.0'};
 const UPD_SKIP_KEY='bloom_upd_skip';
 const updater=()=>{const C=window.Capacitor;if(!C)return null;
  const P=C.Plugins&&C.Plugins.BloomUpdater;
@@ -3357,7 +3357,7 @@ function dayTasksSheet(d, doc, only){
 function pMonth(src,ro){const doc=src||D,only=ro==null?RO:ro;
  const now=today();const base=new Date(now+'T12:00');
  const y=base.getFullYear();
- $('#pb').innerHTML=`<div class="card"><div class="card-h"><h3>Calendar</h3></div><div class="calsheet" style="height:min(70vh,680px);max-height:none;margin:0;width:100%"><div class="calsheet-scroll" id="pCalScroll" style="padding:0"></div></div></div>`;
+ $('#pb').innerHTML=`<div class="calsheet" style="height:auto;max-height:none;margin:0 -2px 14px"><div class="calsheet-scroll" id="pCalScroll" style="padding:0;overflow:visible"></div></div>`;
  const scroll=document.getElementById('pCalScroll');
  const todayStr=now;
  const renderYear = (yr) => {
