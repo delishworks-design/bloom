@@ -2716,11 +2716,11 @@ function ringPillText(dt,len,left,elapsed){
  if(cycleStats().irregular)return who+' cycles vary, so dates are a rough guide';
  if(left<=1)return who+' period may start today';
  if(left<=4)return who+' period may start in ~'+left+' days';
- if(p.k==='Ovulation')return 'Mid-cycle';
+ if(p.k==='Ovulation')return 'Ovulation';
  if(p.k==='Follicular')return RO?roWho()+' energy may be rising':'Energy may be rising';
  return who+' period may start in '+left+' days'}
  function polarPt(cx,cy,r,deg){const a=deg*Math.PI/180;return{x:(cx+r*Math.cos(a)).toFixed(2),y:(cy+r*Math.sin(a)).toFixed(2)}}
- const phaseLabel=k=>k==='Ovulation'?'Mid-cycle':k;
+ const phaseLabel=k=>k;
  function phaseWheelSVG(c,dt){
  const len=c.avg||28,R=92,W=22,phases=phaseRanges(len),ph=phaseInfo(dt,len),cur=phases.find(p=>p[0]===ph.k)||phases[0];
  const segs=phases.map(([n,from,to,col])=>{
@@ -2750,7 +2750,7 @@ function phaseSheet(c,current){
 // @test-begin phases
  function phaseInfo(dt,len){if(dt<=5)return{t:'Menstrual phase',k:'Menstrual',c:'var(--rose)'};
 if(dt<=Math.round(len*.45))return{t:'Follicular phase',k:'Follicular',c:'var(--teal)'};
-   if(dt<=Math.round(len*.58))return{t:'Mid-cycle window',k:'Ovulation',c:'var(--pink)'};
+   if(dt<=Math.round(len*.58))return{t:'Ovulation',k:'Ovulation',c:'var(--pink)'};
  return{t:'Luteal phase',k:'Luteal',c:'var(--rose)'}}
 // @test-end phases
 function miniBars(k,n,col){const days=[...Array(n)].map((_,i)=>addD(today(),i-n+1)),vals=days.map(d=>L(d)[k]);
