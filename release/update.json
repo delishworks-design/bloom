@@ -1,8 +1,8 @@
 {
-    "versionCode": 147,
-    "versionName": "1.4.2",
-    "notes": "Critical fix: book cover artwork was missing from the app — generated covers now render with images. (Sync exclude was emptying the assets folder.)",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.4.2/bloom-1.4.2.apk",
-    "sha256": "0a804d7682691d09d87771766535c84214fc5aeede23345ff3214417b062dfbf",
+    "versionCode": 148,
+    "versionName": "1.4.3",
+    "notes": "Fixed: generated cover maroon divider struck through author; Explore book cover showed fullscreen instead of thumbnail.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.4.3/bloom-1.4.3.apk",
+    "sha256": "f5a63c4ae28f76bd68dc1b03ffe527ed0aaee236e3c0ffd75f3cce6af76cee8c",
     "publishedAt": "2026-11-17"
 }
