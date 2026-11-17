@@ -2158,6 +2158,13 @@ let sheetVV=null;
 function sheetFit(){const box=document.querySelector('#sh>div');if(!box)return;
  const vv=window.visualViewport;const h=vv?vv.height:window.innerHeight;
  box.style.maxHeight=Math.max(220,Math.round(h*0.88))+'px'}
+// @test-begin sheetCancel
+function sheetHasCancel(html){
+ const s=String(html||'');
+ if(/<button[^>]*>\s*(?:Cancel|Close|Not yet|No)\s*<\/button>/i.test(s))return true;
+ return /\bid="(?:[^"]*Cancel|[^"]*No|cx|etc)"/i.test(s);
+}
+// @test-end sheetCancel
 function sheet(h){const s=$('#sheet');
  if(!h){
    s.innerHTML='';
@@ -2166,7 +2173,8 @@ function sheet(h){const s=$('#sheet');
    return;
  }
  document.documentElement.classList.add('sheet-open');
- s.innerHTML=`<div class="sheet" id="sh"><div role="dialog" aria-modal="true"><button type="button" class="sheet-back" id="sheetBack" aria-label="Close">\u2039 Back</button>${h}</div></div>`;
+ const backHTML=sheetHasCancel(h)?'':'<button type="button" class="sheet-back" id="sheetBack" aria-label="Close">\u2039 Back</button>';
+ s.innerHTML=`<div class="sheet" id="sh"><div role="dialog" aria-modal="true">${backHTML}${h}</div></div>`;
  $('#sh').onclick=e=>{if(e.target.id=='sh')sheet()};
  const back=document.getElementById('sheetBack');if(back)back.onclick=()=>sheet();
  // never auto-focus an input: the soft keyboard covers the sheet actions
