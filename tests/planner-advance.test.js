@@ -162,16 +162,19 @@ test('plannerTabSet has no Week tab and labels the day tab Task', () => {
   assert.ok(partner.some(([k, l]) => k === 'day' && l === 'Task'));
 });
 
-test('focusVoiceFor is stable per date, stays in list, rotates across days', () => {
+test('focusVoiceFor is stable per date, pools are wired and stage-aware', () => {
   const { focusVoiceFor, SMART_FOCUS_VOICE } = load();
   const goals = Object.keys(SMART_FOCUS_VOICE);
   assert.equal(goals.length, 7);
   for (const g of goals) {
-    const first = focusVoiceFor(g, '2026-11-17');
-    assert.equal(focusVoiceFor(g, '2026-11-17'), first);
-    assert.ok(SMART_FOCUS_VOICE[g].includes(first));
-    const seen = new Set(Array.from({ length: 14 }, (_, i) => focusVoiceFor(g, '2026-11-' + String(i + 1).padStart(2, '0'))));
+    const v = SMART_FOCUS_VOICE[g];
+    assert.ok(v.base.length >= 5 && v.roast.length >= 3 && v.think.length >= 2, g);
+    const d = '2026-11-17';
+    assert.equal(focusVoiceFor(g, d, 4), focusVoiceFor(g, d, 4));
+    assert.ok([...v.base, ...v.roast, ...v.think].includes(focusVoiceFor(g, d, 4)));
+    for (const s of [0, 1]) assert.ok(v.roast.includes(focusVoiceFor(g, d, s)));
+    const seen = new Set(Array.from({ length: 14 }, (_, i) => focusVoiceFor(g, '2026-11-' + String(i + 1).padStart(2, '0'), 4)));
     assert.ok(seen.size > 1, g + ' should rotate lines');
   }
-  assert.equal(focusVoiceFor('nonsense', '2026-11-17'), 'I\u2019m growing at your pace.');
+  assert.equal(focusVoiceFor('nonsense', '2026-11-17', 4), 'I\u2019m growing at your pace.');
 });

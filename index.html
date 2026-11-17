@@ -605,16 +605,23 @@ html[data-theme=dark] .fun{border-color:rgba(217,107,140,.45) !important}
 .smart-focus-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 2px 10px}
 .smart-focus-track{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding-bottom:2px;scrollbar-width:none}
 .smart-focus-track::-webkit-scrollbar{display:none}
-.smart-focus-card{flex:0 0 86%;scroll-snap-align:start;border:1.5px solid var(--line);border-radius:20px;padding:12px 14px;background:var(--card);min-width:0;display:flex;flex-direction:column;box-shadow:0 2px 10px rgba(120,70,80,.08)}
+.smart-focus-card{flex:0 0 86%;scroll-snap-align:start;background:transparent;border:0;box-shadow:none;padding:2px 2px;min-width:0;display:flex;flex-direction:column}
 .smart-focus-card-title{font-size:.66rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--rose);margin:0}
 .smart-focus-tap{flex:1;display:grid;grid-template-columns:96px 1fr;align-items:center;gap:14px;width:100%;text-align:left;background:transparent;border:0;padding:8px 2px;cursor:pointer;font:inherit}
 .smart-focus-meter{width:96px;height:96px}
 .smart-focus-meter svg{width:100%;height:100%;display:block;overflow:visible;transform-origin:50% 96%;transform-box:fill-box}
 @media (prefers-reduced-motion: no-preference){
- .smart-focus-meter svg{animation:bloomSway 6.2s cubic-bezier(.45,0,.55,1) infinite}
- .smart-focus-card:nth-child(even) .smart-focus-meter svg{animation-duration:7.1s;animation-delay:-1.7s}
- @keyframes bloomSway{0%,100%{transform:rotate(-1.35deg)}50%{transform:rotate(1.35deg)}}
- .smart-focus-card{transition:transform .32s cubic-bezier(.34,1.35,.64,1),box-shadow .32s cubic-bezier(.34,1.35,.64,1)}
+ .smart-focus-meter svg{animation:bloomSway 3.6s cubic-bezier(.45,0,.55,1) infinite}
+ .smart-focus-card:nth-child(even) .smart-focus-meter svg{animation-duration:4.4s;animation-delay:-1.1s}
+ @keyframes bloomSway{0%,100%{transform:rotate(-2.6deg)}50%{transform:rotate(2.6deg)}}
+ .smart-focus-card{transition:transform .32s cubic-bezier(.34,1.35,.64,1);animation:cardPop .55s cubic-bezier(.3,1.5,.45,1) both}
+ .smart-focus-card:nth-child(2){animation-delay:.07s}
+ .smart-focus-card:nth-child(3){animation-delay:.14s}
+ .smart-focus-card:nth-child(4){animation-delay:.21s}
+ .smart-focus-card:nth-child(5){animation-delay:.28s}
+ .smart-focus-card:nth-child(6){animation-delay:.35s}
+ .smart-focus-card:nth-child(7){animation-delay:.42s}
+ @keyframes cardPop{from{transform:translateY(16px) scale(.6);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
  .smart-focus-card:active{transform:scale(.955)}
  .smart-focus-sheetflower svg{animation:bloomGrow 1.1s cubic-bezier(.36,1.22,.62,1) both;transform-origin:50% 96%;transform-box:fill-box}
  @keyframes bloomGrow{from{transform:scale(.32) rotate(-9deg);opacity:0}55%{opacity:1}to{transform:scale(1) rotate(0);opacity:1}}
@@ -624,16 +631,14 @@ html[data-theme=dark] .fun{border-color:rgba(217,107,140,.45) !important}
 .smart-focus-bubble::before{content:"";position:absolute;left:-7.5px;top:13px;border:4px solid transparent;border-right-color:#E8A0B4;border-left:0}
 .smart-focus-bubble::after{content:"";position:absolute;left:-4.6px;top:14px;border:3.2px solid transparent;border-right-color:#FFFDF8;border-left:0}
 @media (prefers-reduced-motion: no-preference){
- .smart-focus-bubble{animation:bubblePop .5s cubic-bezier(.34,1.45,.64,1) .18s both}
- @keyframes bubblePop{from{transform:scale(.55) translateY(4px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+ .smart-focus-bubble{animation:bubblePop .48s cubic-bezier(.3,1.6,.4,1) .12s both,bubbleBob 4.2s ease-in-out .7s infinite}
+ @keyframes bubblePop{from{transform:scale(.3) rotate(-7deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
+ @keyframes bubbleBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-2.5px)}}
 }
 .smart-focus-stage{font-size:.62rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--mut)}
 .smart-focus-caption{font-size:.82rem;line-height:1.32;color:var(--ink);margin-top:3px;font-weight:600}
 .smart-focus-hint{display:inline-flex;align-items:center;gap:4px;margin-top:7px;font-size:.56rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--faded)}
 .smart-focus-hint i{font-style:normal;font-size:.7rem;line-height:1}
-.smart-focus-prog{height:2px;border-radius:2px;background:rgba(184,69,107,.12);margin:10px 2px 0;overflow:hidden}
-.smart-focus-prog i{display:block;height:100%;border-radius:2px;background:var(--rose);opacity:.4;transition:transform .3s ease,width .3s ease}
-.smart-focus-prog[data-n="1"]{display:none}
 .smart-focus-reason{font-size:.82rem;line-height:1.45;color:var(--ink);margin:0;padding-top:10px;border-top:1px dashed var(--line)}
 .smart-focus-motivator{font-size:.8rem;line-height:1.45;color:var(--mut);margin:8px 0 0}
 .smart-focus-sheetflower{width:110px;height:110px;margin:2px auto}
@@ -3053,6 +3058,7 @@ function cyclePage(){const d=today(),l=L(d),ts=tasksFor(d),n=ts.filter(t=>isDone
  <div class="ringwrap"><div class="ringdisc"></div>${ringSVG(c,current)}<div class="ringcenter"><div class="ringlbl">${current.state==='estimated'||current.state==='overdue'?'Day':current.state==='no-history'?'Cycle':'\u2014'}</div><div class="ringday">${ringNumber==null?'\u2014':ringNumber}</div><div class="ringcap">${ringCap}</div>${ringPillBare(current.state,c.irregular)?`<div class="ringnote">${E(centerPill)}</div>`:`<div class="ringpill">${E(centerPill)}</div>`}</div></div>
  
  ${RO?'':`<button class="logpill" id="lp"><span class="plus">${IC.plus(16)}</span>Log Period</button>`}
+ ${RO?'':focusBlock(RO)}
  <div class="stats3">
   <button type="button" class="stat" id="phStat" aria-haspopup="dialog" aria-label="View cycle phases graph"><span class="ic">${IC.flower(13)}</span><b class="word">${phaseLabel(ph.k)}</b><span class="lbl">Phase <span class="chev" aria-hidden="true">\u203a</span></span></button>
   <div class="stat"><span class="ic">${IC.pulse(13)}</span><b>${l.mood?l.mood:'\u2014'}</b><span class="lbl">Mood</span></div>
@@ -3085,6 +3091,7 @@ function cyclePage(){const d=today(),l=L(d),ts=tasksFor(d),n=ts.filter(t=>isDone
  if(!RO)$('#logme').onclick=()=>dayLog(d);
  startFun();
  initPartnerCarousel();
+ try{wireSmartFocus(document.getElementById('smart-focus'))}catch(e){reportErr('focus.wire',e)}
  document.querySelectorAll('[data-mood]').forEach(b=>b.onclick=()=>{const x=L(d);D.logs[d]=Object.assign(x,{mood:+b.dataset.mood});save();cyclePage()});
  const setWater=v=>{const x=L(d);D.logs[d]=Object.assign(x,{water:Math.max(0,Math.min(goal,v))});save();cyclePage();try{waterReminderSync(true)}catch(e){}try{readReminderSync(true)}catch(e){}try{sidesSync(true)}catch(e){}};
  if(!RO){$('#wplus').onclick=()=>setWater((l.water||0)+1);
@@ -4391,10 +4398,10 @@ function smartFlowerSVG(goal,stage){
  const sparkles=`<circle cx="-13" cy="-1" r=".34" fill="${P.petalHi}"><animate attributeName="opacity" values="0;.85;0" keyTimes="0;.5;1" calcMode="spline" keySplines=".4 0 .2 1|.4 0 .2 1" dur="3.6s" begin="0s" repeatCount="indefinite"/><animate attributeName="cy" values="1;-8" calcMode="spline" keySplines=".4 0 .55 1" dur="3.6s" begin="0s" repeatCount="indefinite"/></circle><circle cx="12.5" cy="-7" r=".3" fill="#ffffff"><animate attributeName="opacity" values="0;.9;0" keyTimes="0;.5;1" calcMode="spline" keySplines=".4 0 .2 1|.4 0 .2 1" dur="4.4s" begin="1.1s" repeatCount="indefinite"/><animate attributeName="cy" values="-4;-13" calcMode="spline" keySplines=".4 0 .55 1" dur="4.4s" begin="1.1s" repeatCount="indefinite"/></circle><circle cx="2" cy="10" r=".28" fill="${P.centerHi}"><animate attributeName="opacity" values="0;.8;0" keyTimes="0;.5;1" calcMode="spline" keySplines=".4 0 .2 1|.4 0 .2 1" dur="3.1s" begin="1.9s" repeatCount="indefinite"/><animate attributeName="cy" values="13;4" calcMode="spline" keySplines=".4 0 .55 1" dur="3.1s" begin="1.9s" repeatCount="indefinite"/></circle>`;
  if(s===3){
   const headY=stemTop+1;
-  return out+`${offshoot(-1,56,22,44,true,.85)}${leaf(-1,1.25,0,50)}${leaf(1,.9,8,55)}<g transform="translate(${cx} ${headY-1})" filter="url(#${uid}Drop)">${spBloom(true)}${sparkles}</g></svg>`;
+  return out+`${offshoot(-1,56,22,44,true,.85)}${leaf(-1,1.25,0,50)}${leaf(1,.9,8,55)}<g transform="translate(${cx} ${headY-2}) scale(1.18)" filter="url(#${uid}Drop)">${spBloom(true)}${sparkles}</g></svg>`;
  }
  const headY=stemTop+2;
- return out+`${offshoot(-1,54,19,42,true,1)}${offshoot(1,50,53,38,false,1.1)}${leaf(-1,1.4,0,52)}${leaf(1,1.2,-6,55)}${leaf(-1,.95,12,42)}${leaf(1,.75,-16,40)}<g transform="translate(${cx} ${headY-4})" filter="url(#${uid}Drop)">${spBloom(false)}${sparkles}</g></svg>`;
+ return out+`${offshoot(-1,54,19,42,true,1)}${offshoot(1,50,53,38,false,1.1)}${leaf(-1,1.4,0,52)}${leaf(1,1.2,-6,55)}${leaf(-1,.95,12,42)}${leaf(1,.75,-16,40)}<g transform="translate(${cx} ${headY-3}) scale(1.3)" filter="url(#${uid}Drop)">${spBloom(false)}${sparkles}</g></svg>`;
 }
 function smartGoalProgress(goal,ctx){
  ctx=ctx||{};
@@ -4461,11 +4468,11 @@ function smartFocusHTML(goal,goals,noGoals,cards){
  const list=Array.isArray(cards)&&cards.length?cards:(goals||[goal]).map(g=>({goal:g,name:smartFocusName(g),ctx:{}}));
  const items=list.map(c=>{const prog=smartGoalProgress(c.goal,c.ctx||{});return {goal:c.goal,name:prog.name||c.name||c.goal,stageName:prog.stageName,caption:prog.caption,reason:prog.reason,motivator:prog.motivator,stage:prog.stage};});
  try{window.__focusItems=items}catch(e){}
- const html=items.map((it,i)=>`<article class="smart-focus-card${i===0?' is-active':''}" data-goal="${E(it.goal)}" data-focus="${i}" role="listitem">
+ const html=items.map((it,i)=>`<article class="smart-focus-card" data-goal="${E(it.goal)}" data-focus="${i}" role="listitem">
    <button class="smart-focus-tap" type="button" onclick="focusSheet(${i})" aria-label="${E(it.name)} - details">
     <span class="smart-focus-meter">${smartFlowerSVG(it.goal,it.stage)}</span>
     <span class="smart-focus-copy">
-     <span class="smart-focus-bubble">${E(focusVoiceFor(it.goal,today()))}</span>
+     <span class="smart-focus-bubble">${E(focusVoiceFor(it.goal,today(),it.stage))}</span>
      <span class="smart-focus-stage">${E(it.stageName)}</span>
      <h3 class="smart-focus-card-title">${E(it.name)}</h3>
      <span class="smart-focus-caption">${E(it.caption)}</span>
@@ -4473,7 +4480,7 @@ function smartFocusHTML(goal,goals,noGoals,cards){
     </span>
    </button>
   </article>`).join('');
- return `<div class="smart-focus-wrap" id="smart-focus" aria-labelledby="smart-focus-title">${kicker}<div class="smart-focus-track" role="list" tabindex="0">${html}</div><div class="smart-focus-prog" data-n="${items.length}" aria-hidden="true"><i></i></div></div>`;
+ return `<div class="smart-focus-wrap" id="smart-focus" aria-labelledby="smart-focus-title">${kicker}<div class="smart-focus-track" role="list" tabindex="0">${html}</div></div>`;
 }
 function focusSheet(i){
  const items=(typeof window!=='undefined'&&window.__focusItems)||[];const it=items[i];if(!it)return;
@@ -4888,18 +4895,44 @@ function smartEmptyPatternLine(logs){
 // @test-end smart
 // @test-begin focusVoice
 const SMART_FOCUS_VOICE={
- 'Understand my cycle':['I bloom on my own schedule.','Expecting company? Log it.','Cycle day gossip, coming right up.'],
- 'Steadier energy':['Face the light, one day at a time.','8am and… still sleepy?','Nap, coffee, or silence. Choose.'],
- 'Move more':['Petals open — so do legs.','Run. I\u2019ll watch.','Mum counts. Fifteen minutes.'],
- 'Better sleep':['Soft nights make full blooms.','It\u2019s 9pm. Time for bed.','I\u2019m asleep. You?'],
- 'Manage stress':['Even the brightest bracts bend, they don\u2019t break.','Journal first. Then cope.','How are you, honestly?'],
- 'Eat regularly':['Fed on time, petals shine.','You eaten?','Coffee is not lunch.'],
- 'Prepare for doctor visits':['Bringing sunny notes to your visit.','Questions for the doctor? Write them down.','Let\u2019s be ready.']
+ 'Understand my cycle':{
+  base:['I bloom on my own schedule.','Day whatever. We\u2019re counting.','My calendar, my crown.','I run this cycle. Literally.','Every cycle is a bouquet.','Petal tracker extraordinaire.'],
+  roast:['You call that a cycle? That is a guess.','No petal evidence. None.','My roots know more than that chart.'],
+  think:['\u2026counting the days\u2026','\u2026squinting at your charts\u2026']},
+ 'Steadier energy':{
+  base:['Face the light, one day at a time.','Be the sun, not the moth.','Petals up, energy up.','I don\u2019t chase light \u2014 I am the light.','Glowing is my hobby.','Bring the pep.'],
+  roast:['Running on caffeine and opinions.','That is not an energy level, that is a situation.','Your battery is a flat line with attitude.'],
+  think:['\u2026charging my core\u2026','\u2026measuring sunlight\u2026']},
+ 'Move more':{
+  base:['Petals open \u2014 so do legs.','Watch me bloom while you move.','Sixty seconds beats forever of nothing.','Mum says march.','A walk a day keeps the nap away.','Bend, twist, bloom.'],
+  roast:['Your legs are decorative, apparently.','Movement has also entered the chat. Not.','Entropy wears sneakers better than you.'],
+  think:['\u2026sniffing for activity\u2026','\u2026stretching\u2026']},
+ 'Better sleep':{
+  base:['Soft nights, full blooms.','It\u2019s wind-down time, sleepyhead.','Fluffy petals, fluffier pillows.','I doze \u2014 so you can.','Good dreams taste better early.','Bedtime is my favorite gossip hour.'],
+  roast:['Three hours and a grudge.','Running on fumes and stubbornness.','I wilt faster than your sleep schedule.'],
+  think:['\u2026crunching your sleep\u2026','\u2026dreaming up a better bedtime\u2026']},
+ 'Manage stress':{
+  base:['Even the brightest bracts bend, they don\u2019t break.','Pause, breathe, bloom.','I bend, you sway. We bloom.','Feelings are compost, not concrete.','Breathe like a flower with lungs.','Soft and strong \u2014 that\u2019s the move.'],
+  roast:['Your stress called \u2014 it wants a raise.','Tight chest? That is your life, negotiating.','You\u2019re one sigh from a monologue.'],
+  think:['\u2026weeding the worry\u2026','\u2026measuring the umms\u2026']},
+ 'Eat regularly':{
+  base:['Fed on time, petals shine.','Regular meals, regular blooms.','Breakfast is a love language.','Snack discipline queen.','The fork is mightier than the snooze button.','Hydrated petals are happy petals.'],
+  roast:['You survived on air and audacity?','That dinner was a rumor with wine.','Your stomach filed a formal complaint.'],
+  think:['\u2026crunching meal times\u2026','\u2026scanning the pantry\u2026']},
+ 'Prepare for doctor visits':{
+  base:['Bringing sunny notes to your visit.','Questions? Baby-bright.','List it or lose it. Write it down.','Petals, paperwork, and your fierce self.','I\u2019m your cheerleader with a stethoscope.','Ready when you are, flower.'],
+  roast:['You have vibes, not notes.','Does the doctor guess \u2014 or know?','You are glowing with clues. Unwritten.'],
+  think:['\u2026tallying symptoms\u2026','\u2026ironing the paperwork\u2026']}
 };
-function focusVoiceFor(goal,dateStr){
- const list=SMART_FOCUS_VOICE[goal]||['I\u2019m growing at your pace.'];
+function focusVoiceFor(goal,dateStr,stage){
+ const v=SMART_FOCUS_VOICE[goal];if(!v)return 'I\u2019m growing at your pace.';
  let h=0;String(dateStr||'').split('').forEach(ch=>{h=((h<<5)-h+ch.charCodeAt(0))|0});
- return list[Math.abs(h)%list.length];
+ const pick=arr=>arr[Math.abs(h+(stage|0))%arr.length];
+ const day=Math.abs(h);
+ if(stage!=null&&stage<=1)return pick(v.roast);
+ if(stage===2&&day%3===0)return pick(v.roast);
+ if(day%5===4)return pick(v.think);
+ return pick(v.base);
 }
 // @test-end focusVoice
 
@@ -4917,33 +4950,36 @@ function wireSmartFocus(root){
  const step=()=>{const k=track.children;return k.length>1?Math.max(1,k[1].offsetLeft-k[0].offsetLeft):Math.max(1,track.clientWidth)};
  const at=()=>Math.max(0,Math.min(cards().length-1,Math.round(track.scrollLeft/step())));
  const goTo=i=>{const c=cards()[i];if(!c)return;try{c.scrollIntoView({behavior:reduced?'auto':'smooth',block:'nearest',inline:'start'})}catch(e){track.scrollLeft=i*step()}};
- const prog=root.querySelector('.smart-focus-prog i');
- const setProg=()=>{if(!prog)return;const n=cards().length;prog.style.width=(100/Math.max(1,n))+'%';prog.style.transform='translateX('+(at()*100)+'%)'};
  const advance=()=>{const n=cards().length;if(!n)return;const next=at()+1>=n?0:at()+1;goTo(next)};
- const auto=()=>{stop();setProg();smartFocusTimer=setInterval(advance,4000)};
+ const auto=()=>{stop();smartFocusTimer=setInterval(advance,4000)};
  let swipe=null;
  track.addEventListener('pointerdown',e=>{swipe={x:e.clientX,closed:false};stop()},{passive:true});
  const endSwipe=()=>{swipe=null};
  track.addEventListener('pointerup',()=>{endSwipe();scheduleResume()},{passive:true});
  track.addEventListener('pointercancel',()=>{endSwipe();scheduleResume()},{passive:true});
  track.addEventListener('pointerleave',()=>{endSwipe();scheduleResume()},{passive:true});
- track.addEventListener('scroll',setProg,{passive:true});
  root.addEventListener('focusin',stop);
  root.addEventListener('focusout',e=>{if(!root.contains(e.relatedTarget))scheduleResume()});
  auto();
+}
+function focusBlock(ro){
+ if(ro)return '';
+ const startsNow=starts(),pred=smartPredictionHistory(startsNow,today()),cur=smartCurrentCycle(pred,today()),pats=smartPatternsFromLogs(D.logs,startsNow,{ro:ro});const extras=smartInsightsExtras(D.logs,startsNow,cur,pred,today(),D.meals,(D.p&&D.p.goals),smartFocusGoal,ro,(D.journal||[]));smartFocusGoal=extras.selectedGoal;
+ const list=(extras.focusGoals||[extras.selectedGoal]).map(g=>({goal:g,name:smartFocusName(g),ctx:extras.ctx}));
+ return smartFocusHTML(extras.selectedGoal,list.map(c=>c.goal),extras.noGoals,list);
 }
 function insights(){const n=range,days=[...Array(n)].map((_,i)=>addD(today(),i-n+1)),c=cycleStats();const tg={};days.forEach(d=>(L(d).tags||[]).concat(L(d).customSx||[]).forEach(t=>tg[t]=(tg[t]||0)+1));const tk=Object.entries(tg).sort((a,b)=>b[1]-a[1]).slice(0,6),mx=tk[0]?.[1]||1;
  const hab=days.map(d=>{const t=tasksFor(d);return t.length?t.filter(x=>isDone(x.id,d)).length/t.length:null}).filter(x=>x!=null);const ha=hab.length?Math.round(hab.reduce((a,b)=>a+b,0)/hab.length*100):null;
  const sl=days.map(d=>L(d).sleep).filter(Boolean);
  const smartStarts=starts(),smartPred=smartPredictionHistory(smartStarts,today()),smartCurrent=smartCurrentCycle(smartPred,today()),smartPats=smartPatternsFromLogs(D.logs,smartStarts,{ro:RO});const smartExtras=smartInsightsExtras(D.logs,smartStarts,smartCurrent,smartPred,today(),D.meals,RO?null:(D.p&&D.p.goals),smartFocusGoal,RO,RO?[]:(D.journal||[]));smartFocusGoal=smartExtras.selectedGoal;const viewerName=(RO?(ST.get('bloom_pname')||'friend'):(D.p.name||'friend')).split(' ')[0];if(!RO){const weekFacts=smartWeekFacts({logs:D.logs,startDates:smartStarts,current:smartCurrent,pred:smartPred,todayStr:today(),meals:D.meals,goals:D.p&&D.p.goals,ro:RO});if(weekFacts){smartExtras.weekFacts=weekFacts;const _wc=smartWeekTemplate(weekFacts);smartExtras.weekCard=_wc;if(!_wc)delete smartExtras.weekFacts;else smartExtras.weekOpts={showPrompt:false,exhausted:false};}}
  $('#main').innerHTML=`<h1>Insights</h1><div class="row">${[7,14,30,90].map(v=>`<button class="chip" data-r="${v}" aria-pressed="${range==v}">${v} days</button>`).join('')}</div>
-<div class="card smart-card" id="smart-card">${smartInsightsHTML(smartPred,smartCurrent,smartPats,viewerName,null,smartExtras)}</div>${RO?'':smartFocusHTML(smartExtras.selectedGoal,smartExtras.focusGoals||[smartExtras.selectedGoal],smartExtras.noGoals,(smartExtras.focusGoals||[smartExtras.selectedGoal]).map(g=>({goal:g,name:smartFocusName(g),ctx:smartExtras.ctx})))}<div class="card"><div class="card-h"><h3>Mood</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Recorded</span></div>${line('mood',n,5,'var(--rose)')}</div><div class="card"><div class="card-h"><h3>Energy</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Recorded</span></div>${line('energy',n,5,'var(--teal)')}</div>
+<div class="card smart-card" id="smart-card">${smartInsightsHTML(smartPred,smartCurrent,smartPats,viewerName,null,smartExtras)}</div><div class="card"><div class="card-h"><h3>Mood</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Recorded</span></div>${line('mood',n,5,'var(--rose)')}</div><div class="card"><div class="card-h"><h3>Energy</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Recorded</span></div>${line('energy',n,5,'var(--teal)')}</div>
 <div class="card"><div class="card-h"><h3>Sleep</h3><span class="meta">${sl.length?(sl.reduce((a,b)=>a+b,0)/sl.length).toFixed(1)+' h avg  '+sl.length+' nights':'\u2014'}</span></div>${line('sleep',n,12,'var(--teal)')}</div>
 <div class="card"><div class="card-h"><h3>Symptoms</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Recorded</span></div>${tk.length?tk.map(([t,v])=>`<div class="row sp"><span>${E(t)}</span><span class="meta">${v} d</span></div><div class="bar"><i style="width:${v/mx*100}%"></i></div>`).join(''):'<p class="meta">None logged</p>'}</div>
 <div class="card"><div class="card-h"><h3>Habit completion</h3><span class="meta">${ha==null?'':ha+'%'}</span></div>${ha==null?'<p class="meta">No planned tasks</p>':`<div class="bar"><i style="width:${ha}%"></i></div>`}</div>
 <div class="card"><div class="card-h"><h3>Cycle length</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Calculated</span></div>${c.len.length?`<div class="row" style="align-items:end;height:90px">${c.len.slice(-10).map(v=>`<div style="flex:1;text-align:center"><div style="height:${Math.min(v,90)}px;background:var(--pink);border-radius:6px 6px 0 0"></div><span class="meta" style="font-size:.7rem">${v}</span></div>`).join('')}</div>`:'<p class="meta">Needs 2 logged starts</p>'}</div>
 ${RO?'':'<div class="card"><div class="card-h"><h3>Appointment summary</h3></div><p class="meta" style="margin:0 0 8px">Name, cycle highlights and suggested questions — no journal, tasks or raw dumps.</p><button class="btn" id="ex" style="width:100%">Open preview</button></div>'}`;
-  document.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{range=+b.dataset.r;insights()});if(!RO)$('#ex').onclick=()=>apptView();const ctaBtn=document.getElementById('smart-cta');if(ctaBtn&&!RO){ctaBtn.onclick=()=>{const a=ctaBtn.dataset.action;if(a==='meals'){view='planner';tab='meals';shell()}else if(a==='journal'){view='planner';tab='journal';shell()}else if(a==='export'){apptView()}else dayLog(today())};}};wireSmartFocus(document.getElementById('smart-focus'))
+  document.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{range=+b.dataset.r;insights()});if(!RO)$('#ex').onclick=()=>apptView();const ctaBtn=document.getElementById('smart-cta');if(ctaBtn&&!RO){ctaBtn.onclick=()=>{const a=ctaBtn.dataset.action;if(a==='meals'){view='planner';tab='meals';shell()}else if(a==='journal'){view='planner';tab='journal';shell()}else if(a==='export'){apptView()}else dayLog(today())};}};
 function apptData(){
  const from=addD(today(),-89),days=[...Array(90)].map((_,i)=>addD(today(),i-89));
  const c=cycleStats(),s=starts();
@@ -6413,29 +6449,30 @@ const SIDES_IDS=[SLEEP_BASE+21,SLEEP_BASE+22,MEAL_BASE+8,MEAL_BASE+12,MEAL_BASE+
 async function sidesSync(quiet){
  const LN=notifPlugin();if(!LN)return 'native';
  const rem=(D&&D.rem)||{};const d=today();const log=(D&&D.logs&&D.logs[d])||{};
+ if(rem.sidesOn===false){try{await LN.cancel({notifications:SIDES_IDS.map(id=>({id}))})}catch(e){}return 'ok'}
  try{await LN.cancel({notifications:SIDES_IDS.map(id=>({id}))})}catch(e){}
  const want=[];
  const ch='bloom_reminders',Snd='beep.wav',ico='ic_stat_bloom';
- if(rem.sleepOn&&log.sleep==null){
+ if(log.sleep==null){
   want.push({id:SLEEP_BASE+21,title:'Bloom',body:'Hydrangea: It\u2019s 9pm. Time for bed.',channelId:ch,sound:Snd,schedule:{on:{hour:21,minute:0},allowWhileIdle:true},smallIcon:ico,iconColor:'#B8456B'});
   want.push({id:SLEEP_BASE+22,title:'Bloom',body:'Hydrangea: 10pm. Seriously. Lights out.',channelId:ch,sound:Snd,schedule:{on:{hour:22,minute:0},allowWhileIdle:true},smallIcon:ico,iconColor:'#B8456B'});
  }
- if(rem.mealOn){
+ if(true){
   want.push({id:MEAL_BASE+8,title:'Bloom',body:'Zin: Morning. Coffee is not breakfast.',channelId:ch,sound:Snd,schedule:{on:{hour:8,minute:0},allowWhileIdle:true},smallIcon:ico,iconColor:'#E89478'});
   want.push({id:MEAL_BASE+12,title:'Bloom',body:'Zin: Lunch o\u2019clock. Actual food this time.',channelId:ch,sound:Snd,schedule:{on:{hour:12,minute:0},allowWhileIdle:true},smallIcon:ico,iconColor:'#E89478'});
   want.push({id:MEAL_BASE+18,title:'Bloom',body:'Zin: Dinner. Before it gets late-ish.',channelId:ch,sound:Snd,schedule:{on:{hour:18,minute:30},allowWhileIdle:true},smallIcon:ico,iconColor:'#E89478'});
  }
- if(rem.moveOn&&!(+log.exMin>=20)&&!(log.exercise&&log.exercise!=='Rest')){
+ if(!(+log.exMin>=20)&&!(log.exercise&&log.exercise!=='Rest')){
   want.push({id:MOVE_BASE,title:'Bloom',body:'Mum: Hours of sitting. Fifteen minutes — any move counts.',channelId:ch,sound:Snd,schedule:{on:{hour:16,minute:0},allowWhileIdle:true},smallIcon:ico,iconColor:'#DE9553'});
  }
- if(rem.calmOn&&!(D.journal||[]).some(j=>j&&j.d===d)){
+ if(!(D.journal||[]).some(j=>j&&j.d===d)){
   want.push({id:CALM_BASE,title:'Bloom',body:'Bougie: Heavy head? Journal it out before sleep.',channelId:ch,sound:Snd,schedule:{on:{hour:20,minute:30},allowWhileIdle:true},smallIcon:ico,iconColor:'#87AA90'});
  }
- if(rem.energyOn&&log.energy==null){
+ if(log.energy==null){
   want.push({id:ENERGY_BASE,title:'Bloom',body:'Sunflower: 3pm crash? Energy check — log it.',channelId:ch,sound:Snd,schedule:{on:{hour:15,minute:0},allowWhileIdle:true},smallIcon:ico,iconColor:'#E0A93F'});
  }
- if(rem.cycleOn){try{const s2=starts();const pred=s2.length>=2?smartPredictionHistory(s2,d):null;const exp=pred&&pred.state==='predicted'?pred.expected:null;if(exp===d&&!bleed(d))want.push({id:CYCLE_BASE,title:'Bloom',body:'Rosie: Expected day. Log your period — don\u2019t make me guess.',channelId:ch,sound:Snd,schedule:{on:{hour:20,minute:0},allowWhileIdle:true},smallIcon:ico,iconColor:'#C96B87'})}catch(e){reportErr('reminder.sides.cycle',e)}}
- if(rem.visitOn){
+ {try{const s2=starts();const pred=s2.length>=2?smartPredictionHistory(s2,d):null;const exp=pred&&pred.state==='predicted'?pred.expected:null;if(exp===d&&!bleed(d))want.push({id:CYCLE_BASE,title:'Bloom',body:'Rosie: Expected day. Log your period — don\u2019t make me guess.',channelId:ch,sound:Snd,schedule:{on:{hour:20,minute:0},allowWhileIdle:true},smallIcon:ico,iconColor:'#C96B87'})}catch(e){reportErr('reminder.sides.cycle',e)}}
+ {
   want.push({id:VISIT_BASE,title:'Bloom',body:'Daisy: Sunday. Questions for the doctor — list them.',channelId:ch,sound:Snd,schedule:{on:{weekday:1,hour:10,minute:0},allowWhileIdle:true,repeats:true},smallIcon:ico,iconColor:'#9DC3D9'});
  }
  if(!want.length)return 'ok';
@@ -6887,28 +6924,22 @@ $('#main').innerHTML=`${anon?`<div class="card" style="background:var(--pinkS)!i
 </div>
 ${isOffline()?'':'<div class="card" id="pairCard"><p class="meta" style="margin:0">Loading\u2026</p></div>'}
 <div class="card"><div class="card-h"><h3>Reminder</h3></div><label class="row" style="color:var(--ink)"><input type="checkbox" id="rm" style="width:22px;margin:0" ${D.rem.on?'checked':''}> Daily logging reminder</label><label>Time</label><input id="rt" type="hidden" value="${D.rem.time}"><button type="button" class="pickfield" id="rtBtn" style="padding:10px 14px"><span class="pf-val">${fmtTime12(D.rem.time)}</span><span class="pf-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.5l3 1.8"/></svg></span></button><label class="row" style="color:var(--ink);margin-top:12px"><input type="checkbox" id="wm" style="width:22px;margin:0" ${D.rem.water?'checked':''}> Hourly water reminder <span class="meta" style="margin-left:4px">8:00\u201322:00</span></label><label class="row" style="color:var(--ink);margin-top:12px"><input type="checkbox" id="rd" style="width:22px;margin:0" ${D.rem.readOn?'checked':''}> Daily reading reminder <span class="meta" style="margin-left:4px">Two reminders: one at the set time and one per hour until you hit your goal.</span></label><label>Reading reminder time</label><input id="rrt" type="hidden" value="${D.rem.readTime||'20:00'}"><button type="button" class="pickfield" id="rrtBtn" style="padding:10px 14px"><span class="pf-val">${fmtTime12(D.rem.readTime||'20:00')}</span><span class="pf-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.5l3 1.8"/></svg></span></button><div class="divider"></div>
-<p class="meta" style="margin:2px 0 8px;font-weight:700">Cheeky sides</p>
-<label class="row" style="color:var(--ink)"><input type="checkbox" id="sm" style="width:22px;margin:0" ${D.rem.sleepOn?'checked':''}> Hydrangea — sleep nudge <span class="meta" style="margin-left:4px">9:00 &amp; 10:00pm, if no sleep logged today</span></label>
-<label class="row" style="color:var(--ink);margin-top:8px"><input type="checkbox" id="mg" style="width:22px;margin:0" ${D.rem.mealOn?'checked':''}> Zin — meal nudges <span class="meta" style="margin-left:4px">8:00am · 12:00pm · 6:30pm</span></label>
-<label class="row" style="color:var(--ink);margin-top:8px"><input type="checkbox" id="mv" style="width:22px;margin:0" ${D.rem.moveOn?'checked':''}> Mum — move nudge <span class="meta" style="margin-left:4px">4:00pm, if no exercise logged today</span></label>
-<label class="row" style="color:var(--ink);margin-top:8px"><input type="checkbox" id="cl" style="width:22px;margin:0" ${D.rem.calmOn?'checked':''}> Bougie — journal nudge <span class="meta" style="margin-left:4px">8:30pm, if no journal entry today</span></label>
-<label class="row" style="color:var(--ink);margin-top:8px"><input type="checkbox" id="en" style="width:22px;margin:0" ${D.rem.energyOn?'checked':''}> Sunflower — energy nudge <span class="meta" style="margin-left:4px">3:00pm, if no energy logged today</span></label>
-<label class="row" style="color:var(--ink);margin-top:8px"><input type="checkbox" id="cy" style="width:22px;margin:0" ${D.rem.cycleOn?'checked':''}> Rosie — period check <span class="meta" style="margin-left:4px">8:00pm on the expected day, if no period logged</span></label>
-<label class="row" style="color:var(--ink);margin-top:8px"><input type="checkbox" id="vs" style="width:22px;margin:0" ${D.rem.visitOn?'checked':''}> Daisy — visit prep <span class="meta" style="margin-left:4px">Sundays 10:00am</span></label>
+<div class="divider"></div>
+<label class="row" style="color:var(--ink);margin-top:10px;gap:10px"><input type="checkbox" id="sidesOn" style="width:22px;margin:0" ${D.rem.sidesOn!==false?'checked':''}> <span><b>Allow your Bloomies to remind you</b><br><span class="meta">Sleep, meals, move, journal, energy, your period — automatic nags, only when your day is missing something.</span></span></label>
 <button class="btn ghost" id="rs" style="width:100%;margin-top:12px">Save reminders</button><p class="meta" id="remNote" style="margin:10px 0 0"></p></div>
   <div class="card"><button class="btn ghost" id="stg" style="width:100%">Settings</button></div>
   <button class="btn ghost" id="lo" style="width:100%">Log out</button>`;
  document.querySelectorAll('#goals .chip').forEach(c=>c.onclick=()=>c.setAttribute('aria-pressed',c.getAttribute('aria-pressed')!=='true'));
   $('#sv').onclick=()=>{p.goals=[...document.querySelectorAll('#goals .chip[aria-pressed=true]')].map(c=>c.textContent);D.rem={on:$('#rm').checked,time:$('#rt').value||'20:00',water:$('#wm').checked};save();pushProfile();applyTheme();waterReminderSync(true);toast('Saved');shell()};
  $('#av').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f)pickAvatar(f)};
- const saveRem=async()=>{D.rem={on:$('#rm').checked,time:$('#rt').value||'20:00',water:$('#wm').checked,readOn:$('#rd').checked,readTime:$('#rrt').value||'20:00',sleepOn:$('#sm').checked,mealOn:$('#mg').checked,moveOn:$('#mv').checked,calmOn:$('#cl').checked,energyOn:$('#en').checked,cycleOn:$('#cy').checked,visitOn:$('#vs').checked};save();try{waterReminderSync(true)}catch(e){}try{readReminderSync(true)}catch(e){}try{sidesSync(true)}catch(e){}
+ const saveRem=async()=>{D.rem={on:$('#rm').checked,time:$('#rt').value||'20:00',water:$('#wm').checked,readOn:$('#rd').checked,readTime:$('#rrt').value||'20:00',sidesOn:$('#sidesOn').checked};save();try{waterReminderSync(true)}catch(e){}try{readReminderSync(true)}catch(e){}try{sidesSync(true)}catch(e){}
   const r=await reminderSync(),note=document.getElementById('remNote');
   if(!r.native){toast('Saved');return}
   if(r.blocked){if(note)note.textContent='Notifications are blocked. Allow them in Android Settings \u203a Apps \u203a Bloom \u203a Notifications.'}
   else if(r.off){if(note)note.textContent='Turn on to get one reminder a day.'}
   else if(r.error){if(note)note.textContent='The reminder could not be scheduled. Try again.'}
   else if(note)note.textContent='One reminder a day at '+D.rem.time+'.'};
- $('#rs').onclick=saveRem;$('#rm').onchange=saveRem;$('#rd').onchange=saveRem;['sm','mg','mv','cl','en','cy','vs'].forEach(i=>{const el=document.getElementById(i);if(el)el.onchange=saveRem});
+ $('#rs').onclick=saveRem;$('#rm').onchange=saveRem;$('#rd').onchange=saveRem;const sidesEl=document.getElementById('sidesOn');if(sidesEl)sidesEl.onchange=saveRem;
  const rtBtn=document.getElementById('rtBtn');if(rtBtn)rtBtn.onclick=()=>wheelTimeSheet($('#rt').value||'20:00',v=>{$('#rt').value=v||'20:00';rtBtn.querySelector('.pf-val').textContent=fmtTime12(v||'20:00');saveRem()},{title:'Daily reminder'});
  const rrtBtn=document.getElementById('rrtBtn');if(rrtBtn)rrtBtn.onclick=()=>wheelTimeSheet($('#rrt').value||'20:00',v=>{$('#rrt').value=v||'20:00';rrtBtn.querySelector('.pf-val').textContent=fmtTime12(v||'20:00');saveRem()},{title:'Reading reminder'});
  $('#lo').onclick=confirmLogout;loadPairCard();
