@@ -2532,6 +2532,7 @@ let navScrollT=null;
 // @test-end nav
 window.addEventListener('scroll',()=>{if(navScrollT)clearTimeout(navScrollT);navScrollT=setTimeout(()=>{navScrollT=null;try{saveNav()}catch(e){}})},{passive:true});
 function shell(){splashAppIsReady();
+ try{if(RO&&!ownMode&&D){roAdoptReading();if(sb&&sbUser&&sbUser.id&&!D.__ownReadLoaded){Object.defineProperty(D,'__ownReadLoaded',{value:true,enumerable:false,configurable:true,writable:true});readingLoadOnce().then(()=>{if(view==='library'&&safeToRender())shell()}).catch(()=>{})}}}catch(e){}
  if(funTimer){clearInterval(funTimer);funTimer=null}if(foodTimer){clearInterval(foodTimer);foodTimer=null}if(roTimer){clearInterval(roTimer);roTimer=null}
  if(ownMode&&view!=='planner'){exitOwnMode(true);planPanel='partner'}
  if(RO&&!ROcloud){const raw=ST.get(key(ROowner));if(raw!=null){roHash=roHashOf(raw);D=Object.assign(blank(),J(key(ROowner),{}))}}
@@ -5427,6 +5428,21 @@ function readingDocFromD(){
  Object.keys(books).forEach(id=>{const b=books[id];if(b&&b.finished&&+b.finishedAt&&(!finished[id]||+b.finishedAt>finished[id]))finished[id]=+b.finishedAt});
  return {goalMin:r.goalMin,goalBooks:r.goalBooks,log:r.log,finished};
 }
+function roReadKey(){return 'bloom_reading_partner_'+((sbUser&&sbUser.id)||'')}
+function roIsFollower(){return !!(RO&&!ownMode&&D&&sbUser&&sbUser.id)}
+function roAdoptReading(){
+ // In partner view D is the FOLLOWED person's doc. The reading progress shown and saved there must be the follower's own.
+ if(!roIsFollower())return;
+ if(D.__ownRead)return;
+ let c=null;try{c=JSON.parse(ST.get(roReadKey())||'null')}catch(e){}
+ const n=readNormalize({read:(c&&typeof c==='object')?c:{}});
+ D.read={goalMin:n.goalMin,goalBooks:n.goalBooks,log:n.log,finished:(c&&c.finished&&typeof c.finished==='object')?c.finished:{}};
+ try{Object.defineProperty(D,'__ownRead',{value:true,enumerable:false,configurable:true,writable:true})}catch(e){}
+}
+function roCacheReading(){
+ if(!roIsFollower())return;
+ try{ST.set(roReadKey(),JSON.stringify(readingDocFromD()))}catch(e){}
+}
 function applyReadingDoc(doc){
  if(!D)return;
  if(!doc||typeof doc!=='object')return;
@@ -5463,19 +5479,21 @@ async function readingPush(doc){
 let readingPushT=null;
 function saveReading(){
  try{
+  roCacheReading();
   if(readingPushT)clearTimeout(readingPushT);
   readingPushT=setTimeout(()=>{readingPushT=null;readingPush(readingDocFromD()).catch(()=>{})},1200);
  }catch(e){}
 }
 async function readingLoadOnce(){
- if(!sb||!sbUser||!sbUser.id||RO)return;
+ if(!sb||!sbUser||!sbUser.id)return;
+ roAdoptReading();
  const remote=await readingFetch();
  if(remote&&remote.error){try{ST.set('bloom_reading_dirty_'+sbUser.id,'1')}catch(e){};reportErr('reading.fetch',remote.error);return}
  if(!remote){const l0=readingDocFromD();if(Object.keys(l0.log||{}).length||Object.keys(l0.finished||{}).length)saveReading();return}
  const local=readingDocFromD();
  const merged=readingMerge(local,remote);
  applyReadingDoc(merged);
- save();
+ if(RO)roCacheReading();else save();
  try{ST.del('bloom_reading_dirty_'+sbUser.id)}catch(e){}
 }
 // @test-end readingSync
