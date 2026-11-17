@@ -31,14 +31,12 @@ test('calContinueBtn points to the following year', () => {
 });
 
 
-test('calStartMonth returns current month for current year', () => {
-  const { calStartMonth } = load();
-  const now = new Date();
-  assert.equal(calStartMonth(now.getFullYear()), now.getMonth());
-});
-
-test('calStartMonth returns January for other years', () => {
-  const { calStartMonth } = load();
-  assert.equal(calStartMonth(new Date().getFullYear() + 1), 0);
-  assert.equal(calStartMonth(new Date().getFullYear() - 1), 0);
+test('calMonthsHTML renders all 12 months of the year with data-cal-ym anchors', () => {
+  const { calMonthsHTML } = load();
+  const doc = { tasks: [] };
+  const html = calMonthsHTML(2026, doc, 'planner');
+  const months = html.match(/data-cal-ym="2026-\d{2}"/g) || [];
+  assert.equal(months.length, 12);
+  assert.ok(html.includes('January 2026'));
+  assert.ok(html.includes('December 2026'));
 });

@@ -1340,6 +1340,9 @@ async function pushProfile(){if(!sb||!sbUser||!D||RO)return;if(D._uid&&D._uid!==
 function sbPushSoon(){if(!sbUser)return;if(JSON.stringify(D)!==sbLastPush)setSyncState('pending');clearTimeout(sbPushT);sbPushT=setTimeout(sbPush,1200)}
 async function sbPull(){if(!sb||!sbUser||RO||document.hidden)return;
  try{
+  // Always reload reading when the local reading is flagged dirty, even if the main doc hasn't changed
+  const readingDirty=(function(){try{return ST.get('bloom_reading_dirty_'+sbUser.id)}catch(e){return null}})();
+  if(readingDirty){try{await readingLoadOnce()}catch(e){reportErr('reading.pull',e)}}
   const {data,error}=await sb.from('bloom_data').select('rev').eq('user_id',sbUser.id).maybeSingle();
   if(error||!data)return;
   const rev=+(data.rev||0);if(rev<=sbRev)return;
@@ -2213,10 +2216,9 @@ function calMonthBlock(y, m /* 0-indexed */){
   return '<section class="cal-month" data-cal-ym="'+y+'-'+String(m+1).padStart(2,'0')+'"><h3 class="cal-month-h">'+E(monthName)+'</h3><div class="cal-grid">'+['S','M','T','W','T','F','S'].map(d=>'<div class="cal-wd">'+d+'</div>').join('')+cells+'</div></section>';
 }
 function calContinueBtn(y){return '<button class="cal-continue" data-cal-next="'+(y+1)+'">Continue to '+(y+1)+' →</button>'}
-function calStartMonth(y){const now=new Date();return y===now.getFullYear()?now.getMonth():0}
 function calMonthsHTML(y,doc,mode){
- let html='';const start=calStartMonth(y);
- for(let m=start;m<12;m++){
+ let html='';
+ for(let m=0;m<12;m++){
   if(mode==='cycle'){html+=calMonthBlock(y,m);continue}
   const first=new Date(y,m,1),dim=new Date(y,m+1,0).getDate(),off=(first.getDay()+6)%7;
   let cells='';
@@ -2227,7 +2229,7 @@ function calMonthsHTML(y,doc,mode){
    const over=ts.length>n&&dstr<today();const done=ts.length>0&&n===ts.length;
    cells+='<button type="button" class="cal-cell mg-cell" data-d="'+dstr+'" aria-label="'+dstr+': '+n+'/'+ts.length+' tasks"><div class="mg-day'+(over?' overdue':done?' done':'')+'">'+d+'</div>'+(ts.length?'<div class="mg-n">'+n+'/'+ts.length+'</div>':'')+'</button>';
   }
-  html+='<section class="cal-month"><h3 class="cal-month-h">'+first.toLocaleDateString(undefined,{month:'long',year:'numeric'})+'</h3><div class="cal-grid">'+['S','M','T','W','T','F','S'].map(dd=>'<div class="cal-wd">'+dd+'</div>').join('')+cells+'</div></section>';
+  html+='<section class="cal-month" data-cal-ym="'+y+'-'+String(m+1).padStart(2,'0')+'"><h3 class="cal-month-h">'+first.toLocaleDateString(undefined,{month:'long',year:'numeric'})+'</h3><div class="cal-grid">'+['S','M','T','W','T','F','S'].map(dd=>'<div class="cal-wd">'+dd+'</div>').join('')+cells+'</div></section>';
  }
  return html;
 }
@@ -2266,6 +2268,7 @@ function calSheet(opts){
    }
  };
  renderYear(year);
+ requestAnimationFrame(()=>{try{const ym=today().slice(0,7);const el=scroll.querySelector('[data-cal-ym="'+ym+'"]');if(el)el.scrollIntoView({block:'start'})}catch(e){}});
  // decorate cells: today outline + selected fill + highlight current if provided
  requestAnimationFrame(() => {
    scroll.querySelectorAll('[data-cal-d]').forEach(cell => {
@@ -3147,6 +3150,8 @@ function monthView(){
        if (l && Object.keys(l).filter(k => k !== 'flow' && k !== 'water' && l[k] !== undefined).length) cell.classList.add('d');
      });
    });
+   // start scrolled to the current month
+   try{const ym=today().slice(0,7);const el=scroll.querySelector('[data-cal-ym="'+ym+'"]');if(el)requestAnimationFrame(()=>{try{el.scrollIntoView({block:'start'})}catch(e){}})}catch(e){}
  };
  renderYear(y);
 }
@@ -3275,6 +3280,7 @@ function pMonth(src,ro){const doc=src||D,only=ro==null?RO:ro;
    }
    requestAnimationFrame(() => {
      scroll.querySelectorAll('[data-d]').forEach(cell => { if (cell.dataset.d === todayStr) cell.classList.add('cal-today'); });
+     const ym=todayStr.slice(0,7);const el=scroll.querySelector('[data-cal-ym="'+ym+'"]');if(el)try{el.scrollIntoView({block:'start'})}catch(e){}
    });
  };
  renderYear(y);
@@ -6832,7 +6838,7 @@ function localSessionBoot(sess){
  if(!cached||typeof cached!=='object')return false;
  user=mail;D=Object.assign(blank(),cached);loadRev(mail);applyTheme();restoreNav();shell();
 
- setTimeout(()=>{try{sbInit().then(()=>{if(sbUser)sbPull()}).catch(()=>{})}catch(e){}},1500);
+ setTimeout(()=>{try{sbInit().then(()=>{if(sbUser)sbAfterLogin(sbUser)}).catch(()=>{})}catch(e){}},1500);
  try{startReconnectWatch()}catch(e){}
  return true}
 // @test-end boot
