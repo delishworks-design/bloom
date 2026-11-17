@@ -1,8 +1,8 @@
 {
-    "versionCode": 144,
-    "versionName": "1.2.129",
-    "notes": "Focus flowers are bigger and livelier: faster sway, pop-in cards, rotating voice bubbles that roast you when your stats drop. Your focus now lives on the Cycle page below Log period. Bloomies reminders consolidated into one toggle. Finished books count toward the yearly goal on both accounts; cycle calendar shows logged days with the legend back.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.129/bloom-1.2.129.apk",
-    "sha256": "bc292769f153d5bbc559793c9e101afd028534fb7f0c5bc484d668221a21d688",
+    "versionCode": 145,
+    "versionName": "1.3.0",
+    "notes": "100 new classics from Project Gutenberg added to the library — Shakespeare, Homer, Dante, Dickens, Austen, Hardy, Twain, Conrad, Dumas, Hawthorne, Poe, The Count of Monte Cristo's world, Sherlock Holmes and more — across drama, poetry, classics, children, adventure, mystery, gothic, philosophy and sci-fi.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.3.0/bloom-1.3.0.apk",
+    "sha256": "ba2c82bc0660d2bb3e22868f0ffa4c8a85cd397cf4f36add1b8c066eef472f3f",
     "publishedAt": "2026-11-17"
 }
