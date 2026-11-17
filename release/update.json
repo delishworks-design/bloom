@@ -1,8 +1,8 @@
 {
-    "versionCode": 142,
-    "versionName": "1.2.127",
-    "notes": "Month calendar shows your logged bleeding, spotting and other logged days again, with legend restored. Planner: Week tab removed, the Today card is now Tasks with the date picker as its title (it shows and adds tasks for the picked date). Date-picker crash fixed.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.127/bloom-1.2.127.apk",
-    "sha256": "b38dbeb18dc9a948cea1fc9649d0b8d801d4680328e31b011fdb4cdf4a0ab609",
+    "versionCode": 143,
+    "versionName": "1.2.128",
+    "notes": "Focus flowers rebuilt with species per goal and cheeky voice bubbles; seven cheeky side reminders with toggles in Profile Reminder (sleep, meals, move, journal, energy, period check, visit prep). Finished books count toward the yearly goal on both accounts; calendar shows logged bleeding/spotting/logged days with legend; Ovulation label renamed.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.2.128/bloom-1.2.128.apk",
+    "sha256": "ffe9cff1cc144b12c01bc16bb8804d2322fbcc5d89656f18809d42431ef84557",
     "publishedAt": "2026-11-17"
 }
