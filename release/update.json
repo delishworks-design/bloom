@@ -1,8 +1,8 @@
 {
-  "versionCode": 151,
-  "versionName": "1.6.0",
-  "notes": "My Library now shows an Explore shelf with See all into the Bloom Store (articles removed, books only). Planner's Month tab is now a full-width Calendar, same size as the Cycle page. Header is background-free and store shelves scroll edge to edge.",
-  "url": "https://github.com/delishworks-design/bloom/releases/download/v1.6.0/bloom-1.6.0.apk",
-  "sha256": "f53def21b3209722288e64f1cb923e7edfa3f9c232ee88082fbb9b75a785c919",
+  "versionCode": 152,
+  "versionName": "1.7.0",
+  "notes": "Calendar gets a year dropdown to jump back or forward (Planner and Cycle). Planner opens on Mine by default. Bloom Store: cleaner intro, 'HealHer ebook' badge, book cards show Free.",
+  "url": "https://github.com/delishworks-design/bloom/releases/download/v1.7.0/bloom-1.7.0.apk",
+  "sha256": "909f537acbc3644ffb3346c10ef910e786c721bcb0ad17a5812a6222a05185a4",
   "publishedAt": "2026-11-17"
 }
