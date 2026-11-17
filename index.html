@@ -620,6 +620,13 @@ html[data-theme=dark] .fun{border-color:rgba(217,107,140,.45) !important}
  @keyframes bloomGrow{from{transform:scale(.32) rotate(-9deg);opacity:0}55%{opacity:1}to{transform:scale(1) rotate(0);opacity:1}}
 }
 .smart-focus-copy{display:flex;flex-direction:column;gap:2px;min-width:0}
+.smart-focus-bubble{position:relative;align-self:flex-start;max-width:200px;background:#FFFDF8;border:1.5px solid #E8A0B4;border-radius:12px;padding:4px 9px 5px;font-size:.72rem;line-height:1.3;font-style:italic;color:var(--rose);font-weight:600;margin:0 0 4px}
+.smart-focus-bubble::before{content:"";position:absolute;left:-7.5px;top:13px;border:4px solid transparent;border-right-color:#E8A0B4;border-left:0}
+.smart-focus-bubble::after{content:"";position:absolute;left:-4.6px;top:14px;border:3.2px solid transparent;border-right-color:#FFFDF8;border-left:0}
+@media (prefers-reduced-motion: no-preference){
+ .smart-focus-bubble{animation:bubblePop .5s cubic-bezier(.34,1.45,.64,1) .18s both}
+ @keyframes bubblePop{from{transform:scale(.55) translateY(4px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+}
 .smart-focus-stage{font-size:.62rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--mut)}
 .smart-focus-caption{font-size:.82rem;line-height:1.32;color:var(--ink);margin-top:3px;font-weight:600}
 .smart-focus-hint{display:inline-flex;align-items:center;gap:4px;margin-top:7px;font-size:.56rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--faded)}
@@ -4445,6 +4452,15 @@ function smartGoalProgress(goal,ctx){
 }
 function smartRowFor(rows,date){for(const r of rows)if(r.date===date)return r;return null}
 function L2(rows,date,key){const r=smartRowFor(rows,date);return r?r.log[key]:null}
+const SMART_FOCUS_VOICE={
+ 'Understand my cycle':'I bloom on my own schedule.',
+ 'Steadier energy':'Face the light, one day at a time.',
+ 'Move more':'Petals open — so do legs.',
+ 'Better sleep':'Soft nights make full blooms.',
+ 'Manage stress':'Even the brightest bracts bend, they don’t break.',
+ 'Eat regularly':'Fed on time, petals shine.',
+ 'Prepare for doctor visits':'Bringing sunny notes to your visit.'
+};
 function smartFocusHTML(goal,goals,noGoals,cards){
  const kicker=`<div class="smart-focus-head standalone"><p class="smart-kicker" id="smart-focus-title">Your focus</p></div>`;
  if(noGoals){
@@ -4457,6 +4473,7 @@ function smartFocusHTML(goal,goals,noGoals,cards){
    <button class="smart-focus-tap" type="button" onclick="focusSheet(${i})" aria-label="${E(it.name)} - details">
     <span class="smart-focus-meter">${smartFlowerSVG(it.goal,it.stage)}</span>
     <span class="smart-focus-copy">
+     <span class="smart-focus-bubble">${E(SMART_FOCUS_VOICE[it.goal]||'I\u2019m growing at your pace.')}</span>
      <span class="smart-focus-stage">${E(it.stageName)}</span>
      <h3 class="smart-focus-card-title">${E(it.name)}</h3>
      <span class="smart-focus-caption">${E(it.caption)}</span>
