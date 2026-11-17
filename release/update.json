@@ -1,8 +1,8 @@
 {
-    "versionCode": 149,
-    "versionName": "1.4.4",
-    "notes": "Create-account hardening: disposable email domains are blocked at signup; login has Remember me (uncheck to expire the session when the app closes) and the example.com placeholder is gone. New per-genre cover artwork (Adventure, Children, Classic, Emotional Wellbeing, Fantasy, Philosophy, Poetry, Psychology, Women's Health).",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.4.4/bloom-1.4.4.apk",
-    "sha256": "a77f16e9f4548c85f91eef570f6b8fdbc79321b9f22908dd5fda4bad8ff3eb39",
-    "publishedAt": "2026-11-17"
+  "versionCode": 150,
+  "versionName": "1.5.0",
+  "notes": "Bloom Store: buy HealHer's ebooks (The PCOS Reset, PCOS for the Newly Diagnosed) plus free featured picks, health recommendations, new releases and genre shelves",
+  "url": "https://github.com/delishworks-design/bloom/releases/download/v1.5.0/bloom-1.5.0.apk",
+  "sha256": "d70429b52c4d5c4d893e2565e5ff5ecc6f74e19febcb7a732c23f801582714aa",
+  "publishedAt": "2026-11-17"
 }
