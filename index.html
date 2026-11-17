@@ -5446,14 +5446,19 @@ function readingFetch(){
   .then(({data,error})=>error?{error:String(error.message||error)}:(data&&data.doc?data.doc:null))
   .catch(e=>({error:String(e&&e.message||e)}));
 }
-function readingPush(doc){
- if(!sb||!sbUser||!sbUser.id)return Promise.resolve('failed');
- const payload={user_id:sbUser.id,doc:doc,updated_at:new Date().toISOString()};
- return sb.from('bloom_reading').upsert(payload,{onConflict:'user_id'}).then(({error})=>{
-  if(error){try{ST.set('bloom_reading_dirty_'+sbUser.id,'1')}catch(e){};return 'failed'}
-  try{ST.del('bloom_reading_dirty_'+sbUser.id)}catch(e){};
+async function readingPush(doc){
+ if(!sb||!sbUser||!sbUser.id)return 'failed';
+ const uid=sbUser.id;
+ try{
+  // never overwrite blindly: read the cloud copy first and keep the larger value per day
+  const remote=await readingFetch();
+  if(remote&&remote.error){try{ST.set('bloom_reading_dirty_'+uid,'1')}catch(e){};reportErr('reading.push.fetch',remote.error);return 'failed'}
+  const merged=remote?Object.assign({},readingMerge(doc,remote),{goalMin:doc.goalMin,goalBooks:doc.goalBooks,finished:doc.finished||{}}):doc;
+  const res=await sb.from('bloom_reading').upsert({user_id:uid,doc:merged,updated_at:new Date().toISOString()},{onConflict:'user_id'});
+  if(res&&res.error){try{ST.set('bloom_reading_dirty_'+uid,'1')}catch(e){};reportErr('reading.push',res.error);return 'failed'}
+  try{ST.del('bloom_reading_dirty_'+uid)}catch(e){}
   return 'ok';
- }).catch(()=>{try{ST.set('bloom_reading_dirty_'+sbUser.id,'1')}catch(e){};return 'failed'});
+ }catch(e){try{ST.set('bloom_reading_dirty_'+uid,'1')}catch(e2){};reportErr('reading.push',e);return 'failed'}
 }
 let readingPushT=null;
 function saveReading(){
@@ -5465,7 +5470,8 @@ function saveReading(){
 async function readingLoadOnce(){
  if(!sb||!sbUser||!sbUser.id||RO)return;
  const remote=await readingFetch();
- if(!remote||remote.error)return;
+ if(remote&&remote.error){try{ST.set('bloom_reading_dirty_'+sbUser.id,'1')}catch(e){};reportErr('reading.fetch',remote.error);return}
+ if(!remote){const l0=readingDocFromD();if(Object.keys(l0.log||{}).length||Object.keys(l0.finished||{}).length)saveReading();return}
  const local=readingDocFromD();
  const merged=readingMerge(local,remote);
  applyReadingDoc(merged);
