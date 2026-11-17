@@ -14,6 +14,7 @@ test('index.html only uses allowed external hosts', () => {
   const allowed = [
     'api.github.com',
     'delishworks-design.github.io',
+    'healher.gumroad.com',
     'raw.githubusercontent.com',
     'vggaswbjsmyvfheofnnj.supabase.co'
   ];

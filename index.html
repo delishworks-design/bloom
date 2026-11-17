@@ -125,6 +125,19 @@ p{margin:0;line-height:1.5}
 .store-seeall{background:none;border:0;color:var(--rose);font-size:.72rem;font-weight:800;cursor:pointer;padding:4px 2px;white-space:nowrap;flex:0 0 auto}
 .lib-genre-label{font-size:.72rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);display:flex;align-items:center;margin:0}
 .store-genre-n{font-size:.62rem;font-weight:800;color:var(--mut);background:var(--chip);border-radius:999px;padding:1px 7px;margin-left:7px}
+.heal-grid{display:flex;flex-direction:column;gap:12px;padding:2px 2px 6px}
+.heal-card{position:relative;display:flex;flex-direction:column;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--bg2);cursor:pointer;text-align:left;font-family:inherit;transition:transform .16s ease}
+.heal-card:active{transform:scale(.97)}
+.heal-badge{position:absolute;top:10px;left:10px;z-index:1;background:var(--rose);color:#fff;font-size:.6rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;padding:4px 10px;border-radius:999px;box-shadow:0 2px 8px rgba(0,0,0,.28)}
+.heal-cover{display:block;background:#f3e8e2}
+.heal-cover img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}
+.heal-meta{display:flex;flex-direction:column;gap:3px;padding:11px 13px 13px}
+.heal-title{font-family:'Playfair Display',Georgia,serif;font-weight:700;font-size:.92rem;color:var(--ink);line-height:1.25}
+.heal-sub{font-size:.68rem;color:var(--mut);line-height:1.4}
+.heal-foot{display:flex;align-items:center;justify-content:space-between;margin-top:9px;gap:10px}
+.heal-price{font-weight:800;font-size:.9rem;color:var(--rose)}
+.heal-buy{font-size:.62rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);background:var(--chip);padding:4px 11px;border-radius:999px;white-space:nowrap}
+.heal-note{font-size:.62rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--mut)}
 .libempty{padding:18px 16px;background:var(--bg2);border:1px dashed var(--line);border-radius:14px;text-align:center}
 .libempty p{margin:0;font-weight:700;color:var(--mut)}
 .recentrow{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;padding:2px 2px 6px;scrollbar-width:none;margin:4px -2px 0}
@@ -5859,6 +5872,17 @@ function renderBookList(){const el=document.getElementById('lb');
  el.querySelectorAll('.recentcard[data-bid]').forEach(b=>b.addEventListener('click',()=>{const id=b.dataset.bid;const e=libEntry(id);if(e)openBook(id);else{showExploreSheet(id);library()}}));
  el.querySelectorAll('[data-expcat]').forEach(b=>b.onclick=()=>{exploreCat=b.dataset.expcat;renderLibList()});
  bindStoreCards(el)}
+const HEALHER_EBOOKS=[
+ {id:'hh-reset',title:'The PCOS Reset',author:'HealHer',sub:'Reclaim your body, restore your confidence',img:'assets/library/healher-reset.png',price:'₱499',url:'https://healher.gumroad.com/l/ThePCOSReset'},
+ {id:'hh-first90',title:'PCOS for the Newly Diagnosed',author:'HealHer',sub:'Your first 90 days, without the overwhelm',img:'assets/library/healher-first90.jpg',price:'₱250',url:'https://healher.gumroad.com/l/PCOS-for-the-Newly-Diagnosed-Your-First-90-Days'}
+];
+function healherCardHTML(e){
+ return `<button class="heal-card" data-buy="${E(e.url)}" aria-label="Buy ${E(e.title)} on Gumroad, ${E(e.price)}"><span class="heal-badge">HealHer Original</span><span class="heal-cover"><img src="${E(e.img)}" alt="${E(e.title)} cover" loading="lazy"></span><span class="heal-meta"><span class="heal-title">${E(e.title)}</span><span class="heal-sub">${E(e.sub)}</span><span class="heal-foot"><span class="heal-price">${E(e.price)}</span><span class="heal-buy">Buy on Gumroad</span></span></span></button>`;
+}
+function healherShelfHTML(){
+ return `<div class="store-row"><div class="store-row-h"><p class="lib-sub" style="margin:0">HealHer Originals · our ebooks</p><span class="heal-note">on Gumroad</span></div><div class="heal-grid">${HEALHER_EBOOKS.map(healherCardHTML).join('')}</div></div>`;
+}
+function openExternal(url){try{window.open(url,'_system')}catch(e){location.href=url}}
 function storeSeed(){const d=today();let h=0;for(let i=0;i<d.length;i++){h=((h<<5)-h+d.charCodeAt(i))|0}return Math.abs(h)||1}
 function pickN(arr,n,seed){const a=arr.slice();let s=(seed>>>0)||1;const rnd=()=>{s=(s*1103515245+12345)&0x7fffffff;return s/0x7fffffff};for(let i=a.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));const t=a[i];a[i]=a[j];a[j]=t}return a.slice(0,n)}
 const RECO_CATS={'PCOS/PMOS':1,"Women's Health":1,'Health':1,'Endocrine':1,'Pain':1,'Psychology':1,'Emotional Wellbeing':1};
@@ -5877,7 +5901,8 @@ function renderStore(){
  const featured=pickN(all,10,seed+11);
  const reco=pickN(all.filter(b=>RECO_CATS[b.category]),12,seed+22);
  const fresh=pickN(all,10,seed+33);
- el.innerHTML=`<p class="meta" style="margin:2px 2px 4px">Everything here is free. Tap a cover to view, add, or download.</p>
+ el.innerHTML=`<p class="meta" style="margin:2px 2px 4px">Most books are free — our own ebooks below are on Gumroad.</p>
+  ${healherShelfHTML()}
   ${storeRow('storeFeatured','Featured · free',true)}
   ${storeRow('storeReco','Recommended by Bloom',true)}
   ${storeRow('storeNew','New releases',true)}
@@ -5889,6 +5914,7 @@ function renderStore(){
  const map={storeFeatured:['Featured · free',featured],storeReco:['Recommended by Bloom',reco],storeNew:['New releases',fresh]};
  el.querySelectorAll('[data-seeall]').forEach(b=>b.onclick=()=>{const m=map[b.dataset.seeall];if(m)showStoreSheet(m[0],m[1])});
  el.querySelectorAll('[data-genre]').forEach(b=>b.onclick=()=>showStoreSheet(b.dataset.genre,groups.get(b.dataset.genre)||[]));
+ el.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>openExternal(b.dataset.buy));
  bindStoreCards(el);
 }
 function bindStoreCards(scope){
