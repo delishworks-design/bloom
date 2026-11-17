@@ -54,11 +54,11 @@ p{margin:0;line-height:1.5}
 @keyframes ringIn{from{opacity:0;transform:scale(.92) rotate(-3deg)}to{opacity:1;transform:scale(1) rotate(0)}}
 
 /* Layout hierarchy */
-.wrap{position:relative;z-index:1;max-width:430px;margin:0 auto;padding:calc(10px + env(safe-area-inset-top,0px)) 20px 120px;min-height:100dvh;background:var(--scrim);display:flex;flex-direction:column;gap:18px}
+.wrap{position:relative;z-index:1;max-width:430px;margin:0 auto;padding:calc(env(safe-area-inset-top,0px) + 74px) 20px 130px;min-height:100dvh;background:var(--scrim);display:flex;flex-direction:column;gap:18px}
 .wrap>*{flex:0 0 auto}
 #main{display:flex;flex-direction:column;gap:20px}
 #pb{display:flex;flex-direction:column;gap:14px}
-.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:2px 0 8px;min-height:54px;animation:fadeUp .5s ease both}
+.topbar{position:fixed;top:calc(6px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);width:min(390px,calc(100% - 40px));display:flex;align-items:center;justify-content:space-between;gap:16px;z-index:6;background:var(--scrim);padding:4px 0 10px;min-height:58px;border-bottom:1px solid var(--line)}
 .pchip{display:inline-flex !important;align-items:center !important;height:38px !important;padding:0 14px !important;border-radius:999px !important;background:var(--pinkS) !important;border:1.5px solid rgba(232,160,180,.6) !important;color:var(--rose) !important;font-size:.74rem !important;font-weight:700 !important;white-space:nowrap}
 .wordmark{font-family:'Playfair Display',serif;font-size:30px;font-weight:700;color:#B8456B;line-height:1}
 .wordmark i{font-size:20px;font-weight:400;font-style:normal;vertical-align:super;margin-left:2px}
@@ -2638,7 +2638,12 @@ function shell(){splashAppIsReady();
    .filter(x=>!(pLocked()&&!chromeRO&&x[0]==='cycle'));
  const ariaCur=k=>view==k;
  const headBtn=chromeRO?`<button class="profbtn" id="rome" aria-label="Your profile">${roAvatarHTML(44)}<span>${E(ownName())}</span></button>`:(user?`<button class="profbtn" id="me" aria-label="Profile and settings">${avatarHTML(44)}<span>${E(D.p.name||user)}</span></button>`:`<button class="profbtn" id="anonSignin" aria-label="Sign in">${IC.ring(18)}<span>Sign in</span></button>`);
- $('#app').innerHTML=`<div class="blob blob-a"></div><div class="blob blob-b"></div><div class="blob blob-c"></div><div class="wrap"><header class="topbar"><div class="wordmark">Bloom<i>.</i></div>${headBtn}</header><main id="main"></main></div><nav aria-label="Main">${N.map(([k,l,ic])=>`<button data-v="${k}" ${ariaCur(k)?'aria-current="page"':''}>${ic(17)}<span>${l}</span></button>`).join('')}</nav>`;
+ if(document.querySelector('#app .topbar')){
+  const hb=document.querySelector('#app .topbar .profbtn');if(hb)hb.outerHTML=headBtn;
+  document.querySelectorAll('#app nav button').forEach(b=>{if(view!=='me'&&b.dataset.v===view)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
+ }else{
+  $('#app').innerHTML=`<div class="blob blob-a"></div><div class="blob blob-b"></div><div class="blob blob-c"></div><div class="wrap"><header class="topbar"><div class="wordmark">Bloom<i>.</i></div>${headBtn}</header><main id="main"></main></div><nav aria-label="Main">${N.map(([k,l,ic])=>`<button data-v="${k}" ${ariaCur(k)?'aria-current="page"':''}>${ic(17)}<span>${l}</span></button>`).join('')}</nav>`;
+ }
  if(chromeRO){
  const rm=document.getElementById('rome');if(rm)rm.onclick=()=>{view='me';shell()};
  }
@@ -2647,7 +2652,6 @@ function shell(){splashAppIsReady();
  // #me only exists outside partner (read-only) mode  that header shows the Exit button instead
  const meBtn=$('#me');if(meBtn)meBtn.onclick=()=>{view='me';shell()};
  const anonBtn=$('#anonSignin');if(anonBtn)anonBtn.onclick=()=>{authView('up')};
- if(view=='me')document.querySelector('nav [aria-current]')?.removeAttribute('aria-current');
   ({cycle:cyclePage,month:monthView,planner,insights,library,settings:settingsPage,me:(RO?roPage:(pLocked()?mePartner:me))})[view]()
  try{fabSync()}catch(e){}
  try{widgetConsume()}catch(e){}
