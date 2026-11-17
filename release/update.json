@@ -1,8 +1,8 @@
 {
     "versionCode": 145,
-    "versionName": "1.3.0",
-    "notes": "100 new classics from Project Gutenberg added to the library — Shakespeare, Homer, Dante, Dickens, Austen, Hardy, Twain, Conrad, Dumas, Hawthorne, Poe, The Count of Monte Cristo's world, Sherlock Holmes and more — across drama, poetry, classics, children, adventure, mystery, gothic, philosophy and sci-fi.",
-    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.3.0/bloom-1.3.0.apk",
-    "sha256": "ba2c82bc0660d2bb3e22868f0ffa4c8a85cd397cf4f36add1b8c066eef472f3f",
+    "versionName": "1.4.0",
+    "notes": "100 new classics from Project Gutenberg across drama, poetry, classics, children, adventure, mystery, gothic, philosophy and sci-fi — 177 books in the library now.",
+    "url": "https://github.com/delishworks-design/bloom/releases/download/v1.4.0/bloom-1.4.0.apk",
+    "sha256": "4a8107dd51e01a90adf36cee63211527cc14060e873516c05f7a5f2102d82703",
     "publishedAt": "2026-11-17"
 }
