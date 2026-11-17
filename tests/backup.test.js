@@ -80,7 +80,7 @@ test('validateBackup accepts valid backup and round trips', () => {
 });
 
 test('validateBackup round trips library progress', () => {
-  const original = { savedAt: 1, logs: {}, tasks: [], journal: [], library: { books: { walden: { page: 77, pct: 30 } }, articles: { 4: true } } };
+  const original = { savedAt: 1, logs: {}, tasks: [], journal: [], library: { books: { walden: { page: 77, pct: 30 } } } };
   const backup = makeBackup(original);
   const res = validateBackup(backup);
   assert.equal(res.ok, true);

@@ -52,7 +52,7 @@ function load() {
   const exportsByName = {
     esc: ['E'],
     sync: ['isPlainObject', 'mergeDocs', 'chooseLoginDoc', 'docHasContent'],
-    library: ['libEnsure', 'libBookEntry', 'libBlank', 'libVisibleIds', 'libRecentList', 'libArticleRead', 'migrateLibrary'],
+    library: ['libEnsure', 'libBookEntry', 'libBlank', 'libVisibleIds', 'libRecentList', 'migrateLibrary'],
     classicCover: ['coverHash','coverLines','escXml','classicCoverSVG'],
     netmsg: ['errText', 'isOffline', 'OFFLINE_MSG'],
     roWho: ['roWho'],

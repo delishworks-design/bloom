@@ -47,13 +47,14 @@ test('exploreOrder puts health categories first', () => {
   assert.equal(order[1], 'Health');
 });
 
-test('browse renders one grid via single category chips (no seeall/stacked sections in explore)', () => {
+test('My Library explore is a swipeable recommended row with See all into Bloom Store', () => {
   const fs = require('fs'), path = require('path');
   const html = fs.readFileSync(path.join(__dirname,'..','index.html'),'utf8');
-  assert.match(html, /data-expcat/);
-  assert.match(html, /class="lib-expchips"/);
-  // explore-by-genre (My Library) stays single-grid — seeall only exists in the Bloom Store panel
-  const m = html.match(/function exploreByGenreHTML[\s\S]*?\n}/);
-  assert.ok(m, 'exploreByGenreHTML found');
-  assert.doesNotMatch(m[0], /data-seeall/);
+  const m = html.match(/function exploreTeaserHTML[\s\S]*?\n}/);
+  assert.ok(m, 'exploreTeaserHTML found');
+  assert.match(m[0], /store-track/);
+  assert.match(m[0], /store-seeall/);
+  assert.match(m[0], />Explore</);
+  assert.doesNotMatch(html, /data-expcat/);
+  assert.doesNotMatch(html, /lib-expchips/);
 });

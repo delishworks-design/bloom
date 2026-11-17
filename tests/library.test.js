@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { load } = require('./load');
 
-test('blank() returns library skeleton with books + articles', () => {
+test('blank() returns library skeleton', () => {
   const ctx = load();
   const b = ctx.blank ? null : null; // blank() is a prefilled symbol; the real app uses the real blank(), not exposed, so we check mergeDocs output instead
   // In the app blank() has library; in the test sandbox it is prefilled with a plain shape, so assert through docHasContent
@@ -12,12 +12,11 @@ test('blank() returns library skeleton with books + articles', () => {
 test('mergeDocs keeps library books when both sides have them', () => {
   const ctx = load();
   const local = { savedAt: 1000, library: { books: { a: { page: 3, favorite: false } } } };
-  const remote = { savedAt: 2000, library: { books: { a: { page: 7, favorite: true }, b: { page: 1 } }, articles: { 4: true } } };
+  const remote = { savedAt: 2000, library: { books: { a: { page: 7, favorite: true }, b: { page: 1 } } } };
   const out = ctx.mergeDocs(local, remote);
   assert.equal(out.library.books.a.page, 7);
   assert.equal(out.library.books.a.favorite, true);
   assert.equal(out.library.books.b.page, 1);
-  assert.equal(out.library.articles[4], true);
 });
 
 test('mergeDocs: remote newer wins scalar leaves', () => {
@@ -36,7 +35,7 @@ test('libVisibleIds filters by favorites / reading / finished', () => {
     y: { favorite: false, finished: true  },
     z: { favorite: true,  finished: true  },
     w: { favorite: false, finished: false }
-  }, articles: {} };
+  } };
   assert.deepEqual(ctx.libVisibleIds(lib, 'all').sort(), ['w','x','y','z']);
   assert.deepEqual(ctx.libVisibleIds(lib, 'favorites').sort(), ['x','z']);
   assert.deepEqual(ctx.libVisibleIds(lib, 'reading').sort(), ['w','x']);
@@ -50,17 +49,9 @@ test('libRecentList returns unfinished books sorted by lastRead desc', () => {
     b: { lastRead: 300, finished: false },
     c: { lastRead: 200, finished: true  },
     d: { lastRead: 400, finished: false }
-  }, articles: {} };
+  } };
   assert.deepEqual(ctx.libRecentList(lib, 5), ['d','b','a']);
   assert.deepEqual(ctx.libRecentList(lib, 2), ['d','b']);
-});
-
-test('libArticleRead reflects per-article boolean map', () => {
-  const ctx = load();
-  const lib = { books: {}, articles: { '4': true, '7': false } };
-  assert.equal(ctx.libArticleRead(lib, 4), true);
-  assert.equal(ctx.libArticleRead(lib, 7), false);
-  assert.equal(ctx.libArticleRead(lib, 9), false);
 });
 
 test('migrateLibrary copies old localStorage keys into D.library and clears them', () => {
@@ -82,7 +73,7 @@ test('migrateLibrary copies old localStorage keys into D.library and clears them
   assert.ok(!ctx.localStorage._m.bloom_hl_pcos101);
   assert.ok(!ctx.localStorage._m.bloom_recent_reads);
   // Now idempotent:
-  const D2 = { savedAt: 1, library: { books: { pcos101: { dl: true, page: 3 } }, articles: {} } };
+  const D2 = { savedAt: 1, library: { books: { pcos101: { dl: true, page: 3 } } } };
   const out2 = ctx.migrateLibrary(D2, k => null, k => {});
   assert.equal(out2.library.books.pcos101.dl, true);
   assert.equal(out2.library.books.pcos101.page, 3); // not overwritten by absent old keys
