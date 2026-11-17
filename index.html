@@ -2262,7 +2262,7 @@ function calContinueBtn(y){return '<button class="cal-continue" data-cal-next="'
 function calMonthsHTML(y,doc,mode,pred){
  let html='';
  for(let m=0;m<12;m++){
-  if(mode==='cycle'){const first=new Date(y,m,1),dim=new Date(y,m+1,0).getDate(),off=(first.getDay()+6)%7;
+  if(mode==='cycle'){const first=new Date(y,m,1),dim=new Date(y,m+1,0).getDate(),off=first.getDay();
    let cells='';
    for(let i=0;i<off;i++)cells+='<span class="cal-cell cal-empty"></span>';
    for(let d=1;d<=dim;d++){
@@ -2271,7 +2271,7 @@ function calMonthsHTML(y,doc,mode,pred){
     cells+='<button type="button" class="cal-cell'+(isPr?' pr':'')+'" data-cal-d="'+iso+'">'+d+'</button>';
    }
    html+='<section class="cal-month" data-cal-ym="'+y+'-'+String(m+1).padStart(2,'0')+'"><h3 class="cal-month-h">'+E(first.toLocaleDateString(undefined,{month:'long',year:'numeric'}))+'</h3><div class="cal-grid">'+['S','M','T','W','T','F','S'].map(d=>'<div class="cal-wd">'+d+'</div>').join('')+cells+'</div></section>';continue}
-  const first=new Date(y,m,1),dim=new Date(y,m+1,0).getDate(),off=(first.getDay()+6)%7;
+  const first=new Date(y,m,1),dim=new Date(y,m+1,0).getDate(),off=first.getDay();
   let cells='';
   for(let i=0;i<off;i++)cells+='<span class="cal-cell cal-empty mg-cell-empty"></span>';
   for(let d=1;d<=dim;d++){
@@ -2578,7 +2578,7 @@ async function showUpdateSheet(m,v,pendingSize){
  };
 }
 function dateSheet(title,cb){let m=today().slice(0,7);
- const draw=()=>{const [y,mo]=m.split('-').map(Number),first=new Date(y,mo-1,1),dim=new Date(y,mo,0).getDate(),off=(first.getDay()+6)%7;
+ const draw=()=>{const [y,mo]=m.split('-').map(Number),first=new Date(y,mo-1,1),dim=new Date(y,mo,0).getDate(),off=first.getDay();
   let cells=['S','M','T','W','T','F','S'].map(x=>`<div class="cal-wd" aria-hidden="true">${x}</div>`).join('');
   cells+='<span class="cal-cell cal-empty"></span>'.repeat(off);
   for(let i=1;i<=dim;i++){const d=m+'-'+String(i).padStart(2,'0'),future=d>today();
