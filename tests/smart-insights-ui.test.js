@@ -99,7 +99,7 @@ test('focus is a swipeable card per goal with the goal name as the card header, 
     { goal: 'Understand my cycle', name: 'Understanding your cycle', ctx: { logs: {}, startDates: ['2026-01-02', '2026-01-30'], todayStr: '2026-02-25', meals: {} } }
   ]);
 
-  assert.match(out, /Your focus/);
+  assert.match(out, /Bloom Garden/);
   assert.match(out, /smart-focus-track/);
   assert.match(out, /data-goal="Better sleep"/);
   assert.match(out, /data-goal="Understand my cycle"/);

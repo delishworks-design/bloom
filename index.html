@@ -240,6 +240,12 @@ body.reader-open{overflow:hidden}
 .lib-genre-n{font-size:.62rem;font-weight:800;color:var(--mut);letter-spacing:.06em;background:var(--chip);border:1px solid var(--line2);border-radius:999px;padding:1px 7px}
 .lib-chips{display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 12px}
 .lib-chip{border:1.5px solid var(--line);background:var(--card);border-radius:999px;padding:7px 12px;font:inherit;font-size:.82rem;color:var(--mut);font-weight:700;cursor:pointer}
+.tasklogrow{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line2);padding:10px 4px;cursor:pointer;font:inherit;color:inherit}
+.tasklogrow:first-child{border-top:0;padding-top:2px}
+.tasklogrow:active{background:var(--chip)}
+.tl-date{flex:0 0 auto;width:86px;font-size:.68rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--mut)}
+.tl-title{flex:1 1 auto;min-width:0;font-size:.86rem;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tl-n{flex:0 0 auto;min-width:22px;text-align:right;font-weight:800;color:var(--rose)}
 .lib-chip.on{background:var(--rose);border-color:var(--rose);color:#FBF4EA}
 .lib-chip-n{font-size:.72rem;opacity:.85;margin-left:4px}
 .bookmenu{display:flex;flex-direction:column;gap:6px}
@@ -1259,7 +1265,7 @@ function shareFlags(doc){
 }
 function plannerTabSet(mine,flags){
  const f=typeof flags==='boolean'?{tasks:true,meals:true,journal:flags}:(flags||{tasks:true,meals:true,journal:false});
- const t=[];if(mine||f.tasks!==false)t.push(['day','Task'],['month','Calendar']);if(mine||f.meals!==false)t.push(['meals','Meals']);if(mine||f.journal)t.push(['journal','Journal']);return t;
+ const t=[];if(mine||f.tasks!==false)t.push(['day','Task']);if(mine||f.meals!==false)t.push(['meals','Meals']);if(mine||f.journal)t.push(['journal','Journal']);return t;
 }
 function ringPillBare(state,irregular){return state==='estimated'&&!!irregular}
 function peerLabel(sharedName,profName,fallback){return String(sharedName||profName||'').trim()||fallback||'Follower'}
@@ -3031,7 +3037,7 @@ function fabMount(){
 }
 function fabSync(){
  fabMount();
- const on=!!(document.getElementById('main')&&!RO&&!ownMode&&D&&D.p&&D.p.done);
+ const on=!!(document.getElementById('main')&&!RO&&!ownMode&&D&&D.p&&D.p.done&&D.fabOn===true);
  fabEl.style.display=on?'':'none';
  if(on)fabPlace();
 }
@@ -3295,19 +3301,19 @@ function planner(){tab=tab||'day';
  const src=mine?D:(RO?D:(peekDoc||null));
  const flags=mine?{tasks:true,meals:true,journal:true}:shareFlags(src||{});
  const tabs=plannerTabSet(mine,flags);
- if(!tabs.some(t=>t[0]===tab))tab=(tabs[0]||['day'])[0];
+ if(!tabs.some(t=>t[0]===tab))tab='day';
  const seg=partner?`<div class="segwrap" role="tablist" aria-label="Whose planner"><button type="button" data-pp="mine" aria-pressed="${mine}">Mine</button><button type="button" data-pp="partner" aria-pressed="${!mine}">${E(pp.name)}</button></div>`:'';
  $('#main').innerHTML=`<h1>Planner</h1>${seg}<div class="tabsrow" role="tablist">${tabs.map(([k,l])=>`<button class="chip" role="tab" data-tb="${k}" aria-pressed="${tab==k}">${l}</button>`).join('')}</div><div id="pb" style="margin-top:12px"></div>`;
  document.querySelectorAll('[data-tb]').forEach(b=>b.onclick=()=>{tab=b.dataset.tb;planner()});
  document.querySelectorAll('[data-pp]').forEach(b=>b.onclick=()=>setPlanPanel(b.dataset.pp));
- if(!partner){({day:()=>pDay(D,RO),month:()=>pMonth(D,RO),meals:()=>pMeals(D,RO),journal:()=>pJournal(D,RO)})[tab]();return}
+ if(!partner){({day:()=>pDay(D,RO),meals:()=>pMeals(D,RO),journal:()=>pJournal(D,RO)})[tab]();return}
  if(!mine&&!src){
   if(!RO&&!peekDoc)loadPeek(true);
   $('#pb').innerHTML='<div class="card"><p class="meta" style="margin:0">Loading\u2026</p></div>';return}
  if(!mine&&tab==='day'&&!flags.tasks){
   $('#pb').innerHTML=`<div class="card"><div class="card-h"><h3>Private</h3></div><p class="meta" style="margin:0">Tasks are private.</p></div>`;return}
  const ro=!mine;
- ({day:()=>pDay(src,ro),month:()=>pMonth(src,ro),meals:()=>pMeals(src,ro),journal:()=>pJournal(src,ro)})[tab]();
+ ({day:()=>pDay(src,ro),meals:()=>pMeals(src,ro),journal:()=>pJournal(src,ro)})[tab]();
 }
 function taskNoteSheet(id){const t=(D.tasks||[]).find(x=>String(x.id)===String(id));if(!t||!t.note)return;const only=!!RO;
  sheet(`<h2 style="margin-bottom:2px">${E(t.t)}</h2>${t.time?`<p class="meta" style="margin:0">${E(String(t.time))}</p>`:''}<p class="task-note">${E(t.note)}</p><div class="row" style="gap:10px;margin-top:14px">${only?'':`<button class="btn" id="tnEdit" style="flex:1">Edit</button>`}</div>`);
@@ -3321,15 +3327,26 @@ function pDayTaskRow(t,d,doc,only){
  const timeNote = taskTimeNote(t);
  return '<div class="taskrow">' + ck(t,d) + timeNote + '<button class="btn ghost sm del" data-del="' + t.id + '" aria-label="Delete ' + E(t.t) + '">\u00d7</button></div>';
 }
+function pTaskLogHTML(doc,only){
+ const todayStr=today();
+ const up=[],hist=[];
+ for(let i=1;i<=14;i++){const d=addD(todayStr,i);tasksFor(d,doc).forEach(t=>up.push({d,t}))}
+ for(let i=1;i<=30;i++){const d=addD(todayStr,-i);const ts=tasksFor(d,doc);if(ts.length)hist.push({d,n:ts.filter(t=>isDone(t.id,d,doc)).length,m:ts.length})}
+ const upHTML=up.length?up.slice(0,12).map(({d,t})=>`<button type="button" class="tasklogrow" data-when="${d}"><span class="tl-date">${fmt(d,{weekday:'short',month:'short',day:'numeric'})}</span><span class="tl-title">${E(t.t)}${t.time?' <span class="meta">'+E(fmtTime12(t.time))+'</span>':''}</span><span class="tl-n">${isDone(t.id,d,doc)?'\u2713':''}</span></button>`).join(''):'<p class="meta" style="margin:0">Nothing scheduled ahead.</p>';
+ const histHTML=hist.length?hist.slice(0,10).map(h=>`<button type="button" class="tasklogrow" data-when="${h.d}"><span class="tl-date">${fmt(h.d,{month:'short',day:'numeric'})}</span><span class="tl-title">${h.n}/${h.m} done</span><span class="tl-n">${h.n===h.m?'\u2713':''}</span></button>`).join(''):'<p class="meta" style="margin:0">No task history yet.</p>';
+ return `<div class="card"><div class="card-h"><h3>Next 2 weeks</h3><span class="meta">${up.length||''}</span></div><div class="tasklog">${upHTML}</div></div><div class="card"><div class="card-h"><h3>History</h3><span class="meta">${hist.length||''}</span></div><div class="tasklog">${histHTML}</div></div>`;
+}
 function pDay(src,ro){const doc=src||D,only=ro==null?RO:ro;const todayStr=today();
  const state=window.__pDayState=window.__pDayState||{when:todayStr,time:null};
  if(!state.when)state.when=todayStr;
  const d=state.when,ts=tasksFor(d,doc);
  $('#pb').innerHTML=`${overdueBanner(doc,todayStr,only)}<div class="card"><div class="card-h" style="margin-bottom:2px"><button type="button" class="pickfield slim" id="whenBtn" style="width:100%;justify-content:space-between;gap:8px" aria-label="Choose date"><span class="pf-val" style="font-size:1.08rem;font-weight:800">${E(fmt(d,{weekday:'long',month:'long',day:'numeric'}))}${d===todayStr?' <span class="meta" style="font-weight:600;margin-left:6px">today</span>':''}</span><span class="pf-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="16" rx="2"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg></span></button></div><div style="margin-top:8px">${ts.length?ts.map(t=>pDayTaskRow(t,d,doc,only)).join(''):'<p class="meta">No tasks for this day.'+(only?'':' Add one below.')+'</p>'}</div>
-${only?'':`<form id="af" style="margin-top:14px"><input id="nt" maxlength="80" placeholder="Add a task" aria-label="New task" style="width:100%;margin:0 0 10px"><div class="row" style="gap:8px;margin:0 0 10px"><input id="whenTime" type="hidden" value="${state.time ? E(state.time) : ''}"><button type="button" class="pickfield slim" id="whenTimeBtn" style="flex:1;justify-content:space-between"><span class="pf-val">${state.time ? fmtTime12(state.time) : 'Any time'}</span><span class="pf-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.5l3 1.8"/></svg></span></button></div>${chipField('rp','Repeat',[['none','Once'],['daily','Daily'],['weekdays','Weekdays'],['weekly','Weekly']],'none')}<details style="border:0;padding:0;margin:10px 0"><summary class="meta" style="cursor:pointer;font-weight:700">Notes or details</summary><textarea id="ptn" rows="2" placeholder="Notes or details (optional)" aria-label="Task notes" style="width:100%;margin:8px 0 0"></textarea></details><label class="row" style="color:var(--ink);margin-top:10px;gap:8px"><input id="carry" type="checkbox" style="width:20px;margin:0"><span class="meta" style="margin:0">Carry forward if missed</span></label><button class="btn" type="submit" style="width:100%;margin-top:12px">Add task</button></form><div class="err" id="er"></div>`}</div>`;
+${only?'':`<form id="af" style="margin-top:14px"><input id="nt" maxlength="80" placeholder="Add a task" aria-label="New task" style="width:100%;margin:0 0 10px"><div class="row" style="gap:8px;margin:0 0 10px"><input id="whenTime" type="hidden" value="${state.time ? E(state.time) : ''}"><button type="button" class="pickfield slim" id="whenTimeBtn" style="flex:1;justify-content:space-between"><span class="pf-val">${state.time ? fmtTime12(state.time) : 'Any time'}</span><span class="pf-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.5l3 1.8"/></svg></span></button></div>${chipField('rp','Repeat',[['none','Once'],['daily','Daily'],['weekdays','Weekdays'],['weekly','Weekly']],'none')}<details style="border:0;padding:0;margin:10px 0"><summary class="meta" style="cursor:pointer;font-weight:700">Notes or details</summary><textarea id="ptn" rows="2" placeholder="Notes or details (optional)" aria-label="Task notes" style="width:100%;margin:8px 0 0"></textarea></details><label class="row" style="color:var(--ink);margin-top:10px;gap:8px"><input id="carry" type="checkbox" style="width:20px;margin:0"><span class="meta" style="margin:0">Carry forward if missed</span></label><button class="btn" type="submit" style="width:100%;margin-top:12px">Add task</button></form><div class="err" id="er"></div>`}</div>
+${pTaskLogHTML(doc,only)}`;
  bindCk(d,planner);bindFields();
  const whenBtn=document.getElementById('whenBtn');
  if(whenBtn)whenBtn.onclick=()=>calSheet({title:'Tasks on',current:state.when,onPick:v=>{state.when=v;planner()}});
+ document.querySelectorAll('#pb .tasklogrow[data-when]').forEach(b=>b.onclick=()=>{window.__pDayState.when=b.dataset.when;planner()});
  if(only)return;
  bindLongPress(document.getElementById('pb'),'task','[data-task]',el=>editTask(el.dataset.task));
  document.querySelectorAll('#pb [data-note]').forEach(b=>b.onclick=()=>taskNoteSheet(b.dataset.note));
@@ -3355,37 +3372,6 @@ function dayTasksSheet(d, doc, only){
    dayTasksSheet(d, src, only);
  });
  document.querySelectorAll('[data-note]').forEach(b=>b.onclick=()=>taskNoteSheet(b.dataset.note));
-}
-function pMonth(src,ro){const doc=src||D,only=ro==null?RO:ro;
- const now=today();const base=new Date(now+'T12:00');
- const y=base.getFullYear();
- $('#pb').innerHTML=`<div class="calsheet" style="height:auto;max-height:none;margin:0 -2px 14px"><div class="calsheet-scroll" id="pCalScroll" style="padding:0;overflow:visible"></div></div>`;
- const scroll=document.getElementById('pCalScroll');
- const todayStr=now;
- const renderYear = (yr) => {
-   let html='';
-   html += calMonthsHTML(yr, doc, 'planner');
-   html += calContinueBtn(yr);
-   scroll.insertAdjacentHTML('beforeend', html);
-   if (!scroll.__bound) {
-     scroll.__bound = true;
-     scroll.addEventListener('click', e => {
-       const btn = e.target.closest('[data-d].mg-cell');
-       if (btn) {
-         const d = btn.dataset.d;
-         dayTasksSheet(d, doc, only);
-         return;
-       }
-       const next = e.target.closest('[data-cal-next]');
-       if (next) { const y2 = +next.dataset.calNext; next.remove(); renderYear(y2); }
-     });
-   }
-   requestAnimationFrame(() => {
-     scroll.querySelectorAll('[data-d]').forEach(cell => { if (cell.dataset.d === todayStr) cell.classList.add('cal-today'); });
-     const ym=todayStr.slice(0,7);const el=scroll.querySelector('[data-cal-ym="'+ym+'"]');if(el)try{el.scrollIntoView({block:'start'})}catch(e){}
-   });
- };
- renderYear(y);
 }
 function pMeals(src,ro){const doc=src||D,only=ro==null?RO:ro;const d=today(),m=doc.meals[d]||[],bud=doc.p.bud||999;
  const pool=t=>MEALS.filter(x=>x.t==t&&x.c<=bud);
@@ -4478,7 +4464,7 @@ function smartRowFor(rows,date){for(const r of rows)if(r.date===date)return r;re
 function L2(rows,date,key){const r=smartRowFor(rows,date);return r?r.log[key]:null}
 
 function smartFocusHTML(goal,goals,noGoals,cards){
- const kicker=`<div class="smart-focus-head standalone"><p class="smart-kicker" id="smart-focus-title">Your focus</p></div>`;
+ const kicker=`<div class="smart-focus-head standalone"><p class="smart-kicker" id="smart-focus-title">Bloom Garden</p></div>`;
  if(noGoals){
   return `<div class="smart-focus-wrap" id="smart-focus" aria-labelledby="smart-focus-title">${kicker}<p class="smart-copy" style="margin:0 2px">Pick your goals in Profile to personalize this.</p></div>`;
  }
@@ -4620,13 +4606,13 @@ function smartInsightsHTML(pred,current,patterns,viewerName,aiMap,extras){
   const focusClaimId=primaryMetric?'metric:'+primaryMetric+':window:7d':(goal==='Move more'?'focus:activity-days:window:14d':goal==='Eat regularly'?'focus:meal-plan:window:14d':goal==='Prepare for doctor visits'?'focus:visit-summary:window:90d':null);
   if(focusClaimId){
    if(registry.has(focusClaimId)){
-    if(registry.owner(focusClaimId)!=='Your focus') focusToShow=Object.assign({},focusToShow,{headline:null,metric:null,trend:null});
+    if(registry.owner(focusClaimId)!=='Bloom Garden') focusToShow=Object.assign({},focusToShow,{headline:null,metric:null,trend:null});
    }else{
     // claim focus's primary metric evidence as presented by focus (headline/metric/trend)
-    if(focusToShow.headline||focusToShow.metric||focusToShow.trend) registry.claim(focusClaimId,'Your focus',focusClaimId.indexOf('metric:')===0?'metric-week':focusClaimId.indexOf('cycle:')===0?'cycle':'focus');
+    if(focusToShow.headline||focusToShow.metric||focusToShow.trend) registry.claim(focusClaimId,'Bloom Garden',focusClaimId.indexOf('metric:')===0?'metric-week':focusClaimId.indexOf('cycle:')===0?'cycle':'focus');
    }
   }
-  if(focusToShow.evidenceId) registry.claim(focusToShow.evidenceId,'Your focus','association');
+  if(focusToShow.evidenceId) registry.claim(focusToShow.evidenceId,'Bloom Garden','association');
  }
 
  // Week comparison: omit metrics already claimed as same evidence
@@ -4957,20 +4943,25 @@ function wireSmartFocus(root){
  if(smartFocusTimer){clearInterval(smartFocusTimer);smartFocusTimer=null}
  if(!root)return;
  const track=root.querySelector('.smart-focus-track');if(!track)return;
- if(!track.children.length)return;
+ const base=[...track.children];if(!base.length)return;
  const reduced=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+ const N=base.length;
+ // duplicate the set so the loop can run forever without a visible seam
+ track.insertAdjacentHTML('beforeend',base.map(n=>n.outerHTML).join(''));
+ if(N>1)track.insertAdjacentHTML('beforeend',base.map(n=>n.outerHTML).join(''));
+ const step=()=>{const k=track.children;return k.length>1?Math.max(1,k[1].offsetLeft-k[0].offsetLeft):Math.max(1,track.clientWidth)};
+ const setWidth=()=>{const k=track.children;return k.length>=N+1?k[N].offsetLeft-k[0].offsetLeft:track.scrollWidth};
+ const normalize=()=>{const w=setWidth();if(w>0&&track.scrollLeft>=w-1)track.scrollLeft-=w};
  let resumeTimer=null;
  const stop=()=>{if(smartFocusTimer){clearInterval(smartFocusTimer);smartFocusTimer=null}if(resumeTimer){clearTimeout(resumeTimer);resumeTimer=null}};
  const scheduleResume=()=>{stop();resumeTimer=setTimeout(()=>{resumeTimer=null;auto()},6000)};
- const cards=()=>[...track.children];
- const step=()=>{const k=track.children;return k.length>1?Math.max(1,k[1].offsetLeft-k[0].offsetLeft):Math.max(1,track.clientWidth)};
- const at=()=>Math.max(0,Math.min(cards().length-1,Math.round(track.scrollLeft/step())));
- const goTo=i=>{const c=cards()[i];if(!c)return;try{c.scrollIntoView({behavior:reduced?'auto':'smooth',block:'nearest',inline:'start'})}catch(e){track.scrollLeft=i*step()}};
- const advance=()=>{const n=cards().length;if(!n)return;const next=at()+1>=n?0:at()+1;goTo(next)};
- const auto=()=>{stop();smartFocusTimer=setInterval(advance,4000)};
+ const advance=()=>{track.scrollTo({left:track.scrollLeft+step(),behavior:reduced?'auto':'smooth'})};
+ const auto=()=>{stop();smartFocusTimer=setInterval(()=>{normalize();advance()},4000)};
+ let normTimer=null;
+ track.addEventListener('scroll',()=>{if(normTimer)return;normTimer=setTimeout(()=>{normTimer=null;normalize()},140)},{passive:true});
  let swipe=null;
  track.addEventListener('pointerdown',e=>{swipe={x:e.clientX,closed:false};stop()},{passive:true});
- const endSwipe=()=>{swipe=null};
+ const endSwipe=()=>{swipe=null;normalize()};
  track.addEventListener('pointerup',()=>{endSwipe();scheduleResume()},{passive:true});
  track.addEventListener('pointercancel',()=>{endSwipe();scheduleResume()},{passive:true});
  track.addEventListener('pointerleave',()=>{endSwipe();scheduleResume()},{passive:true});
@@ -6888,6 +6879,7 @@ function changePasswordSheet(){
    </div>
    <div class="card"><div class="card-h"><h3>Sync</h3></div><p class="meta" id="syncLine" style="margin:0 0 10px">${E(syncLineText())}</p><div class="row" style="gap:10px"><button class="btn ghost" id="syncNow" style="flex:1">Sync now</button><button class="btn ghost" id="syncCopy" style="flex:1">Copy diagnostics</button></div></div>
     ${RO?'<div class="card"><div class="card-h"><h3>Your data</h3></div><button class="btn pink" id="sDelAcct" style="width:100%">Delete my account</button></div>':'<div class="card"><div class="card-h"><h3>Your data</h3></div><button class="btn pink" id="sDel" style="width:100%">Delete all my data</button><button class="btn ghost" id="sDelAcct" style="width:100%">Delete my account</button><button class="btn ghost" id="sExp" style="width:100%">Export backup</button><button class="btn ghost" id="sImp" style="width:100%">Import backup</button>'+bkRestore+'</div>'}
+   <div class="card"><div class="card-h"><h3>Quick-actions button</h3></div><p class="meta" style="margin:0 0 10px">Draggable Bloom flower for one-tap logging.</p><label class="row" style="color:var(--ink)"><input type="checkbox" id="fabTgl" style="width:22px;margin:0" ${!RO&&!ownMode&&D&&D.fabOn===true?'checked':''}> Show the button</label></div>
    ${widgetSupported()?`<div class="card"><div class="card-h"><h3>Home-screen widgets</h3></div><p class="meta" style="margin:0 0 12px">Two widgets, one tap away.</p><button class="btn ghost" id="wPinTasks" style="width:100%">Add Tasks widget</button><button class="btn ghost" id="wPinWater" style="width:100%;margin-top:8px">Add Water &amp; mood widget</button><p class="meta" id="wNote" style="margin:10px 0 0"></p></div>`:''}
    <div class="card"><div class="card-h"><h3>App</h3><span class="meta" id="appVer">\u2014</span></div><button class="btn ghost" id="chkUp" style="width:100%">Check for updates</button></div>`;
  $('#bk').onclick=()=>{view='me';shell()};
@@ -6915,6 +6907,7 @@ function changePasswordSheet(){
    if(document.getElementById('syncNow'))$('#syncNow').onclick=()=>{sbPush();setTimeout(updateSyncLine,200)};
    if(document.getElementById('syncCopy'))$('#syncCopy').onclick=async()=>{const txt='sync: '+syncLineText()+'\nrev: '+sbRev+'\nfails: '+SYNC.fails+'\nlast: '+(SYNC.last?new Date(SYNC.last).toISOString():'none')+'\nlogs:\n'+errLog().map(e=>new Date(e.t).toISOString()+' ['+e.ctx+'] '+e.msg).join('\n');try{await navigator.clipboard.writeText(txt);toast('Copied')}catch(e){toast('Copy failed')}};
   if(document.getElementById('chkUp'))$('#chkUp').onclick=()=>checkUpdate(true);
+  const fabTgl=document.getElementById('fabTgl');if(fabTgl)fabTgl.onchange=()=>{D.fabOn=!!fabTgl.checked;save();fabSync()};
   ['wPinTasks','wPinWater'].forEach(id=>{
    if(!document.getElementById(id))return;
    $('#'+id).onclick=async()=>{

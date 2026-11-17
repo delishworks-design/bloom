@@ -36,11 +36,11 @@ test('shareFlags: unknown values fall back to default and tolerate junk input', 
 
 test('plannerTabSet: own panel always has journal, partner only when shared', () => {
   const mine = plannerTabSet(true, false).map(t => t[0]).join(',');
-  assert.equal(mine, 'day,month,meals,journal');
+  assert.equal(mine, 'day,meals,journal');
   const theirsPrivate = plannerTabSet(false, false).map(t => t[0]).join(',');
-  assert.equal(theirsPrivate, 'day,month,meals');
+  assert.equal(theirsPrivate, 'day,meals');
   const theirsShared = plannerTabSet(false, true).map(t => t[0]).join(',');
-  assert.equal(theirsShared, 'day,month,meals,journal');
+  assert.equal(theirsShared, 'day,meals,journal');
 });
 
 test('ringPillBare: only the estimated irregular variant drops the pill', () => {
@@ -86,5 +86,5 @@ test('plannerTabSet: per-item flags hide only their own tabs', () => {
   const nothing = plannerTabSet(false, { tasks: false, meals: false, journal: false }).map(t => t[0]).join(',');
   assert.equal(nothing, '');
   const tasksMeals = plannerTabSet(false, { tasks: true, meals: true, journal: false }).map(t => t[0]).join(',');
-  assert.equal(tasksMeals, 'day,month,meals');
+  assert.equal(tasksMeals, 'day,meals');
 });
