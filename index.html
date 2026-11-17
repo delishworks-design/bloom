@@ -199,7 +199,10 @@ body.reader-open{overflow:hidden}
 .cover-chip.prog{background:rgba(22,17,19,.78);font-variant-numeric:tabular-nums;letter-spacing:.02em;text-transform:none;font-size:.6rem;position:relative;overflow:hidden}
 .cover-chip.prog i{display:block;position:absolute;left:0;bottom:0;height:2px;background:#F8E7A4;border-radius:999px}
 .cover-art{position:absolute;inset:0;width:100%;height:100%;z-index:0}
-.cover-art svg{width:100%;height:100%;display:block}
+.cover-art{display:block;position:absolute;inset:0;width:100%;height:100%;z-index:0}
+.cover-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .5s ease}
+.cover-bg.done{opacity:1}
+.cover-overlay{position:absolute;inset:0;width:100%;height:100%}
 .bookcard-cover.art::before,.bookcard-cover.art::after{display:none}
 .recentcard-cover.art::before,.recentcard-cover.art::after{display:none}
 .bookcard-star{position:absolute;top:6px;right:6px;z-index:3;color:#F8E7A4;width:22px;height:22px;display:grid;place-items:center;border-radius:50%;background:rgba(22,17,19,.55)}
@@ -2398,7 +2401,7 @@ async function fetchManifest(){const bust='?t='+Date.now();
  const r=await fetch(UPDATE_MANIFEST+bust,{cache:'no-store'});if(!r.ok)throw new Error('manifest '+r.status);
  return await r.json()}
 // Baked-in build identity. Keep in sync with android/app/build.gradle (versionCode/versionName).
-const APP_VERSION={code:145,name:'1.4.0'};
+const APP_VERSION={code:146,name:'1.4.1'};
 const UPD_SKIP_KEY='bloom_upd_skip';
 const updater=()=>{const C=window.Capacitor;if(!C)return null;
  const P=C.Plugins&&C.Plugins.BloomUpdater;
@@ -5872,11 +5875,11 @@ function classicCoverSVG(b){
  const halo='paint-order:stroke fill;stroke:#FFFDF6;stroke-width:3;stroke-linejoin:round';
  const tspan=lines.map((l,i)=>`<tspan x="150" dy="${i===0?0:titleDy}">${escXml(l)}</tspan>`).join('');
  const aspan=authorLines.map((l,i)=>`<tspan x="150" dy="${i===0?0:13}">${escXml(l)}</tspan>`).join('');
- return `<svg viewBox="0 0 300 450" preserveAspectRatio="xMidYMid slice" role="img" aria-label="${escXml(title)}">
+ return `<img class="cover-bg" src="assets/library/${painting}" alt="${escXml(title)}" onload="this.classList.add('done')" onerror="this.onerror=null;this.classList.add('done')">
+<svg class="cover-overlay" viewBox="0 0 300 450" preserveAspectRatio="none" aria-hidden="true">
 <defs>
  <radialGradient id="cvvig${h}" cx="50%" cy="40%" r="74%"><stop offset="52%" stop-color="rgba(20,14,17,0)"/><stop offset="100%" stop-color="rgba(12,9,11,.55)"/></radialGradient>
 </defs>
-<image href="assets/library/${painting}" x="0" y="0" width="300" height="450" preserveAspectRatio="xMidYMid slice"/>
 <rect width="300" height="450" fill="url(#cvvig${h})"/>
 <rect x="10" y="10" width="280" height="430" fill="none" stroke="#C9A961" stroke-width="2.5"/>
 <rect x="14" y="14" width="272" height="422" fill="none" stroke="#F5E7BE" stroke-width=".9" opacity=".85"/>

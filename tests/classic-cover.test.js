@@ -4,11 +4,13 @@ const { load } = require('./load');
 
 const book = (id, title, author) => ({ id, title, author, category: 'Classic' });
 
-test('classicCoverSVG embeds the book title as text, escaped', () => {
+test('classicCoverSVG renders a plain img background plus overlay text, escaped', () => {
   const { classicCoverSVG } = load();
   const svg = classicCoverSVG(book('x1', 'Pride & Prejudice', 'Jane Austen'));
+  assert.match(svg, /<img class="cover-bg"/);
+  assert.match(svg, /src="assets\/library\/(classic|health|pastel)-/);
   assert.match(svg, /Pride &amp; Prejudice/);
-  assert.match(svg, /<svg viewBox="0 0 300 450"/);
+  assert.match(svg, /<svg class="cover-overlay" viewBox="0 0 300 450"/);
   assert.match(svg, /stroke="#C9A961"/);
 });
 
