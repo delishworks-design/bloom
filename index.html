@@ -212,7 +212,7 @@ body.reader-open{overflow:hidden}
 .card-genre{position:absolute;top:8px;left:8px;z-index:3;font-size:.5rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;padding:3px 9px;border-radius:999px;color:#3A2A28;background:#F4E3CB;box-shadow:0 1px 3px rgba(30,20,20,.2)}
 .g-PCOSPMOS{background:#F6D1C7}.g-Pain{background:#E6D6F0}.g-Endocrine{background:#D8E4D0}.g-Classic{background:#F4E3CB}.g-Gothic{background:#DDD3E0}.g-Horror{background:#E2D2CC}.g-Mystery{background:#D4E2E0}.g-Adventure{background:#F4DFC7}.g-ScienceFiction{background:#D3DEE8}.g-Children{background:#FBE4D0}.g-Fantasy{background:#E4D9EC}.g-Philosophy{background:#E1E6D2}.g-ShortStories{background:#EBDCDF}.g-Poetry{background:#EFE2C8}.g-Psychology{background:#D9E0E6}.g-EmotionalWellbeing{background:#F3D3D3}.g-WomensHealth{background:#F6C8D2}.g-Health{background:#D5E7D8}.g-Fiction{background:#F6E2CB}.g-Other{background:#E8E2DC}
 .ex-detail{display:flex;gap:14px;align-items:flex-start}
-.ex-cover{flex:0 0 96px;width:96px;aspect-ratio:2/2.6;border-radius:12px;overflow:hidden;background:#151011;box-shadow:0 8px 22px rgba(42,26,28,.38)}
+.ex-cover{flex:0 0 96px;width:96px;aspect-ratio:2/2.6;border-radius:12px;overflow:hidden;position:relative;background:#151011;box-shadow:0 8px 22px rgba(42,26,28,.38)}
 .ex-cover img{width:100%;height:100%;object-fit:cover}
 .ex-meta{flex:1;min-width:0}
 .ex-meta h2{margin:0;font-size:1.02rem;color:var(--ink);line-height:1.3}
@@ -2401,7 +2401,7 @@ async function fetchManifest(){const bust='?t='+Date.now();
  const r=await fetch(UPDATE_MANIFEST+bust,{cache:'no-store'});if(!r.ok)throw new Error('manifest '+r.status);
  return await r.json()}
 // Baked-in build identity. Keep in sync with android/app/build.gradle (versionCode/versionName).
-const APP_VERSION={code:147,name:'1.4.2'};
+const APP_VERSION={code:148,name:'1.4.3'};
 const UPD_SKIP_KEY='bloom_upd_skip';
 const updater=()=>{const C=window.Capacitor;if(!C)return null;
  const P=C.Plugins&&C.Plugins.BloomUpdater;
@@ -5886,7 +5886,6 @@ function classicCoverSVG(b){
 <text x="150" y="42" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9.5" font-weight="700" letter-spacing="4" fill="#3A1B26" style="${halo}">BLOOM PRESS</text>
 <text x="150" y="${titleY}" text-anchor="middle" font-family="Georgia,serif" font-weight="900" font-size="${tSize}" fill="${tcol}" style="${halo};letter-spacing:-.015em">${tspan}</text>
 <text x="150" y="${authorY}" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9.5" font-weight="700" letter-spacing="1.6" fill="#3A1B26" style="${halo}">${aspan}</text>
-<rect x="128" y="${authorY+11}" width="44" height="1.5" fill="#A8355A"/>
 <text x="32" y="428" text-anchor="start" font-family="system-ui,sans-serif" font-size="8" font-weight="700" letter-spacing="3" fill="#3A1B26" style="${halo}">BLOOM</text>
 <text x="268" y="428" text-anchor="end" font-family="system-ui,sans-serif" font-size="8" font-weight="700" letter-spacing="3" fill="#3A1B26" style="${halo}">${tag}</text>
 </svg>`;
