@@ -30,3 +30,14 @@ test('classicCoverSVG escapes xml and picks the image deterministically', () => 
   assert.ok(images.some((n) => a.includes('assets/library/' + n)));
   assert.doesNotMatch(a, /&(?!amp;)/);
 });
+
+test('classicCoverSVG applies to Women\u2019s Health and PCOS/PMOS with the PMOS tag', () => {
+  const { classicCoverSVG } = load();
+  const wh = classicCoverSVG({ id: 'herself', title: 'Herself', author: 'Bloom', category: "Women's Health" });
+  assert.match(wh, /health-(lotus|woman|orchid)\.jpg/);
+  assert.match(wh, /WOMEN&#39;S HEALTH|WOMEN'S HEALTH/);
+  assert.doesNotMatch(wh, />CLASSIC</);
+  const pm = classicCoverSVG({ id: 'pcos101', title: 'PCOS / PMOS Guideline 2023', author: 'Monash', category: 'PCOS/PMOS' });
+  assert.match(pm, /health-(lotus|woman|orchid)\.jpg/);
+  assert.match(pm, />PMOS</);
+});
