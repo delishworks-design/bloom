@@ -10,7 +10,7 @@
    "category": "PCOS/PMOS",
    "cover": "assets/library/pcos101.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/pcos-guideline.pdf",
-   "description": "A plain-language summary of the 2023 international evidence-based PCOS guidelines, covering diagnosis, symptoms, and lifestyle management."
+   "description": "Practical international guidelines for diagnosing and managing PCOS."
   },
   {
    "id": "pelvicpain",
@@ -21,7 +21,7 @@
    "category": "Pain",
    "cover": "assets/library/pelvicpain.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/pelvic-pain-rcog.pdf",
-   "description": "Guidance from the Royal College of Obstetricians and Gynaecologists on causes, investigations, and treatment of chronic pelvic pain."
+   "description": "How to understand and treat chronic pelvic pain."
   },
   {
    "id": "endocrine",
@@ -32,7 +32,7 @@
    "category": "Endocrine",
    "cover": "assets/library/endocrine.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/endocrine-hormones.pdf",
-   "description": "An accessible introduction to hormones and how the endocrine system regulates energy, mood, mood, and metabolism."
+   "description": "A friendly tour of how hormones run the body."
   },
   {
    "id": "prideprejudice",
@@ -43,7 +43,7 @@
    "category": "Fiction",
    "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/pride-and-prejudice.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/pride-and-prejudice.pdf",
-   "description": "Jane Austen's sparkling comedy of manners about Elizabeth Bennet, Mr Darcy, and the stubborn economics of first impressions."
+   "description": "Austen\u2019s witty romance about love, class and pride."
   },
   {
    "id": "janeeyre",
@@ -208,7 +208,7 @@
      "p": 1
     }
    ],
-   "description": "Charlotte Bront\u00eb's passionate tale of an orphaned girl's rise from a cruel boarding school to love, conscience, and independence."
+   "description": "An orphaned girl fights for love and independence."
   },
   {
    "id": "frankenstein",
@@ -333,7 +333,7 @@
      "p": 1
     }
    ],
-   "description": "Mary Shelley's gothic masterpiece about a scientist who creates life \u2014 and fails to take responsibility for what he makes."
+   "description": "A scientist creates life and regrets it."
   },
   {
    "id": "dracula",
@@ -454,7 +454,7 @@
      "p": 1
     }
    ],
-   "description": "Bram Stoker's classic vampire horror \u2014 Count Dracula's move to England and the men and woman hunting him."
+   "description": "Count Dracula haunts Victorian London."
   },
   {
    "id": "houndofthebaskervilles",
@@ -527,7 +527,7 @@
      "p": 1
     }
    ],
-   "description": "Sherlock Holmes investigates the supernatural hound terrorizing the Baskerville family on the foggy Devon moors."
+   "description": "Sherlock Holmes faces a demonic hound."
   },
   {
    "id": "treasureisland",
@@ -676,7 +676,7 @@
      "p": 1
     }
    ],
-   "description": "Robert Louis Stevenson's swashbuckling adventure of Jim Hawkins, a map, and the worst crew a ship ever assembled."
+   "description": "A boy sails after buried pirate gold."
   },
   {
    "id": "thetimemachine",
@@ -753,7 +753,7 @@
      "p": 1
     }
    ],
-   "description": "H. G. Wells's visionary novel in which a scientist travels to the far future and uncovers what humanity has become."
+   "description": "A scientist travels to the far future."
   },
   {
    "id": "aliceinwonderland",
@@ -814,7 +814,7 @@
      "p": 1
     }
    ],
-   "description": "Lewis Carroll's whimsical fall into a nonsense world of talking animals, impossible riddles, and a very mad queen."
+   "description": "Alice tumbles into a nonsense dreamworld."
   },
   {
    "id": "thewizardofoz",
@@ -923,7 +923,7 @@
      "p": 1
     }
    ],
-   "description": "L. Frank Baum's timeless story of Dorothy, a Kansas whirlwind, and the Emerald City at the end of the Yellow Brick Road."
+   "description": "Dorothy dreams her way to a wizard."
   },
   {
    "id": "meditations",
@@ -984,7 +984,7 @@
      "p": 1
     }
    ],
-   "description": "Private notes of the Roman emperor Marcus Aurelius \u2014 stoic writings on duty, mortality, and steady living."
+   "description": "Marcus Aurelius\u2019 private Stoic notebook."
   },
   {
    "id": "sherlockholmes",
@@ -1045,7 +1045,7 @@
      "p": 1
     }
    ],
-   "description": "Twelve cases showcasing Sherlock Holmes and Dr Watson at full power \u2014 logic, disguise, and deduction."
+   "description": "Twelve classic Sherlock Holmes cases."
   },
   {
    "id": "ataleoftwocities",
@@ -1238,7 +1238,7 @@
      "p": 1
     }
    ],
-   "description": "Charles Dickens's epic of love and sacrifice against the turbulence of the French Revolution."
+   "description": "Love and sacrifice in the French Revolution."
   },
   {
    "id": "middlemarch",
@@ -1599,7 +1599,7 @@
      "p": 1
     }
    ],
-   "description": "George Eliot's panoramic novel of idealism, marriage, and money in a small English town."
+   "description": "Idealism, marriage and ambition in a small town."
   },
   {
    "id": "wutheringheights",
@@ -1748,7 +1748,7 @@
      "p": 1
     }
    ],
-   "description": "Emily Bront\u00eb's wild, tempestuous love story on the Yorkshire moors \u2014 passion that outlives the grave."
+   "description": "Heathcliff and Catherine\u2019s savage love affair."
   },
   {
    "id": "persuasion",
@@ -1857,7 +1857,7 @@
      "p": 1
     }
    ],
-   "description": "Jane Austen's mature romance of second chances \u2014 Anne Elliot and Captain Wentworth after eight years apart."
+   "description": "A second chance at love in Regency England."
   },
   {
    "id": "crimeandpunishment",
@@ -2030,7 +2030,7 @@
      "p": 1
     }
    ],
-   "description": "Dostoevsky's towering psychological novel of guilt, poverty, and punishment in Imperial St Petersburg."
+   "description": "Guilt and redemption after a murder."
   },
   {
    "id": "thepictureofdoriangray",
@@ -2127,7 +2127,7 @@
      "p": 1
     }
    ],
-   "description": "Oscar Wilde's gothic morality tale of beauty, vanity, and a portrait that ages instead of its owner."
+   "description": "A portrait that ages while Dorian stays young."
   },
   {
    "id": "thescarletletter",
@@ -2240,7 +2240,7 @@
      "p": 1
     }
    ],
-   "description": "Nathaniel Hawthorne's Puritan novel of sin, shame, and redemption \u2014 a woman forced to wear the scarlet A."
+   "description": "A Puritan woman bears the scarlet A."
   },
   {
    "id": "theturnofthescrew",
@@ -2353,7 +2353,7 @@
      "p": 1
     }
    ],
-   "description": "Henry James's ambiguous ghost story \u2014 a governess, two strange children, and lurking spirits."
+   "description": "A governess sees ghosts, or madness."
   },
   {
    "id": "thephantomoftheopera",
@@ -2470,7 +2470,7 @@
      "p": 1
     }
    ],
-   "description": "Gaston Leroux's romantic horror tale of a disfigured genius haunting the Paris Op\u00e9ra."
+   "description": "A disfigured genius haunts the opera house."
   },
   {
    "id": "theyellowwallpaper",
@@ -2487,7 +2487,7 @@
      "p": 1
     }
    ],
-   "description": "Charlotte Perkins Gilman's landmark story of postpartum breakdown, isolation, and the grip of yellow wallpaper."
+   "description": "A woman\u2019s descent into confinement and delusion."
   },
   {
    "id": "thelegendofsleepyhollow",
@@ -2504,7 +2504,7 @@
      "p": 1
     }
    ],
-   "description": "Washington Irving's American folk tale of Ichabod Crane, a haunted hollow, and a headless horseman."
+   "description": "Ichabod Crane meets the Headless Horseman."
   },
   {
    "id": "themoonstone",
@@ -2701,7 +2701,7 @@
      "p": 1
     }
    ],
-   "description": "Wilkie Collins's proto-detective mystery of a stolen sacred diamond and the family it shatters."
+   "description": "A stolen diamond launches detective fiction."
   },
   {
    "id": "astudyinscarlet",
@@ -2770,7 +2770,7 @@
      "p": 1
     }
    ],
-   "description": "Sherlock Holmes's debut case \u2014 a blood-stained room in an empty house and a mysterious vengeance."
+   "description": "Sherlock Holmes\u2019 first case."
   },
   {
    "id": "thesignofthefour",
@@ -2831,7 +2831,7 @@
      "p": 1
     }
    ],
-   "description": "Holmes and Watson pursue a cursed treasure across London, involving a wooden-legged man and a killer."
+   "description": "Holmes and Watson chase a treasure."
   },
   {
    "id": "thecountofmontecristo",
@@ -3312,7 +3312,7 @@
      "p": 1
     }
    ],
-   "description": "Alexandre Dumas's monumental tale of Edmond Dant\u00e8s \u2014 betrayal, escape, revenge, and forgiveness."
+   "description": "Wrongfully imprisoned, he enacts revenge."
   },
   {
    "id": "aroundtheworldineightydays",
@@ -3473,7 +3473,7 @@
      "p": 1
     }
    ],
-   "description": "Jules Verne's whirlwind race around the world \u2014 a gentleman's bet with time, elephants, and steamships."
+   "description": "Phileas Fogg races around the globe."
   },
   {
    "id": "robinsoncrusoe",
@@ -3566,7 +3566,7 @@
      "p": 1
     }
    ],
-   "description": "Daniel Defoe's survival classic \u2014 shipwreck, solitude, faith, and twenty-eight years on a desert island."
+   "description": "Shipwrecked and alone for twenty-eight years."
   },
   {
    "id": "twentythousandleagues",
@@ -3767,7 +3767,7 @@
      "p": 1
     }
    ],
-   "description": "Jules Verne's underwater odyssey aboard Captain Nemo's Nautilus across the world's seas."
+   "description": "Captain Nemo\u2019s submarine Nautilus adventures."
   },
   {
    "id": "thewaroftheworlds",
@@ -3888,7 +3888,7 @@
      "p": 1
     }
    ],
-   "description": "H. G. Wells's alien invasion novel \u2014 Martian machines descend on Victorian England."
+   "description": "Martians invade Victorian England."
   },
   {
    "id": "flatland",
@@ -3989,7 +3989,7 @@
      "p": 1
     }
    ],
-   "description": "Edwin A. Abbott's satirical fable of a two-dimensional world that gets a third-dimensional revelation."
+   "description": "A two-dimensional satire of society."
   },
   {
    "id": "thelostworld",
@@ -4066,7 +4066,7 @@
      "p": 1
     }
    ],
-   "description": "Arthur Conan Doyle's prehistoric adventure \u2014 a hidden plateau where dinosaurs still roam."
+   "description": "Dinosaurs survive on a hidden plateau."
   },
   {
    "id": "peterpan",
@@ -4147,7 +4147,7 @@
      "p": 1
     }
    ],
-   "description": "J. M. Barrie's Neverland \u2014 Wendy, the Lost Boys, and the boy who wouldn't grow up."
+   "description": "Peter and Wendy in Neverland."
   },
   {
    "id": "thesecretgarden",
@@ -4268,7 +4268,7 @@
      "p": 1
     }
    ],
-   "description": "Frances Hodgson Burnett's uplifting tale of a hidden garden and a girl healing through nature."
+   "description": "A girl revives a forgotten garden."
   },
   {
    "id": "anneofgreengables",
@@ -4433,7 +4433,7 @@
      "p": 1
     }
    ],
-   "description": "L. M. Montgomery's heartwarming story of a fiery, imaginative red-headed orphan in rural Canada."
+   "description": "Anne, the imaginative orphan, comes home."
   },
   {
    "id": "thewindinthewillows",
@@ -4494,7 +4494,7 @@
      "p": 1
     }
    ],
-   "description": "Kenneth Grahame's idyllic English river tale \u2014 Ratty, Mole, Badger, and the irrepressible Mr Toad."
+   "description": "Mole, Rat, Toad and Badger."
   },
   {
    "id": "blackbeauty",
@@ -4539,7 +4539,7 @@
      "p": 1
     }
    ],
-   "description": "Anna Sewell's kindness-to-horses classic \u2014 a horse's autobiography told in bittersweet detail."
+   "description": "A horse narrates his own life."
   },
   {
    "id": "grimmsfairytales",
@@ -4812,7 +4812,7 @@
      "p": 1
     }
    ],
-   "description": "Jacob and Wilhelm Grimm's collected German folklore \u2014 the dark roots of fairy tales."
+   "description": "Grimms\u2019 dark and magical folklore."
   },
   {
    "id": "andersensfairytales",
@@ -4829,7 +4829,7 @@
      "p": 1
     }
    ],
-   "description": "Hans Christian Andersen's literary fairy tales \u2014 beauty, sacrifice, and longing."
+   "description": "Andersen\u2019s literary fairy tales."
   },
   {
    "id": "thearabiannights",
@@ -4982,7 +4982,7 @@
      "p": 1
     }
    ],
-   "description": "The rich frame tales of Scheherazade \u2014 a thousand and one nights of magic and marvels."
+   "description": "Scheherazade\u2019s thousand and one nights."
   },
   {
    "id": "dubliners",
@@ -5059,7 +5059,7 @@
      "p": 1
     }
    ],
-   "description": "James Joyce's stories of daily life, paralysis, and epiphany in 1900s Dublin."
+   "description": "Joyce\u2019s stories of paralysis in Dublin."
   },
   {
    "id": "thegiftofthemagi",
@@ -5076,7 +5076,7 @@
      "p": 1
     }
    ],
-   "description": "O. Henry's famous short story of two gifts, two sacrifices, and true love."
+   "description": "Two lovers, two sacrifices, one perfect gift."
   },
   {
    "id": "leavesofgrass",
@@ -5225,7 +5225,7 @@
      "p": 1
     }
    ],
-   "description": "Walt Whitman's revolutionary democracy of the self \u2014 the birth of American poetry."
+   "description": "Whitman\u2019s democratic celebration of the self."
   },
   {
    "id": "sonnetsfromtheportuguese",
@@ -5414,7 +5414,7 @@
      "p": 1
     }
    ],
-   "description": "Elizabeth Barrett Browning's sequence of forty-four love sonnets to her future husband."
+   "description": "Elizabeth Barrett Browning\u2019s love sonnets."
   },
   {
    "id": "therepublic",
@@ -5467,7 +5467,7 @@
      "p": 1
     }
    ],
-   "description": "Plato's philosophical dialogues on justice, the ideal state, and the allegory of the cave."
+   "description": "Plato on justice and the ideal state."
   },
   {
    "id": "thusspakezarathustra",
@@ -5704,7 +5704,7 @@
      "p": 1
     }
    ],
-   "description": "Nietzsche's wild prophetic fable of the Superman, the eternal return, and revaluation of values."
+   "description": "Nietzsche\u2019s prophetic fable of the Superman."
   },
   {
    "id": "walden",
@@ -5721,7 +5721,7 @@
      "p": 1
     }
    ],
-   "description": "Henry David Thoreau's experiment in simple living at Walden Pond \u2014 independence and attention."
+   "description": "Thoreau\u2019s experiment in simple living."
   },
   {
    "id": "dreampsychology",
@@ -5770,7 +5770,7 @@
      "p": 1
     }
    ],
-   "description": "Freud's accessible introduction to dream interpretation \u2014 the royal road to the unconscious."
+   "description": "Freud on interpreting dreams."
   },
   {
    "id": "thecrowd",
@@ -5839,7 +5839,7 @@
      "p": 1
     }
    ],
-   "description": "Gustave Le Bon's influential classic on crowd psychology \u2014 how masses, mobs, and public opinion move."
+   "description": "Le Bon on crowd psychology."
   },
   {
    "id": "expressionoftheemotions",
@@ -5912,7 +5912,7 @@
      "p": 1
     }
    ],
-   "description": "Charles Darwin's foundational study of how humans and animals express feeling."
+   "description": "Darwin on how emotions are shown."
   },
   {
    "id": "theanalysisofmind",
@@ -5985,7 +5985,7 @@
      "p": 1
     }
    ],
-   "description": "Bertrand Russell's treatise on the nature of mind, belief, thought, and perception."
+   "description": "Bertrand Russell on the nature of mind."
   },
   {
    "id": "foundationsofpersonality",
@@ -6066,7 +6066,7 @@
      "p": 1
     }
    ],
-   "description": "Abraham Myerson's survey of how character and temperament are formed."
+   "description": "How character and temperament are formed."
   },
   {
    "id": "howtoliveon24hours",
@@ -6127,7 +6127,7 @@
      "p": 1
     }
    ],
-   "description": "Arnold Bennett's practical masterpiece on reclaiming a whole, purposeful day."
+   "description": "Reclaim your whole day, hour by hour."
   },
   {
    "id": "asamanthinketh",
@@ -6144,7 +6144,7 @@
      "p": 1
     }
    ],
-   "description": "James Allen's short stoic classic \u2014 the law of life is mind; you become what you think."
+   "description": "Your thoughts shape your life."
   },
   {
    "id": "whyworry",
@@ -6233,7 +6233,7 @@
      "p": 1
     }
    ],
-   "description": "George Lincoln Walton's practical guide to defeating the habit of worry and fear."
+   "description": "A practical cure for the worry habit."
   },
   {
    "id": "theconquestoffear",
@@ -6250,7 +6250,7 @@
      "p": 1
     }
    ],
-   "description": "Basil King's reflections on managing fear, love, and serenity of mind."
+   "description": "Master fear through calm and trust."
   },
   {
    "id": "quityourworrying",
@@ -6359,7 +6359,7 @@
      "p": 1
     }
    ],
-   "description": "George Wharton James's methods for breaking the worry habit and living with courage."
+   "description": "Break the worry habit, live freely."
   },
   {
    "id": "powerthroughrepose",
@@ -6444,7 +6444,7 @@
      "p": 1
     }
    ],
-   "description": "Annie Payson Call's gentle training in calm \u2014 rest that restores the nervous system."
+   "description": "Calm rest as a cure for nervous strain."
   },
   {
    "id": "fourepochsofwomanslife",
@@ -6577,7 +6577,7 @@
      "p": 1
     }
    ],
-   "description": "Anna M. Galbraith's turn-of-the-century guidance on women's health across the life stages \u2014 education, growth, maturity, and age."
+   "description": "Women\u2019s health guidance across life stages."
   },
   {
    "id": "theprospectivemother",
@@ -6638,7 +6638,7 @@
      "p": 1
     }
    ],
-   "description": "J. Morris Slemons's old-but-classic handbook of pregnancy care and management."
+   "description": "Pregnancy care and the new mother."
   },
   {
    "id": "ahandbookofhealth",
@@ -6859,14 +6859,14 @@
      "p": 1
     }
    ],
-   "description": "Woods Hutchinson's comprehensive early-1900s manual of hygiene, diet, and everyday wellbeing."
+   "description": "Early-1900s health, diet, hygiene guide."
   },
   {
    "id": "the-physical-life-of-woman",
    "title": "The Physical Life of Woman: Advice to the Maiden, Wife and Mother",
    "author": "George H. Napheys",
    "category": "Women's Health",
-   "description": "George Napheys's classic 1869 guide for girls, wives, and mothers \u2014 published by Harper & Brothers.",
+   "description": "Victorian guide to women\u2019s health.",
    "pages": 370,
    "sizeMB": 0.6,
    "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-physical-life-of-woman.jpg",
@@ -7919,7 +7919,7 @@
    "title": "Herself: Talks with Women Concerning Themselves",
    "author": "E. B. Lowry",
    "category": "Women's Health",
-   "description": "E. B. Lowry's 1911 talks for women on their health, puberty, menstruation and change of life.",
+   "description": "Gentle talks on women\u2019s health.",
    "pages": 80,
    "sizeMB": 0.2,
    "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/herself.jpg",
@@ -8032,7 +8032,7 @@
    "title": "Advice to a Mother on the Management of Her Children",
    "author": "Pye Henry Chavasse",
    "category": "Women's Health",
-   "description": "Pye Henry Chavasse's beloved 1878 manual for mothers on infant and child care.",
+   "description": "A mother\u2019s guide to raising children.",
    "pages": 198,
    "sizeMB": 0.5,
    "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/advice-to-a-mother.jpg",
@@ -8057,7 +8057,7 @@
    "title": "Notes on Nursing: What It Is, and What It Is Not",
    "author": "Florence Nightingale",
    "category": "Women's Health",
-   "description": "Florence Nightingale's foundational 1859 notes on nursing \u2014 what nursing is, and what it is not.",
+   "description": "Florence Nightingale on nursing care.",
    "pages": 112,
    "sizeMB": 0.2,
    "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/notes-on-nursing.jpg",
@@ -8270,7 +8270,7 @@
    "title": "The Young Mother: Management of Children in Regard to Health",
    "author": "William A. Alcott",
    "category": "Women's Health",
-   "description": "William A. Alcott's early classic on maternal hygiene, diet and the care of the young child.",
+   "description": "Early motherhood and infant care.",
    "pages": 141,
    "sizeMB": 0.3,
    "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-young-mother.jpg",
@@ -8443,7 +8443,7 @@
    "title": "The Maternal Management of Children, in Health and Disease",
    "author": "Thomas Bull",
    "category": "Women's Health",
-   "description": "Thomas Bull's 1848 trusted manual for mothers on raising children in health and disease.",
+   "description": "Thomas Bull\u2019s trusted child-rearing manual.",
    "pages": 110,
    "sizeMB": 0.2,
    "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-maternal-management-of-children.jpg",
@@ -8556,7 +8556,7 @@
    "title": "The Mother and Her Child",
    "author": "William S. Sadler",
    "category": "Women's Health",
-   "description": "William S. Sadler's comprehensive handbook for mothers on pregnancy, birth and child-rearing.",
+   "description": "A complete mother\u2019s handbook.",
    "pages": 283,
    "sizeMB": 0.6,
    "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-mother-and-her-child.jpg",
@@ -8729,7 +8729,7 @@
    "title": "Preventable Diseases",
    "author": "Woods Hutchinson",
    "category": "Health",
-   "description": "Woods Hutchinson's clear guide to preventing common diseases by ordinary daily habits.",
+   "description": "Preventing common diseases by good habits.",
    "pages": 198,
    "sizeMB": 0.5,
    "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/preventable-diseases.jpg",
@@ -8818,7 +8818,7 @@
    "title": "Our Nervous Friends: Illustrating the Mastery of Nervousness",
    "author": "Robert S. Carroll",
    "category": "Health",
-   "description": "Robert S. Carroll's 1919 practical book on understanding and mastering nervousness.",
+   "description": "Understand and master nervous tension.",
    "pages": 113,
    "sizeMB": 0.3,
    "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/our-nervous-friends.jpg",
@@ -8927,7 +8927,7 @@
    "title": "Sex and Common-Sense",
    "author": "A. Maude Royden",
    "category": "Women's Health",
-   "description": "A. Maude Royden's influential 1922 lecture on sex, marriage, and moral standards for modern life.",
+   "description": "Royden on sex, love and marriage.",
    "pages": 73,
    "sizeMB": 0.1,
    "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/sex-and-common-sense.jpg",
@@ -9032,7 +9032,7 @@
    "title": "Youth: Its Education, Regimen, and Hygiene",
    "author": "G. Stanley Hall",
    "category": "Health",
-   "description": "G. Stanley Hall's study of how to educate and care for adolescents' bodies and minds.",
+   "description": "Caring for adolescents\u2019 minds and bodies.",
    "pages": 207,
    "sizeMB": 0.5,
    "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/youth-its-education-regimen-and-hygiene.jpg",
@@ -9093,7 +9093,7 @@
    "title": "Object Lessons on the Human Body",
    "author": "Sarah F. Buckelew",
    "category": "Health",
-   "description": "Sarah Buckelew's 1902 teacher's manual for teaching anatomy to children by example.",
+   "description": "Teaching anatomy through objects.",
    "pages": 65,
    "sizeMB": 0.1,
    "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/object-lessons-on-the-human-body.jpg",
@@ -9154,7 +9154,7 @@
    "title": "Woman: Her Sex and Love Life",
    "author": "William J. Robinson",
    "category": "Women's Health",
-   "description": "William J. Robinson's 1917 medical primer on female anatomy, health, and sexual knowledge.",
+   "description": "Robinson\u2019s medical guide for women.",
    "pages": 138,
    "sizeMB": 0.3,
    "cover": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/woman-her-sex-and-love-life.jpg",
@@ -9219,7 +9219,7 @@
    "category": "Classic",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/don-quixote.pdf",
-   "description": "Don Quixote by Cervantes Saavedra, Miguel de Ormsby, John"
+   "description": "The mad knight-errant tilts at windmills."
   },
   {
    "id": "les-mis-rables",
@@ -9230,7 +9230,7 @@
    "category": "Classic",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/les-mis-rables.pdf",
-   "description": "Les Mis\u00e9rables by Hapgood, Isabel Florence Hugo, Victor"
+   "description": "Jean Valjean\u2019s pursuit across revolutionary France."
   },
   {
    "id": "eug-nie-grandet",
@@ -9241,7 +9241,7 @@
    "category": "Classic",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/eug-nie-grandet.pdf",
-   "description": "Eugenie Grandet by Wormeley, Katharine Prescott Balzac, Honor\u00e9 de"
+   "description": "Balzac\u2019s study of avarice and love."
   },
   {
    "id": "gobseck",
@@ -9252,7 +9252,7 @@
    "category": "Classic",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/gobseck.pdf",
-   "description": "Gobseck by Balzac, Honor\u00e9 de, 1799-1850"
+   "description": "Balzac\u2019s money-lender short novel."
   },
   {
    "id": "notre-dame-de-paris",
@@ -9263,7 +9263,7 @@
    "category": "Classic",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/notre-dame-de-paris.pdf",
-   "description": "Notre-Dame De Paris by Hugo, Victor Hapgood, Isabel Florence"
+   "description": "Quasimodo and the bells of Notre-Dame."
   },
   {
    "id": "the-mayor-of-casterbridge",
@@ -9274,7 +9274,7 @@
    "category": "Classic",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-mayor-of-casterbridge.pdf",
-   "description": "The Mayor of Casterbridge by Hardy, Thomas"
+   "description": "A man sells his wife, then seeks redemption."
   },
   {
    "id": "typee",
@@ -9285,7 +9285,7 @@
    "category": "Classic",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/typee.pdf",
-   "description": "Typee: A Romance of the South Seas by Melville, Herman Stedman, Arthur Griffin"
+   "description": "Melville\u2019s South Pacific adventure."
   },
   {
    "id": "life-on-the-mississippi",
@@ -9296,7 +9296,7 @@
    "category": "Classic",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/life-on-the-mississippi.pdf",
-   "description": "Life on the Mississippi by Twain, Mark, 1835-1911"
+   "description": "Twain on the river he grew up on."
   },
   {
    "id": "the-great-stone-face",
@@ -9307,7 +9307,7 @@
    "category": "Classic",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-great-stone-face.pdf",
-   "description": "The Great Stone Face, and Other Tales of the White Mountains by Hawthorne, Nathaniel"
+   "description": "A boy lives toward a noble face."
   },
   {
    "id": "siddhartha",
@@ -9318,7 +9318,7 @@
    "category": "Classic",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/siddhartha.pdf",
-   "description": "Siddhartha by Hesse, Hermann"
+   "description": "Hesse\u2019s search for enlightenment."
   },
   {
    "id": "our-nig",
@@ -9329,7 +9329,7 @@
    "category": "Classic",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/our-nig.pdf",
-   "description": "Our Nig; Or, Sketches from the Life of a Free Black, in a Two-story White House, North&#13;Showing That Slavery's Shadows Fall Even There by Wilson, Harriet E."
+   "description": "A free Black girl\u2019s life in the North."
   },
   {
    "id": "daisy-miller",
@@ -9340,7 +9340,7 @@
    "category": "Classic",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/daisy-miller.pdf",
-   "description": "Daisy Miller: A Study by James, Henry"
+   "description": "A spirited American girl defies society."
   },
   {
    "id": "extracts-from-adam-s-diary",
@@ -9351,7 +9351,7 @@
    "category": "Classic",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/extracts-from-adam-s-diary.pdf",
-   "description": "Extracts from Adam's Diary, translated from the original ms. by Twain, Mark"
+   "description": "Mark Twain\u2019s comic Adam diary."
   },
   {
    "id": "erewhon",
@@ -9362,7 +9362,7 @@
    "category": "Classic",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/erewhon.pdf",
-   "description": "Erewhon; Or, Over the Range by Butler, Samuel"
+   "description": "Butler\u2019s satiric utopian fantasy."
   },
   {
    "id": "utopia",
@@ -9373,7 +9373,7 @@
    "category": "Classic",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/utopia.pdf",
-   "description": "Utopia by More, Thomas, Saint Morley, Henry"
+   "description": "More\u2019s ideal society."
   },
   {
    "id": "the-high-history-of-the-holy-graal",
@@ -9384,7 +9384,7 @@
    "category": "Classic",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-high-history-of-the-holy-graal.pdf",
-   "description": "The High History of the Holy Graal by Evans, Sebastian"
+   "description": "A medieval Grail quest."
   },
   {
    "id": "typhoon",
@@ -9395,7 +9395,7 @@
    "category": "Classic",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/typhoon.pdf",
-   "description": "Typhoon by Conrad, Joseph, 1857-1924"
+   "description": "Conrad\u2019s typhoon at sea."
   },
   {
    "id": "twenty-years-after",
@@ -9406,7 +9406,7 @@
    "category": "Classic",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/twenty-years-after.pdf",
-   "description": "Twenty Years After by Dumas, Alexandre, 1802-1870"
+   "description": "Dumas\u2019s Musketeers return, older and wearier."
   },
   {
    "id": "a-room-with-a-view",
@@ -9417,7 +9417,7 @@
    "category": "Classic",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/a-room-with-a-view.pdf",
-   "description": "A Room with a View by Forster, E. M. (Edward Morgan)"
+   "description": "A young woman between two loves."
   },
   {
    "id": "romeo-and-juliet",
@@ -9428,7 +9428,7 @@
    "category": "Drama",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/romeo-and-juliet.pdf",
-   "description": "The Tragedy of Romeo and Juliet by Shakespeare, William"
+   "description": "Star-crossed teenage lovers."
   },
   {
    "id": "hamlet",
@@ -9439,7 +9439,7 @@
    "category": "Drama",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/hamlet.pdf",
-   "description": "Hamlet, Prince of Denmark by Shakespeare, William, 1564-1616"
+   "description": "The melancholy prince of Denmark."
   },
   {
    "id": "a-midsummer-night-s-dream",
@@ -9450,7 +9450,7 @@
    "category": "Drama",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/a-midsummer-night-s-dream.pdf",
-   "description": "A Midsummer Night's Dream by Shakespeare, William, 1564-1616"
+   "description": "Fairies and lovers in an enchanted wood."
   },
   {
    "id": "the-merchant-of-venice",
@@ -9461,7 +9461,7 @@
    "category": "Drama",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-merchant-of-venice.pdf",
-   "description": "The Merchant of Venice by Shakespeare, William, 1564-1616"
+   "description": "Portia and the pound of flesh."
   },
   {
    "id": "othello",
@@ -9472,7 +9472,7 @@
    "category": "Drama",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/othello.pdf",
-   "description": "Othello by Shakespeare, William, 1564-1616"
+   "description": "Jealousy destroys a noble Moor."
   },
   {
    "id": "king-lear",
@@ -9483,7 +9483,7 @@
    "category": "Drama",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/king-lear.pdf",
-   "description": "King Lear by Shakespeare, William, 1564-1616"
+   "description": "A king\u2019s fatal trust in flattery."
   },
   {
    "id": "the-tempest",
@@ -9494,7 +9494,7 @@
    "category": "Drama",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-tempest.pdf",
-   "description": "The Tempest by Shakespeare, William, 1564-1616"
+   "description": "Prospero, the island and the storm."
   },
   {
    "id": "much-ado-about-nothing",
@@ -9505,7 +9505,7 @@
    "category": "Drama",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/much-ado-about-nothing.pdf",
-   "description": "Much Ado about Nothing by Shakespeare, William, 1564-1616"
+   "description": "Wit, deception and love at a party."
   },
   {
    "id": "julius-caesar",
@@ -9516,7 +9516,7 @@
    "category": "Drama",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/julius-caesar.pdf",
-   "description": "Julius Caesar by Shakespeare, William, 1564-1616"
+   "description": "Friends plot the assassination of Caesar."
   },
   {
    "id": "king-henry-iv-part-1",
@@ -9527,7 +9527,7 @@
    "category": "Drama",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/king-henry-iv-part-1.pdf",
-   "description": "King Henry IV Part 1 by Shakespeare, William, 1564-1616"
+   "description": "Young Hal between low company and his crown."
   },
   {
    "id": "the-jew-of-malta",
@@ -9538,7 +9538,7 @@
    "category": "Drama",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-jew-of-malta.pdf",
-   "description": "The Jew of Malta by Marlowe, Christopher"
+   "description": "Marlowe\u2019s greedy antihero."
   },
   {
    "id": "twelfth-night",
@@ -9549,7 +9549,7 @@
    "category": "Drama",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/twelfth-night.pdf",
-   "description": "Twelfth Night; or What You Will by Shakespeare, William, 1564-1616"
+   "description": "Viola shipwrecks and woos in disguise."
   },
   {
    "id": "the-winter-s-tale",
@@ -9560,7 +9560,7 @@
    "category": "Drama",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-winter-s-tale.pdf",
-   "description": "The Winter's Tale by Shakespeare, William, 1564-1616"
+   "description": "A lost heir, a found family."
   },
   {
    "id": "the-iliad",
@@ -9571,7 +9571,7 @@
    "category": "Poetry",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-iliad.pdf",
-   "description": "The Iliad by Homer Butler, Samuel"
+   "description": "Achilles and the siege of Troy."
   },
   {
    "id": "the-odyssey",
@@ -9582,7 +9582,7 @@
    "category": "Poetry",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-odyssey.pdf",
-   "description": "The Odyssey&#13;Rendered into English prose for the use of those who cannot read the original by Homer Butler, Samuel"
+   "description": "Odysseus journeys home after the war."
   },
   {
    "id": "the-aeneid",
@@ -9593,7 +9593,7 @@
    "category": "Poetry",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-aeneid.pdf",
-   "description": "The Aeneid by Virgil Dryden, John"
+   "description": "Aeneas founds Rome."
   },
   {
    "id": "beowulf",
@@ -9604,7 +9604,7 @@
    "category": "Poetry",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/beowulf.pdf",
-   "description": "Beowulf by Gummere, Francis Barton"
+   "description": "An Anglo-Saxon hero fights monsters."
   },
   {
    "id": "the-poetical-works-of-john-milton",
@@ -9615,7 +9615,7 @@
    "category": "Poetry",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-poetical-works-of-john-milton.pdf",
-   "description": "The Poetical Works of John Milton by Beeching, H. C. (Henry Charles) Milton, John"
+   "description": "Milton\u2019s epic religious poetry."
   },
   {
    "id": "the-song-of-hiawatha",
@@ -9626,7 +9626,7 @@
    "category": "Poetry",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-song-of-hiawatha.pdf",
-   "description": "The Song of Hiawatha by Morris, Woodrow W. Longfellow, Henry Wadsworth"
+   "description": "Longfellow\u2019s Native American epic."
   },
   {
    "id": "idylls-of-the-king",
@@ -9637,7 +9637,7 @@
    "category": "Poetry",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/idylls-of-the-king.pdf",
-   "description": "Idylls of the King by Tennyson, Alfred Tennyson, Baron"
+   "description": "Tennyson\u2019s King Arthur cycle."
   },
   {
    "id": "the-complete-poetical-works-of-henry-wadsworth-longfellow",
@@ -9648,7 +9648,7 @@
    "category": "Poetry",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-complete-poetical-works-of-henry-wadsworth-longfellow.pdf",
-   "description": "The Complete Poetical Works of Henry Wadsworth Longfellow by Longfellow, Henry Wadsworth"
+   "description": "Longfellow\u2019s complete poems."
   },
   {
    "id": "poems-and-songs-of-robert-burns",
@@ -9659,7 +9659,7 @@
    "category": "Poetry",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/poems-and-songs-of-robert-burns.pdf",
-   "description": "Poems and Songs of Robert Burns by Burns, Robert, 1759-1796"
+   "description": "Burns, Scotland\u2019s national poet."
   },
   {
    "id": "songs-of-innocence-and-songs-of-experience",
@@ -9670,7 +9670,7 @@
    "category": "Poetry",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/songs-of-innocence-and-songs-of-experience.pdf",
-   "description": "Songs of Innocence, and Songs of Experience by Blake, William"
+   "description": "Blake\u2019s innocence/experience poems."
   },
   {
    "id": "paradise-lost",
@@ -9681,7 +9681,7 @@
    "category": "Poetry",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/paradise-lost.pdf",
-   "description": "Paradise Lost by Milton, John"
+   "description": "Milton\u2019s epic of Satan and the Fall."
   },
   {
    "id": "the-waste-land",
@@ -9692,7 +9692,7 @@
    "category": "Poetry",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-waste-land.pdf",
-   "description": "The Waste Land by Eliot, T. S. (Thomas Stearns), 1888-1965"
+   "description": "Eliot\u2019s fragmented modernist elegy."
   },
   {
    "id": "a-book-of-nonsense",
@@ -9703,7 +9703,7 @@
    "category": "Poetry",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/a-book-of-nonsense.pdf",
-   "description": "The Book of Nonsense by Lear, Edward"
+   "description": "Lear\u2019s limericks and nonsense verse."
   },
   {
    "id": "the-divine-comedy-longfellow",
@@ -9714,7 +9714,7 @@
    "category": "Poetry",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-divine-comedy-longfellow.pdf",
-   "description": "Divine Comedy, Longfellow's Translation, Hell by Dante Alighieri Longfellow, Henry Wadsworth"
+   "description": "Dante\u2019s journey through Hell."
   },
   {
    "id": "the-raven",
@@ -9725,7 +9725,7 @@
    "category": "Poetry",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-raven.pdf",
-   "description": "The Raven by Poe, Edgar Allan, 1809-1849"
+   "description": "Poe\u2019s grieving poet and the raven."
   },
   {
    "id": "the-divine-comedy-cary-purgatory",
@@ -9736,7 +9736,7 @@
    "category": "Poetry",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-divine-comedy-cary-purgatory.pdf",
-   "description": "Divine Comedy, Cary's Translation, Purgatory by Dante Alighieri Cary, Henry Francis"
+   "description": "Dante\u2019s Purgatory, Cary translation."
   },
   {
    "id": "the-bucolics-and-eclogues",
@@ -9747,7 +9747,7 @@
    "category": "Poetry",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-bucolics-and-eclogues.pdf",
-   "description": "Georgicon by Virgil"
+   "description": "Virgil\u2019s pastoral eclogues."
   },
   {
    "id": "through-the-looking-glass",
@@ -9758,7 +9758,7 @@
    "category": "Children",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/through-the-looking-glass.pdf",
-   "description": "Through the Looking-Glass by Carroll, Lewis"
+   "description": "Alice in a reversed wonderland."
   },
   {
    "id": "aesop-s-fables",
@@ -9769,7 +9769,7 @@
    "category": "Children",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/aesop-s-fables.pdf",
-   "description": "Aesop's Fables&#13;Translated by George Fyler Townsend by Aesop Townsend, George Fyler"
+   "description": "Greek animal fables with morals."
   },
   {
    "id": "the-jungle-book",
@@ -9780,7 +9780,7 @@
    "category": "Children",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-jungle-book.pdf",
-   "description": "The Jungle Book by Kipling, Rudyard, 1865-1936"
+   "description": "Mowgli raised by wolves."
   },
   {
    "id": "the-second-jungle-book",
@@ -9791,7 +9791,7 @@
    "category": "Children",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-second-jungle-book.pdf",
-   "description": "The Second Jungle Book by Kipling, Rudyard"
+   "description": "More of Mowgli\u2019s jungle adventures."
   },
   {
    "id": "the-prince-and-the-pauper",
@@ -9802,7 +9802,7 @@
    "category": "Children",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-prince-and-the-pauper.pdf",
-   "description": "The Prince and the Pauper by Twain, Mark"
+   "description": "Tom and Edward switch places."
   },
   {
    "id": "tom-sawyer-detective",
@@ -9813,7 +9813,7 @@
    "category": "Children",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/tom-sawyer-detective.pdf",
-   "description": "Tom Sawyer, Detective by Twain, Mark"
+   "description": "Tom solves a mystery."
   },
   {
    "id": "daddy-long-legs",
@@ -9824,7 +9824,7 @@
    "category": "Children",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/daddy-long-legs.pdf",
-   "description": "Daddy-Long-Legs by Webster, Jean"
+   "description": "An orphan writes to an unknown benefactor."
   },
   {
    "id": "little-women",
@@ -9835,7 +9835,7 @@
    "category": "Children",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/little-women.pdf",
-   "description": "Little Women by Alcott, Louisa May"
+   "description": "The March sisters grow up."
   },
   {
    "id": "a-little-princess",
@@ -9846,7 +9846,7 @@
    "category": "Children",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/a-little-princess.pdf",
-   "description": "A Little Princess&#13;Being the whole story of Sara Crewe now told for the first time by Burnett, Frances Hodgson"
+   "description": "Sara Crewe survives boarding school."
   },
   {
    "id": "the-king-of-the-golden-river",
@@ -9857,7 +9857,7 @@
    "category": "Children",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-king-of-the-golden-river.pdf",
-   "description": "The King of the Golden River by Ruskin, John"
+   "description": "Ruskin\u2019s generous water spirit tale."
   },
   {
    "id": "the-princess-and-the-goblin",
@@ -9868,7 +9868,7 @@
    "category": "Children",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-princess-and-the-goblin.pdf",
-   "description": "The Princess and the Goblin by MacDonald, George"
+   "description": "Princess Irene against the goblins."
   },
   {
    "id": "the-princess-and-curdie",
@@ -9879,7 +9879,7 @@
    "category": "Children",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-princess-and-curdie.pdf",
-   "description": "The Princess and Curdie by MacDonald, George"
+   "description": "Curdie meets the goblin threat."
   },
   {
    "id": "hans-brinker-or-the-silver-skates",
@@ -9890,7 +9890,7 @@
    "category": "Children",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/hans-brinker-or-the-silver-skates.pdf",
-   "description": "Hans Brinker; Or, The Silver Skates by Dodge, Mary Mapes"
+   "description": "A boy longs for silver skates."
   },
   {
    "id": "a-child-s-garden-of-verses",
@@ -9901,7 +9901,7 @@
    "category": "Children",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/a-child-s-garden-of-verses.pdf",
-   "description": "A Child's Garden of Verses by Stevenson, Robert Louis"
+   "description": "Stevenson\u2019s poems for children."
   },
   {
    "id": "ivanhoe",
@@ -9912,7 +9912,7 @@
    "category": "Adventure",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/ivanhoe.pdf",
-   "description": "Ivanhoe: A Romance by Scott, Walter"
+   "description": "Ivanhoe and Rebecca revive chivalry."
   },
   {
    "id": "the-voyage-of-the-beagle",
@@ -9923,7 +9923,7 @@
    "category": "Adventure",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-voyage-of-the-beagle.pdf",
-   "description": "The Voyage of the Beagle by Darwin, Charles"
+   "description": "Darwin\u2019s voyage that found evolution."
   },
   {
    "id": "the-prisoner-of-zenda",
@@ -9934,7 +9934,7 @@
    "category": "Adventure",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-prisoner-of-zenda.pdf",
-   "description": "The Prisoner of Zenda by Hope, Anthony, 1863-1933"
+   "description": "A lookalike rules Ruritania."
   },
   {
    "id": "captain-blood",
@@ -9945,7 +9945,7 @@
    "category": "Adventure",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/captain-blood.pdf",
-   "description": "Captain Blood by Sabatini, Rafael"
+   "description": "A doctor becomes a pirate."
   },
   {
    "id": "king-solomon-s-mines",
@@ -9956,7 +9956,7 @@
    "category": "Adventure",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/king-solomon-s-mines.pdf",
-   "description": "King Solomon's Mines by Haggard, H. Rider (Henry Rider)"
+   "description": "Haggard\u2019s African treasure quest."
   },
   {
    "id": "allan-quatermain",
@@ -9967,7 +9967,7 @@
    "category": "Adventure",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/allan-quatermain.pdf",
-   "description": "Allan Quatermain by Haggard, H. Rider (Henry Rider)"
+   "description": "Haggard\u2019s Quatermain adventures."
   },
   {
    "id": "the-three-musketeers",
@@ -9978,7 +9978,7 @@
    "category": "Adventure",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-three-musketeers.pdf",
-   "description": "The Three Musketeers by Dumas, Alexandre, 1802-1870"
+   "description": "Athos, Porthos, Aramis and d\u2019Artagnan."
   },
   {
    "id": "kenilworth",
@@ -9989,7 +9989,7 @@
    "category": "Adventure",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/kenilworth.pdf",
-   "description": "Kenilworth by Scott, Walter"
+   "description": "Scott\u2019s Elizabethan tragedy of love and court."
   },
   {
    "id": "waverley",
@@ -10000,7 +10000,7 @@
    "category": "Adventure",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/waverley.pdf",
-   "description": "Waverley; Or, 'Tis Sixty Years Since by Scott, Walter"
+   "description": "Scott\u2019s Jacobite adventure novel."
   },
   {
    "id": "westward-ho",
@@ -10011,7 +10011,7 @@
    "category": "Adventure",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/westward-ho.pdf",
-   "description": "Westward Ho! Or, The Voyages and Adventures of Sir Amyas Leigh, Knight, of Burrough, in the County of Devon, in the Reign of Her Most Glorious Majesty Queen Elizabeth by Kingsley, Charles"
+   "description": "Elizabethan privateers sail for gold."
   },
   {
    "id": "the-story-of-the-volsungs",
@@ -10022,7 +10022,7 @@
    "category": "Adventure",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-story-of-the-volsungs.pdf",
-   "description": "The Story of the Volsungs (Volsunga Saga); with Excerpts from the Poetic Edda by Morris, William Eir\u00edkr Magn\u00fasson"
+   "description": "Norse hero Sigurd the dragon-slayer."
   },
   {
    "id": "the-return-of-sherlock-holmes",
@@ -10033,7 +10033,7 @@
    "category": "Mystery",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-return-of-sherlock-holmes.pdf",
-   "description": "The Return of Sherlock Holmes by Doyle, Arthur Conan, Sir, 1859-1930"
+   "description": "Holmes returns, and new cases follow."
   },
   {
    "id": "the-memoirs-of-sherlock-holmes",
@@ -10044,7 +10044,7 @@
    "category": "Mystery",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-memoirs-of-sherlock-holmes.pdf",
-   "description": "The Memoirs of Sherlock Holmes by Doyle, Arthur Conan"
+   "description": "More Sherlock Holmes cases."
   },
   {
    "id": "the-mystery-of-the-yellow-room",
@@ -10055,7 +10055,7 @@
    "category": "Mystery",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-mystery-of-the-yellow-room.pdf",
-   "description": "The Mystery of the Yellow Room by Leroux, Gaston"
+   "description": "Leroux\u2019s locked-room mystery."
   },
   {
    "id": "the-thirty-nine-steps",
@@ -10066,7 +10066,7 @@
    "category": "Mystery",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-thirty-nine-steps.pdf",
-   "description": "The Thirty-Nine Steps by Buchan, John"
+   "description": "Buchan\u2019s spy thriller on the run."
   },
   {
    "id": "the-mystery-of-edwin-drood",
@@ -10077,7 +10077,7 @@
    "category": "Mystery",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-mystery-of-edwin-drood.pdf",
-   "description": "The Mystery of Edwin Drood by Dickens, Charles"
+   "description": "Dickens\u2019 unfinished mystery."
   },
   {
    "id": "the-secret-sharer",
@@ -10088,7 +10088,7 @@
    "category": "Mystery",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-secret-sharer.pdf",
-   "description": "The Secret Sharer by Conrad, Joseph"
+   "description": "A captain hides a wanted man."
   },
   {
    "id": "the-castle-of-otranto",
@@ -10099,7 +10099,7 @@
    "category": "Gothic",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-castle-of-otranto.pdf",
-   "description": "The Castle of Otranto by Walpole, Horace Morley, Henry"
+   "description": "Walpole invents the Gothic novel."
   },
   {
    "id": "the-monk",
@@ -10110,7 +10110,7 @@
    "category": "Gothic",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-monk.pdf",
-   "description": "The Monk: A Romance by Lewis, M. G. (Matthew Gregory)"
+   "description": "Lewis\u2019s scandalous Gothic horror."
   },
   {
    "id": "the-history-of-caliph-vathek",
@@ -10121,7 +10121,7 @@
    "category": "Gothic",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-history-of-caliph-vathek.pdf",
-   "description": "The History of Caliph Vathek by Beckford, William, 1759-1844"
+   "description": "Beckford\u2019s Gothic Oriental fantasy."
   },
   {
    "id": "the-woman-in-white",
@@ -10132,7 +10132,7 @@
    "category": "Gothic",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-woman-in-white.pdf",
-   "description": "The Woman in White by Collins, Wilkie"
+   "description": "Collins\u2019s founding detective thriller."
   },
   {
    "id": "the-fall-of-the-house-of-usher",
@@ -10143,7 +10143,7 @@
    "category": "Gothic",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-fall-of-the-house-of-usher.pdf",
-   "description": "The Fall of the House of Usher by Poe, Edgar Allan"
+   "description": "Poe\u2019s decaying Gothic mansion."
   },
   {
    "id": "the-masque-of-the-red-death",
@@ -10154,7 +10154,7 @@
    "category": "Gothic",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-masque-of-the-red-death.pdf",
-   "description": "The Raven by Poe, Edgar Allan, 1809-1849"
+   "description": "Poe\u2019s plague party horror."
   },
   {
    "id": "the-golden-sayings-of-epictetus",
@@ -10165,7 +10165,7 @@
    "category": "Philosophy",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-golden-sayings-of-epictetus.pdf",
-   "description": "The Golden Sayings of Epictetus, with the Hymn of Cleanthes by Epictetus Crossley, Hastings"
+   "description": "Epictetus on freedom and virtue."
   },
   {
    "id": "the-symposium",
@@ -10176,7 +10176,7 @@
    "category": "Philosophy",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-symposium.pdf",
-   "description": "The Symposium by Xenophon, 431 BC-350? BC"
+   "description": "Plato on the nature of love."
   },
   {
    "id": "critias",
@@ -10187,7 +10187,7 @@
    "category": "Philosophy",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/critias.pdf",
-   "description": "Critias by Plato Jowett, Benjamin"
+   "description": "Plato\u2019s Atlantis fragment."
   },
   {
    "id": "laches",
@@ -10198,7 +10198,7 @@
    "category": "Philosophy",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/laches.pdf",
-   "description": "Charmides by Jowett, Benjamin Plato"
+   "description": "Plato on courage."
   },
   {
    "id": "protagoras",
@@ -10209,7 +10209,7 @@
    "category": "Philosophy",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/protagoras.pdf",
-   "description": "Protagoras by Jowett, Benjamin Plato"
+   "description": "Plato on virtue and knowledge."
   },
   {
    "id": "gorgias",
@@ -10220,7 +10220,7 @@
    "category": "Philosophy",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/gorgias.pdf",
-   "description": "Gorgias by Plato Jowett, Benjamin"
+   "description": "Plato on eloquence and ethics."
   },
   {
    "id": "philebus",
@@ -10231,7 +10231,7 @@
    "category": "Philosophy",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/philebus.pdf",
-   "description": "Philebus by Jowett, Benjamin Plato"
+   "description": "Plato on pleasure and the good life."
   },
   {
    "id": "the-first-men-in-the-moon",
@@ -10242,7 +10242,7 @@
    "category": "Science Fiction",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-first-men-in-the-moon.pdf",
-   "description": "The First Men in the Moon by Wells, H. G. (Herbert George)"
+   "description": "Wells\u2019s lunar voyage."
   },
   {
    "id": "from-the-earth-to-the-moon",
@@ -10253,7 +10253,7 @@
    "category": "Science Fiction",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/from-the-earth-to-the-moon.pdf",
-   "description": "From the Earth to the Moon; and, Round the Moon by Verne, Jules"
+   "description": "Verne\u2019s cannonball flight to the Moon."
   },
   {
    "id": "the-coming-race",
@@ -10264,7 +10264,7 @@
    "category": "Science Fiction",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-coming-race.pdf",
-   "description": "The Coming Race by Lytton, Edward Bulwer Lytton, Baron"
+   "description": "Lytton\u2019s underground superhuman race."
   },
   {
    "id": "when-the-sleeper-wakes",
@@ -10275,7 +10275,7 @@
    "category": "Science Fiction",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/when-the-sleeper-wakes.pdf",
-   "description": "When the Sleeper Wakes by Wells, H. G. (Herbert George)"
+   "description": "Wells\u2019s sleeper in a ruined future."
   },
   {
    "id": "a-journey-in-other-worlds",
@@ -10286,7 +10286,7 @@
    "category": "Science Fiction",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/a-journey-in-other-worlds.pdf",
-   "description": "A Journey in Other Worlds: A Romance of the Future by Astor, John Jacob"
+   "description": "Astor\u2019s visionary space voyage."
   },
   {
    "id": "the-king-james-version-of-the-bible",
@@ -10297,7 +10297,7 @@
    "category": "Philosophy",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/the-king-james-version-of-the-bible.pdf",
-   "description": "The King James Version of the Bible by Various"
+   "description": "The KJV Bible."
   },
   {
    "id": "on-the-origin-of-species",
@@ -10308,7 +10308,7 @@
    "category": "Philosophy",
    "cover": "assets/library/pastel-mandala.jpg",
    "url": "https://raw.githubusercontent.com/delishworks-design/bloom/main/library/on-the-origin-of-species.pdf",
-   "description": "On the Origin of Species By Means of Natural Selection&#13;Or, the Preservation of Favoured Races in the Struggle for Life by Darwin, Charles"
+   "description": "Darwin\u2019s evolution by natural selection."
   }
  ]
 }

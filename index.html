@@ -117,6 +117,14 @@ p{margin:0;line-height:1.5}
 .rg-dot.on{background:var(--rose);color:#fff}
 .rg-dot.today{box-shadow:0 0 0 2px var(--rose)}
 @media (max-width:420px){.rg-arc-wrap{max-width:260px}.rg-arc-center b{font-size:2rem}}
+.store-track{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 2px 14px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.store-track::-webkit-scrollbar{display:none}
+.store-track .bookcard{flex:0 0 128px;scroll-snap-align:start}
+.store-row{margin-bottom:6px}
+.store-row-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 2px 4px}
+.store-seeall{background:none;border:0;color:var(--rose);font-size:.72rem;font-weight:800;cursor:pointer;padding:4px 2px;white-space:nowrap;flex:0 0 auto}
+.lib-genre-label{font-size:.72rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);display:flex;align-items:center;margin:0}
+.store-genre-n{font-size:.62rem;font-weight:800;color:var(--mut);background:var(--chip);border-radius:999px;padding:1px 7px;margin-left:7px}
 .libempty{padding:18px 16px;background:var(--bg2);border:1px dashed var(--line);border-radius:14px;text-align:center}
 .libempty p{margin:0;font-weight:700;color:var(--mut)}
 .recentrow{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;padding:2px 2px 6px;scrollbar-width:none;margin:4px -2px 0}
@@ -5736,7 +5744,7 @@ function libTouchPage(id,page,total){
 function libStarSVG(size,on){return '<svg viewBox="0 0 24 24" width="'+size+'" height="'+size+'" aria-hidden="true" fill="'+(on?'currentColor':'none')+'" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>'}
 function libDlSVG(size,on){return '<svg viewBox="0 0 24 24" width="'+size+'" height="'+size+'" aria-hidden="true" fill="'+(on?'currentColor':'none')+'" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M8 11.5l4 4l4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>'}
 function libCheckSVG(size){return '<svg viewBox="0 0 24 24" width="'+size+'" height="'+size+'" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5l10-10"/></svg>'}
-let libTab='books',libFilter='all',libSearch='',pdfDoc=null,pdfPage=1,pdfPages=0,pdfBookId=null,pdfMode='text';
+let libTab='books',libFilter='all',libSearch='',libView='mine',pdfDoc=null,pdfPage=1,pdfPages=0,pdfBookId=null,pdfMode='text';
 function readGoalCount(doc){const r=readNormalize(doc||D);return (r.log&&r.log[today()])||0}
 function readSafeCard(){try{return readCardHTML()}catch(e){reportErr('library.readCard',e);return ''}}
 function readStreakHTML(log){const dots=weekDots(log||{},new Date());const labels=['S','M','T','W','T','F','S'];const todayDow=new Date().getDay();return `<div class="rg-streak" title="Reading streak — this week">${labels.map((l,i)=>`<span class="rg-dot${dots[i]?' on':''}${i===todayDow?' today':''}">${l}</span>`).join('')}</div>`}
@@ -5802,17 +5810,27 @@ function readCardHTML(){
  </button>`;
 }
 function library(){
+ const mine=libView!=='store';
  const tabLabel=libTab==='books'?'Books':'Articles';
- $('#main').innerHTML=`<h1>Library</h1>${readSafeCard()}
- <div class="lib-tabs" role="tablist"><button class="chip${libTab==='books'?' on':''}" role="tab" data-lt="books" aria-pressed="${libTab==='books'}">Books</button><button class="chip${libTab==='articles'?' on':''}" role="tab" data-lt="articles" aria-pressed="${libTab==='articles'}">Articles</button></div>
- <div class="dr-search"><input id="ls" type="search" placeholder="Search ${tabLabel}" value="${E(libSearch)}" autocomplete="off"></div>
- <div id="lb"></div>
+ $('#main').innerHTML=`<h1>Library</h1>
+  <div class="segwrap" role="tablist" aria-label="Library view">
+   <button type="button" data-lv="mine" aria-pressed="${mine}">My Library</button>
+   <button type="button" data-lv="store" aria-pressed="${!mine}">Bloom Store</button>
+  </div>
+  ${mine?`${readSafeCard()}
+  <div class="lib-tabs" role="tablist"><button class="chip${libTab==='books'?' on':''}" role="tab" data-lt="books" aria-pressed="${libTab==='books'}">Books</button><button class="chip${libTab==='articles'?' on':''}" role="tab" data-lt="articles" aria-pressed="${libTab==='articles'}">Articles</button></div>
+  <div class="dr-search"><input id="ls" type="search" placeholder="Search ${tabLabel}" value="${E(libSearch)}" autocomplete="off"></div>
+  <div id="lb"></div>`:`<div id="store"></div>`}
 `;
- const rc=document.getElementById('readGoalCard');if(rc)rc.onclick=()=>readGoalSheet();
- document.querySelectorAll('[data-lt]').forEach(b=>b.onclick=()=>{libTab=b.dataset.lt;libSearch='';libFilter='all';library()});
- const ls=document.getElementById('ls');
- if(ls)ls.oninput=e=>{libSearch=e.target.value;renderLibList()};
- renderLibList()}
+ document.querySelectorAll('[data-lv]').forEach(b=>b.onclick=()=>{libView=b.dataset.lv;library()});
+ if(mine){
+  const rc=document.getElementById('readGoalCard');if(rc)rc.onclick=()=>readGoalSheet();
+  document.querySelectorAll('[data-lt]').forEach(b=>b.onclick=()=>{libTab=b.dataset.lt;libSearch='';libFilter='all';library()});
+  const ls=document.getElementById('ls');
+  if(ls)ls.oninput=e=>{libSearch=e.target.value;renderLibList()};
+  renderLibList();return;
+ }
+ renderStore()}
 function renderLibList(){if(libTab==='books')renderBookList();else renderArticleList()}
 function libContinueHTML(){
  const L=libEnsure();
@@ -5840,8 +5858,42 @@ function renderBookList(){const el=document.getElementById('lb');
  el.querySelectorAll('.lib-chip').forEach(b=>b.onclick=()=>{libFilter=b.dataset.lf;library()});
  el.querySelectorAll('.recentcard[data-bid]').forEach(b=>b.addEventListener('click',()=>{const id=b.dataset.bid;const e=libEntry(id);if(e)openBook(id);else{showExploreSheet(id);library()}}));
  el.querySelectorAll('[data-expcat]').forEach(b=>b.onclick=()=>{exploreCat=b.dataset.expcat;renderLibList()});
- el.querySelectorAll('.bookcard[data-bid]').forEach(b=>{
-  const id=b.dataset.bid;const added=!!L.books[id];
+ bindStoreCards(el)}
+function storeSeed(){const d=today();let h=0;for(let i=0;i<d.length;i++){h=((h<<5)-h+d.charCodeAt(i))|0}return Math.abs(h)||1}
+function pickN(arr,n,seed){const a=arr.slice();let s=(seed>>>0)||1;const rnd=()=>{s=(s*1103515245+12345)&0x7fffffff;return s/0x7fffffff};for(let i=a.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));const t=a[i];a[i]=a[j];a[j]=t}return a.slice(0,n)}
+const RECO_CATS={'PCOS/PMOS':1,"Women's Health":1,'Health':1,'Endocrine':1,'Pain':1,'Psychology':1,'Emotional Wellbeing':1};
+const storeCard=b=>bookcardHTML(b,libEntry(b.id),true);
+const storeRow=(id,title,seeall)=>`<div class="store-row"><div class="store-row-h"><p class="lib-sub" style="margin:0">${title}</p>${seeall?`<button type="button" class="store-seeall" data-seeall="${id}">See all</button>`:''}</div><div class="store-track" id="${id}Track"></div></div>`;
+function showStoreSheet(title,books){
+ sheet(`<h2>${E(title)}</h2><p class="meta" style="margin:0">${books.length} ${books.length===1?'book':'books'}</p><div class="bookgrid" id="storeSheetGrid">${books.map(storeCard).join('')}</div>`);
+ const grid=document.getElementById('storeSheetGrid');if(grid)bindStoreCards(grid);
+}
+function renderStore(){
+ const el=document.getElementById('store');if(!el)return;
+ const all=libCached();
+ const seed=storeSeed();
+ const groups=exploreGroups(all);
+ const order=exploreOrder(groups);
+ const featured=pickN(all,10,seed+11);
+ const reco=pickN(all.filter(b=>RECO_CATS[b.category]),12,seed+22);
+ const fresh=pickN(all,10,seed+33);
+ el.innerHTML=`<p class="meta" style="margin:2px 2px 4px">Everything here is free. Tap a cover to view, add, or download.</p>
+  ${storeRow('storeFeatured','Featured · free',true)}
+  ${storeRow('storeReco','Recommended by Bloom',true)}
+  ${storeRow('storeNew','New releases',true)}
+  <p class="lib-sub" style="margin-top:12px">Explore by genre</p>
+  ${order.map(g=>{const arr=groups.get(g)||[];return `<div class="store-row"><div class="store-row-h"><p class="lib-genre-label" style="margin:0">${E(g)}<span class="store-genre-n">${arr.length}</span></p><button type="button" class="store-seeall" data-genre="${E(g)}">See all</button></div><div class="store-track">${arr.slice().map(storeCard).join('')}</div></div>`}).join('')}
+ `;
+ const fill=(id,list)=>{const n=document.getElementById(id+'Track');if(n)n.innerHTML=list.map(storeCard).join('')};
+ fill('storeFeatured',featured);fill('storeReco',reco);fill('storeNew',fresh);
+ const map={storeFeatured:['Featured · free',featured],storeReco:['Recommended by Bloom',reco],storeNew:['New releases',fresh]};
+ el.querySelectorAll('[data-seeall]').forEach(b=>b.onclick=()=>{const m=map[b.dataset.seeall];if(m)showStoreSheet(m[0],m[1])});
+ el.querySelectorAll('[data-genre]').forEach(b=>b.onclick=()=>showStoreSheet(b.dataset.genre,groups.get(b.dataset.genre)||[]));
+ bindStoreCards(el);
+}
+function bindStoreCards(scope){
+ scope.querySelectorAll('.bookcard[data-bid]').forEach(b=>{
+  const id=b.dataset.bid;const added=!!libEnsure().books[id];
   const holdMs=450,move=14;let timer=0,sx=0,sy=0;
   const down=e=>{const t=e.changedTouches?e.changedTouches[0]:e;sx=t.clientX;sy=t.clientY;
    clearTimeout(timer);timer=setTimeout(()=>{timer=0;if(added)showBookMenu(id)},holdMs)};
