@@ -313,6 +313,11 @@ button{font-family:Sansita,system-ui,sans-serif;-webkit-tap-highlight-color:tran
 .qaring-core{position:absolute;left:50%;top:50%;width:64px;height:64px;margin:-32px 0 0 -32px;box-sizing:border-box;padding:0;border:0;border-radius:50%;background:none;display:grid;place-items:center;cursor:pointer;transform:translate(var(--sx,0px),var(--sy,0px)) rotate(0deg) scale(1);transition:transform .75s cubic-bezier(.2,.9,.25,1);z-index:2}
 .qaring.on .qaring-core{transform:translate(0,0) rotate(720deg) scale(1.06)}
 .fab:focus,.fab:focus-visible,.qaring-core:focus,.qaring-core:focus-visible{outline:0}
+.fab svg{width:100%;height:100%;display:block;filter:drop-shadow(0 6px 12px rgba(120,70,80,.32))}
+.fabopts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.fabopt{width:56px;height:56px;border:1.5px solid var(--line);border-radius:16px;background:var(--card2);display:grid;place-items:center;cursor:pointer;padding:3px;transition:all .15s}
+.fabopt img,.fabopt svg{width:100%;height:100%;object-fit:contain;display:block}
+.fabopt[aria-pressed=true]{border-color:var(--rose);box-shadow:0 0 0 3px var(--pinkS)}
 .qaring-core img{width:100%;height:100%;object-fit:contain;display:block;filter:drop-shadow(0 8px 18px rgba(120,70,80,.38))}
 .qaring-item{position:absolute;left:50%;top:50%;width:80px;height:94px;margin:-47px 0 0 -40px;padding:0;border:0;background:none;cursor:pointer;transform-origin:50% 50%;transform:translate(0,0) rotate(calc(var(--r,0deg) + var(--spin,0deg))) scale(.15);opacity:0;transition:transform .74s cubic-bezier(.16,1.15,.3,1),opacity .22s;transition-delay:var(--d,0s);z-index:1;outline:0;-webkit-tap-highlight-color:transparent}
 .qaring:not(.on) .qaring-item{transition-delay:0s}
@@ -3075,12 +3080,21 @@ function fabPlace(){
  fabEl.style.left=(fabCorner[1]==='l'?b.l:b.r)+'px';
  fabEl.style.top=(fabCorner[0]==='t'?b.t:b.b)+'px';
 }
+function fabSpeciesFor(sp){const keys=Object.keys(SMART_FLOWER_SPECIES);for(let i=0;i<keys.length;i++){if(SMART_FLOWER_SPECIES[keys[i]].sp===sp)return SMART_FLOWER_SPECIES[keys[i]],keys[i]}return null}
+const FAB_SPICES={'rose':'Understand my cycle','hydrangea':'Better sleep','sunflower':'Steadier energy','daisy':'Prepare for doctor visits','zinnia':'Eat regularly','chrysanthemum':'Move more','bougainvillea':'Manage stress'};
+function fabIconHTML(choice){
+ if(!choice||choice==='bloom')return '<img src="'+LOGO+'" alt="">';
+ const goal=FAB_SPICES[choice];
+ if(!goal)return '<img src="'+LOGO+'" alt="">';
+ return smartFlowerSVG(goal,4);
+}
+function fabRefresh(){if(fabEl)fabEl.innerHTML=fabIconHTML((D&&D.fabFlower)||'bloom')}
 function fabMount(){
  if(fabEl)return;
  fabEl=document.createElement('button');
  fabEl.id='fab';fabEl.className='fab';
  fabEl.setAttribute('aria-label','Quick actions');
- fabEl.innerHTML='<img src="'+LOGO+'" alt="">';
+ fabEl.innerHTML=fabIconHTML((D&&D.fabFlower)||'bloom');
  document.body.appendChild(fabEl);
  let drag=null;
  const move=e=>{
@@ -6990,7 +7004,7 @@ function changePasswordSheet(){
    </div>
    <div class="card"><div class="card-h"><h3>Sync</h3></div><p class="meta" id="syncLine" style="margin:0 0 10px">${E(syncLineText())}</p><div class="row" style="gap:10px"><button class="btn ghost" id="syncNow" style="flex:1">Sync now</button><button class="btn ghost" id="syncCopy" style="flex:1">Copy diagnostics</button></div></div>
     ${RO?'<div class="card"><div class="card-h"><h3>Your data</h3></div><button class="btn pink" id="sDelAcct" style="width:100%">Delete my account</button></div>':'<div class="card"><div class="card-h"><h3>Your data</h3></div><button class="btn pink" id="sDel" style="width:100%">Delete all my data</button><button class="btn ghost" id="sDelAcct" style="width:100%">Delete my account</button><button class="btn ghost" id="sExp" style="width:100%">Export backup</button><button class="btn ghost" id="sImp" style="width:100%">Import backup</button>'+bkRestore+'</div>'}
-   <div class="card"><div class="card-h"><h3>Quick-actions button</h3></div><p class="meta" style="margin:0 0 10px">Draggable Bloom flower for one-tap logging.</p><label class="row" style="color:var(--ink)"><input type="checkbox" id="fabTgl" style="width:22px;margin:0" ${!RO&&!ownMode&&D&&D.fabOn===true?'checked':''}> Show the button</label></div>
+   <div class="card"><div class="card-h"><h3>Quick-actions button</h3></div><p class="meta" style="margin:0 0 10px">Draggable flower for one-tap logging.</p><label class="row" style="color:var(--ink)"><input type="checkbox" id="fabTgl" style="width:22px;margin:0" ${!RO&&!ownMode&&D&&D.fabOn===true?'checked':''}> Show the button</label><div class="lbl" style="margin-top:12px">Which flower</div><div class="fabopts" id="fabOpts"></div></div>
    ${widgetSupported()?`<div class="card"><div class="card-h"><h3>Home-screen widgets</h3></div><p class="meta" style="margin:0 0 12px">Two widgets, one tap away.</p><button class="btn ghost" id="wPinTasks" style="width:100%">Add Tasks widget</button><button class="btn ghost" id="wPinWater" style="width:100%;margin-top:8px">Add Water &amp; mood widget</button><p class="meta" id="wNote" style="margin:10px 0 0"></p></div>`:''}
    <div class="card"><div class="card-h"><h3>App</h3><span class="meta" id="appVer">\u2014</span></div><button class="btn ghost" id="chkUp" style="width:100%">Check for updates</button></div>`;
  $('#bk').onclick=()=>{view='me';shell()};
@@ -7029,6 +7043,13 @@ function changePasswordSheet(){
    if(document.getElementById('syncCopy'))$('#syncCopy').onclick=async()=>{const txt='sync: '+syncLineText()+'\nrev: '+sbRev+'\nfails: '+SYNC.fails+'\nlast: '+(SYNC.last?new Date(SYNC.last).toISOString():'none')+'\nlogs:\n'+errLog().map(e=>new Date(e.t).toISOString()+' ['+e.ctx+'] '+e.msg).join('\n');try{await navigator.clipboard.writeText(txt);toast('Copied')}catch(e){toast('Copy failed')}};
   if(document.getElementById('chkUp'))$('#chkUp').onclick=()=>checkUpdate(true);
   const fabTgl=document.getElementById('fabTgl');if(fabTgl)fabTgl.onchange=()=>{D.fabOn=!!fabTgl.checked;save();fabSync()};
+  const fabOpts=document.getElementById('fabOpts');
+  if(fabOpts&&!RO&&!ownMode){
+   const choices=[['bloom','Bloom'],['hydrangea','Hydrangea'],['sunflower','Sunflower'],['daisy','Daisy'],['zinnia','Zinnia'],['rose','Rose'],['chrysanthemum','Mums'],['bougainvillea','Bougainvillea']];
+   const cur=(D.fabFlower)||'bloom';
+   fabOpts.innerHTML=choices.map(([id,label])=>`<button type="button" class="fabopt" data-fc="${id}" aria-pressed="${cur===id}" aria-label="${label}">${id==='bloom'?`<img src="${LOGO}" alt="">`:smartFlowerSVG(FAB_SPICES[id],4)}</button>`).join('');
+   fabOpts.querySelectorAll('.fabopt').forEach(b=>b.onclick=()=>{D.fabFlower=b.dataset.fc;save();fabRefresh();fabOpts.querySelectorAll('.fabopt').forEach(x=>x.setAttribute('aria-pressed',String(x===b)))});
+  }
   ['wPinTasks','wPinWater'].forEach(id=>{
    if(!document.getElementById(id))return;
    $('#'+id).onclick=async()=>{
