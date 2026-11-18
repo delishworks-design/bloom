@@ -676,7 +676,7 @@ html[data-theme=dark] .fun{border-color:rgba(217,107,140,.45) !important}
  @keyframes bloomGrow{from{transform:scale(.32) rotate(-9deg);opacity:0}55%{opacity:1}to{transform:scale(1) rotate(0);opacity:1}}
 }
 .smart-focus-copy{display:flex;flex-direction:column;gap:2px;min-width:0}
- .smart-focus-bubble{position:relative;align-self:center;width:100%;max-width:230px;margin:12px 0 26px}
+ .smart-focus-bubble{position:relative;align-self:flex-start;width:100%;max-width:230px;margin:12px 0 26px}
  .bubble-bg{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none}
  .bubble-text{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;min-height:96px;padding:4px 19px;font-size:.75rem;line-height:1.35;font-style:italic;color:#A8355A;font-weight:600;text-align:center}
 @media (prefers-reduced-motion: no-preference){
@@ -4582,7 +4582,7 @@ function smartFocusHTML(goal,goals,noGoals,cards){
    <button class="smart-focus-tap" type="button" onclick="focusSheet(${i})" aria-label="${E(it.name)} - details">
     <span class="smart-focus-meter">${smartFlowerSVG(it.goal,it.stage)}</span>
     <span class="smart-focus-copy">
-     <span class="smart-focus-bubble"><svg class="bubble-bg" viewBox="0 0 300 128" preserveAspectRatio="none" aria-hidden="true"><circle cx="150" cy="54" r="46" fill="none" stroke="#EFD3DA" stroke-width="1" stroke-linejoin="round" vector-effect="non-scaling-stroke"/><circle cx="34" cy="124" r="3.8" fill="none" stroke="#EFD3DA" stroke-width="0.8"/><circle cx="17" cy="131" r="2.2" fill="none" stroke="#EFD3DA" stroke-width="0.7"/><circle cx="4" cy="128" r="1.3" fill="none" stroke="#EFD3DA" stroke-width="0.6"/></svg><span class="bubble-text">${E(focusVoiceFor(it.goal,today(),it.stage))}</span></span>
+     <span class="smart-focus-bubble"><svg class="bubble-bg" viewBox="0 0 300 128" preserveAspectRatio="none" aria-hidden="true"><ellipse cx="150" cy="52" rx="146" ry="48" fill="none" stroke="#EFD3DA" stroke-width="1" stroke-linejoin="round" vector-effect="non-scaling-stroke"/><circle cx="34" cy="124" r="3.8" fill="none" stroke="#EFD3DA" stroke-width="0.8"/><circle cx="17" cy="131" r="2.2" fill="none" stroke="#EFD3DA" stroke-width="0.7"/><circle cx="4" cy="128" r="1.3" fill="none" stroke="#EFD3DA" stroke-width="0.6"/></svg><span class="bubble-text">${E(focusVoiceFor(it.goal,today(),it.stage))}</span></span>
      <span class="smart-focus-stage">${E(it.stageName)}</span>
      <h3 class="smart-focus-card-title">${E(it.name)}</h3>
      <span class="smart-focus-caption">${E(it.caption)}</span>
