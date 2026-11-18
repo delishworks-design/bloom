@@ -92,3 +92,42 @@ test('chooseLoginDoc dirty=0 path preserves reading log', () => {
   assert.equal(out.read.log['2026-11-17'], 60);
   assert.equal(out.read.goalMin, 10);
 });
+
+test('ownTasksDedupe drops exact clones that also exist in the partner doc', () => {
+  const ctx = load();
+  const own = { tasks: [
+    { id: 'a', t: 'Tubig ang paso', from: '2026-11-10' },
+    { id: 'b', t: 'Mag-yoga', from: '2026-11-11' },
+    { id: 'c', t: 'Mag-grocery', from: '2026-11-12' },
+  ] };
+  const partner = { tasks: [
+    { id: 'a', t: 'Tubig ang paso', from: '2026-11-10' },
+    { id: 'b', t: 'Mag-yoga', from: '2026-11-11' },
+  ] };
+  const out = ctx.ownTasksDedupe(own, partner);
+  assert.equal(out.tasks.length, 1);
+  assert.equal(out.tasks[0].id, 'c');
+});
+
+test('ownTasksDedupe keeps tasks with the same id but different text or date', () => {
+  const ctx = load();
+  const own = { tasks: [
+    { id: 'a', t: 'Mag-yoga', from: '2026-11-10' },
+    { id: 'b', t: 'Tubig ang paso', from: '2026-11-15' },
+  ] };
+  const partner = { tasks: [
+    { id: 'a', t: 'Tubig ang paso', from: '2026-11-10' },
+    { id: 'b', t: 'Tubig ang paso', from: '2026-11-10' },
+  ] };
+  const out = ctx.ownTasksDedupe(own, partner);
+  assert.equal(out.tasks.length, 2);
+});
+
+test('ownTasksDedupe leaves the doc untouched when nothing matches or lists are empty', () => {
+  const ctx = load();
+  const own = { tasks: [{ id: 'a', t: 'X', from: '2026-11-10' }] };
+  assert.equal(ctx.ownTasksDedupe(own, { tasks: [] }), own);
+  assert.equal(ctx.ownTasksDedupe(own, {}), own);
+  assert.doesNotThrow(() => ctx.ownTasksDedupe(null, null));
+  assert.doesNotThrow(() => ctx.ownTasksDedupe({ tasks: [{ id: 'a' }] }, { tasks: [{ id: 'a' }] }));
+});

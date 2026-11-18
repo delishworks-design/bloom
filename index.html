@@ -1258,6 +1258,17 @@ function migrateLibrary(D, readFn, delFn){
 }
 // @test-end library
 // @test-begin ownmode
+function ownTasksDedupe(ownDoc,partnerDoc){
+ if(!ownDoc||!Array.isArray(ownDoc.tasks))return ownDoc;
+ if(!partnerDoc||!Array.isArray(partnerDoc.tasks))return ownDoc;
+ if(!partnerDoc.tasks.length)return ownDoc;
+ if(!ownDoc.tasks.length)return ownDoc;
+ const sig=t=>String(t.id)+'\u0001'+String(t.t||'')+'\u0001'+String(t.from||'');
+ const pSigs=new Set(partnerDoc.tasks.map(sig));
+ const kept=ownDoc.tasks.filter(t=>!pSigs.has(sig(t)));
+ if(kept.length===ownDoc.tasks.length)return ownDoc;
+ return Object.assign({},ownDoc,{tasks:kept});
+}
 function seedOwnDoc(ownDoc,cachedDoc,pname,pavatar){
  const src=ownDoc||cachedDoc||{};
  const d=Object.assign(blank(),JSON.parse(JSON.stringify(src)));
@@ -1569,6 +1580,19 @@ async function partnerDropped(){try{libStoreReset()}catch(e){}
   authView('in')}
 // the partner's own planner and journal: same account, separate doc, synced to their own row
 let ownSeq=0,ownLoading=false,ownLoaded=false;
+async function dedupeOwnTasks(doc,mail){
+ try{
+  const q=await cloudPairing();if(!q.ok)return false;
+  const owner=q.pair?q.pair.owner:null;if(!owner)return false;
+  const pd=await sbFetchDoc(owner);if(!pd)return false;
+  const before=Array.isArray(doc.tasks)?doc.tasks.length:0;
+  const res=ownTasksDedupe(doc,pd);
+  if(res===doc||!Array.isArray(res.tasks)||res.tasks.length===before)return false;
+  doc.tasks=res.tasks;
+  if(mail)try{ST.set('bloom_dirty_'+mail,'1')}catch(e){}
+  return true;
+ }catch(e){reportErr('own.dedupe',e);return false}
+}
 async function enterOwnMode(){
  if(ownMode||!RO||ownLoading)return;
  const uid=sbUser?sbUser.id:(ST.get('bloom_puid')||null);
@@ -1588,6 +1612,7 @@ async function enterOwnMode(){
  if(cached){
   const base=JSON.stringify(prepare(null));
   enter(JSON.parse(base));
+  (async()=>{if(await dedupeOwnTasks(D,mail)){save();if(view==='planner'&&safeToRender())shell()}})();
   if(!sbUser)return;
   (async()=>{
    let row=null;try{row=await sbFetchDocWithRev(sbUser.id)}catch(e){reportErr('own.load.refresh',e)}
@@ -1595,6 +1620,7 @@ async function enterOwnMode(){
    const u=row.doc._uid;if(u&&u!==sbUser.id)return;
    if(JSON.stringify(D)!==base)return;
    const next=chooseLoginDoc(JSON.parse(base),row.doc,ST.get('bloom_dirty_'+mail));
+   dedupeOwnTasks(next,mail).then(changed=>{ if(changed){save();toast('Removed copied partner tasks')} if(view==='planner'&&safeToRender())shell(); });
    next._uid=sbUser.id;D=next;sbRev=row.rev;saveRev();setDirtyFlag(0);sbLastPush=JSON.stringify(D);shell();
   })();
   return;
@@ -1608,6 +1634,7 @@ async function enterOwnMode(){
  if(cloud||cloudRev)sbRev=cloudRev;else loadRev(mail);
  saveRev();setDirtyFlag(0);sbLastPush=JSON.stringify(next);
  enter(next);busyOff();
+ dedupeOwnTasks(D,mail).then(changed=>{ if(changed){save();toast('Removed copied partner tasks')} if(view==='planner'&&safeToRender())shell(); });
 }
 function exitOwnMode(keepView){
  const st=ownStash;
