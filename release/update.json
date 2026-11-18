@@ -1,8 +1,8 @@
 {
-  "versionCode": 153,
-  "versionName": "1.8.0",
-  "url": "https://github.com/delishworks-design/bloom/releases/download/v1.8.0/bloom-1.8.0.apk",
-  "sha256": "6ead1ce7a2dc4aca979c020d4aa308fd63421fceea4ddf463d6c07b5dff32507",
-  "notes": "Sheets now slide down when they close. Charts are readable in dark mode. The library grew to 512 free books with short descriptions; PMOS/endocrine titles merged under one genre. The Task tab shows the next two weeks and your history; Your focus is now Bloom Garden with an endless swipe. You can hide the quick-actions flower in Settings.",
+  "versionCode": 154,
+  "versionName": "1.9.0",
+  "url": "https://github.com/delishworks-design/bloom/releases/download/v1.9.0/bloom-1.9.0.apk",
+  "sha256": "3aa405ad3c15b66459b241ed5bcb2a6b05ac352d3f9949658f17c1ac9a58467f",
+  "notes": "Planner Task tab rebuilt (stepper dates, inline Calendar, visible notes). Partner followers can open their own planner with tasks auto-cleaned from partner clones (tasks, journal, meals). Pages and logins still work as before. Quick actions button now honors your favorite flower; petals match it. Dark mode fixes for partner view and charts. Flowers bloom bigger; library detail sheets show full text.",
   "force": false
 }
