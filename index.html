@@ -292,6 +292,8 @@ button{font-family:Sansita,system-ui,sans-serif;-webkit-tap-highlight-color:tran
 .logpill.ghost .plus{background:rgba(184,69,107,.12) !important;color:var(--rose) !important}
 .logpill.ghost svg.pi{width:22px;height:22px;display:block}
 .cal-ico{flex:0 0 auto;width:56px;height:56px;margin:12px 0 0 8px;border:0;border-radius:18px;background:rgba(86,140,190,.17);color:#56779B;display:grid;place-items:center;cursor:pointer;transition:background .15s}
+.cal-ico{margin:0}
+.logpill.slim2{flex:1;max-width:none!important;margin:12px 0 0!important;height:52px!important}
 .cal-ico:hover{background:rgba(86,140,190,.25)}
 
 /* Chips */
@@ -3191,7 +3193,7 @@ function cyclePage(){const d=today(),l=L(d),ts=tasksFor(d),n=ts.filter(t=>isDone
  <div class="greet"><h1 class="sr">Cycle</h1><div class="hi">${h<12?'Good morning':h<18?'Good afternoon':'Good evening'},</div><div class="hi nm">${E(first)}</div><div class="date">${fmt(d,{weekday:'long',month:'long',day:'numeric'})}</div></div>
  <div class="ringwrap"><div class="ringdisc"></div>${ringSVG(c,current)}<div class="ringcenter"><div class="ringlbl">${current.state==='estimated'||current.state==='overdue'?'Day':current.state==='no-history'?'Cycle':'\u2014'}</div><div class="ringday">${ringNumber==null?'\u2014':ringNumber}</div><div class="ringcap">${ringCap}</div>${ringPillBare(current.state,c.irregular)?`<div class="ringnote">${E(centerPill)}</div>`:`<div class="ringpill">${E(centerPill)}</div>`}</div></div>
  
- <div class="row" style="gap:10px;margin:6px 4px 0">${RO?'':`<button class="logpill" id="lp"><span class="plus">${IC.plus(16)}</span>Log Period</button>`}${RO?'':`<button class="logpill ghost" id="logs"><svg class="pi" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="9" r="4"/><path d="M5 20c.6-3.5 3.2-5 7-5s6.4 1.5 7 5"/></svg>Log symptoms</button>`}<button class="cal-ico" id="cal" aria-label="Month calendar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="16" rx="2"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg></button></div>
+ <div class="row" style="gap:10px;margin:6px 4px 0">${RO?'':`<button class="logpill slim2" id="lp"><span class="plus">${IC.plus(16)}</span>Log Period</button>`}${RO?'':`<button class="logpill ghost slim2" id="logs"><svg class="pi" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="9" r="4"/><path d="M5 20c.6-3.5 3.2-5 7-5s6.4 1.5 7 5"/></svg>Log symptoms</button>`}</div>
  ${RO?'':focusBlock(RO)}
  <div class="stats3">
   <button type="button" class="stat" id="phStat" aria-haspopup="dialog" aria-label="View cycle phases graph"><span class="ic">${IC.flower(13)}</span><b class="word">${phaseLabel(ph.k)}</b><span class="lbl">Phase <span class="chev" aria-hidden="true">\u203a</span></span></button>
@@ -3213,6 +3215,7 @@ function cyclePage(){const d=today(),l=L(d),ts=tasksFor(d),n=ts.filter(t=>isDone
    <div class="kv"><span>Meals</span><b>${m.length}</b></div>
    <div class="kv kvstack"><span>Symptoms</span><b>${sx.length?sx.join(', '):'\u2014'}</b></div></div>
  ${RO?partnerGuideHTML():selfGuideHTML()}
+ <div class="row" style="justify-content:flex-end;padding:0 4px;margin-top:4px"><button class="cal-ico" id="cal" aria-label="Month calendar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="16" rx="2"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg></button></div>
  <div class="card"><div class="card-h"><h3>Today's checklist</h3>${ts.length?`<span class="meta">${n}/${ts.length}</span>`:''}</div>${ts.length?`<div class="bar" aria-hidden="true"><i style="width:${n/ts.length*100}%"></i></div><div class="cklist">`+(RO?ts.map(t=>`<div class="ck"><span class="ckt" style="${isDone(t.id,d)?'opacity:.55':''}">${isDone(t.id,d)?'&#10003;':''} ${E(t.t)}</span></div>`).join(''):ts.map(t=>ck(t,d)).join(''))+'</div>':'<p class="meta">No tasks yet. Add them in Planner.</p>'}</div>
  <div class="card fun"><span class="lbl" id="funTag" style="margin:0 0 2px">Did you know?</span><p class="funtext" id="funText">${E(funNow().text)}</p></div>
 `;
