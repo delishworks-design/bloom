@@ -6913,6 +6913,15 @@ function changePasswordSheet(){
   <button class="rolebtn" data-tm="dark" aria-pressed="${themeMode()==='dark'}"><b>Dark</b><span>Evening calm</span></button>
  </div></div>
  <div class="card">
+  <div class="card-h"><h3>Reminders</h3><span class="meta" id="remNote"></span></div>
+  <input id="rt" type="hidden" value="${D.rem.time}">
+  <input id="rrt" type="hidden" value="${D.rem.readTime||'20:00'}">
+  <div class="row" style="justify-content:space-between;gap:10px;padding:2px 0"><label class="row" style="color:var(--ink);gap:10px;flex:1;padding:7px 0"><input type="checkbox" id="rm" style="width:20px;height:20px;margin:0" ${D.rem.on?'checked':''}> Logging</label><button type="button" class="btn ghost sm" id="rtBtn">${fmtTime12(D.rem.time)}</button></div>
+  <div class="row" style="justify-content:space-between;gap:10px;padding:2px 0;border-top:1px solid var(--line2)"><label class="row" style="color:var(--ink);gap:10px;flex:1;padding:7px 0"><input type="checkbox" id="wm" style="width:20px;height:20px;margin:0" ${D.rem.water?'checked':''}> Water, hourly</label><span class="meta">8–22h</span></div>
+  <div class="row" style="justify-content:space-between;gap:10px;padding:2px 0;border-top:1px solid var(--line2)"><label class="row" style="color:var(--ink);gap:10px;flex:1;padding:7px 0"><input type="checkbox" id="rd" style="width:20px;height:20px;margin:0" ${D.rem.readOn?'checked':''}> Reading</label><button type="button" class="btn ghost sm" id="rrtBtn">${fmtTime12(D.rem.readTime||'20:00')}</button></div>
+  <div class="row" style="gap:10px;padding:2px 0;border-top:1px solid var(--line2)"><label class="row" style="color:var(--ink);gap:10px;flex:1;padding:7px 0"><input type="checkbox" id="sidesOn" style="width:20px;height:20px;margin:0" ${D.rem.sidesOn!==false?'checked':''}> Bloomies nudges</label></div>
+ </div>
+ <div class="card">
   <div class="card-h"><h3>Password</h3></div>
   <p class="meta" style="margin:0 0 10px">Change the password for this account.</p>
   <button class="btn ghost" id="sPw" style="width:100%">Change password</button>
@@ -6945,6 +6954,16 @@ function changePasswordSheet(){
   toast('Name updated');shell();
  });
     document.querySelectorAll('#themePick [data-tm]').forEach(b=>b.onclick=()=>{const m=b.dataset.tm;try{ST.set('bloom_theme',m)}catch(e){}applyTheme();const n=document.getElementById('themeHint');if(n)n.textContent=m==='system'?'Follow device':(m[0].toUpperCase()+m.slice(1));document.querySelectorAll('#themePick [data-tm]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)))});
+ const saveRem=async()=>{D.rem={on:$('#rm').checked,time:$('#rt').value||'20:00',water:$('#wm').checked,readOn:$('#rd').checked,readTime:$('#rrt').value||'20:00',sidesOn:$('#sidesOn').checked};save();try{waterReminderSync(true)}catch(e){}try{readReminderSync(true)}catch(e){}try{sidesSync(true)}catch(e){}
+  const r=await reminderSync(),note=document.getElementById('remNote');
+  if(!r.native){toast('Saved');return}
+  if(r.blocked){if(note)note.textContent='Notifications blocked — allow them in Android Settings › Apps › Bloom › Notifications.'}
+  else if(r.off){if(note)note.textContent='Turn on to get one reminder a day.'}
+  else if(r.error){if(note)note.textContent='Could not schedule. Try again.'}
+  else if(note)note.textContent='One reminder a day at '+D.rem.time};
+ ['rm','wm','rd','sidesOn'].forEach(id=>{const el=document.getElementById(id);if(el)el.onchange=saveRem});
+ const rtBtn2=document.getElementById('rtBtn');if(rtBtn2)rtBtn2.onclick=()=>wheelTimeSheet($('#rt').value||'20:00',v=>{$('#rt').value=v||'20:00';rtBtn2.textContent=fmtTime12(v||'20:00');saveRem()},{title:'Logging reminder'});
+ const rrtBtn2=document.getElementById('rrtBtn');if(rrtBtn2)rrtBtn2.onclick=()=>wheelTimeSheet($('#rrt').value||'20:00',v=>{$('#rrt').value=v||'20:00';rrtBtn2.textContent=fmtTime12(v||'20:00');saveRem()},{title:'Reading reminder'});
  $('#sPw').onclick=changePasswordSheet;
    if(document.getElementById('sDel'))$('#sDel').onclick=deleteAllData;
    if(document.getElementById('sDelAcct'))$('#sDelAcct').onclick=deleteAccountSheet;
@@ -6991,25 +7010,11 @@ $('#main').innerHTML=`${anon?`<div class="card" style="background:var(--pinkS)!i
  <button class="btn" id="sv" style="width:100%;margin-top:12px">Save</button>
 </div>
 ${isOffline()?'':'<div class="card" id="pairCard"><p class="meta" style="margin:0">Loading\u2026</p></div>'}
-<div class="card"><div class="card-h"><h3>Reminder</h3></div><label class="row" style="color:var(--ink)"><input type="checkbox" id="rm" style="width:22px;margin:0" ${D.rem.on?'checked':''}> Daily logging reminder</label><label>Time</label><input id="rt" type="hidden" value="${D.rem.time}"><button type="button" class="pickfield" id="rtBtn" style="padding:10px 14px"><span class="pf-val">${fmtTime12(D.rem.time)}</span><span class="pf-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.5l3 1.8"/></svg></span></button><label class="row" style="color:var(--ink);margin-top:12px"><input type="checkbox" id="wm" style="width:22px;margin:0" ${D.rem.water?'checked':''}> Hourly water reminder <span class="meta" style="margin-left:4px">8:00\u201322:00</span></label><label class="row" style="color:var(--ink);margin-top:12px"><input type="checkbox" id="rd" style="width:22px;margin:0" ${D.rem.readOn?'checked':''}> Daily reading reminder <span class="meta" style="margin-left:4px">Two reminders: one at the set time and one per hour until you hit your goal.</span></label><label>Reading reminder time</label><input id="rrt" type="hidden" value="${D.rem.readTime||'20:00'}"><button type="button" class="pickfield" id="rrtBtn" style="padding:10px 14px"><span class="pf-val">${fmtTime12(D.rem.readTime||'20:00')}</span><span class="pf-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.5l3 1.8"/></svg></span></button><div class="divider"></div>
-<div class="divider"></div>
-<label class="row" style="color:var(--ink);margin-top:10px;gap:10px"><input type="checkbox" id="sidesOn" style="width:22px;margin:0" ${D.rem.sidesOn!==false?'checked':''}> <span><b>Allow your Bloomies to remind you</b><br><span class="meta">Sleep, meals, move, journal, energy, your period — automatic nags, only when your day is missing something.</span></span></label>
-<button class="btn ghost" id="rs" style="width:100%;margin-top:12px">Save reminders</button><p class="meta" id="remNote" style="margin:10px 0 0"></p></div>
-  <div class="card"><button class="btn ghost" id="stg" style="width:100%">Settings</button></div>
+<div class="card"><button class="btn ghost" id="stg" style="width:100%">Settings</button></div>
   <button class="btn ghost" id="lo" style="width:100%">Log out</button>`;
  document.querySelectorAll('#goals .chip').forEach(c=>c.onclick=()=>c.setAttribute('aria-pressed',c.getAttribute('aria-pressed')!=='true'));
-  $('#sv').onclick=()=>{p.goals=[...document.querySelectorAll('#goals .chip[aria-pressed=true]')].map(c=>c.textContent);D.rem={on:$('#rm').checked,time:$('#rt').value||'20:00',water:$('#wm').checked};save();pushProfile();applyTheme();waterReminderSync(true);toast('Saved');shell()};
+  $('#sv').onclick=()=>{p.goals=[...document.querySelectorAll('#goals .chip[aria-pressed=true]')].map(c=>c.textContent);save();pushProfile();applyTheme();toast('Saved');shell()};
  $('#av').onchange=e=>{const f=e.target.files&&e.target.files[0];if(f)pickAvatar(f)};
- const saveRem=async()=>{D.rem={on:$('#rm').checked,time:$('#rt').value||'20:00',water:$('#wm').checked,readOn:$('#rd').checked,readTime:$('#rrt').value||'20:00',sidesOn:$('#sidesOn').checked};save();try{waterReminderSync(true)}catch(e){}try{readReminderSync(true)}catch(e){}try{sidesSync(true)}catch(e){}
-  const r=await reminderSync(),note=document.getElementById('remNote');
-  if(!r.native){toast('Saved');return}
-  if(r.blocked){if(note)note.textContent='Notifications are blocked. Allow them in Android Settings \u203a Apps \u203a Bloom \u203a Notifications.'}
-  else if(r.off){if(note)note.textContent='Turn on to get one reminder a day.'}
-  else if(r.error){if(note)note.textContent='The reminder could not be scheduled. Try again.'}
-  else if(note)note.textContent='One reminder a day at '+D.rem.time+'.'};
- $('#rs').onclick=saveRem;$('#rm').onchange=saveRem;$('#rd').onchange=saveRem;const sidesEl=document.getElementById('sidesOn');if(sidesEl)sidesEl.onchange=saveRem;
- const rtBtn=document.getElementById('rtBtn');if(rtBtn)rtBtn.onclick=()=>wheelTimeSheet($('#rt').value||'20:00',v=>{$('#rt').value=v||'20:00';rtBtn.querySelector('.pf-val').textContent=fmtTime12(v||'20:00');saveRem()},{title:'Daily reminder'});
- const rrtBtn=document.getElementById('rrtBtn');if(rrtBtn)rrtBtn.onclick=()=>wheelTimeSheet($('#rrt').value||'20:00',v=>{$('#rrt').value=v||'20:00';rrtBtn.querySelector('.pf-val').textContent=fmtTime12(v||'20:00');saveRem()},{title:'Reading reminder'});
  $('#lo').onclick=confirmLogout;loadPairCard();
  syncPartnerCode().then(ch=>{if(ch&&view==='me'&&!RO)me()});
   $('#stg').onclick=()=>{view='settings';shell()};}
