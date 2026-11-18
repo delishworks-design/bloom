@@ -356,7 +356,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;
 .avatar-fb{border-radius:50%;background:linear-gradient(135deg,var(--pinkS),var(--tealS)) !important;display:grid;place-items:center;font-family:'Playfair Display',serif;font-weight:700;color:var(--rose);flex:0 0 auto;border:2px solid var(--card)}
 
 /* Greet hierarchy */
-.greet{animation:fadeUp .5s ease .1s both;display:flex;flex-direction:column;gap:4px;padding:4px 0 6px}
+.greet{animation:fadeUp .5s ease .1s both;display:flex;flex-direction:column;gap:4px;padding:4px 64px 6px 4px;position:relative}
 .greet .hi{font-family:'Playfair Display',serif;font-size:22px;font-weight:500;line-height:1.2;color:var(--ink)}
 .greet .nm{font-size:36px;line-height:1;font-weight:700;color:var(--ink);letter-spacing:-.02em}
 .greet .date{margin-top:8px;font-size:.9rem;font-style:italic;color:#B8456B;line-height:1.3}
@@ -3190,7 +3190,7 @@ function cyclePage(){const d=today(),l=L(d),ts=tasksFor(d),n=ts.filter(t=>isDone
   const sx=(l.tags||[]).concat(l.customSx||[]);
 
  $('#main').innerHTML=`
- <div class="greet"><h1 class="sr">Cycle</h1><div class="hi">${h<12?'Good morning':h<18?'Good afternoon':'Good evening'},</div><div class="hi nm">${E(first)}</div><div class="date">${fmt(d,{weekday:'long',month:'long',day:'numeric'})}</div></div>
+ <div class="greet"><h1 class="sr">Cycle</h1><div class="hi">${h<12?'Good morning':h<18?'Good afternoon':'Good evening'},</div><div class="hi nm">${E(first)}</div><div class="date">${fmt(d,{weekday:'long',month:'long',day:'numeric'})}</div><button class="cal-ico" id="cal" aria-label="Month calendar" style="position:absolute;top:6px;right:0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="16" rx="2"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg></button></div>
  <div class="ringwrap"><div class="ringdisc"></div>${ringSVG(c,current)}<div class="ringcenter"><div class="ringlbl">${current.state==='estimated'||current.state==='overdue'?'Day':current.state==='no-history'?'Cycle':'\u2014'}</div><div class="ringday">${ringNumber==null?'\u2014':ringNumber}</div><div class="ringcap">${ringCap}</div>${ringPillBare(current.state,c.irregular)?`<div class="ringnote">${E(centerPill)}</div>`:`<div class="ringpill">${E(centerPill)}</div>`}</div></div>
  
  <div class="row" style="gap:10px;margin:6px 4px 0">${RO?'':`<button class="logpill slim2" id="lp"><span class="plus">${IC.plus(16)}</span>Log Period</button>`}${RO?'':`<button class="logpill ghost slim2" id="logs"><svg class="pi" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="9" r="4"/><path d="M5 20c.6-3.5 3.2-5 7-5s6.4 1.5 7 5"/></svg>Log symptoms</button>`}</div>
@@ -3215,7 +3215,6 @@ function cyclePage(){const d=today(),l=L(d),ts=tasksFor(d),n=ts.filter(t=>isDone
    <div class="kv"><span>Meals</span><b>${m.length}</b></div>
    <div class="kv kvstack"><span>Symptoms</span><b>${sx.length?sx.join(', '):'\u2014'}</b></div></div>
  ${RO?partnerGuideHTML():selfGuideHTML()}
- <div class="row" style="justify-content:flex-end;padding:0 4px;margin-top:4px"><button class="cal-ico" id="cal" aria-label="Month calendar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="16" rx="2"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg></button></div>
  <div class="card"><div class="card-h"><h3>Today's checklist</h3>${ts.length?`<span class="meta">${n}/${ts.length}</span>`:''}</div>${ts.length?`<div class="bar" aria-hidden="true"><i style="width:${n/ts.length*100}%"></i></div><div class="cklist">`+(RO?ts.map(t=>`<div class="ck"><span class="ckt" style="${isDone(t.id,d)?'opacity:.55':''}">${isDone(t.id,d)?'&#10003;':''} ${E(t.t)}</span></div>`).join(''):ts.map(t=>ck(t,d)).join(''))+'</div>':'<p class="meta">No tasks yet. Add them in Planner.</p>'}</div>
  <div class="card fun"><span class="lbl" id="funTag" style="margin:0 0 2px">Did you know?</span><p class="funtext" id="funText">${E(funNow().text)}</p></div>
 `;
