@@ -87,8 +87,8 @@ p{margin:0;line-height:1.5}
 .bookcard:active{transform:scale(.98)}
 .bookcard-cover{display:block;width:100%;aspect-ratio:2/2.6;position:relative}
 .bookcard-meta{display:flex;flex-direction:column;gap:2px;padding:10px 12px 12px}
-.bookcard-title{font-size:.92rem;font-weight:700;color:var(--ink);line-height:1.3}
-.bookcard-author{font-size:.68rem;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+ .bookcard-title{font-size:.92rem;font-weight:700;color:var(--ink);line-height:1.3;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;min-height:3.9em}
+ .bookcard-author{font-size:.68rem;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;font-weight:700;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .bookcard-foot{display:flex;gap:10px;align-items:center;margin-top:6px;font-size:.66rem;color:var(--faded);padding:0 12px 11px}
 .bookcard-bm{margin-left:auto;color:var(--rose);font-weight:700}
 .lib-sub{font-size:.74rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);margin:16px 2px 8px}
