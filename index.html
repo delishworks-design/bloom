@@ -5936,14 +5936,14 @@ function bookcardHTML(b,entry,isExplore){
  const pages=b.pages?b.pages+' pages':'Bloom';
  const fin=!!(entry&&entry.finished);
  const star=(entry&&entry.favorite)?`<span class="bookcard-star" aria-hidden="true">${libStarSVG(14,true)}</span>`:'';
- const chips=`<span class="cover-foot">${fin?`<span class="cover-chip fin">${libCheckSVG(11)}Finished</span>`:'<span></span>'}<span class="cover-chip free">Free</span>${isExplore||entry?dlChipHTML(b.id,entry):''}</span>`;
+ const chips=`<span class="cover-foot">${fin?`<span class="cover-chip fin">${libCheckSVG(11)}Finished</span>`:'<span></span>'}${isExplore||entry?dlChipHTML(b.id,entry):''}</span>`;
  if(isExplore){
   const added=entry!=null;
-  return `<button class="bookcard" data-bid="${E(b.id)}" aria-label="${added?'Read '+E(b.title):'View '+E(b.title)}"><span class="bookcard-cover art"><span class="cover-art">${classicCoverSVG(b)}</span>${genrePill(b.category)}${star}${chips}</span><span class="bookcard-meta"><span class="bookcard-title">${E(b.title)}</span><span class="bookcard-author">${E(b.author||'')}</span></span><span class="bookcard-foot"><span>${pages}</span><span class="bookcard-add">${added?'Read now':'Add to library'}</span></span></button>`
+  return `<button class="bookcard" data-bid="${E(b.id)}" aria-label="${added?'Read '+E(b.title):'View '+E(b.title)}"><span class="bookcard-cover art"><span class="cover-art">${classicCoverSVG(b)}</span>${genrePill(b.category)}${star}${chips}</span><span class="bookcard-meta"><span class="bookcard-title">${E(b.title)}</span><span class="bookcard-author">${E(b.author||'')}</span></span><span class="bookcard-foot"><span>${pages}</span><span class="cover-chip free">Free</span><span class="bookcard-add" style="margin-left:auto">${added?'Read now':'Add to library'}</span></span></button>`
  }
  const pct=Math.min(100,Math.max(0,+entry.pct||0));
  const prog=pct>0&&!fin?`<span class="bookcard-progress"><i style="width:${pct}%"></i></span>`:'';
- return `<button class="bookcard" data-bid="${E(b.id)}"><span class="bookcard-cover art"><span class="cover-art">${classicCoverSVG(b)}</span>${genrePill(b.category)}${star}${chips}</span>${prog}<span class="bookcard-meta"><span class="bookcard-title">${E(b.title)}</span><span class="bookcard-author">${E(b.author||'')}</span></span><span class="bookcard-foot"><span>${pages}</span></span></button>`}
+ return `<button class="bookcard" data-bid="${E(b.id)}"><span class="bookcard-cover art"><span class="cover-art">${classicCoverSVG(b)}</span>${genrePill(b.category)}${star}${chips}</span>${prog}<span class="bookcard-meta"><span class="bookcard-title">${E(b.title)}</span><span class="bookcard-author">${E(b.author||'')}</span></span><span class="bookcard-foot"><span>${pages}</span><span class="cover-chip free">Free</span></span></button>`}
 // @test-begin libraryExplore
 function exploreGroups(all){
  const groups=new Map();
