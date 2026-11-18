@@ -1,8 +1,8 @@
 {
-  "versionCode": 155,
-  "versionName": "1.10.0",
-  "url": "https://github.com/delishworks-design/bloom/releases/download/v1.10.0/bloom-1.10.0.apk",
-  "sha256": "d14179764bfb7ce6a3cde2aa9b6836d2c259c829128878d370f6624499fe1471",
-  "notes": "Bloom Store is lighter: each shelf shows 5 books with See all for the full list, and covers/cards are memoized. Month calendar no longer shows Estimates, History or legend. Page and planner still open instantly.",
+  "versionCode": 200,
+  "versionName": "2.0.0",
+  "url": "https://github.com/delishworks-design/bloom/releases/download/v2.0.0/bloom-2.0.0.apk",
+  "sha256": "4f0a939f756fdd60e6b919863e1deb9440c3301a51c90ce89f1fc592be14175a",
+  "notes": "Partner dark theme: the selected planner calendar date stays legible against the highlight.",
   "force": false
 }
