@@ -1,8 +1,8 @@
 {
-  "versionCode": 154,
-  "versionName": "1.9.0",
-  "url": "https://github.com/delishworks-design/bloom/releases/download/v1.9.0/bloom-1.9.0.apk",
-  "sha256": "3aa405ad3c15b66459b241ed5bcb2a6b05ac352d3f9949658f17c1ac9a58467f",
-  "notes": "Planner Task tab rebuilt (stepper dates, inline Calendar, visible notes). Partner followers can open their own planner with tasks auto-cleaned from partner clones (tasks, journal, meals). Pages and logins still work as before. Quick actions button now honors your favorite flower; petals match it. Dark mode fixes for partner view and charts. Flowers bloom bigger; library detail sheets show full text.",
+  "versionCode": 155,
+  "versionName": "1.10.0",
+  "url": "https://github.com/delishworks-design/bloom/releases/download/v1.10.0/bloom-1.10.0.apk",
+  "sha256": "d14179764bfb7ce6a3cde2aa9b6836d2c259c829128878d370f6624499fe1471",
+  "notes": "Bloom Store is lighter: each shelf shows 5 books with See all for the full list, and covers/cards are memoized. Month calendar no longer shows Estimates, History or legend. Page and planner still open instantly.",
   "force": false
 }
