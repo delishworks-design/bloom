@@ -6192,7 +6192,7 @@ function startDownload(id){
  downloadBook(m,(done,total)=>{const pct=total?Math.min(99,Math.round(100*done/total)):null;dlProg[id]=(pct==null?Math.min(99,(dlProg[id]||0)+3):pct);updateDlChip(id)},()=>{delete dlProg[id];libMarkDl(id,true);library();toast('Downloaded for offline reading')}).catch(e=>{delete dlProg[id];updateDlChip(id);reportErr('book.download',e);toast('Download failed')})}
 function showExploreSheet(id){
  const m=libCached().find(x=>x.id===id);if(!m)return;
- sheet(`<div class="ex-detail"><div class="ex-cover"><span class="cover-art">${classicCoverSVG(m)}</span></div><div class="ex-meta"><h2>${E(m.title)}</h2><p class="meta" style="margin:2px 0 8px">${E(m.author||'')}${m.category?' · '+E(m.category):''} · ${m.pages||'?'} pages</p><p class="ex-desc">${E(m.description||'A timeless public-domain read from the Bloom library, restored from the original plates.')}</p></div></div>
+  sheet(`<div class="ex-detail"><div class="ex-cover"><span class="cover-art">${classicCoverSVG(m)}</span></div><div class="ex-meta"><h2>${E(m.fullTitle||m.title)}</h2><p class="meta" style="margin:2px 0 8px">${E(m.author||'')}${m.category?' · '+E(m.category):''} · ${m.pages||'?'} pages</p><p class="ex-desc">${E(m.fullDescription||m.description||'A timeless public-domain read from the Bloom library, restored from the original plates.')}</p></div></div>
  <div class="bookmenu">
   <button class="bookmenu-item" id="exAdd"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg><span>Add to library</span></button>
   <button class="bookmenu-item" id="exDl">${libDlSVG(18,false)}<span>Download for offline</span></button>
