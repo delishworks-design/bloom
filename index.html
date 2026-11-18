@@ -319,6 +319,7 @@ button{font-family:Sansita,system-ui,sans-serif;-webkit-tap-highlight-color:tran
 .fabopt img,.fabopt svg{width:100%;height:100%;object-fit:contain;display:block}
 .fabopt[aria-pressed=true]{border-color:var(--rose);box-shadow:0 0 0 3px var(--pinkS)}
 .qaring-core img{width:100%;height:100%;object-fit:contain;display:block;filter:drop-shadow(0 8px 18px rgba(120,70,80,.38))}
+.qaring-core svg{width:100%;height:100%;display:block;filter:drop-shadow(0 8px 18px rgba(120,70,80,.38))}
 .qaring-item{position:absolute;left:50%;top:50%;width:80px;height:94px;margin:-47px 0 0 -40px;padding:0;border:0;background:none;cursor:pointer;transform-origin:50% 50%;transform:translate(0,0) rotate(calc(var(--r,0deg) + var(--spin,0deg))) scale(.15);opacity:0;transition:transform .74s cubic-bezier(.16,1.15,.3,1),opacity .22s;transition-delay:var(--d,0s);z-index:1;outline:0;-webkit-tap-highlight-color:transparent}
 .qaring:not(.on) .qaring-item{transition-delay:0s}
 .qaring.on .qaring-item{transform:translate(var(--x),var(--y)) rotate(var(--r,0deg)) scale(1);opacity:1}
@@ -3146,10 +3147,10 @@ function openQuickRing(fab,onAct){
  const PET='M0,-56 C46,-42 52,22 0,58 C-52,22 -46,-42 0,-56Z';
  const items=[['log','Log',IC.list],['period','Period',IC.drop],['meal','Meal',IC.meal],['mood','Mood',IC.mood],['plan','Plan',IC.check],['water','Water',IC.glass]];
  const spins=[-210,190,-170,230,-200,220];
- const im=fab.querySelector('img'),src=im?im.getAttribute('src'):'';
+ const coreHTML=fab.innerHTML;
  const wrap=document.createElement('div');wrap.id='qaring';wrap.className='qaring';
  wrap.style.setProperty('--sx',sx+'px');wrap.style.setProperty('--sy',sy+'px');
- wrap.innerHTML=`<div class="qaring-scrim"></div><button class="qaring-core" id="qrCore" aria-label="Close quick actions">${src?`<img src="${E(src)}" alt="">`:''}</button>`+items.map((it,i)=>{
+ wrap.innerHTML=`<div class="qaring-scrim"></div><button class="qaring-core" id="qrCore" aria-label="Close quick actions">${coreHTML}</button>`+items.map((it,i)=>{
   const a=(-90+i*60)*Math.PI/180,rot=-90+i*60+90;
   return `<button class="qaring-item" data-qa="${it[0]}" style="--x:${(Math.cos(a)*R).toFixed(1)}px;--y:${(Math.sin(a)*R).toFixed(1)}px;--r:${rot}deg;--spin:${spins[i]}deg;--d:${(0.05+i*0.035).toFixed(3)}s"><svg class="petal-svg" viewBox="-60 -70 120 140" aria-hidden="true"><path class="petal-back" transform="scale(1.12)" d="${PET}"/><path class="petal-fill" d="${PET}"/></svg><span class="petal-in"><span class="pi">${it[2](18)}</span><span class="pl">${it[1]}</span></span></button>`}).join('');
  document.body.appendChild(wrap);
