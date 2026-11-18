@@ -677,7 +677,7 @@ html[data-theme=dark] .fun{border-color:rgba(217,107,140,.45) !important}
 }
 .smart-focus-copy{display:flex;flex-direction:column;gap:2px;min-width:0}
  .smart-focus-bubble{position:relative;align-self:flex-start;max-width:210px;background:var(--rose);border:0;border-radius:16px;padding:6px 12px 7px;font-size:.74rem;line-height:1.35;font-style:italic;color:#FFF3F8;font-weight:600;margin:0 0 4px;box-shadow:0 3px 10px rgba(184,69,107,.26)}
- .smart-focus-bubble::before{content:"";position:absolute;left:-8px;top:50%;transform:translateY(-50%);width:10px;height:15px;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 16'><path d='M9.5 1 C5 5.2 1.8 6.5 0 8 C1.8 9.5 5 10.8 9.5 15 Z' fill='%23B8456B'/></svg>");background-repeat:no-repeat;background-size:contain;background-position:center}
+ .smart-focus-bubble::before{content:"";position:absolute;left:-8px;top:50%;transform:translateY(-50%);width:10px;height:15px;background:var(--rose);clip-path:polygon(100% 0,100% 100%,0 50%);border-radius:1px}
 @media (prefers-reduced-motion: no-preference){
  .smart-focus-bubble{animation:bubblePop .48s cubic-bezier(.3,1.6,.4,1) .12s both,bubbleBob 4.2s ease-in-out .7s infinite}
  @keyframes bubblePop{from{transform:scale(.3) rotate(-7deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
