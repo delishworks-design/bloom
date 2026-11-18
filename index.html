@@ -796,6 +796,21 @@ body.ro input:focus,body.ro select:focus,body.ro textarea:focus{border-color:var
 .phaserow{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:13px;background:var(--pinkS);border:1.5px solid transparent}
 .phaserow.now{background:var(--card);border-color:currentColor}
 .phase-dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto;background:currentColor}
+/* ---------- partner (following) theme — dark ---------- */
+html[data-theme=dark] body.ro{--mut:#8B99A5;--pink:#8FA8B7;--teal:#7E6FbD;--pinkS:var(--roCard2);--tealS:var(--roCard2)}
+html[data-theme=dark] body.ro .chip:hover,html[data-theme=dark] body.ro .field-btn:hover,html[data-theme=dark] body.ro .pickrow:hover,html[data-theme=dark] body.ro .rolebtn:hover{background:var(--roCard2) !important}
+html[data-theme=dark] body.ro .fun{background:linear-gradient(180deg,var(--roCard2) 0%,var(--roCard) 100%) !important;border-color:rgba(168,198,212,.25) !important}
+html[data-theme=dark] body.ro .qa button{border-color:#3A4550 !important}
+html[data-theme=dark] body.ro .ringlbl,html[data-theme=dark] body.ro .ringcap,html[data-theme=dark] body.ro .lbl,html[data-theme=dark] body.ro .meta,html[data-theme=dark] body.ro label,html[data-theme=dark] body.ro .statlbl,html[data-theme=dark] body.ro .cal-wd,html[data-theme=dark] body.ro .goalopt,html[data-theme=dark] body.ro nav button,html[data-theme=dark] body.ro .readonlynote{color:#8B99A5 !important}
+html[data-theme=dark] body.ro nav button[aria-current=page]{color:#1B2B36 !important}
+html[data-theme=dark] body.ro .cal-cell{box-shadow:0 1px 3px rgba(0,0,0,.35) !important}
+html[data-theme=dark] body.ro .ringpill{background:var(--roCard2) !important}
+html[data-theme=dark] body.ro #app::before{background:#7FA8B7;opacity:.06}
+html[data-theme=dark] body.ro .avatar-fb{color:var(--roInk2) !important}
+html[data-theme=dark] body.ro .cal-cell.d::after{background:#8E7BD0 !important}
+html[data-theme=dark] body.ro .bar i{background:#8E7BD0 !important}
+html[data-theme=dark] body.ro .watercount,html[data-theme=dark] body.ro .dr-done{color:#A692E3 !important}
+
 .phaserow b{font-size:.82rem;color:var(--ink);font-weight:700}
 .phaserow .nowtag{font-size:.58rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
 .phaserow .range{margin-left:auto;font-size:.73rem;color:var(--mut);white-space:nowrap}
