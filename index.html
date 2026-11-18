@@ -288,6 +288,11 @@ button{font-family:Sansita,system-ui,sans-serif;-webkit-tap-highlight-color:tran
 .profbtn span{line-height:1 !important;overflow:hidden;text-overflow:ellipsis}
 .logpill{width:100% !important;max-width:340px !important;margin:12px auto 0 !important;height:56px !important;border-radius:999px !important;background:#B8456B !important;color:#fff !important;display:flex !important;align-items:center !important;justify-content:center !important;gap:10px !important;font-weight:700 !important;box-shadow:0 8px 20px rgba(184,69,107,.3) !important;border:0 !important}
 .logpill .plus{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.24);display:grid;place-items:center;flex-shrink:0}
+.logpill.ghost{background:transparent !important;color:var(--rose) !important;border:1.5px solid rgba(184,69,107,.35) !important;box-shadow:none !important;max-width:340px !important;margin:12px auto 0 !important}
+.logpill.ghost .plus{background:rgba(184,69,107,.12) !important;color:var(--rose) !important}
+.logpill.ghost svg.pi{width:22px;height:22px;display:block}
+.cal-ico{flex:0 0 auto;width:56px;height:56px;margin:12px 0 0 8px;border:0;border-radius:18px;background:rgba(86,140,190,.17);color:#56779B;display:grid;place-items:center;cursor:pointer;transition:background .15s}
+.cal-ico:hover{background:rgba(86,140,190,.25)}
 
 /* Chips */
 .card>label{margin-top:0 !important}
@@ -3173,7 +3178,7 @@ function openQuickRing(fab,onAct){
  wrap.querySelector('#qrCore').focus({preventScroll:true});
 }
 function cyclePage(){const d=today(),l=L(d),ts=tasksFor(d),n=ts.filter(t=>isDone(t.id,d)).length;const h=new Date().getHours();
- const m=D.meals[d]||[];const wk=[...Array(7)].map((_,i)=>addD(d,-i)),wd=wk.reduce((a,x)=>a+tasksFor(x).filter(t=>isDone(t.id,x)).length,0),wt=wk.reduce((a,x)=>a+tasksFor(x).length,0);
+ const m=D.meals[d]||[];
  const c=cycleStats(),current=dashboardCycle(),len=c.avg||current.cycleLength||28,day=c.last?Math.round((new Date(today())-new Date(c.last))/864e5)+1:1,dt=current.state==='estimated'?current.cycleDay:null;
  let left=dt?len-(dt-1):null;
  const centerPill=dt?ringPillText(dt,len,left,day):current.state==='overdue'?'Expected period date has passed':current.state==='due-today'?'Period expected today':current.state==='future-start'?'Recorded period date is in the future':current.state==='no-history'?'No cycle yet':'More history needed';
@@ -3186,7 +3191,7 @@ function cyclePage(){const d=today(),l=L(d),ts=tasksFor(d),n=ts.filter(t=>isDone
  <div class="greet"><h1 class="sr">Cycle</h1><div class="hi">${h<12?'Good morning':h<18?'Good afternoon':'Good evening'},</div><div class="hi nm">${E(first)}</div><div class="date">${fmt(d,{weekday:'long',month:'long',day:'numeric'})}</div></div>
  <div class="ringwrap"><div class="ringdisc"></div>${ringSVG(c,current)}<div class="ringcenter"><div class="ringlbl">${current.state==='estimated'||current.state==='overdue'?'Day':current.state==='no-history'?'Cycle':'\u2014'}</div><div class="ringday">${ringNumber==null?'\u2014':ringNumber}</div><div class="ringcap">${ringCap}</div>${ringPillBare(current.state,c.irregular)?`<div class="ringnote">${E(centerPill)}</div>`:`<div class="ringpill">${E(centerPill)}</div>`}</div></div>
  
- ${RO?'':`<button class="logpill" id="lp"><span class="plus">${IC.plus(16)}</span>Log Period</button>`}
+ <div class="row" style="gap:10px;margin:6px 4px 0">${RO?'':`<button class="logpill" id="lp"><span class="plus">${IC.plus(16)}</span>Log Period</button>`}${RO?'':`<button class="logpill ghost" id="logs"><svg class="pi" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="9" r="4"/><path d="M5 20c.6-3.5 3.2-5 7-5s6.4 1.5 7 5"/></svg>Log symptoms</button>`}<button class="cal-ico" id="cal" aria-label="Month calendar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="16" rx="2"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg></button></div>
  ${RO?'':focusBlock(RO)}
  <div class="stats3">
   <button type="button" class="stat" id="phStat" aria-haspopup="dialog" aria-label="View cycle phases graph"><span class="ic">${IC.flower(13)}</span><b class="word">${phaseLabel(ph.k)}</b><span class="lbl">Phase <span class="chev" aria-hidden="true">\u203a</span></span></button>
@@ -3209,9 +3214,8 @@ function cyclePage(){const d=today(),l=L(d),ts=tasksFor(d),n=ts.filter(t=>isDone
    <div class="kv kvstack"><span>Symptoms</span><b>${sx.length?sx.join(', '):'\u2014'}</b></div></div>
  ${RO?partnerGuideHTML():selfGuideHTML()}
  <div class="card"><div class="card-h"><h3>Today's checklist</h3>${ts.length?`<span class="meta">${n}/${ts.length}</span>`:''}</div>${ts.length?`<div class="bar" aria-hidden="true"><i style="width:${n/ts.length*100}%"></i></div><div class="cklist">`+(RO?ts.map(t=>`<div class="ck"><span class="ckt" style="${isDone(t.id,d)?'opacity:.55':''}">${isDone(t.id,d)?'&#10003;':''} ${E(t.t)}</span></div>`).join(''):ts.map(t=>ck(t,d)).join(''))+'</div>':'<p class="meta">No tasks yet. Add them in Planner.</p>'}</div>
- <div class="card"><div class="card-h"><h3>This week</h3><span class="meta">${wt?`${wd}/${wt}`:'0/0'}</span></div>${wt?`<div class="bar" aria-hidden="true"><i style="width:${Math.round(wd/wt*100)}%"></i></div>`:'<p class="meta">Nothing planned</p>'}</div>
  <div class="card fun"><span class="lbl" id="funTag" style="margin:0 0 2px">Did you know?</span><p class="funtext" id="funText">${E(funNow().text)}</p></div>
- <div class="row" style="gap:10px"><button class="btn ghost" id="cal" style="flex:1">Month calendar</button>${RO?'':`<button class="btn ghost" id="logs" style="flex:1">Log symptoms</button>`}</div>`;
+`;
  if(!RO)bindCk(d);
  $('#phStat').onclick=()=>phaseSheet(c,current);
  if(!RO)$('#lp').onclick=()=>periodSheet();
