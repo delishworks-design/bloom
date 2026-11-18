@@ -1,8 +1,8 @@
 {
-  "versionCode": 152,
-  "versionName": "1.7.0",
-  "notes": "Calendar gets a year dropdown to jump back or forward (Planner and Cycle). Planner opens on Mine by default. Bloom Store: cleaner intro, 'HealHer ebook' badge, book cards show Free.",
-  "url": "https://github.com/delishworks-design/bloom/releases/download/v1.7.0/bloom-1.7.0.apk",
-  "sha256": "909f537acbc3644ffb3346c10ef910e786c721bcb0ad17a5812a6222a05185a4",
-  "publishedAt": "2026-11-17"
+  "versionCode": 153,
+  "versionName": "1.8.0",
+  "url": "https://github.com/delishworks-design/bloom/releases/download/v1.8.0/bloom-1.8.0.apk",
+  "sha256": "6ead1ce7a2dc4aca979c020d4aa308fd63421fceea4ddf463d6c07b5dff32507",
+  "notes": "Sheets now slide down when they close. Charts are readable in dark mode. The library grew to 512 free books with short descriptions; PMOS/endocrine titles merged under one genre. The Task tab shows the next two weeks and your history; Your focus is now Bloom Garden with an endless swipe. You can hide the quick-actions flower in Settings.",
+  "force": false
 }
