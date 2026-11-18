@@ -1269,6 +1269,39 @@ function ownTasksDedupe(ownDoc,partnerDoc){
  if(kept.length===ownDoc.tasks.length)return ownDoc;
  return Object.assign({},ownDoc,{tasks:kept});
 }
+function ownClonesFilter(ownDoc,partnerDoc){
+ if(!ownDoc||!partnerDoc)return ownDoc;
+ let changed=false;const out=Object.assign({},ownDoc);
+ const tsig=t=>String(t.id)+'\u0001'+String(t.t||'')+'\u0001'+String(t.from||'');
+ const jsig=t=>String(t.id)+'\u0001'+String(t.d||'')+'\u0001'+String(t.t||'');
+ const msig=(d,m)=>String(d)+'\u0001'+String((m&&m.n)||'')+'\u0001'+String((m&&m.t)||'')+'\u0001'+String((m&&m.q)||1);
+ // tasks: clone = same id + text + date
+ if(Array.isArray(ownDoc.tasks)&&Array.isArray(partnerDoc.tasks)&&partnerDoc.tasks.length&&ownDoc.tasks.length){
+  const ps=new Set(partnerDoc.tasks.map(tsig));
+  const kept=ownDoc.tasks.filter(t=>!ps.has(tsig(t)));
+  if(kept.length!==ownDoc.tasks.length){out.tasks=kept;changed=true}
+ }
+ // journal: clone = same id + date + text
+ if(Array.isArray(ownDoc.journal)&&Array.isArray(partnerDoc.journal)&&partnerDoc.journal.length&&ownDoc.journal.length){
+  const pj=new Set(partnerDoc.journal.map(jsig));
+  const kept=ownDoc.journal.filter(t=>!pj.has(jsig(t)));
+  if(kept.length!==ownDoc.journal.length){out.journal=kept;changed=true}
+ }
+ // meals: clone = same date + name + type + quantity
+ const om=ownDoc.meals,pm=partnerDoc.meals;
+ if(om&&pm&&typeof om==='object'&&typeof pm==='object'){
+  const meals=Object.assign({},om);let mealChanged=false;
+  Object.keys(meals).forEach(d=>{
+   const arr=meals[d],parr=pm[d];
+   if(!Array.isArray(arr)||!Array.isArray(parr)||!parr.length)return;
+   const ps=new Set(parr.map(m=>msig(d,m)));
+   const kept=arr.filter(m=>!ps.has(msig(d,m)));
+   if(kept.length!==arr.length){meals[d]=kept;mealChanged=true}
+  });
+  if(mealChanged){out.meals=meals;changed=true}
+ }
+ return changed?out:ownDoc;
+}
 function seedOwnDoc(ownDoc,cachedDoc,pname,pavatar){
  const src=ownDoc||cachedDoc||{};
  const d=Object.assign(blank(),JSON.parse(JSON.stringify(src)));
@@ -1585,10 +1618,9 @@ async function dedupeOwnTasks(doc,mail){
   const q=await cloudPairing();if(!q.ok)return false;
   const owner=q.pair?q.pair.owner:null;if(!owner)return false;
   const pd=await sbFetchDoc(owner);if(!pd)return false;
-  const before=Array.isArray(doc.tasks)?doc.tasks.length:0;
-  const res=ownTasksDedupe(doc,pd);
-  if(res===doc||!Array.isArray(res.tasks)||res.tasks.length===before)return false;
-  doc.tasks=res.tasks;
+  const res=ownClonesFilter(doc,pd);
+  if(res===doc)return false;
+  doc.tasks=res.tasks;doc.journal=res.journal;doc.meals=res.meals;
   if(mail)try{ST.set('bloom_dirty_'+mail,'1')}catch(e){}
   return true;
  }catch(e){reportErr('own.dedupe',e);return false}

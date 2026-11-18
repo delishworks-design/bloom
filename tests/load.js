@@ -61,7 +61,7 @@ function load() {
     phases: ['phaseInfo'],
     smart: ['smartPredictionHistory', 'smartCurrentCycle', 'smartCurrentCycleFromHistory', 'smartHistoricalPhaseFor', 'smartPatternsFromLogs', 'smartInsightsHTML', 'smartPatternsHTML', 'smartPhaseInsight', 'smartProgress', 'smartInsightsExtras', 'smartComingUp', 'smartWeekCompare', 'smartActiveGoals', 'smartGoalFocus', 'smartWeekFacts', 'smartWeekTemplate', 'smartWeekValidate', 'smartWeekAllowedNumbers', 'smartWeekHTML', 'smartWeekCompareHTML', 'smartComingUpHTML', 'dashboardCycle', 'clearLegacySmartAIStorage', 'smartCTAFor', 'smartCTALabel', 'smartKnowledgeFor', 'smartWeekVariantIndex', 'smartEvidenceRegistry', 'smartWeekProse', 'smartFocusHTML', 'smartGoalProgress', 'smartStage', 'smartFocusName', 'smartKnowledgeProse', 'smartNextProse', 'smartNextStep', 'smartSymptomAdvice', 'smartEmptyPatternLine', 'smartPlainPhase'],
     auth: ['logout', 'wipeLocalData', 'pwIssue', 'confirmLogout', 'isDisposableEmail', 'EMAIL_RE', 'DISPOSABLE_DOMAINS'],
-    ownmode: ['seedOwnDoc', 'ownTasksDedupe'],
+    ownmode: ['seedOwnDoc', 'ownTasksDedupe', 'ownClonesFilter'],
     reader: ['lineGroup', 'blocksOfItems', 'readerSerialize', 'readerBlocksAcross', 'filterReaderLines', 'lineTextJoin', 'readerIsUnfinished', 'readerContinuationStart', 'nextLeadingPrefix', 'h3GroupLength'],
     errorIgnore: ['errorIgnorableEvent'],
     partnerLibrary: ['libMergeDocs', 'libStoreKey', 'libStoreReset'],

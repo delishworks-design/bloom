@@ -131,3 +131,61 @@ test('ownTasksDedupe leaves the doc untouched when nothing matches or lists are 
   assert.doesNotThrow(() => ctx.ownTasksDedupe(null, null));
   assert.doesNotThrow(() => ctx.ownTasksDedupe({ tasks: [{ id: 'a' }] }, { tasks: [{ id: 'a' }] }));
 });
+
+test('ownClonesFilter drops exact meals also present on the same date in the partner doc', () => {
+  const ctx = load();
+  const own = { tasks: [], meals: {
+    '2026-11-10': [
+      { n: 'Paksiw na isda', t: 'd', q: 1 },
+      { n: 'Sinangag', t: 'b', q: 1 },
+    ],
+    '2026-11-11': [{ n: 'Lugaw', t: 'b', q: 1 }],
+  } };
+  const partner = { tasks: [], meals: {
+    '2026-11-10': [{ n: 'Paksiw na isda', t: 'd', q: 1 }],
+  } };
+  const out = ctx.ownClonesFilter(own, partner);
+  assert.equal(out.meals['2026-11-10'].length, 1);
+  assert.equal(out.meals['2026-11-10'][0].n, 'Sinangag');
+  assert.equal(out.meals['2026-11-11'].length, 1);
+});
+
+test('ownClonesFilter drops exact journal entries (same id+date+text) in the partner doc', () => {
+  const ctx = load();
+  const own = { tasks: [], journal: [
+    { id: 'j1', d: '2026-11-10', t: 'Today was hard' },
+    { id: 'j2', d: '2026-11-11', t: 'Better today' },
+  ] };
+  const partner = { tasks: [], journal: [
+    { id: 'j1', d: '2026-11-10', t: 'Today was hard' },
+  ] };
+  const out = ctx.ownClonesFilter(own, partner);
+  assert.equal(out.journal.length, 1);
+  assert.equal(out.journal[0].id, 'j2');
+});
+
+test('ownClonesFilter cleans tasks, journal and meals together and reports by identity', () => {
+  const ctx = load();
+  const own = { tasks: [
+    { id: 'a', t: 'Tubig ang paso', from: '2026-11-10' },
+    { id: 'k', t: 'Mag-yoga', from: '2026-11-09' },
+  ], journal: [
+    { id: 'j1', d: '2026-11-10', t: 'Pakinggan' },
+  ], meals: {
+    '2026-11-10': [{ n: 'Paksiw', t: 'd', q: 1 }],
+  } };
+  const partner = { tasks: [
+    { id: 'a', t: 'Tubig ang paso', from: '2026-11-10' },
+  ], journal: [
+    { id: 'j1', d: '2026-11-10', t: 'Pakinggan' },
+  ], meals: {
+    '2026-11-10': [{ n: 'Paksiw', t: 'd', q: 1 }],
+  } };
+  const out = ctx.ownClonesFilter(own, partner);
+  assert.equal(out.tasks.length, 1);
+  assert.equal(out.journal.length, 0);
+  assert.equal(out.meals['2026-11-10'].length, 0);
+  assert.notEqual(out, own);
+  const flat = { tasks: [] };
+  assert.equal(ctx.ownClonesFilter(flat, partner), flat);
+});
