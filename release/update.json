@@ -1,8 +1,8 @@
 {
-  "versionCode": 200,
-  "versionName": "2.0.0",
-  "url": "https://github.com/delishworks-design/bloom/releases/download/v2.0.0/bloom-2.0.0.apk",
-  "sha256": "4f0a939f756fdd60e6b919863e1deb9440c3301a51c90ce89f1fc592be14175a",
-  "notes": "Partner dark theme: the selected planner calendar date stays legible against the highlight.",
+  "versionCode": 201,
+  "versionName": "2.1.0",
+  "url": "https://github.com/delishworks-design/bloom/releases/download/v2.1.0/bloom-2.1.0.apk",
+  "sha256": "bd00e19cc402cf34bc5a347c0f49a450101a3ab9dc531658af9de1a13bf35808",
+  "notes": "Multi-device sync repaired: simultaneous edits merge correctly, deletions no longer resurrect, reading time counts up properly across devices, and partner library updates sync reliably. Partner calendar day number is readable again. Faster startup and a smoother Library.",
   "force": false
 }
