@@ -2819,7 +2819,7 @@ async function widgetConsume(){
  acts.forEach(a=>{
   if(!a||typeof a!=='object')return;
   const cur=doc.logs[d]||{};
-  if(a.type==='water'){doc.logs[d]=Object.assign(cur,{water:Math.max(0,Math.min((doc.p&&doc.p.waterGoal)||8,(cur.water||0)+Math.max(0,+a.v||1)))});ch=true}
+  if(a.type==='water'){const nw=Math.max(0,Math.min((doc.p&&doc.p.waterGoal)||8,(cur.water||0)+Math.max(0,+a.v||1)));doc.logs[d]=Object.assign(cur,{water:nw,waterLast:nw>(cur.water||0)?Date.now():(cur.waterLast||0)});ch=true}
   else if(a.type==='mood'&&a.v){doc.logs[d]=Object.assign(doc.logs[d]||{}, {mood:+a.v});ch=true}
   else if(a.type==='task'&&a.v!=null){
    const t=(doc.tasks||[]).find(t=>String(t.id)===String(a.v));if(!t)return;
@@ -3318,7 +3318,7 @@ function qaAct(a){
  if(a=='plan'){view='planner';shell()}
  else if(a=='meal'){view='planner';tab='meals';shell()}
  else if(a=='period')periodSheet();
- else if(a=='water'){const x=L(d);D.logs[d]=Object.assign(x,{water:(x.water||0)+1});save();toast('Water logged');shell()}
+ else if(a=='water'){const x=L(d);D.logs[d]=Object.assign(x,{water:(x.water||0)+1,waterLast:Date.now()});save();try{waterReminderSync(true)}catch(e){}toast('Water logged');shell()}
  else dayLog(d);
 }
 let fabEl=null,fabCorner=(()=>{try{return localStorage.getItem('bloom_fab')||'br'}catch(e){return 'br'}})();
@@ -3550,7 +3550,7 @@ function cyclePage(){const d=today(),l=L(d),ts=tasksFor(d),n=ts.filter(t=>isDone
  initPartnerCarousel();
  try{wireSmartFocus(document.getElementById('smart-focus'))}catch(e){reportErr('focus.wire',e)}
  document.querySelectorAll('[data-mood]').forEach(b=>b.onclick=()=>{const x=L(d);D.logs[d]=Object.assign(x,{mood:+b.dataset.mood});save();cyclePage()});
- const setWater=v=>{const x=L(d);D.logs[d]=Object.assign(x,{water:Math.max(0,Math.min(goal,v))});save();cyclePage();try{waterReminderSync(true)}catch(e){}try{readReminderSync(true)}catch(e){}try{sidesSync(true)}catch(e){}};
+ const setWater=v=>{const x=L(d),w=Math.max(0,Math.min(goal,v));D.logs[d]=Object.assign(x,{water:w,waterLast:w>(x.water||0)?Date.now():(x.waterLast||0)});save();cyclePage();try{waterReminderSync(true)}catch(e){}try{readReminderSync(true)}catch(e){}try{sidesSync(true)}catch(e){}};
  if(!RO){$('#wplus').onclick=()=>setWater((l.water||0)+1);
  $('#wminus').onclick=()=>setWater((l.water||0)-1);
  document.querySelectorAll('[data-goal]').forEach(b=>b.onclick=()=>{D.p.waterGoal=+b.dataset.goal||8;save();cyclePage()});
@@ -3655,7 +3655,7 @@ function bindCk(d,re){document.querySelectorAll('input[data-t]').forEach(i=>i.on
     const customSx=$('#cu').value.split(',').map(s=>s.trim().slice(0,30)).filter(Boolean).slice(0,6);
     const wt=$('#wt').value,exMin=$('#exMin').value;
     const out=Object.assign(draft,{tags,customSx:customSx.length?customSx:undefined,sleep:s===''?undefined:+s,weight:wt===''?undefined:+wt,exMin:exMin===''?undefined:+exMin,sidefx:$('#sfx').value.trim()||undefined});if(out.flow=='none')delete out.flow;delete out.note;
-  D.logs[d]=Object.assign({water:L(d).water},out);if(!Object.values(D.logs[d]).some(v=>v!==undefined&&!(Array.isArray(v)&&!v.length)))delete D.logs[d];save();sheet();toast('Saved');shell()}}
+  const _wl=L(d);D.logs[d]=Object.assign({water:_wl.water,waterLast:_wl.waterLast},out);if(!Object.values(D.logs[d]).some(v=>v!==undefined&&!(Array.isArray(v)&&!v.length)))delete D.logs[d];save();sheet();toast('Saved');shell()}}
  function monthView(){
  const y = new Date().getFullYear();
  $('#main').innerHTML=`<button class="btn ghost sm" id="bk" style="margin-bottom:10px">\u2039 Back</button><h1>Month calendar</h1><div class="calsheet" style="height:auto;max-height:none;margin:0 -2px 14px"><div class="calsheet-scroll" id="calScroll" style="padding:0;overflow:visible"></div></div>
@@ -7317,6 +7317,21 @@ async function openBook(id){
 // ---------- daily reminder (native local notification)
 const REM_ID=1001;
 const notifPlugin=()=>{const C=window.Capacitor;return (C&&C.Plugins&&C.Plugins.LocalNotifications)||null};
+function msgPick(arr,key){
+ const d=today();let h=0;const s=d+'|'+(key||'');
+ for(let i=0;i<s.length;i++)h=((h<<5)-h+s.charCodeAt(i))|0;
+ return arr[Math.abs(h)%arr.length];
+}
+const LOG_REM_MSGS=[
+ 'Rosalyn: Log time. Your day won\u2019t archive itself.',
+ 'Rosalyn: Quick check-in \u2014 log how today went.',
+ 'Rosalyn: A minute to log your day? Future you will thank you.',
+ 'Rosalyn: Don\u2019t let today slip by unlogged.',
+ 'Rosalyn: Time to jot down today\u2019s notes.',
+ 'Rosalyn: How was today? Pop in and log it.',
+ 'Rosalyn: Daily log o\u2019clock. Just a quick update.',
+ 'Rosalyn: Your log is waiting \u2014 add today\u2019s entry.'
+];
 async function reminderCancel(){const LN=notifPlugin();if(!LN)return;
  try{await LN.cancel({notifications:[{id:REM_ID}]})}catch(e){}}
 async function reminderSync(quiet){
@@ -7336,7 +7351,7 @@ async function reminderSync(quiet){
     // Android still delivers the daily reminder, only a few minutes late.
     const [h,mi]=String(rem.time||'20:00').split(':').map(Number);
     await LN.schedule({notifications:[{
-     id:REM_ID,title:'Bloom',body:'Rosalyn: Log time. Your day won\u2019t archive itself.',
+     id:REM_ID,title:'Bloom',body:msgPick(LOG_REM_MSGS,'log'),
      channelId:'bloom_reminders',sound:'beep.wav',
      schedule:{on:{hour:isNaN(h)?20:h,minute:isNaN(mi)?0:mi},allowWhileIdle:true},
     smallIcon:'ic_stat_bloom',iconColor:'#B8456B'}]});
@@ -7347,6 +7362,28 @@ async function reminderSync(quiet){
   return {native:true,error:String((e&&e.message)||e)}}}
 // ---------- daily reading reminder + hourly nudges (native)
 const REM_READ_ID=1002,REM_READ_HR=1500;
+const READ_BASE_MSGS=[
+ 'Rosalyn: Ten pages before bed. Your book misses you.',
+ 'Rosalyn: Reading time \u2014 a few pages before you wind down?',
+ 'Rosalyn: Your book is calling. Just a little reading tonight.',
+ 'Rosalyn: Cozy up with a few pages before bed.',
+ 'Rosalyn: Even five pages count. Open your book?',
+ 'Rosalyn: Story time? Your bookmark is waiting.',
+ 'Rosalyn: Unwind with your book for a bit.',
+ 'Rosalyn: A short read before sleep sounds nice.'
+];
+const READ_NUDGE_MSGS=[
+ 'Rosalyn: The streak is judging. Five minutes?',
+ 'Rosalyn: Still time for a few pages tonight.',
+ 'Rosalyn: Quick reading break before bed?',
+ 'Rosalyn: Your book won\u2019t read itself \u2014 just five minutes.',
+ 'Rosalyn: How about a chapter\u2026 or even a page?',
+ 'Rosalyn: A little reading now beats none later.',
+ 'Rosalyn: Squeeze in some pages before lights out.',
+ 'Rosalyn: One more nudge: open your book for a bit.',
+ 'Rosalyn: Bedtime\u2019s close \u2014 perfect for a few pages.',
+ 'Rosalyn: Tiny reading session? You\u2019ve got this.'
+];
 async function reminderReadBaseSync(quiet){
  const LN=notifPlugin();if(!LN)return;
  try{await LN.cancel({notifications:[{id:REM_READ_ID}]})}catch(e){}
@@ -7366,17 +7403,93 @@ async function readReminderSync(quiet){
   const r=(D.read||{});const goalSec=(r.goalMin||5)*60;
   if((r.log||{})[today()]>=goalSec)return; // already hit today's goal
   const [h,mi]=String(D.rem.readTime||'20:00').split(':').map(Number);
-  const items=[{id:REM_READ_ID,title:'Bloom',body:'Rosalyn: Ten pages before bed. Your book misses you.',channelId:'bloom_reminders',sound:'beep.wav',schedule:{on:{hour:isNaN(h)?20:h,minute:isNaN(mi)?0:mi},allowWhileIdle:true},smallIcon:'ic_stat_bloom',iconColor:'#B8456B'}];
+  const items=[{id:REM_READ_ID,title:'Bloom',body:msgPick(READ_BASE_MSGS,'read'),channelId:'bloom_reminders',sound:'beep.wav',schedule:{on:{hour:isNaN(h)?20:h,minute:isNaN(mi)?0:mi},allowWhileIdle:true},smallIcon:'ic_stat_bloom',iconColor:'#B8456B'}];
   // hourly nudges after the reminder hour, until 22:00 — Android only schedules this device-locally
   const [hh]=String(D.rem.readTime||'20:00').split(':').map(Number);
-  for(let hr=(isNaN(hh)?20:hh)+1;hr<=22;hr++){
-   items.push({id:REM_READ_HR+hr,title:'Bloom',body:'Rosalyn: The streak is judging. Five minutes?',channelId:'bloom_reminders',sound:'beep.wav',schedule:{on:{hour:hr,minute:0},allowWhileIdle:true},smallIcon:'ic_stat_bloom',iconColor:'#B8456B'});
+  let ni=0;for(let hr=(isNaN(hh)?20:hh)+1;hr<=22;hr++){
+   items.push({id:REM_READ_HR+hr,title:'Bloom',body:READ_NUDGE_MSGS[(Math.abs(((today()+hr).split('').reduce((a,c)=>((a<<5)-a+c.charCodeAt(0))|0,0)))+ni)%READ_NUDGE_MSGS.length],channelId:'bloom_reminders',sound:'beep.wav',schedule:{on:{hour:hr,minute:0},allowWhileIdle:true},smallIcon:'ic_stat_bloom',iconColor:'#B8456B'});ni++;
   }
   if(items.length)await LN.schedule({notifications:items});
  }catch(e){reportErr('reminder.read',e)}
 }
 const SLEEP_BASE=1600,MEAL_BASE=1700,MOVE_BASE=1800,CALM_BASE=1900,ENERGY_BASE=2000,CYCLE_BASE=2100,VISIT_BASE=2200;
 const SIDES_IDS=[SLEEP_BASE+21,SLEEP_BASE+22,MEAL_BASE+8,MEAL_BASE+12,MEAL_BASE+18,MOVE_BASE,CALM_BASE,ENERGY_BASE,CYCLE_BASE,VISIT_BASE];
+const SLEEP21_MSGS=[
+ 'Hydrangea: It\u2019s 9pm. Time for bed.',
+ 'Hydrangea: 9pm \u2014 maybe start winding down?',
+ 'Hydrangea: Bedtime\u2019s near. Time to get cozy.',
+ 'Hydrangea: Evening check: getting ready for sleep?',
+ 'Hydrangea: 9 o\u2019clock \u2014 a good time to start relaxing.'
+];
+const SLEEP22_MSGS=[
+ 'Hydrangea: 10pm. Seriously. Lights out.',
+ 'Hydrangea: It\u2019s 10 \u2014 time to actually sleep.',
+ 'Hydrangea: Past bedtime. Your pillow misses you.',
+ 'Hydrangea: 10pm reminder: wrap up and rest.',
+ 'Hydrangea: Lights out soon? Tomorrow-you will appreciate it.'
+];
+const MEAL8_MSGS=[
+ 'Zin: Morning. Coffee is not breakfast.',
+ 'Zin: Good morning \u2014 have you eaten yet?',
+ 'Zin: Breakfast time. Fuel up for the day.',
+ 'Zin: Morning check: don\u2019t skip breakfast.',
+ 'Zin: Rise and dine \u2014 something tasty this morning?',
+ 'Zin: Start the day with real food, not just coffee.'
+];
+const MEAL12_MSGS=[
+ 'Zin: Lunch o\u2019clock. Actual food this time.',
+ 'Zin: Midday fuel break \u2014 time for lunch.',
+ 'Zin: Lunch reminder: step away and eat.',
+ 'Zin: Noon check \u2014 have you had lunch?',
+ 'Zin: Recharge with a proper lunch.',
+ 'Zin: It\u2019s lunchtime. Your body needs fuel.'
+];
+const MEAL18_MSGS=[
+ 'Zin: Dinner. Before it gets late-ish.',
+ 'Zin: Evening meal time \u2014 what\u2019s for dinner?',
+ 'Zin: Dinner reminder: don\u2019t forget to eat.',
+ 'Zin: Time to wind down with dinner.',
+ 'Zin: Have you had dinner yet? Now\u2019s a good time.',
+ 'Zin: Dinner o\u2019clock \u2014 nourish yourself tonight.'
+];
+const MOVE_MSGS=[
+ 'Mum: Hours of sitting. Fifteen minutes \u2014 any move counts.',
+ 'Mum: Time to stretch those legs for a bit.',
+ 'Mum: Movement break! A short walk or stretch?',
+ 'Mum: Been sitting a while? Get up and move.',
+ 'Mum: Quick activity check \u2014 even a little movement helps.',
+ 'Mum: Your body wants to move. Fifteen minutes?'
+];
+const CALM_MSGS=[
+ 'Bougie: Heavy head? Journal it out before sleep.',
+ 'Bougie: Evening thoughts? Write them down.',
+ 'Bougie: A quick journal entry can clear your mind.',
+ 'Bougie: Unload the day \u2014 jot a few lines tonight.',
+ 'Bougie: Before bed, how about a little journaling?',
+ 'Bougie: Got a lot on your mind? Journal it out.'
+];
+const ENERGY_MSGS=[
+ 'Sunflower: 3pm crash? Energy check \u2014 log it.',
+ 'Sunflower: Afternoon slump? Check in with your energy.',
+ 'Sunflower: How\u2019s your energy right now? Log it.',
+ 'Sunflower: Mid-afternoon check-in: feeling drained or okay?',
+ 'Sunflower: Energy levels \u2014 take a moment to note them.',
+ 'Sunflower: 3pm vibe check: log your energy.'
+];
+const CYCLE_MSGS=[
+ 'Rosie: Expected day. Log your period \u2014 don\u2019t make me guess.',
+ 'Rosie: Today might be day one \u2014 log if your period started.',
+ 'Rosie: Period check: did it arrive today?',
+ 'Rosie: If your cycle started, don\u2019t forget to log it.',
+ 'Rosie: Quick check \u2014 any period signs today? Log them.'
+];
+const VISIT_MSGS=[
+ 'Daisy: Sunday. Questions for the doctor \u2014 list them.',
+ 'Daisy: Weekly check: jot down any doctor questions.',
+ 'Daisy: Sunday nudge \u2014 anything to ask your doctor?',
+ 'Daisy: Got health questions? List them for your next visit.',
+ 'Daisy: Take a moment to note questions for your doctor.'
+];
 async function sidesSync(quiet){
  const LN=notifPlugin();if(!LN)return 'native';
  const rem=(D&&D.rem)||{};const d=today();const log=(D&&D.logs&&D.logs[d])||{};
@@ -7385,26 +7498,26 @@ async function sidesSync(quiet){
  const want=[];
  const ch='bloom_reminders',Snd='beep.wav',ico='ic_stat_bloom';
  if(log.sleep==null){
-  want.push({id:SLEEP_BASE+21,title:'Bloom',body:'Hydrangea: It\u2019s 9pm. Time for bed.',channelId:ch,sound:Snd,schedule:{on:{hour:21,minute:0},allowWhileIdle:true},smallIcon:ico,iconColor:'#B8456B'});
-  want.push({id:SLEEP_BASE+22,title:'Bloom',body:'Hydrangea: 10pm. Seriously. Lights out.',channelId:ch,sound:Snd,schedule:{on:{hour:22,minute:0},allowWhileIdle:true},smallIcon:ico,iconColor:'#B8456B'});
+  want.push({id:SLEEP_BASE+21,title:'Bloom',body:msgPick(SLEEP21_MSGS,'sleep21'),channelId:ch,sound:Snd,schedule:{on:{hour:21,minute:0},allowWhileIdle:true},smallIcon:ico,iconColor:'#B8456B'});
+  want.push({id:SLEEP_BASE+22,title:'Bloom',body:msgPick(SLEEP22_MSGS,'sleep22'),channelId:ch,sound:Snd,schedule:{on:{hour:22,minute:0},allowWhileIdle:true},smallIcon:ico,iconColor:'#B8456B'});
  }
  if(true){
-  want.push({id:MEAL_BASE+8,title:'Bloom',body:'Zin: Morning. Coffee is not breakfast.',channelId:ch,sound:Snd,schedule:{on:{hour:8,minute:0},allowWhileIdle:true},smallIcon:ico,iconColor:'#E89478'});
-  want.push({id:MEAL_BASE+12,title:'Bloom',body:'Zin: Lunch o\u2019clock. Actual food this time.',channelId:ch,sound:Snd,schedule:{on:{hour:12,minute:0},allowWhileIdle:true},smallIcon:ico,iconColor:'#E89478'});
-  want.push({id:MEAL_BASE+18,title:'Bloom',body:'Zin: Dinner. Before it gets late-ish.',channelId:ch,sound:Snd,schedule:{on:{hour:18,minute:30},allowWhileIdle:true},smallIcon:ico,iconColor:'#E89478'});
+  want.push({id:MEAL_BASE+8,title:'Bloom',body:msgPick(MEAL8_MSGS,'meal8'),channelId:ch,sound:Snd,schedule:{on:{hour:8,minute:0},allowWhileIdle:true},smallIcon:ico,iconColor:'#E89478'});
+  want.push({id:MEAL_BASE+12,title:'Bloom',body:msgPick(MEAL12_MSGS,'meal12'),channelId:ch,sound:Snd,schedule:{on:{hour:12,minute:0},allowWhileIdle:true},smallIcon:ico,iconColor:'#E89478'});
+  want.push({id:MEAL_BASE+18,title:'Bloom',body:msgPick(MEAL18_MSGS,'meal18'),channelId:ch,sound:Snd,schedule:{on:{hour:18,minute:30},allowWhileIdle:true},smallIcon:ico,iconColor:'#E89478'});
  }
  if(!(+log.exMin>=20)&&!(log.exercise&&log.exercise!=='Rest')){
-  want.push({id:MOVE_BASE,title:'Bloom',body:'Mum: Hours of sitting. Fifteen minutes — any move counts.',channelId:ch,sound:Snd,schedule:{on:{hour:16,minute:0},allowWhileIdle:true},smallIcon:ico,iconColor:'#DE9553'});
+  want.push({id:MOVE_BASE,title:'Bloom',body:msgPick(MOVE_MSGS,'move'),channelId:ch,sound:Snd,schedule:{on:{hour:16,minute:0},allowWhileIdle:true},smallIcon:ico,iconColor:'#DE9553'});
  }
  if(!(D.journal||[]).some(j=>j&&j.d===d)){
-  want.push({id:CALM_BASE,title:'Bloom',body:'Bougie: Heavy head? Journal it out before sleep.',channelId:ch,sound:Snd,schedule:{on:{hour:20,minute:30},allowWhileIdle:true},smallIcon:ico,iconColor:'#87AA90'});
+  want.push({id:CALM_BASE,title:'Bloom',body:msgPick(CALM_MSGS,'calm'),channelId:ch,sound:Snd,schedule:{on:{hour:20,minute:30},allowWhileIdle:true},smallIcon:ico,iconColor:'#87AA90'});
  }
  if(log.energy==null){
-  want.push({id:ENERGY_BASE,title:'Bloom',body:'Sunflower: 3pm crash? Energy check — log it.',channelId:ch,sound:Snd,schedule:{on:{hour:15,minute:0},allowWhileIdle:true},smallIcon:ico,iconColor:'#E0A93F'});
+  want.push({id:ENERGY_BASE,title:'Bloom',body:msgPick(ENERGY_MSGS,'energy'),channelId:ch,sound:Snd,schedule:{on:{hour:15,minute:0},allowWhileIdle:true},smallIcon:ico,iconColor:'#E0A93F'});
  }
- {try{const s2=starts();const pred=s2.length>=2?smartPredictionHistory(s2,d):null;const exp=pred&&pred.state==='predicted'?pred.expected:null;if(exp===d&&!bleed(d))want.push({id:CYCLE_BASE,title:'Bloom',body:'Rosie: Expected day. Log your period — don\u2019t make me guess.',channelId:ch,sound:Snd,schedule:{on:{hour:20,minute:0},allowWhileIdle:true},smallIcon:ico,iconColor:'#C96B87'})}catch(e){reportErr('reminder.sides.cycle',e)}}
+ {try{const s2=starts();const pred=s2.length>=2?smartPredictionHistory(s2,d):null;const exp=pred&&pred.state==='predicted'?pred.expected:null;if(exp===d&&!bleed(d))want.push({id:CYCLE_BASE,title:'Bloom',body:msgPick(CYCLE_MSGS,'cycle'),channelId:ch,sound:Snd,schedule:{on:{hour:20,minute:0},allowWhileIdle:true},smallIcon:ico,iconColor:'#C96B87'})}catch(e){reportErr('reminder.sides.cycle',e)}}
  {
-  want.push({id:VISIT_BASE,title:'Bloom',body:'Daisy: Sunday. Questions for the doctor — list them.',channelId:ch,sound:Snd,schedule:{on:{weekday:1,hour:10,minute:0},allowWhileIdle:true,repeats:true},smallIcon:ico,iconColor:'#9DC3D9'});
+  want.push({id:VISIT_BASE,title:'Bloom',body:msgPick(VISIT_MSGS,'visit'),channelId:ch,sound:Snd,schedule:{on:{weekday:1,hour:10,minute:0},allowWhileIdle:true,repeats:true},smallIcon:ico,iconColor:'#9DC3D9'});
  }
  if(!want.length)return 'ok';
  let p=await LN.checkPermissions();
@@ -7414,7 +7527,30 @@ async function sidesSync(quiet){
   await LN.schedule({notifications:want});return 'ok'}catch(e){reportErr('reminder.sides',e);if(!quiet)toast('Could not set the cheeky reminders');return 'error'}
 }
 const WATER_BASE=1200;
-const WATER_IDS=[...Array(14)].map((_,i)=>WATER_BASE+8+i);
+const WATER_MSGS=[
+ 'Sprinkles: Not a drop all day? Big glass. Right now.',
+ 'Sprinkles: One hour, zero water. Go sip.',
+ 'Sprinkles: Your body is 60% water. Help it out.',
+ 'Sprinkles: Dry spell detected. Drink up!',
+ 'Sprinkles: Glass check — have you had water lately?',
+ 'Sprinkles: Tiny sip break? Your future self says thanks.',
+ 'Sprinkles: Water o\'clock. Take a few gulps.',
+ 'Sprinkles: Hydration patrol here. Time for a drink.',
+ 'Sprinkles: No water in an hour? Let\'s fix that.',
+ 'Sprinkles: Pause and pour yourself some water.',
+ 'Sprinkles: Your plants get watered — you should too.',
+ 'Sprinkles: Quick reminder: drink some water now.',
+ 'Sprinkles: Thirsty yet? Even a little sip counts.',
+ 'Sprinkles: Refill break! Grab your water.',
+ 'Sprinkles: Still no water? Your body is waiting.',
+ 'Sprinkles: A glass of water would be perfect right now.',
+ 'Sprinkles: Hydrate check: when was your last sip?',
+ 'Sprinkles: Don\'t forget to drink water today.',
+ 'Sprinkles: Five-second task: take a drink of water.',
+ 'Sprinkles: Keep it flowing — time for water.',
+ 'Sprinkles: Friendly nudge: have some water.'
+];
+const WATER_IDS=(()=>{const a=[];for(let h=8;h<=21;h++)for(let m=0;m<60;m+=5)a.push(WATER_BASE+h*12+(m/5));return a})();
 async function waterReminderSync(quiet){
  const LN=notifPlugin();if(!LN)return;
  const on=!!(D&&D.rem&&D.rem.water&&!RO);
@@ -7425,12 +7561,18 @@ async function waterReminderSync(quiet){
   if(p.display!=='granted'){if(quiet)return;p=await LN.requestPermissions()}
   if(p.display!=='granted'){if(!quiet)toast('Allow notifications for Bloom in Android settings');return}
   try{await LN.createChannel({id:'bloom_reminders',name:'Bloom reminders',description:'Logging reminders',sound:'beep.wav',importance:4})}catch(e){}
-  const d=today();
-  if((((D.logs||{})[d]||{}).water||0)>0)return;
-  const now=new Date(),items=[];
-  for(let h=8;h<=21;h++){
-   if(h<=now.getHours())continue;
-   items.push({id:WATER_BASE+h,title:'Bloom',body:'Sprinkles: Not a drop all day? Big glass. Right now.',channelId:'bloom_reminders',sound:'beep.wav',schedule:{on:{hour:h,minute:0},allowWhileIdle:true},smallIcon:'ic_stat_bloom',iconColor:'#2A8A87'});
+  const d=today(),now=new Date(),log=(D.logs||{})[d]||{};
+  const last=log.waterLast||((log.water||0)>0?Date.now():0);
+  const startMs=last?last+60*60*1000:new Date(now.getFullYear(),now.getMonth(),now.getDate(),8,0,0,0).getTime();
+  const from=Math.max(startMs,Date.now()+30*1000);
+  const end=new Date(now.getFullYear(),now.getMonth(),now.getDate(),21,55,0,0);
+  const items=[];let i=0;
+  for(let t=new Date(Math.ceil(from/300000)*300000);t<=end;t=new Date(t.getTime()+300000)){
+   const h=t.getHours(),m=t.getMinutes();
+   if(h<8||h>21)continue;
+   const id=WATER_BASE+h*12+(m/5);
+   items.push({id,title:'Bloom',body:WATER_MSGS[i%WATER_MSGS.length],channelId:'bloom_reminders',sound:'beep.wav',schedule:{on:{hour:h,minute:m},allowWhileIdle:true},smallIcon:'ic_stat_bloom',iconColor:'#2A8A87'});
+   i++;
   }
   if(items.length){await LN.schedule({notifications:items});if(!quiet)toast('Water reminders on for today')}
   else if(!quiet)toast('Water reminders start tomorrow morning');
