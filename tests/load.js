@@ -63,7 +63,7 @@ function load() {
     safetop: ['safeTop', 'safeTopBind', 'safeTopInvalidate'],
     fabcalc: ['fabBounds'],
     index: ['libIndexEnsure', 'libPersonalIndex', 'libPersonalInvalidate', 'libViewPlan', 'libBatchIds', 'libViewSet', 'LIB_BATCH', 'libChipCounts'],
-    qa: ['qaPrefersReducedMotion', 'qaFresh', 'QA_FRESH_MS', 'QA_TRANS_MS'],
+    qa: ['qaPrefersReducedMotion', 'QA_TRANS_MS'],
     quickring: ['openQuickRing'],
     storebinding: ['bindStoreCards'],
     boot: ['localSessionBoot'],

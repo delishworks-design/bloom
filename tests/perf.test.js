@@ -543,10 +543,10 @@ test('flower cache evicts the least recently used entry past 40', () => {
 
 test('quick ring timing is actually responsive', () => {
   const ctx = load();
-  assert.ok(ctx.QA_FRESH_MS <= 150, 'freshness guard fires within 150ms');
   assert.ok(ctx.QA_TRANS_MS <= 250, 'overlay removal fallback is short');
-  assert.equal(ctx.qaFresh(1000, 1000), true);
-  assert.equal(ctx.qaFresh(1000 + ctx.QA_FRESH_MS + 1, 1000), false);
+  // the artificial freshness gate was removed from the interaction path entirely
+  assert.equal(typeof ctx.qaFresh, 'undefined');
+  assert.equal(typeof ctx.QA_FRESH_MS, 'undefined');
 });
 
 test('reduced-motion users get an effectively instant ring close', () => {
