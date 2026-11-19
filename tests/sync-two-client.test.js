@@ -290,3 +290,40 @@ test('two identical legacy meals on the same date survive two-client sync', () =
   assert.equal(a.local().meals['2026-11-18'].length, 1);
   assert.equal(b.local().meals['2026-11-18'].length, 1);
 });
+
+test('syncMealIds assigns lowest unused occurrence index beside an existing generated id', () => {
+  const ctx = load();
+  const pair = { meals: { '2026-11-18': [{ n: 'Soup', t: 'lunch' }, { n: 'Soup', t: 'lunch' }] } };
+  ctx.syncMealIds(pair);
+  const [id0, id1] = pair.meals['2026-11-18'].map(m => m.id);
+  assert.notEqual(id0, id1);
+  // partial migration: only the first twin carries its generated id; the second is legacy
+  const partial = { meals: { '2026-11-18': [{ id: id0, n: 'Soup', t: 'lunch' }, { n: 'Soup', t: 'lunch' }] } };
+  ctx.syncMealIds(partial);
+  assert.equal(partial.meals['2026-11-18'][0].id, id0);
+  assert.equal(partial.meals['2026-11-18'][1].id, id1);
+});
+
+test('syncMealIds gives a third identical meal the next free occurrence index', () => {
+  const ctx = load();
+  const pair = { meals: { '2026-11-18': [{ n: 'Soup', t: 'lunch' }, { n: 'Soup', t: 'lunch' }] } };
+  ctx.syncMealIds(pair);
+  const [id0, id1] = pair.meals['2026-11-18'].map(m => m.id);
+  const third = { meals: { '2026-11-18': [{ id: id0, n: 'Soup', t: 'lunch' }, { id: id1, n: 'Soup', t: 'lunch' }, { n: 'Soup', t: 'lunch' }] } };
+  ctx.syncMealIds(third);
+  assert.equal(third.meals['2026-11-18'][2].id !== id0, true);
+  assert.equal(third.meals['2026-11-18'][2].id !== id1, true);
+  const clean = { meals: { '2026-11-18': [{ n: 'Soup', t: 'lunch' }, { n: 'Soup', t: 'lunch' }, { n: 'Soup', t: 'lunch' }] } };
+  ctx.syncMealIds(clean);
+  assert.equal(third.meals['2026-11-18'][2].id, clean.meals['2026-11-18'][2].id);
+});
+
+test('repeated syncMealIds calls never change existing ids', () => {
+  const ctx = load();
+  const doc = { meals: { '2026-11-18': [{ n: 'Soup', t: 'lunch' }, { n: 'Soup', t: 'lunch' }] } };
+  ctx.syncMealIds(doc);
+  const ids = doc.meals['2026-11-18'].map(m => m.id);
+  ctx.syncMealIds(doc);
+  ctx.syncMealIds(doc);
+  assert.deepEqual(Array.from(doc.meals['2026-11-18'], m => m.id), ids);
+});

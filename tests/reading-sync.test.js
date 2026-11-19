@@ -216,3 +216,56 @@ test('dirty state survives when newer seconds land during a successful push', as
   assert.equal(out, 'ok');
   assert.equal(ctx.ST.get('bloom_reading_dirty_u1'), '1'); // newer snapshot is not acknowledged yet
 });
+
+test('readLocked is released after an RPC failure so a later push can proceed', async () => {
+  const ctx = load();
+  const day = '2026-11-18';
+  ctx.D = { read: { goalMin: 5, goalBooks: 1, goalMinAt: 1, goalBooksAt: 1, legacyLog: { [day]: 30 }, logByDevice: { [day]: { devA: 60 } }, finished: {}, unfinished: {}, log: { [day]: 90 } }, library: { books: {} } };
+  let fail = true;
+  ctx.sb = { rpc: async () => { if (fail) throw new Error('network down'); return { data: { status: 'ok', rev: 2 } }; } };
+  ctx.sbUser = { id: 'u1' }; ctx.RO = false; ctx.persistDoc = () => {}; ctx.reportErr = () => {};
+
+  const first = await ctx.readingPush();
+  assert.equal(first, 'failed');
+  assert.equal(ctx.ST.get('bloom_reading_dirty_u1'), '1'); // failed push stays pending
+
+  fail = false;
+  const second = await ctx.readingPush();
+  assert.equal(second, 'ok'); // lock was released; not stuck behind the failed operation
+  assert.equal(ctx.ST.get('bloom_reading_dirty_u1'), null);
+});
+
+test('readLocked is released after a forbidden response', async () => {
+  const ctx = load();
+  const day = '2026-11-18';
+  ctx.D = { read: { goalMin: 5, goalBooks: 1, goalMinAt: 1, goalBooksAt: 1, legacyLog: { [day]: 30 }, logByDevice: { [day]: { devA: 60 } }, finished: {}, unfinished: {}, log: { [day]: 90 } }, library: { books: {} } };
+  let mode = 'forbidden';
+  ctx.sb = { rpc: async () => { if (mode === 'forbidden') return { data: { status: 'forbidden', reason: 'uid_mismatch' } }; return { data: { status: 'ok', rev: 3 } }; } };
+  ctx.sbUser = { id: 'u1' }; ctx.RO = false; ctx.persistDoc = () => {}; ctx.reportErr = () => {};
+
+  const first = await ctx.readingPush();
+  assert.equal(first, 'failed');
+  assert.equal(ctx.ST.get('bloom_reading_dirty_u1'), '1');
+
+  mode = 'ok';
+  const second = await ctx.readingPush();
+  assert.equal(second, 'ok');
+});
+
+test('readLocked is released after a conflict retry failure', async () => {
+  const ctx = load();
+  const day = '2026-11-18';
+  ctx.D = { read: { goalMin: 5, goalBooks: 1, goalMinAt: 1, goalBooksAt: 1, legacyLog: { [day]: 30 }, logByDevice: { [day]: { devA: 60 } }, finished: {}, unfinished: {}, log: { [day]: 90 } }, library: { books: {} } };
+  let mode = 'conflict-fail';
+  let calls = 0;
+  ctx.sb = { rpc: async () => { calls++; if (mode === 'conflict-fail') { if (calls === 1) return { data: { status: 'conflict', rev: 5, doc: { goalMin: 5, goalBooks: 1, goalMinAt: 1, goalBooksAt: 1, legacyLog: { [day]: 30 }, logByDevice: { [day]: { devA: 60, devB: 15 } }, finished: {}, unfinished: {} } } }; throw new Error('retry boom'); } return { data: { status: 'ok', rev: 6 } }; } };
+  ctx.sbUser = { id: 'u1' }; ctx.RO = false; ctx.persistDoc = () => {}; ctx.reportErr = () => {};
+
+  const first = await ctx.readingPush();
+  assert.equal(first, 'failed');
+  assert.equal(ctx.ST.get('bloom_reading_dirty_u1'), '1');
+
+  mode = 'ok';
+  const second = await ctx.readingPush();
+  assert.equal(second, 'ok');
+});

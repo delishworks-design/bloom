@@ -16,6 +16,10 @@ const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 function load() {
   const sandbox = {
     console,
+    setTimeout,
+    clearTimeout,
+    setInterval,
+    clearInterval,
     Date,
     JSON,
     Math,
@@ -51,7 +55,7 @@ function load() {
 
   const exportsByName = {
     esc: ['E'],
-    sync: ['isPlainObject', 'mergeDocs', 'chooseLoginDoc', 'docHasContent', 'mergeDocsThreeWay', 'syncDeviceId', 'syncMarkDeleted', 'syncClassifyResponse'],
+    sync: ['isPlainObject', 'mergeDocs', 'chooseLoginDoc', 'docHasContent', 'mergeDocsThreeWay', 'syncDeviceId', 'syncMarkDeleted', 'syncClassifyResponse', 'syncMealIds'],
     library: ['libEnsure', 'libBookEntry', 'libBlank', 'libVisibleIds', 'libRecentList', 'migrateLibrary'],
     classicCover: ['coverHash','coverLines','escXml','classicCoverSVG'],
     netmsg: ['errText', 'isOffline', 'OFFLINE_MSG'],

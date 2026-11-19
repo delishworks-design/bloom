@@ -1238,14 +1238,23 @@ function syncMealIds(doc){
   if(!doc||!syncIsObj(doc.meals))return;
   Object.keys(doc.meals).forEach(d=>{
    const arr=doc.meals[d];if(!Array.isArray(arr))return;
-   const seen={};
-   arr.forEach(m=>{
-    if(!m||typeof m!=='object')return;
-    if(m.id==null||m.id===''){
-     const baseSig=syncHash(d+'|'+String(m.n||m.name||'')+'|'+String(m.t||'')+'|'+String(m.q==null?'1':m.q)+'|'+String(m.ts||m.at||''));
-     const k=(seen[baseSig]||0);seen[baseSig]=k+1;
-     m.id='m'+syncHash(baseSig+'|'+k);
-    }
+   const sigOf=m=>syncHash(d+'|'+String(m.n||m.name||'')+'|'+String(m.t||'')+'|'+String(m.q==null?'1':m.q)+'|'+String(m.ts||m.at||''));
+   // content signature of every entry
+   const sigs=arr.map(m=>(m&&typeof m==='object')?sigOf(m):null);
+   // ids already taken for each signature (existing ids count, generated ids count)
+   const used={};
+   arr.forEach((m,i)=>{
+    const s=sigs[i];if(!s||!m||typeof m!=='object')return;
+    if(m.id!=null&&m.id!==''){(used[s]||(used[s]=new Set())).add(String(m.id))}
+   });
+   // assign the lowest unused occurrence index; never overwrite an existing id
+   arr.forEach((m,i)=>{
+    const s=sigs[i];if(!s||!m||typeof m!=='object')return;
+    if(m.id!=null&&m.id!=='')return;
+    const taken=used[s]||(used[s]=new Set());
+    let k=0;while(taken.has('m'+syncHash(s+'|'+k)))k++;
+    m.id='m'+syncHash(s+'|'+k);
+    taken.add(m.id);
    });
   });
  }catch(e){}
@@ -5890,10 +5899,11 @@ let libLock=Promise.resolve();
 function libLocked(fn){const run=()=>Promise.resolve().then(fn);const p=libLock.then(run,run);libLock=p.catch(()=>{});return p}
 function libSnapStr(){try{return JSON.stringify(libStoreRead())}catch(e){return ''}}
 function libSetStore(s){try{ST.set(libStoreKey(),JSON.stringify(s))}catch(e){}roLibCache={key:libStoreKey(),obj:s}}
-async function partnerLibPushAsync(doc){
+async function partnerLibPushAsync(){
  const uid=sbUser.id;
- const liveDoc=(doc&&typeof doc==='object')?doc:libStoreRead();
- const liveSnap=libClone(liveDoc);
+ // read the authoritative local library state only after the caller holds the lock;
+ // an older queued argument can never overwrite a newer local store
+ const liveSnap=libClone(libStoreRead());
  const liveStr=JSON.stringify(liveSnap);
  const baseRev=partnerLibRevGet(uid);
  try{
@@ -5928,7 +5938,9 @@ async function partnerLibPushAsync(doc){
 }
 async function partnerLibPush(doc){
  if(!sb||!sbUser||!sbUser.id) return 'failed';
- return libLocked(()=>partnerLibPushAsync(doc));
+ // doc is accepted for call-site compatibility but deliberately ignored:
+ // the locked operation always reads the current local store
+ return libLocked(()=>partnerLibPushAsync());
 }
 function partnerLibFetchRow(){
  if(!sb||!sbUser||!sbUser.id) return Promise.resolve(null);
@@ -5954,7 +5966,7 @@ async function partnerLibRefresh(){
    partnerLibRevSet(sbUser.id,row.rev);
    if(JSON.stringify(libCleanDoc(target))!==JSON.stringify(libCleanDoc(row.doc||{}))){
     // local state differs from the cloud we just accepted; push it up at the fresh rev
-    return partnerLibPushAsync(libStoreRead());
+    return partnerLibPushAsync();
    }
    partnerLibClearDirty(sbUser.id);
    try{if(view==='library'&&safeToRender())shell();else if(view==='library')sbPendingRender=true}catch(e){}

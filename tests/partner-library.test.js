@@ -174,3 +174,87 @@ test('a pending push that hits a CAS conflict keeps both the merge and the newer
   // everything is acknowledged, dirty flag cleared
   assert.equal(ctx.ST.get('bloom_partner_lib_dirty_partner-uuid'), null);
 });
+
+test('a queued push reads the latest store, not the stale snapshot it was queued with', async () => {
+  const ctx = fresh();
+  ctx.safeToRender = () => true; ctx.shell = () => {}; ctx.view = 'library'; ctx.sbPendingRender = false;
+  ctx.reportErr = () => {};
+  ctx.ST.set('bloom_reader_partner_partner-uuid', JSON.stringify({ books: { a: { page: 10, pct: 10, lastRead: 100, favorite: false, favAt: 50, finished: false, hl: [] } } }));
+  const calls = [];
+  const d = {};
+  d.calls = calls;
+  ctx.sb = {
+    rpc(name, args) {
+      const held = {};
+      held.p = new Promise(res => { held.res = res; });
+      calls.push({ name, args, held });
+      return calls.length === 1 ? held.p : Promise.resolve({ data: { status: 'ok', rev: 7 } });
+    }
+  };
+
+  await new Promise(r => setImmediate(r));
+  const pA = ctx.partnerLibPush();          // runs first, RPC held
+  await new Promise(r => setImmediate(r));  // let push A capture its snapshot and hit the RPC
+  const live = ctx.libStoreRead();          // user advances the book while push A is pending
+  live.books.a.page = 50; live.books.a.pct = 50; live.books.a.lastRead = 200;
+  live.books.a.favorite = true; live.books.a.favAt = 9000;
+  const pB = ctx.partnerLibPush(live);      // queued behind A; doc arg must be ignored
+
+  d.calls[0].held.res({ data: { status: 'ok', rev: 6 } });
+  const outA = await pA;
+  const outB = await pB;
+
+  assert.equal(outA, 'ok');
+  assert.equal(outB, 'ok');
+  assert.ok(calls.length >= 2);
+  // queued push used the latest store and the fresh revision, not the stale argument
+  assert.equal(calls[1].args.p_base_rev, 6);
+  assert.equal(calls[1].args.p_doc.books.a.page, 50);
+  assert.equal(calls[1].args.p_doc.books.a.favorite, true);
+  // and it did not clobber A's acknowledged cloud state with the old page 10
+  assert.equal(calls[1].args.p_doc.books.a.lastRead, 200);
+  // everything is acknowledged now
+  assert.equal(ctx.ST.get('bloom_partner_lib_dirty_partner-uuid'), null);
+});
+
+test('a push queued behind a held refresh uses the merged state and the fresh revision', async () => {
+  const ctx = fresh();
+  ctx.safeToRender = () => true; ctx.shell = () => {}; ctx.view = 'library'; ctx.sbPendingRender = false;
+  ctx.reportErr = () => {};
+  ctx.ST.set('bloom_reader_partner_partner-uuid', JSON.stringify({ books: { a: { page: 50, pct: 50, lastRead: 100, favorite: false, favAt: 10, finished: false, hl: [] } } }));
+  const fetchHeld = {};
+  fetchHeld.p = new Promise(res => { fetchHeld.res = res; });
+  const rpcCalls = [];
+  const rpcHeld = {};
+  rpcHeld.p = new Promise(res => { rpcHeld.res = res; });
+  ctx.sb = {
+    from() {
+      const self = this;
+      return { select() { return { eq() { return { maybeSingle() { return fetchHeld.p; } }; } }; } };
+    },
+    rpc(name, args) {
+      rpcCalls.push({ name, args });
+      return rpcCalls.length === 1 ? rpcHeld.p : Promise.resolve({ data: { status: 'ok', rev: 9 } });
+    }
+  };
+
+  const pRefresh = ctx.partnerLibRefresh();  // holds the lock on its fetch
+  const pPush = ctx.partnerLibPush();        // queued behind the refresh
+  await new Promise(r => setImmediate(r));   // let the refresh reach its fetch
+  fetchHeld.res({ data: { doc: { books: { a: { page: 20, pct: 20, lastRead: 50, favorite: false, favAt: 5, finished: false, hl: [] } } }, rev: 42 }, error: null });
+  await new Promise(r => setImmediate(r));
+  await new Promise(r => setImmediate(r));   // let the refresh merge and reach its internal push
+  rpcHeld.res({ data: { status: 'ok', rev: 43 } });
+  const outRefresh = await pRefresh;
+  const outPush = await pPush;
+
+  assert.equal(outRefresh, 'ok');
+  assert.equal(outPush, 'ok');
+  // internal push after the refresh used the merged (local-wins) doc at the fetched revision
+  assert.equal(rpcCalls[0].args.p_base_rev, 42);
+  assert.equal(rpcCalls[0].args.p_doc.books.a.page, 50);
+  // the queued push ran strictly after the refresh, on the revision the refresh established
+  assert.equal(rpcCalls[1].args.p_base_rev, 43);
+  assert.equal(rpcCalls[1].args.p_doc.books.a.page, 50);
+  assert.equal(ctx.ST.get('bloom_partner_lib_dirty_partner-uuid'), null);
+});
