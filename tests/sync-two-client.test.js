@@ -259,3 +259,34 @@ test('mergeDocsThreeWay is convergent regardless of merge order', () => {
   assert.equal(ab.tasks[0].done, true);
   assert.equal(ba.tasks[0].done, true);
 });
+
+test('two identical legacy meals on the same date survive repeated merges', () => {
+  const ctx = load();
+  const base = { savedAt: 1, logs: {}, tasks: [], journal: [], plan: {}, done: {}, library: { books: {} }, p: {}, rem: {} };
+  const seed = () => { const d = JSON.parse(JSON.stringify(base)); d.meals = { '2026-11-18': [{ n: 'Soup', t: 'lunch' }, { n: 'Soup', t: 'lunch' }] }; return d; };
+  const merged = ctx.mergeDocsThreeWay(seed(), seed(), seed());
+  const meals = merged.meals['2026-11-18'];
+  assert.equal(meals.length, 2);
+  const ids = meals.map(m => m.id);
+  assert.notEqual(ids[0], ids[1]);
+  // stable: re-merging the same inputs mints the same ids
+  const again = ctx.mergeDocsThreeWay(seed(), merged, merged);
+  assert.deepEqual(Array.from(again.meals['2026-11-18'], m => m.id), ids);
+  const alt = ctx.mergeDocsThreeWay(seed(), seed(), seed());
+  assert.deepEqual(Array.from(alt.meals['2026-11-18'], m => m.id), ids);
+});
+
+test('two identical legacy meals on the same date survive two-client sync', () => {
+  const seed = () => ({ savedAt: 1, logs: {}, tasks: [], journal: [], meals: { '2026-11-18': [{ n: 'Soup', t: 'lunch' }, { n: 'Soup', t: 'lunch' }] }, plan: {}, done: {}, library: { books: {} }, p: {}, rem: {} });
+  const cloud = makeCloud();
+  const a = makeDevice(cloud, seed()), b = makeDevice(cloud, seed());
+  a.sync(); b.sync(); a.sync(); b.sync();
+  assert.equal(a.local().meals['2026-11-18'].length, 2);
+  assert.equal(b.local().meals['2026-11-18'].length, 2);
+  assert.deepEqual(Array.from(b.local().meals['2026-11-18'], m => m.id), Array.from(a.local().meals['2026-11-18'], m => m.id));
+  // a deletes exactly one of the twins
+  a.edit(d => { d.meals['2026-11-18'] = d.meals['2026-11-18'].slice(0, 1); });
+  a.sync(); b.sync(); b.sync(); a.sync();
+  assert.equal(a.local().meals['2026-11-18'].length, 1);
+  assert.equal(b.local().meals['2026-11-18'].length, 1);
+});

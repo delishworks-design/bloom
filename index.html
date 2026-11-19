@@ -1230,15 +1230,22 @@ function syncEq(a,b){return syncStr(a)===syncStr(b)}
 function syncHash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(36)}
 function syncClone(v){try{return v==null?v:JSON.parse(JSON.stringify(v))}catch(e){return v}}
 // Meals are merged as independent records, so every meal needs a stable identity.
-// The hash is content based and repeatable for legacy entries without an id.
+// Legacy entries without an id get a deterministic id from their content AND their
+// occurrence index among identical entries in the same date, so two separate but
+// identical legacy meals get two distinct ids. Ids are attached in place and persist.
 function syncMealIds(doc){
  try{
   if(!doc||!syncIsObj(doc.meals))return;
   Object.keys(doc.meals).forEach(d=>{
    const arr=doc.meals[d];if(!Array.isArray(arr))return;
+   const seen={};
    arr.forEach(m=>{
     if(!m||typeof m!=='object')return;
-    if(m.id==null||m.id==='')m.id='m'+syncHash(d+'|'+(m.n||m.name||'')+'|'+(m.t||'')+'|'+(m.q==null?'1':m.q)+'|'+(m.ts||m.at||''));
+    if(m.id==null||m.id===''){
+     const baseSig=syncHash(d+'|'+String(m.n||m.name||'')+'|'+String(m.t||'')+'|'+String(m.q==null?'1':m.q)+'|'+String(m.ts||m.at||''));
+     const k=(seen[baseSig]||0);seen[baseSig]=k+1;
+     m.id='m'+syncHash(baseSig+'|'+k);
+    }
    });
   });
  }catch(e){}
@@ -5878,28 +5885,50 @@ function partnerLibRevGet(uid){ try{return +ST.get(partnerLibRevKey(uid))||0}cat
 function partnerLibRevSet(uid,rev){ try{ST.set(partnerLibRevKey(uid),String(+rev||0))}catch(e){} }
 function partnerLibMarkDirty(uid){ try{ST.set('bloom_partner_lib_dirty_'+uid,'1')}catch(e){} }
 function partnerLibClearDirty(uid){ try{ST.del('bloom_partner_lib_dirty_'+uid)}catch(e){} }
-async function partnerLibPush(doc){
- if(!sb||!sbUser||!sbUser.id) return 'failed';
+// one shared lock serializes partner library pushes and refreshes so they cannot race each other
+let libLock=Promise.resolve();
+function libLocked(fn){const run=()=>Promise.resolve().then(fn);const p=libLock.then(run,run);libLock=p.catch(()=>{});return p}
+function libSnapStr(){try{return JSON.stringify(libStoreRead())}catch(e){return ''}}
+function libSetStore(s){try{ST.set(libStoreKey(),JSON.stringify(s))}catch(e){}roLibCache={key:libStoreKey(),obj:s}}
+async function partnerLibPushAsync(doc){
  const uid=sbUser.id;
+ const liveDoc=(doc&&typeof doc==='object')?doc:libStoreRead();
+ const liveSnap=libClone(liveDoc);
+ const liveStr=JSON.stringify(liveSnap);
+ const baseRev=partnerLibRevGet(uid);
  try{
-  const baseRev=partnerLibRevGet(uid);
-  const res=await sb.rpc('bloom_push_library',{p_doc:libCleanDoc(doc),p_base_rev:baseRev});
+  const res=await sb.rpc('bloom_push_library',{p_doc:libCleanDoc(liveSnap),p_base_rev:baseRev});
   if(res&&res.error){partnerLibMarkDirty(uid);reportErr('partner.library.push',res.error);return 'failed'}
   const data=res&&res.data;
   if(!data||typeof data.status!=='string'){partnerLibMarkDirty(uid);reportErr('partner.library.push','unexpected RPC response');return 'failed'}
-  if(data.status==='ok'){partnerLibRevSet(uid,data.rev);partnerLibClearDirty(uid);return 'ok'}
-  if(data.status==='conflict'){
-   const merged=libMergeDocs(doc,data.doc||{});
+  if(data.status==='ok'){
    partnerLibRevSet(uid,data.rev);
-   try{ST.set(libStoreKey(),JSON.stringify(merged))}catch(e){}
-   roLibCache={key:libStoreKey(),obj:merged};
+   if(libSnapStr()===liveStr){partnerLibClearDirty(uid);return 'ok'}
+   // local edits landed while the push was in flight; push again rather than claim synced
+   partnerLibMarkDirty(uid);setTimeout(()=>partnerLibPush(libStoreRead()),0);return 'ok';
+  }
+  if(data.status==='conflict'){
+   // reconcile the LATEST local library state with the returned cloud doc, not the stale snapshot
+   const cur=libStoreRead();
+   const curStr=JSON.stringify(cur);
+   const merged=libMergeDocs(cur,data.doc||{});
+   partnerLibRevSet(uid,data.rev);
+   libSetStore(merged);
    const retry=await sb.rpc('bloom_push_library',{p_doc:libCleanDoc(merged),p_base_rev:+(data.rev||0)});
-   if(retry&&retry.data&&retry.data.status==='ok'){partnerLibRevSet(uid,retry.data.rev);partnerLibClearDirty(uid);return 'ok'}
+   if(retry&&retry.data&&retry.data.status==='ok'){
+    partnerLibRevSet(uid,retry.data.rev);
+    if(libSnapStr()===JSON.stringify(merged)){partnerLibClearDirty(uid);return 'ok'}
+    partnerLibMarkDirty(uid);setTimeout(()=>partnerLibPush(libStoreRead()),0);return 'ok';
+   }
    partnerLibMarkDirty(uid);reportErr('partner.library.push','conflict retry failed');return 'failed';
   }
   if(data.status==='forbidden'){partnerLibMarkDirty(uid);reportErr('partner.library.forbidden',data.reason||'uid mismatch');return 'failed'}
   partnerLibMarkDirty(uid);reportErr('partner.library.push','unexpected status '+data.status);return 'failed';
  }catch(e){partnerLibMarkDirty(uid);reportErr('partner.library.push',e);return 'failed';}
+}
+async function partnerLibPush(doc){
+ if(!sb||!sbUser||!sbUser.id) return 'failed';
+ return libLocked(()=>partnerLibPushAsync(doc));
 }
 function partnerLibFetchRow(){
  if(!sb||!sbUser||!sbUser.id) return Promise.resolve(null);
@@ -5912,17 +5941,26 @@ function partnerLibFetchRow(){
 function partnerLibFetch(){ return partnerLibFetchRow().then(r=>(r&&r.error)?r:(r?r.doc:null)); }
 async function partnerLibRefresh(){
  if(!sb||!sbUser||!sbUser.id||!RO||ownMode)return 'skipped';
- const row=await partnerLibFetchRow();
- if(!row||row.error)return 'failed';
- const local=libStoreRead();
- const merged=libMergeDocs(local,row.doc||{});
- try{ST.set(libStoreKey(),JSON.stringify(merged))}catch(e){}
- roLibCache={key:libStoreKey(),obj:merged};
- partnerLibRevSet(sbUser.id,row.rev);
- if(JSON.stringify(merged)!==JSON.stringify(row.doc||{})){await partnerLibPush(merged)}
- else {partnerLibClearDirty(sbUser.id)}
- try{if(view==='library'&&safeToRender())shell();else if(view==='library')sbPendingRender=true}catch(e){}
- return 'ok';
+ return libLocked(async()=>{
+  try{
+   const row=await partnerLibFetchRow();
+   if(!row||row.error)return 'failed';
+   const live=libStoreRead();
+   const merged=libMergeDocs(live,row.doc||{});
+   const liveStr=JSON.stringify(live);
+   // apply the merged doc only if nothing local changed during the fetch; otherwise re-merge now
+   const target=(JSON.stringify(libStoreRead())===liveStr)?merged:libMergeDocs(libStoreRead(),row.doc||{});
+   libSetStore(target);
+   partnerLibRevSet(sbUser.id,row.rev);
+   if(JSON.stringify(libCleanDoc(target))!==JSON.stringify(libCleanDoc(row.doc||{}))){
+    // local state differs from the cloud we just accepted; push it up at the fresh rev
+    return partnerLibPushAsync(libStoreRead());
+   }
+   partnerLibClearDirty(sbUser.id);
+   try{if(view==='library'&&safeToRender())shell();else if(view==='library')sbPendingRender=true}catch(e){}
+   return 'ok';
+  }catch(e){reportErr('partner.library.refresh',e);partnerLibMarkDirty(sbUser.id);return 'failed'}
+ });
 }
 function libStoreWrite(s){ try{ST.set(libStoreKey(),JSON.stringify(s))}catch(e){}; if((RO||ROowner)&&sbUser&&sbUser.id){ partnerLibPush(s).then(r=>{}); } }
 // @test-end partnerLibrary
@@ -6076,59 +6114,90 @@ function readingFetchRow(){
   .catch(e=>({error:String(e&&e.message||e)}));
 }
 function readingFetch(){return readingFetchRow().then(r=>(r&&r.error)?r:(r?r.doc:null))}
+// one shared lock serializes reading pushes and pulls so they cannot race each other
+let readingLock=Promise.resolve();
+function readLocked(fn){const run=()=>Promise.resolve().then(fn);const p=readingLock.then(run,run);readingLock=p.catch(()=>{});return p}
+function readSnapStr(){try{return JSON.stringify(readingDocFromD())}catch(e){return ''}}
+async function readingPushAsync(){
+ const uid=sbUser.id;
+ // never push a stale captured document: project the CURRENT local reading state
+ const snap=readingDocFromD();
+ const snapStr=JSON.stringify(snap);
+ const baseRev=readingRevGet(uid);
+ let res;
+ try{res=await sb.rpc('bloom_push_reading',{p_doc:snap,p_base_rev:baseRev})}
+ catch(e){readingMarkDirty(uid);reportErr('reading.push',e);return 'failed'}
+ if(res&&res.error){readingMarkDirty(uid);reportErr('reading.push',res.error);return 'failed'}
+ const data=res&&res.data;
+ if(!data||typeof data.status!=='string'){readingMarkDirty(uid);reportErr('reading.push','unexpected RPC response');return 'failed'}
+ if(data.status==='ok'){
+  readingRevSet(uid,data.rev);
+  if(readSnapStr()===snapStr){readingClearDirty(uid);return 'ok'}
+  // newer local seconds were banked while the push was in flight; do not claim they are synced
+  readingMarkDirty(uid);saveReading();return 'ok';
+ }
+ if(data.status==='conflict'){
+  // reconcile the LATEST local state with the returned cloud doc, not the stale snapshot
+  const cur=readingDocFromD();
+  const curStr=JSON.stringify(cur);
+  const merged=readingMerge(cur,data.doc||{});
+  readingRevSet(uid,data.rev);
+  let retry;
+  try{retry=await sb.rpc('bloom_push_reading',{p_doc:merged,p_base_rev:+(data.rev||0)})}
+  catch(e){readingMarkDirty(uid);reportErr('reading.push','conflict retry failed');return 'failed'}
+  if(retry&&retry.data&&retry.data.status==='ok'){
+   readingRevSet(uid,retry.data.rev);
+   if(JSON.stringify(readingDocFromD())===curStr){
+    applyReadingDoc(merged); // safe: nothing newer locally since the merge
+    if(!RO&&typeof persistDoc==='function')persistDoc();
+    readingClearDirty(uid);return 'ok';
+   }
+   // local moved ahead again while the retry was in flight
+   readingMarkDirty(uid);saveReading();return 'ok';
+  }
+  readingMarkDirty(uid);reportErr('reading.push','conflict retry failed');return 'failed';
+ }
+ if(data.status==='forbidden'){readingMarkDirty(uid);reportErr('reading.push.forbidden',data.reason||'uid mismatch');return 'failed'}
+ readingMarkDirty(uid);reportErr('reading.push','unexpected status '+data.status);return 'failed';
+}
 async function readingPush(doc){
  if(!sb||!sbUser||!sbUser.id)return 'failed';
- const uid=sbUser.id;
- try{
-  const baseRev=readingRevGet(uid);
-  const res=await sb.rpc('bloom_push_reading',{p_doc:doc,p_base_rev:baseRev});
-  if(res&&res.error){readingMarkDirty(uid);reportErr('reading.push',res.error);return 'failed'}
-  const data=res&&res.data;
-  if(!data||typeof data.status!=='string'){readingMarkDirty(uid);reportErr('reading.push','unexpected RPC response');return 'failed'}
-  if(data.status==='ok'){readingRevSet(uid,data.rev);readingClearDirty(uid);return 'ok'}
-  if(data.status==='conflict'){
-   const merged=readingMerge(doc,data.doc||{});
-   readingRevSet(uid,data.rev);
-   const retry=await sb.rpc('bloom_push_reading',{p_doc:merged,p_base_rev:+(data.rev||0)});
-   if(retry&&retry.data&&retry.data.status==='ok'){
-    readingRevSet(uid,retry.data.rev);readingClearDirty(uid);
-    if(!RO){applyReadingDoc(merged);persistDoc()}
-    return 'ok';
-   }
-   readingMarkDirty(uid);reportErr('reading.push','conflict retry failed');return 'failed';
-  }
-  if(data.status==='forbidden'){readingMarkDirty(uid);reportErr('reading.push.forbidden',data.reason||'uid mismatch');return 'failed'}
-  readingMarkDirty(uid);reportErr('reading.push','unexpected status '+data.status);return 'failed';
- }catch(e){readingMarkDirty(uid);reportErr('reading.push',e);return 'failed'}
+ return readLocked(()=>readingPushAsync());
 }
 let readingPushT=null;
 function saveReading(){
  try{
   roCacheReading();
   if(readingPushT)clearTimeout(readingPushT);
-  readingPushT=setTimeout(()=>{readingPushT=null;readingPush(readingDocFromD()).catch(()=>{})},1200);
+  readingPushT=setTimeout(()=>{readingPushT=null;readingPush().catch(()=>{})},1200);
  }catch(e){}
 }
 async function readingLoadOnce(){
  if(!sb||!sbUser||!sbUser.id)return;
  const uid=sbUser.id;
  roAdoptReading();
- const row=await readingFetchRow();
- if(row&&row.error){readingMarkDirty(uid);reportErr('reading.fetch',row.error);return}
- if(!row){
-  const l0=readingDocFromD();
-  if(Object.keys(l0.log||{}).length||Object.keys(l0.finished||{}).length)saveReading();
-  return;
- }
- const remote=row.doc||{};
- const local=readingDocFromD();
- const merged=readingMerge(local,remote);
- applyReadingDoc(merged);
- if(RO)roCacheReading();else if(typeof persistDoc==='function')persistDoc();
- readingRevSet(uid,row.rev);
- readingClearDirty(uid);
- // push the merged (and possibly upgraded) shape back if it differs from the cloud
- if(JSON.stringify(merged)!==JSON.stringify(remote))saveReading();
+ return readLocked(async()=>{
+  const row=await readingFetchRow();
+  if(row&&row.error){readingMarkDirty(uid);reportErr('reading.fetch',row.error);return}
+  if(!row){
+   const l0=readingDocFromD();
+   if(Object.keys(l0.log||{}).length||Object.keys(l0.finished||{}).length)saveReading();
+   return;
+  }
+  const remote=row.doc||{};
+  const local=readingDocFromD();
+  const localStr=JSON.stringify(local);
+  const merged=readingMerge(local,remote);
+  // no await happens between the clone and the apply, so this cannot drop newer local seconds
+  if(JSON.stringify(readingDocFromD())===localStr)applyReadingDoc(merged);
+  if(RO)roCacheReading();else if(typeof persistDoc==='function')persistDoc();
+  readingRevSet(uid,row.rev);
+  // dirty is cleared only when the latest local snapshot equals what the cloud will hold
+  const nowStr=JSON.stringify(readingDocFromD());
+  if(nowStr===JSON.stringify(merged))readingClearDirty(uid);else readingMarkDirty(uid);
+  // push the merged (and possibly upgraded) shape back if it differs from the cloud
+  if(JSON.stringify(merged)!==JSON.stringify(remote))saveReading();
+ });
 }
 // @test-end readingSync
 // @test-begin readingGoal

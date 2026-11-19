@@ -126,3 +126,51 @@ test('a downloaded-file flag from another device is not adopted', () => {
   const merged = ctx.libMergeDocs({ books: {} }, remote);
   assert.equal(merged.books.a.dl, false);
 });
+
+function deferredLibPush() {
+  const calls = [];
+  return {
+    calls,
+    sb: { rpc(name, args) {
+      const held = {};
+      held.p = new Promise(res => { held.res = res; });
+      calls.push({ name, args, held });
+      return calls.length === 1 ? held.p : Promise.resolve({ data: { status: 'ok', rev: 9 } });
+    }}
+  };
+}
+
+test('a pending push that hits a CAS conflict keeps both the merge and the newer local edit', async () => {
+  const ctx = fresh();
+  ctx.safeToRender = () => true;
+  ctx.shell = () => {};
+  ctx.view = 'library';
+  ctx.reportErr = () => {};
+  const store = { books: { a: { page: 10, pct: 10, lastRead: 100, favorite: false, favAt: 50, finished: false, finAt: 0, hl: [] } } };
+  ctx.ST.set('bloom_reader_partner_partner-uuid', JSON.stringify(store));
+  const d = deferredLibPush();
+  ctx.sb = d.sb;
+
+  const p = ctx.partnerLibPush();
+  await new Promise(r => setImmediate(r));
+  // user advances the book while the first push is pending
+  const live = ctx.libStoreRead();
+  live.books.a.page = 50; live.books.a.pct = 50; live.books.a.lastRead = 200;
+  live.books.a.favorite = true; live.books.a.favAt = 9000;
+
+  // the server replies with a conflict whose remote doc holds the older snapshot
+  d.calls[0].held.res({ data: { status: 'conflict', rev: 8, doc: { books: { a: { page: 20, pct: 20, lastRead: 150, favorite: false, favAt: 100, finished: false, finAt: 0, hl: [] } } } } });
+  const out = await p;
+
+  assert.equal(out, 'ok');
+  // the retry carried the latest local state, not the stale snapshot
+  const retry = d.calls[1].args.p_doc.books.a;
+  assert.equal(retry.page, 50);
+  assert.equal(retry.favorite, true);
+  // the merged document was written back to the local store
+  const stored = JSON.parse(ctx.ST.get('bloom_reader_partner_partner-uuid'));
+  assert.equal(stored.books.a.page, 50);
+  assert.equal(stored.books.a.favorite, true);
+  // everything is acknowledged, dirty flag cleared
+  assert.equal(ctx.ST.get('bloom_partner_lib_dirty_partner-uuid'), null);
+});

@@ -151,3 +151,68 @@ test('goals merge deterministically by their own timestamps', () => {
   assert.equal(newerRemote.goalMin, 30);   // newer remote wins
   assert.equal(newerRemote.goalBooks, 24);
 });
+
+function deferredRpc() {
+  const calls = [];
+  const d = {};
+  d.calls = calls;
+  d.sb = { rpc(name, args) {
+    const held = {};
+    held.p = new Promise(res => { held.res = res; });
+    calls.push({ name, args, held });
+    return calls.length === 1 ? held.p : Promise.resolve({ data: { status: 'ok', rev: 7 } });
+  }};
+  return d;
+}
+
+test('newer reading seconds recorded during a pending push survive a CAS conflict', async () => {
+  const ctx = load();
+  const day = '2026-11-18';
+  ctx.D = { read: { goalMin: 5, goalBooks: 1, goalMinAt: 1, goalBooksAt: 1, legacyLog: { [day]: 30 }, logByDevice: { [day]: { devA: 60 } }, finished: {}, unfinished: {}, log: { [day]: 90 } }, library: { books: {} } };
+  const d = deferredRpc();
+  ctx.sb = d.sb;
+  ctx.sbUser = { id: 'u1', email: 'u@x.com' }; ctx.RO = false;
+  ctx.persistDoc = () => {}; ctx.reportErr = () => {};
+
+  const p = ctx.readingPush();
+  await new Promise(r => setImmediate(r));
+  // bank 60 more seconds on this device while the RPC is pending
+  ctx.D.read.logByDevice[day].devA = 120;
+
+  // the server answers with a conflict: another device pushed a doc that includes devB
+  d.calls[0].held.res({ data: { status: 'conflict', rev: 5, doc: { goalMin: 5, goalBooks: 1, goalMinAt: 1, goalBooksAt: 1, legacyLog: { [day]: 30 }, logByDevice: { [day]: { devA: 60, devB: 15 } }, finished: {}, unfinished: {} } } });
+  const out = await p;
+
+  assert.equal(out, 'ok');
+  // the first RPC sent only the snapshot captured at push start
+  assert.equal(d.calls[0].args.p_doc.logByDevice[day].devA, 60);
+  // the retry carried the latest local state merged with the remote doc
+  const retry = d.calls[1].args.p_doc;
+  assert.equal(retry.logByDevice[day].devA, 120);
+  assert.equal(retry.logByDevice[day].devB, 15);
+  assert.equal(retry.legacyLog[day], 30);
+  assert.equal(retry.log[day], 165);
+  // local was reconciled in place with the remote contribution
+  assert.equal(ctx.D.read.log[day], 165);
+  // everything is acknowledged, so the dirty flag is cleared
+  assert.equal(ctx.ST.get('bloom_reading_dirty_u1'), null);
+});
+
+test('dirty state survives when newer seconds land during a successful push', async () => {
+  const ctx = load();
+  const day = '2026-11-18';
+  ctx.D = { read: { goalMin: 5, goalBooks: 1, goalMinAt: 1, goalBooksAt: 1, legacyLog: { [day]: 30 }, logByDevice: { [day]: { devA: 60 } }, finished: {}, unfinished: {}, log: { [day]: 90 } }, library: { books: {} } };
+  const d = deferredRpc();
+  ctx.sb = d.sb;
+  ctx.sbUser = { id: 'u1', email: 'u@x.com' }; ctx.RO = false;
+  ctx.persistDoc = () => {}; ctx.reportErr = () => {};
+
+  const p = ctx.readingPush();
+  await new Promise(r => setImmediate(r));
+  ctx.D.read.logByDevice[day].devA = 90; // banked while the first RPC was in flight
+  d.calls[0].held.res({ data: { status: 'ok', rev: 6 } });
+  const out = await p;
+
+  assert.equal(out, 'ok');
+  assert.equal(ctx.ST.get('bloom_reading_dirty_u1'), '1'); // newer snapshot is not acknowledged yet
+});
