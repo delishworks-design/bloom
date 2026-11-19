@@ -3335,11 +3335,13 @@ function safeTop(){
 }
 // @test-end safetop
 safeTopBind();
+// @test-begin fabcalc
 function fabBounds(){
  const W=Math.min(430,innerWidth),l0=(innerWidth-W)/2,r0=l0+W;
  const navTop=innerHeight-88;
  return {l:l0+8,r:r0-FAB_SZ-8,t:safeTop()+70,b:navTop-FAB_SZ};
 }
+// @test-end fabcalc
 function fabPlace(){
  if(!fabEl)return;
  const b=fabBounds();

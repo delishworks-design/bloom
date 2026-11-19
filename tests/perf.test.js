@@ -499,3 +499,44 @@ test('safeTop never repeats DOM creation after the first call', () => {
   ctx.safeTop();
   assert.equal(fx.creates.length, createsBefore, 'probe element is reused across re-measures');
 });
+
+test('settings rendering gate uses hasSafetyCopy and never JSON.parse()s the backup', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const i = html.indexOf('function settingsPage()');
+  assert.ok(i > 0);
+  const end = html.indexOf('function', i + 10);
+  const body = html.slice(i, end);
+  assert.ok(body.includes('hasSafetyCopy(bkMail)'), 'settings gate calls hasSafetyCopy');
+  assert.ok(!/JSON\.parse\(\s*ST\.get\(\s*'bloom_backup_/.test(body), 'settings must not parse the backup at render');
+});
+
+test('fabBounds keeps its original calculations', () => {
+  const ctx = load();
+  ctx.innerWidth = 600; ctx.innerHeight = 900;
+  ctx.FAB_SZ = 58;
+  ctx.safeTop = () => 24;
+  const b = ctx.fabBounds();
+  const W = Math.min(430, 600);
+  const l0 = (600 - W) / 2;
+  const r0 = l0 + W;
+  assert.equal(b.l, l0 + 8);
+  assert.equal(b.r, r0 - 58 - 8);
+  assert.equal(b.t, 24 + 70);
+  assert.equal(b.b, 900 - 88 - 58);
+});
+
+test('flower cache evicts the least recently used entry past 40', () => {
+  const ctx = load();
+  for (let i = 0; i < 40; i++) ctx.smartFlowerSVG('Fill goal ' + i, 0);
+  assert.equal(ctx.smartFlowerCacheSize(), 40);
+  // make Fill goal 0 recently used; Fill goal 1 is now the LRU
+  ctx.smartFlowerSVG('Fill goal 0', 0);
+  ctx.smartFlowerSVG('Fill goal 99', 0);
+  assert.equal(ctx.smartFlowerCacheSize(), 40, 'cache never exceeds 40');
+  const keys = [...ctx.SMART_FLOWER_CACHE.keys()];
+  assert.ok(keys.includes('Fill goal 0|0'), 'recently accessed entry remains cached');
+  assert.ok(!keys.includes('Fill goal 1|0'), 'least recently used entry was evicted');
+  assert.ok(keys.includes('Fill goal 99|0'), 'new entry is cached');
+});
