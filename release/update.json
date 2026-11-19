@@ -1,8 +1,7 @@
 {
-  "versionCode": 201,
-  "versionName": "2.1.0",
-  "url": "https://github.com/delishworks-design/bloom/releases/download/v2.1.0/bloom-2.1.0.apk",
-  "sha256": "bd00e19cc402cf34bc5a347c0f49a450101a3ab9dc531658af9de1a13bf35808",
-  "notes": "Multi-device sync repaired: simultaneous edits merge correctly, deletions no longer resurrect, reading time counts up properly across devices, and partner library updates sync reliably. Partner calendar day number is readable again. Faster startup and a smoother Library.",
+  "versionCode": 202,
+  "versionName": "2.1.1",
+  "url": "https://github.com/delishworks-design/bloom/releases/download/v2.1.1/bloom-2.1.1.apk",
+  "notes": "Quick actions: petals now render on all WebViews; lighter, faster ring with shorter close fallback. Reminder nudges vary and water nudges every 5 min after 1h. Dark-mode reader and recovery fixes.",
   "force": false
 }
