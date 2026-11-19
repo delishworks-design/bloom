@@ -1181,7 +1181,8 @@ function chooseLoginDoc(keep,doc,dirty){
   if(carryRead&&carryRead.log&&Object.keys(carryRead.log).length&&!(out.read&&Object.keys(out.read.log||{}).length))out.read=carryRead;
   return out;
  }
- const merged=mergeDocs(keep,doc);if(carryRead&&carryRead.log&&Object.keys(carryRead.log).length&&!(merged.read&&Object.keys(merged.read.log||{}).length))merged.read=carryRead;return merged;
+ let baseDoc=null;try{const rec=loadAckBase(sbUser&&sbUser.id);if(rec)baseDoc=rec.doc}catch(e){}
+ const merged=baseDoc?mergeDocsThreeWay(baseDoc,keep,doc):mergeDocs(keep,doc);if(carryRead&&carryRead.log&&Object.keys(carryRead.log).length&&!(merged.read&&Object.keys(merged.read.log||{}).length))merged.read=carryRead;return merged;
 }
 function isPlainObject(v){return v!==null&&typeof v==='object'&&!Array.isArray(v)}
 // Deletions made on one device can come back after a merge (no tombstones yet).
@@ -1213,6 +1214,171 @@ function mergeDocs(local,remote){
  if(isPlainObject(out))out.savedAt=Math.max(lt,rt);
  return out;
 }
+// ---- three-way merge used by multi-device sync ------------------------------
+// mergeDocs() above stays untouched: backup import and the first login still
+// rely on its two-document contract. This helper adds the missing baseline,
+// deletion tombstones and durable same-field conflict metadata.
+function syncDeviceId(){try{let v=ST.get('bloom_device_id');if(!v){v='d'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);ST.set('bloom_device_id',v)}return v}catch(e){return 'dev'}}
+function syncIsObj(v){return v!==null&&typeof v==='object'&&!Array.isArray(v)}
+function syncCanon(v){
+ if(Array.isArray(v))return v.map(syncCanon);
+ if(syncIsObj(v)){const o={};Object.keys(v).sort().forEach(k=>{if(k!=='_sync')o[k]=syncCanon(v[k])});return o}
+ return v;
+}
+function syncStr(v){try{return v===undefined?'~undefined':JSON.stringify(syncCanon(v))}catch(e){return String(v)}}
+function syncEq(a,b){return syncStr(a)===syncStr(b)}
+function syncHash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(36)}
+function syncClone(v){try{return v==null?v:JSON.parse(JSON.stringify(v))}catch(e){return v}}
+// Meals are merged as independent records, so every meal needs a stable identity.
+// The hash is content based and repeatable for legacy entries without an id.
+function syncMealIds(doc){
+ try{
+  if(!doc||!syncIsObj(doc.meals))return;
+  Object.keys(doc.meals).forEach(d=>{
+   const arr=doc.meals[d];if(!Array.isArray(arr))return;
+   arr.forEach(m=>{
+    if(!m||typeof m!=='object')return;
+    if(m.id==null||m.id==='')m.id='m'+syncHash(d+'|'+(m.n||m.name||'')+'|'+(m.t||'')+'|'+(m.q==null?'1':m.q)+'|'+(m.ts||m.at||''));
+   });
+  });
+ }catch(e){}
+}
+function syncConflictsOf(doc){const o=doc&&doc._sync;return o&&Array.isArray(o.conflicts)?o.conflicts:[]}
+function syncTombOf(doc){const o=doc&&doc._sync;return o&&syncIsObj(o.tombstones)?o.tombstones:{}}
+function syncMergeMeta(base,local,remote){
+ const byId=new Map();
+ [syncConflictsOf(base),syncConflictsOf(local),syncConflictsOf(remote)].forEach(arr=>arr.forEach(c=>{if(c&&c.id&&!byId.has(c.id))byId.set(c.id,c)}));
+ const tom={};
+ [syncTombOf(base),syncTombOf(local),syncTombOf(remote)].forEach(m=>Object.keys(m).forEach(k=>{
+  const a=tom[k],b=m[k];
+  if(!a||(+((b&&b.t)||0))>(+((a&&a.t)||0)))tom[k]=b;
+ }));
+ return {conflicts:[...byId.values()].slice(-300),tombstones:tom};
+}
+// A same-field edit on both sides has no natural winner. Choose the larger
+// canonical JSON value so every device picks the same one, then keep the loser.
+function syncPickScalar(l,r,path,ctx){
+ const ls=syncStr(l),rs=syncStr(r),win=ls>=rs?l:r;
+ const id='c'+syncHash(path+'|'+ls+'|'+rs);
+ ctx.conflicts.push({id,path,local:l,remote:r,selected:win,at:ctx.now,device:ctx.dev,status:'unresolved'});
+ return win;
+}
+function syncById(arr){
+ if(!Array.isArray(arr))return null;
+ const map=new Map();let ok=true;
+ arr.forEach(x=>{if(!syncIsObj(x)||x.id==null){ok=false;return}map.set(String(x.id),x)});
+ return ok?map:null;
+}
+function syncWalk(b,l,r,path,ctx){
+ if(l===undefined&&r===undefined)return undefined;
+ if(l===undefined){
+  if(b===undefined)return syncClone(r);
+  if(syncEq(b,r)){ctx.tombs[path]={t:ctx.now,device:ctx.dev};return undefined}
+  ctx.conflicts.push({id:'c'+syncHash(path+'|del-l'),path,kind:'delete-edit',local:null,remote:r,selected:r,at:ctx.now,device:ctx.dev,status:'unresolved'});
+  return syncClone(r);
+ }
+ if(r===undefined){
+  if(b===undefined)return syncClone(l);
+  if(syncEq(b,l)){ctx.tombs[path]={t:ctx.now,device:ctx.dev};return undefined}
+  ctx.conflicts.push({id:'c'+syncHash(path+'|del-r'),path,kind:'delete-edit',local:l,remote:null,selected:l,at:ctx.now,device:ctx.dev,status:'unresolved'});
+  return syncClone(l);
+ }
+ if(syncEq(l,r))return syncClone(l);
+ if(syncIsObj(l)&&syncIsObj(r)){
+  const out={};const keys=new Set([...Object.keys(l),...Object.keys(r)]);
+  keys.forEach(k=>{
+   if(k==='_sync')return;
+   const v=syncWalk(syncIsObj(b)?b[k]:undefined,l[k],r[k],path?path+'/'+k:k,ctx);
+   if(v!==undefined)out[k]=v;
+  });
+  return out;
+ }
+ if(Array.isArray(l)&&Array.isArray(r)){
+  const lm=syncById(l),rm=syncById(r),bm=syncById(b);
+  if(lm&&rm){
+   const out=[];const ids=new Set([...lm.keys(),...rm.keys()]);
+   ids.forEach(id=>{
+    const v=syncWalk(bm?bm.get(id):undefined,lm.get(id),rm.get(id),path+'/'+id,ctx);
+    if(v!==undefined)out.push(v);
+   });
+   return out;
+  }
+  if(b!==undefined&&syncEq(l,b))return syncClone(r);
+  if(b!==undefined&&syncEq(r,b))return syncClone(l);
+  const seen=new Set(),out=[];
+  [...r,...l].forEach(x=>{const k=syncStr(x);if(!seen.has(k)){seen.add(k);out.push(syncClone(x))}});
+  return out;
+ }
+ if(b!==undefined&&syncEq(l,b))return syncClone(r);
+ if(b!==undefined&&syncEq(r,b))return syncClone(l);
+ return syncPickScalar(l,r,path||'root',ctx);
+}
+function syncApplyTomb(doc,tombs,conflicts){
+ if(!doc)return;
+ const protectedPaths=new Set(conflicts.filter(c=>c.kind==='delete-edit').map(c=>c.path));
+ Object.keys(tombs).forEach(p=>{
+  if(protectedPaths.has(p))return;
+  const s=p.split('/');
+  if((s[0]==='tasks'||s[0]==='journal')&&s.length===2&&Array.isArray(doc[s[0]]))doc[s[0]]=doc[s[0]].filter(x=>String(x&&x.id)!==s[1]);
+  else if(s[0]==='meals'&&s.length===3&&doc.meals&&Array.isArray(doc.meals[s[1]]))doc.meals[s[1]]=doc.meals[s[1]].filter(x=>String(x&&x.id)!==s[2]);
+  else if(s[0]==='library'&&s[1]==='books'&&s[2]&&doc.library&&doc.library.books&&s.length===3)delete doc.library.books[s[2]];
+  else if(s[0]==='library'&&s[1]==='books'&&s[2]&&s[3]==='hl'&&s[4]&&doc.library&&doc.library.books&&doc.library.books[s[2]]&&Array.isArray(doc.library.books[s[2]].hl))doc.library.books[s[2]].hl=doc.library.books[s[2]].hl.filter(h=>String(h&&h.id)!==s[4]);
+ });
+}
+function mergeDocsThreeWay(base,local,remote){
+ const l=local&&syncIsObj(local)?local:{};
+ const r=remote&&syncIsObj(remote)?remote:{};
+ const b=base&&syncIsObj(base)?base:null;
+ syncMealIds(l);syncMealIds(r);if(b)syncMealIds(b);
+ const meta=syncMergeMeta(b,l,r);
+ const ctx={dev:syncDeviceId(),now:Date.now(),conflicts:[],tombs:{}};
+ let out;
+ if(!b){
+  // No trustworthy base: union both sides, but never infer a deletion from a
+  // key that is merely missing.
+  out=mergeDocs(l,r);
+ }else{
+  const walked=syncWalk(b,l,r,'',ctx);
+  out=syncIsObj(walked)?walked:{};
+ }
+ if(!syncIsObj(out))out={};
+ const conflicts=meta.conflicts.concat(ctx.conflicts);
+ const tombstones=Object.assign({},meta.tombstones,ctx.tombs);
+ syncApplyTomb(out,tombstones,conflicts);
+ out.savedAt=Math.max(+(l.savedAt||0),+(r.savedAt||0),+(b&&b.savedAt||0));
+ out._sync={conflicts:conflicts.slice(-200),tombstones};
+ return out;
+}
+function syncMarkDeleted(doc,path){
+ if(!doc||!path)return;
+ doc._sync=doc._sync||{};
+ doc._sync.tombstones=doc._sync.tombstones||{};
+ doc._sync.tombstones[path]={t:Date.now(),device:syncDeviceId()};
+}
+function syncClearTombstone(doc,path){
+ try{if(doc&&doc._sync&&doc._sync.tombstones)delete doc._sync.tombstones[path]}catch(e){}
+}
+function syncClassifyResponse(data){
+ if(!data||typeof data.status!=='string')return 'unknown';
+ if(data.status==='ok'||data.status==='conflict'||data.status==='forbidden')return data.status;
+ return 'unknown';
+}
+// ---- acknowledged cloud baseline (keyed by Supabase UID, survives reloads) --
+function ackBaseKey(uid){return 'bloom_ack_'+uid}
+function loadAckBase(uid){
+ try{
+  const j=JSON.parse(ST.get(ackBaseKey(uid))||'null');
+  if(!j||!syncIsObj(j.doc))return null;
+  if(uid&&j.doc._uid&&j.doc._uid!==uid)return null;
+  return {rev:+j.rev||0,doc:j.doc};
+ }catch(e){return null}
+}
+function saveAckBase(uid,doc,rev){
+ if(!uid||!syncIsObj(doc))return;
+ if(doc._uid&&doc._uid!==uid)return;
+ try{ST.set(ackBaseKey(uid),JSON.stringify({rev:+rev||0,doc}))}catch(e){}
+}
+function clearAckBase(uid){try{ST.del(ackBaseKey(uid))}catch(e){}}
 // @test-end sync
 // @test-begin library
 // Account-bound library state lives in D.library so it syncs with the rest of the user doc.
@@ -1416,62 +1582,100 @@ async function sbInit(){if(sb)return sb;
 async function sbFetchDoc(uid){if(!sb)return null;const {data,error}=await sb.from('bloom_shared').select('doc').eq('user_id',uid).maybeSingle();if(error){const code=error.code||'';const msg=String(error.message||'');if(code==='42P01'||code==='PGRST205'||msg.includes('bloom_shared')){const old=await sb.from('bloom_data').select('doc,updated_at').eq('user_id',uid).maybeSingle();if(old.error)return null;return old.data?old.data.doc:null}return null}return data?data.doc:null}
 async function sbFetchDocWithRev(uid){if(!sb)return null;const {data,error}=await sb.from('bloom_data').select('doc,rev').eq('user_id',uid).maybeSingle();if(error||!data)return null;return {doc:data.doc,rev:+(data.rev||0)}}
 let sbLastPush='';
-let sbPushing=false,sbPushAgain=false;
+// One shared lock serializes push and pull so they cannot race one another.
+let syncLock=Promise.resolve();
+function syncLocked(fn){const run=()=>Promise.resolve().then(fn);const p=syncLock.then(run,run);syncLock=p.catch(()=>{});return p}
+function persistDoc(){try{ST.set(user?key(user):'bloom_anon',JSON.stringify(D))}catch(e){}}
 function sbScheduleRetry(){if(sbRetryTimer||!sbUser)return;const delays=[15000,30000,60000,120000,300000];const ms=delays[Math.min(Math.max(SYNC.fails-1,0),4)];sbRetryTimer=setTimeout(()=>{sbRetryTimer=null;sbPush()},ms)}
-function sbNoteFailure(e){reportErr('sync.push',e);SYNC.fails++;if(SYNC.fails===3)toast('Cloud sync is having trouble. Your data is safe on this phone.');setSyncState(/fetch|network|ENOTFOUND|ETIMEDOUT|timeout|Failed to fetch/i.test(String(e&&e.message||e))?'offline':'error');sbScheduleRetry()}
-async function sbPush(){if(!sb||!sbUser||RO)return;
- if(D&&D._uid&&D._uid!==sbUser.id){reportErr('sync.guard','refusing to push another account doc');return}
- if(ownMode&&(!D||D._uid!==sbUser.id)){reportErr('sync.guard','own-mode doc has no matching _uid, not pushing');return}
- if(sbPushing){sbPushAgain=true;return}
- sbPushing=true;
- try{
-  const snap=JSON.stringify(D);if(snap===sbLastPush){setSyncState(SYNC.last?'synced':'idle');return}
+function sbNoteFailure(e,ctx){reportErr(ctx||'sync.push',e);SYNC.fails++;if(SYNC.fails===3)toast('Cloud sync is having trouble. Your data is safe on this phone.');setSyncState(/fetch|network|ENOTFOUND|ETIMEDOUT|timeout|Failed to fetch/i.test(String(e&&e.message||e))?'offline':'error');sbScheduleRetry()}
+function sbForbidden(reason){
+ reportErr('sync.forbidden','account/document mismatch'+(reason?': '+reason:''));
+ // Do not retry endlessly and never treat this as success.
+ SYNC.fails=Math.max(SYNC.fails,1);try{ST.set('bloom_sync_forbidden_'+(sbUser&&sbUser.id),String(reason||'uid_mismatch'))}catch(e){}
+ setSyncState('error');
+}
+async function pushMainOnce(){
+ if(!sb||!sbUser||RO)return;
+ const uid=sbUser.id;
+ if(D&&D._uid&&D._uid!==uid){
+  // Our own guard, not the server's: local data belongs to another account.
+  sbForbidden('local _uid mismatch');return;
+ }
+ if(ownMode&&(!D||D._uid!==uid)){reportErr('sync.guard','own-mode doc has no matching _uid, not pushing');return}
  if(navigator.onLine===false){setSyncState('offline');sbScheduleRetry();return}
-  setSyncState('syncing');clearTimeout(sbRetryTimer);sbRetryTimer=null;
-  const res=await sb.rpc('bloom_push_doc',{p_doc:D,p_base_rev:sbRev});
-  if(res&&res.error){
-   const em=String(res.error.message||'');
-   const missing=res.error.code==='PGRST202'||res.error.status===404||/could not find the function/i.test(em);
-   if(missing){
-    const up=await sb.from('bloom_data').upsert({user_id:sbUser.id,doc:D});
-     if(up&&up.error)throw up.error;
-     if(JSON.stringify(D)===snap)setDirtyFlag(0);
-     sbLastPush=snap;setSyncState('synced');return;
-   }
-   throw res.error;
-  }
-  const data=res&&res.data;
-   if(data&&data.status==='ok'){sbRev=+(data.rev||0);saveRev();if(sbLastPush&&SYNC.fails>=3)toast('Back in sync');SYNC.fails=0;if(JSON.stringify(D)===snap)setDirtyFlag(0);sbLastPush=snap;setSyncState('synced');return}
-  if(data&&data.status==='conflict'){
-   backupLocal();
-   D=mergeDocs(D,data.doc||{});sbRev=+(data.rev||0);saveRev();save();
-   if(SYNC.fails>=3){toast('Back in sync');SYNC.fails=0}
-    toast('Merged changes from another device');setSyncState('pending');setTimeout(sbPush,0);return;
-   }
-  }catch(e){sbNoteFailure(e)}finally{sbPushing=false;if(sbPushAgain){sbPushAgain=false;sbPush()}}}
-async function pushProfile(){if(!sb||!sbUser||!D||RO)return;if(D._uid&&D._uid!==sbUser.id)return;const p=D.p||{};
- try{await sb.from('bloom_profiles').upsert({id:sbUser.id,name:p.name||'',avatar:p.avatar||null,goals:p.goals||[]})}catch(e){reportErr('profile.push',e)}}
-function sbPushSoon(){if(!sbUser)return;if(JSON.stringify(D)!==sbLastPush)setSyncState('pending');clearTimeout(sbPushT);sbPushT=setTimeout(sbPush,1200)}
-async function sbPull(){if(!sb||!sbUser||RO||document.hidden)return;
+ const snap=JSON.stringify(D);
+ if(snap===sbLastPush&&loadAckBase(uid)){if(!SYNC.state||SYNC.state==='pending'||SYNC.state==='syncing')setSyncState(SYNC.last?'synced':'idle');return}
+ setSyncState('syncing');clearTimeout(sbRetryTimer);sbRetryTimer=null;
+ let res;
+ try{res=await sb.rpc('bloom_push_doc',{p_doc:D,p_base_rev:sbRev})}
+ catch(e){sbNoteFailure(e,'sync.push');return}
+ if(res&&res.error){
+  const em=String(res.error.message||'');
+  const missing=res.error.code==='PGRST202'||res.error.status===404||/could not find the function/i.test(em);
+  // The RPC is required; never fall back to a blind upsert.
+  if(missing){sbNoteFailure(new Error('bloom_push_doc() is unavailable on this server; your changes stay on this phone'),'sync.push.rpc');return}
+  sbNoteFailure(res.error,'sync.push');return;
+ }
+ const data=res&&res.data;
+ if(!data||typeof data.status!=='string'){sbNoteFailure(new Error('Unexpected sync response'),'sync.push');return}
+ if(data.status==='ok'){
+  sbRev=+(data.rev||0);saveRev();
+  try{saveAckBase(uid,JSON.parse(snap),sbRev)}catch(e){}
+  if(sbLastPush&&SYNC.fails>=3)toast('Back in sync');
+  SYNC.fails=0;sbLastPush=snap;
+  if(JSON.stringify(D)===snap){setDirtyFlag(0);setSyncState('synced')}
+  else{setDirtyFlag(1);setSyncState('pending');setTimeout(()=>sbPush(),0)}
+  return;
+ }
+ if(data.status==='conflict'){
+  backupLocal();
+  const base=loadAckBase(uid);
+  const merged=mergeDocsThreeWay(base?base.doc:null,D,data.doc||{});
+  merged._uid=uid;
+  D=merged;sbRev=+(data.rev||0);saveRev();
+  saveAckBase(uid,data.doc||{},data.rev);
+  persistDoc();setDirtyFlag(1);
+  if(SYNC.fails>=3){toast('Back in sync');SYNC.fails=0}
+  toast('Merged changes from another device');setSyncState('pending');setTimeout(()=>sbPush(),0);return;
+ }
+ if(data.status==='forbidden'){sbForbidden(data.reason);return}
+ sbNoteFailure(new Error('Unexpected sync status: '+data.status),'sync.push');
+}
+async function pullMainOnce(){
+ if(!sb||!sbUser||RO||document.hidden)return;
+ const uid=sbUser.id;
+ if(navigator.onLine===false){setSyncState('offline');return}
+ // Reading progress is part of every regular pull, even when not flagged dirty.
+ try{await readingLoadOnce()}catch(e){reportErr('reading.pull',e)}
  try{
-  // Always reload reading when the local reading is flagged dirty, even if the main doc hasn't changed
-  const readingDirty=(function(){try{return ST.get('bloom_reading_dirty_'+sbUser.id)}catch(e){return null}})();
-  if(readingDirty){try{await readingLoadOnce()}catch(e){reportErr('reading.pull',e)}}
-  const {data,error}=await sb.from('bloom_data').select('rev').eq('user_id',sbUser.id).maybeSingle();
+  const {data,error}=await sb.from('bloom_data').select('rev').eq('user_id',uid).maybeSingle();
   if(error||!data)return;
-  const rev=+(data.rev||0);if(rev<=sbRev)return;
-  if(JSON.stringify(D)!==sbLastPush)return;
-  backupLocal();const row=await sbFetchDocWithRev(sbUser.id);if(!row)return;if(RO)return;
-   if(row.doc&&row.doc._uid&&row.doc._uid!==sbUser.id){reportErr('sync.pull.guard','row belongs to another account');return}
-   if(!docHasContent(row.doc)&&docHasContent(D)){reportErr('sync.pull.guard','ignoring an empty cloud copy');return}
-   const keepRead=D&&D.read;D=Object.assign(blank(),row.doc);if(keepRead&&!(row.doc&&row.doc.read))D.read=keepRead;D._uid=sbUser.id;sbRev=row.rev;saveRev();setDirtyFlag(0);sbLastPush=JSON.stringify(D);
-   try{ST.set(key(user),JSON.stringify(D))}catch(e){}
-   let reloaded=false;
-   try{reloaded=true;readingLoadOnce().then(()=>{if(safeToRender())shell();else sbPendingRender=true}).catch(()=>{if(safeToRender())shell();else sbPendingRender=true})}catch(e){}
-   if(!reloaded){if(safeToRender())shell();else sbPendingRender=true}
- }catch(e){reportErr('sync.pull',e)}}
+  const rev=+(data.rev||0);
+  if(rev<=sbRev)return;
+  backupLocal();const row=await sbFetchDocWithRev(uid);if(!row)return;if(RO)return;
+  if(row.doc&&row.doc._uid&&row.doc._uid!==uid){reportErr('sync.pull.guard','row belongs to another account');setSyncState('error');return}
+  if(!docHasContent(row.doc)&&docHasContent(D)){reportErr('sync.pull.guard','ignoring an empty cloud copy');return}
+  const base=loadAckBase(uid);
+  const merged=mergeDocsThreeWay(base?base.doc:null,D,row.doc||{});
+  merged._uid=uid;
+  D=merged;sbRev=row.rev;saveRev();
+  saveAckBase(uid,row.doc||{},row.rev);
+  persistDoc();
+  if(JSON.stringify(D)!==JSON.stringify(row.doc||{})){setDirtyFlag(1);setSyncState('pending');setTimeout(()=>sbPush(),0)}
+  else{setDirtyFlag(0);sbLastPush=JSON.stringify(D);setSyncState('synced')}
+  if(safeToRender())shell();else sbPendingRender=true;
+ }catch(e){reportErr('sync.pull',e);SYNC.fails++;setSyncState('error')}
+}
+function sbPush(){return syncLocked(pushMainOnce)}
+function sbPushSoon(){if(!sbUser)return;if(JSON.stringify(D)!==sbLastPush)setSyncState('pending');clearTimeout(sbPushT);sbPushT=setTimeout(()=>sbPush(),1200)}
+function sbPull(){return syncLocked(pullMainOnce)}
+function syncTick(){
+ if(!sbUser||document.hidden)return Promise.resolve();
+ if(RO){return ownMode?Promise.resolve():syncLocked(partnerLibRefresh)}
+ return syncLocked(async()=>{await pullMainOnce();await pushMainOnce()})
+}
 function safeToRender(){const sheetEl=document.getElementById('sheet');if(sheetEl&&sheetEl.innerHTML.trim())return false;const a=document.activeElement;return !(a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA'||a.tagName==='SELECT'))}
-function startCloudSync(){if(cloudTimer)clearInterval(cloudTimer);cloudTimer=setInterval(()=>{if(sbUser&&!document.hidden)sbPush()},15000);if(sbPullTimer)clearInterval(sbPullTimer);sbPullTimer=setInterval(sbPull,60000);if(pendRenderTimer)clearInterval(pendRenderTimer);pendRenderTimer=setInterval(()=>{if(sbPendingRender&&safeToRender()){sbPendingRender=false;shell()}},5000)}
+function startCloudSync(){if(cloudTimer)clearInterval(cloudTimer);cloudTimer=setInterval(syncTick,12000);if(sbPullTimer){clearInterval(sbPullTimer);sbPullTimer=null}if(pendRenderTimer)clearInterval(pendRenderTimer);pendRenderTimer=setInterval(()=>{if(sbPendingRender&&safeToRender()){sbPendingRender=false;shell()}},5000)}
 async function sbAfterLoginOnce(u){ownMode=false;ownStash=null;ownLoaded=false;ownLoading=false;sbUser=u;planPanel='mine';peekDoc=null;peekAt=0;pairInfo=null;ownPeerName='';
  const mail=(u.email||'').toLowerCase();
  let cached=J(key(mail),null);
@@ -1623,7 +1827,7 @@ async function enterPartnerMode(owner,code,quiet){
    }).catch(()=>{});
  }catch(e){}
  setSession('p:'+owner);
- if(!window.__navReady)view='cycle';shell();
+ if(!window.__navReady)view='cycle';startCloudSync();shell();
  if(!quiet)toast('Paired \u00b7 following '+(((D.p&&D.p.name)||'your partner')));
  return true}
 async function partnerDropped(){try{libStoreReset()}catch(e){}
@@ -5595,49 +5799,130 @@ async function idbDelete(id){const db=await idbDB();const tx=db.transaction('boo
 
 // account-bound library state lives in D.library and syncs with the user doc
 // @test-begin partnerLibrary
+function libObj(v){return v&&typeof v==='object'&&!Array.isArray(v)?v:{}}
+function libClone(v){try{return v==null?v:JSON.parse(JSON.stringify(v))}catch(e){return v}}
+function libNum(v){const n=+v;return Number.isFinite(n)?n:0}
+function libStamp(o,k){return libNum(o&&o[k])}
+function libBool(rv,lv,rt,lt){
+ if(rt||lt){if(rt>lt)return !!rv;if(lt>rt)return !!lv}
+ return !!(rv||lv); // legacy docs: keep the old OR behaviour
+}
+function libHlId(h){if(!h||typeof h!=='object')return 'h';if(h.id)return String(h.id);return String(h.start||'')+':'+String(h.end||'')+':'+String(h.color||'')}
+function libCleanDoc(doc){
+ const c=libClone(doc&&typeof doc==='object'?doc:{books:{}});
+ if(!c||typeof c!=='object')return {books:{}};
+ if(!libObj(c.books))c.books={};
+ Object.keys(c.books).forEach(id=>{const b=c.books[id];if(b)delete b.dl}); // downloads are device-local
+ return c;
+}
 function libMergeDocs(local,remote){
- const l=local&&typeof local==='object'?local:{books:{}};
- const r=remote&&typeof remote==='object'?remote:{books:{}};
- const lBooks=(l.books||{}),rBooks=(r.books||{});
+ const l=libObj(local),r=libObj(remote);
+ const lBooks=libObj(l.books),rBooks=libObj(r.books);
+ const lDel=libObj(l._del),rDel=libObj(r._del);
+ const delBooks={};
+ [libObj(rDel.books),libObj(lDel.books)].forEach(m=>Object.keys(m).forEach(id=>{
+  const a=delBooks[id],b=m[id];if(!a||libNum(b&&b.t)>libNum(a&&a.t))delBooks[id]=b;
+ }));
+ const delHl={};
+ [libObj(rDel.hl),libObj(lDel.hl)].forEach(m=>Object.keys(m).forEach(bookId=>{
+  const src=libObj(m[bookId]),dst=delHl[bookId]=delHl[bookId]||{};
+  Object.keys(src).forEach(id=>{const a=dst[id],b=src[id];if(!a||libNum(b&&b.t)>libNum(a&&a.t))dst[id]=b});
+ }));
  const books={};
  const all=new Set([...Object.keys(lBooks),...Object.keys(rBooks)]);
  all.forEach(id=>{
-   const a=rBooks[id],b=lBooks[id];
-   if(!a){books[id]=b||{};return}
-   if(!b){books[id]=a;return}
-   const out=Object.assign({}, a, b, {page:Math.max(+b.page||1,+a.page||1), pct:Math.max(+b.pct||0,+a.pct||0), lastRead:Math.max(+b.lastRead||0,+a.lastRead||0)});
-   if(a.finished!==b.finished) out.finished=!!(a.finished||b.finished);
-   if(a.favorite!==b.favorite) out.favorite=!!(a.favorite||b.favorite);
-   if(Array.isArray(a.hl)||Array.isArray(b.hl)){
-     const seen=new Set();const hl=[];
-     [(a.hl||[]),(b.hl||[])].forEach(arr=>arr.forEach(h=>{const k=(h.start||'')+':'+(h.end||'')+':'+(h.color||'');if(!seen.has(k)){seen.add(k);hl.push(h)}}));
-     out.hl=hl.slice(0,200);
-   }
-   books[id]=out;
+  const a=rBooks[id],b=lBooks[id]; // a=remote, b=local
+  if(!a){const o=libClone(b);o.dl=!!b.dl;books[id]=o;return}
+  if(!b){const o=libClone(a);o.dl=false;books[id]=o;return}
+  const out=Object.assign({},libClone(a),libClone(b));
+  out.page=Math.max(libNum(b.page)||1,libNum(a.page)||1);
+  out.pct=Math.max(libNum(b.pct),libNum(a.pct));
+  out.lastRead=Math.max(libNum(b.lastRead),libNum(a.lastRead));
+  out.favorite=libBool(a.favorite,b.favorite,libStamp(a,'favAt'),libStamp(b,'favAt'));
+  out.finished=libBool(a.finished,b.finished,libStamp(a,'finAt'),libStamp(b,'finAt'));
+  out.bookmarked=libBool(a.bookmarked,b.bookmarked,libStamp(a,'bmAt'),libStamp(b,'bmAt'));
+  out.dl=!!b.dl; // this device's download flag, never the remote's
+  // highlights: union by stable id, drop tombstoned ones
+  const arrA=Array.isArray(a.hl)?a.hl:[],arrB=Array.isArray(b.hl)?b.hl:[];
+  const hmap=new Map();
+  arrB.forEach(h=>{if(h)hmap.set(libHlId(h),libClone(h))});
+  arrA.forEach(h=>{if(!h)return;const k=libHlId(h);const cur=hmap.get(k);if(!cur||libStamp(h,'at')>=libStamp(cur,'at'))hmap.set(k,libClone(h))});
+  const hlt=delHl[id]||{};
+  const hl=[];
+  hmap.forEach((h,k)=>{
+   const t=hlt[libHlId(h)];
+   if(t&&libStamp(h,'at')<=libNum(t.t))return; // deleted on one side and not edited afterwards
+   hl.push(h);
+  });
+  out.hl=hl.slice(0,200);
+  books[id]=out;
  });
- return {books};
+ // book deletions: tombstones win unless the surviving copy was edited afterwards
+ Object.keys(delBooks).forEach(id=>{
+  if(!books[id])return;
+  const b=books[id];
+  const touched=Math.max(libNum(b.lastRead),libStamp(b,'favAt'),libStamp(b,'finAt'),libStamp(b,'bmAt'));
+  if(libNum(delBooks[id]&&delBooks[id].t)>touched)delete books[id];
+ });
+ const out={books};
+ if(Object.keys(delBooks).length||Object.keys(delHl).length)out._del={books:delBooks,hl:delHl};
+ return out;
 }
 function libStoreKey(){ if((RO||ROowner||ownMode)&&sbUser&&sbUser.id)return 'bloom_reader_partner_'+sbUser.id; if(user)return 'bloom_reader_u_'+user; return 'bloom_reader_anon'; }
 let roLibCache=null;
 function libStoreReset(){roLibCache=null}
 function libStoreRead(){ const k=libStoreKey(); if(roLibCache&&roLibCache.key===k)return roLibCache.obj; let s=null;try{s=JSON.parse(ST.get(k)||'null')}catch(e){};if(!s||typeof s!=='object')s={books:{}};if(!s.books)s.books={};delete s.articles;roLibCache={key:k,obj:s};return s; }
 function partnerLibKey(uid){ return 'bloom_reader_partner_'+uid; }
-function partnerLibPush(doc){
- if(!sb||!sbUser||!sbUser.id) return Promise.resolve('failed');
- const payload={user_id:sbUser.id, doc:doc, updated_at:new Date().toISOString()};
- return sb.from('bloom_library').upsert(payload, { onConflict:'user_id' }).then(({error})=>{
-   if(error){ try{ST.set('bloom_partner_lib_dirty_'+sbUser.id,'1')}catch(e){} ; return 'failed'; }
-   try{ST.del('bloom_partner_lib_dirty_'+sbUser.id)}catch(e){};
-   return 'ok';
- }).catch(()=>{ try{ST.set('bloom_partner_lib_dirty_'+sbUser.id,'1')}catch(e){} ; return 'failed'; });
+function partnerLibRevKey(uid){ return 'bloom_library_rev_'+uid; }
+function partnerLibRevGet(uid){ try{return +ST.get(partnerLibRevKey(uid))||0}catch(e){return 0} }
+function partnerLibRevSet(uid,rev){ try{ST.set(partnerLibRevKey(uid),String(+rev||0))}catch(e){} }
+function partnerLibMarkDirty(uid){ try{ST.set('bloom_partner_lib_dirty_'+uid,'1')}catch(e){} }
+function partnerLibClearDirty(uid){ try{ST.del('bloom_partner_lib_dirty_'+uid)}catch(e){} }
+async function partnerLibPush(doc){
+ if(!sb||!sbUser||!sbUser.id) return 'failed';
+ const uid=sbUser.id;
+ try{
+  const baseRev=partnerLibRevGet(uid);
+  const res=await sb.rpc('bloom_push_library',{p_doc:libCleanDoc(doc),p_base_rev:baseRev});
+  if(res&&res.error){partnerLibMarkDirty(uid);reportErr('partner.library.push',res.error);return 'failed'}
+  const data=res&&res.data;
+  if(!data||typeof data.status!=='string'){partnerLibMarkDirty(uid);reportErr('partner.library.push','unexpected RPC response');return 'failed'}
+  if(data.status==='ok'){partnerLibRevSet(uid,data.rev);partnerLibClearDirty(uid);return 'ok'}
+  if(data.status==='conflict'){
+   const merged=libMergeDocs(doc,data.doc||{});
+   partnerLibRevSet(uid,data.rev);
+   try{ST.set(libStoreKey(),JSON.stringify(merged))}catch(e){}
+   roLibCache={key:libStoreKey(),obj:merged};
+   const retry=await sb.rpc('bloom_push_library',{p_doc:libCleanDoc(merged),p_base_rev:+(data.rev||0)});
+   if(retry&&retry.data&&retry.data.status==='ok'){partnerLibRevSet(uid,retry.data.rev);partnerLibClearDirty(uid);return 'ok'}
+   partnerLibMarkDirty(uid);reportErr('partner.library.push','conflict retry failed');return 'failed';
+  }
+  if(data.status==='forbidden'){partnerLibMarkDirty(uid);reportErr('partner.library.forbidden',data.reason||'uid mismatch');return 'failed'}
+  partnerLibMarkDirty(uid);reportErr('partner.library.push','unexpected status '+data.status);return 'failed';
+ }catch(e){partnerLibMarkDirty(uid);reportErr('partner.library.push',e);return 'failed';}
 }
-function partnerLibFetch(){
+function partnerLibFetchRow(){
  if(!sb||!sbUser||!sbUser.id) return Promise.resolve(null);
- return sb.from('bloom_library').select('doc').eq('user_id',sbUser.id).maybeSingle()
-   .then(({data,error})=>{
-     if(error) return {error:String(error.message||error)};
-     return data&&data.doc?data.doc:null;
-   }).catch(e=>({error:String(e&&e.message||e)}));
+ return sb.from('bloom_library').select('doc,rev').eq('user_id',sbUser.id).maybeSingle()
+  .then(({data,error})=>{
+   if(error) return {error:String(error.message||error)};
+   return data?{doc:data.doc,rev:+(data.rev||0)}:null;
+  }).catch(e=>({error:String(e&&e.message||e)}));
+}
+function partnerLibFetch(){ return partnerLibFetchRow().then(r=>(r&&r.error)?r:(r?r.doc:null)); }
+async function partnerLibRefresh(){
+ if(!sb||!sbUser||!sbUser.id||!RO||ownMode)return 'skipped';
+ const row=await partnerLibFetchRow();
+ if(!row||row.error)return 'failed';
+ const local=libStoreRead();
+ const merged=libMergeDocs(local,row.doc||{});
+ try{ST.set(libStoreKey(),JSON.stringify(merged))}catch(e){}
+ roLibCache={key:libStoreKey(),obj:merged};
+ partnerLibRevSet(sbUser.id,row.rev);
+ if(JSON.stringify(merged)!==JSON.stringify(row.doc||{})){await partnerLibPush(merged)}
+ else {partnerLibClearDirty(sbUser.id)}
+ try{if(view==='library'&&safeToRender())shell();else if(view==='library')sbPendingRender=true}catch(e){}
+ return 'ok';
 }
 function libStoreWrite(s){ try{ST.set(libStoreKey(),JSON.stringify(s))}catch(e){}; if((RO||ROowner)&&sbUser&&sbUser.id){ partnerLibPush(s).then(r=>{}); } }
 // @test-end partnerLibrary
@@ -5655,9 +5940,9 @@ function libBook(id){
 }
 function libEntry(id){try{const L=libEnsure();return (L&&L.books&&L.books[id])||null}catch(e){return null}}
 function libAddBook(id){const b=libBook(id);b.added=b.added||Date.now();save();return b}
-function libToggleFavorite(id){const b=libBook(id);b.favorite=!b.favorite;save();return b.favorite}
+function libToggleFavorite(id){const b=libBook(id);b.favorite=!b.favorite;b.favAt=Date.now();save();return b.favorite}
 function libMarkDl(id,v){const b=libBook(id);b.dl=!!v;save()}
-function libDel(id){const L=libEnsure();if(!L.books[id])return false;delete L.books[id];save();return true}
+function libDel(id){const L=libEnsure();if(!L.books[id])return false;delete L.books[id];syncMarkDeleted(D&&!RO?D:null,'library/books/'+id);try{if(RO){L._del=L._del||{};L._del.books=L._del.books||{};L._del.books[id]={t:Date.now(),device:syncDeviceId()}}}catch(e){}save();return true}
 const dlProg={};
 function dlChipHTML(id,entry){
  const pct=dlProg[id];
@@ -5674,29 +5959,82 @@ function updateDlChip(id){
  el.outerHTML=dlChipHTML(id,entry);
 }
 // @test-begin readingSync
-function readingMerge(local,remote){
- const l=(local&&typeof local==='object')?local:{};
- const r=(remote&&typeof remote==='object')?remote:{};
- const validMin=n=>[1,2,5,10,15,30].includes(+n);
- const validYear=n=>[1,3,6,12,24,50].includes(+n);
- const goalMin=validMin(r.goalMin)?+r.goalMin:(validMin(l.goalMin)?+l.goalMin:5);
- const goalBooks=validYear(r.goalBooks)?+r.goalBooks:(validYear(l.goalBooks)?+l.goalBooks:1);
+// Reading progress uses per-device cumulative counters:
+//   logByDevice[date][deviceId] = cumulative seconds recorded by that device
+//   legacyLog[date]             = one-time baseline migrated from the old log[date]
+// Displayed seconds = legacy baseline + sum of all device counters.
+function readDeviceId(){try{let v=ST.get('bloom_device_id');if(!v){v='d'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);ST.set('bloom_device_id',v)}return v}catch(e){return 'dev'}}
+function readValidMin(n){return [1,2,5,10,15,30].includes(+n)}
+function readValidYear(n){return [1,3,6,12,24,50].includes(+n)}
+function readObj(v){return v&&typeof v==='object'&&!Array.isArray(v)?v:{}}
+function readNum(v){const n=+v;return Number.isFinite(n)&&n>0?n:0}
+function readShape(o){
+ const s=readObj(o);
+ const by={};
+ const srcBy=readObj(s.logByDevice);
+ Object.keys(srcBy).forEach(d=>{const devs=readObj(srcBy[d]);const out={};Object.keys(devs).forEach(k=>{const n=readNum(devs[k]);if(n)out[k]=n});if(Object.keys(out).length)by[d]=out});
+ const legacy={};
+ Object.keys(readObj(s.legacyLog)).forEach(d=>{const n=readNum(s.legacyLog[d]);if(n)legacy[d]=n});
+ if(!Object.keys(srcBy).length){
+  // One-time migration: the old log[date] total becomes the baseline. Both
+  // devices migrate to the same max, so nothing is double counted.
+  Object.keys(readObj(s.log)).forEach(d=>{const n=readNum(s.log[d]);if(n)legacy[d]=Math.max(legacy[d]||0,n)});
+ }
+ const finished={};Object.keys(readObj(s.finished)).forEach(k=>{const n=readNum(s.finished[k]);if(n)finished[k]=n});
+ const unfinished={};Object.keys(readObj(s.unfinished)).forEach(k=>{const n=readNum(s.unfinished[k]);if(n)unfinished[k]=n});
+ // A newer explicit unfinished stamp beats an older finished stamp.
+ Object.keys(unfinished).forEach(k=>{
+  if(finished[k]>unfinished[k])delete unfinished[k];
+  else delete finished[k];
+ });
  const log={};
- const lLog=(l.log&&typeof l.log==='object')?l.log:{};
- const rLog=(r.log&&typeof r.log==='object')?r.log:{};
- [...new Set([...Object.keys(lLog),...Object.keys(rLog)])].forEach(k=>{log[k]=Math.max(+lLog[k]||0,+rLog[k]||0)});
- const finished={};
- const lFin=(l.finished&&typeof l.finished==='object')?l.finished:{};
- const rFin=(r.finished&&typeof r.finished==='object')?r.finished:{};
- [...new Set([...Object.keys(lFin),...Object.keys(rFin)])].forEach(k=>{finished[k]=Math.max(+lFin[k]||0,+rFin[k]||0)});
- return {goalMin,goalBooks,log,finished};
+ const days=new Set([...Object.keys(legacy),...Object.keys(by)]);
+ days.forEach(d=>{let t=legacy[d]||0;Object.keys(by[d]||{}).forEach(k=>{t+=by[d][k]});if(t>0)log[d]=t});
+ const goalMin=readValidMin(s.goalMin)?+s.goalMin:5;
+ const goalBooks=readValidYear(s.goalBooks)?+s.goalBooks:1;
+ return {s,by,legacy,log,finished,unfinished,goalMin,goalBooks,goalMinAt:readNum(s.goalMinAt),goalBooksAt:readNum(s.goalBooksAt)};
+}
+function readGoalPick(l,r,key,valid,def,atKey){
+ const lv=valid(l[key])?+l[key]:undefined,rv=valid(r[key])?+r[key]:undefined;
+ const la=readNum(l[atKey]),ra=readNum(r[atKey]);
+ if(lv===undefined&&rv===undefined)return {v:def,at:Math.max(la,ra)};
+ if(lv===undefined)return {v:rv,at:ra};
+ if(rv===undefined)return {v:lv,at:la};
+ if(ra>la)return {v:rv,at:ra};
+ if(la>ra)return {v:lv,at:la};
+ return {v:rv,at:ra}; // deterministic tie-break, matching the old remote preference
+}
+function readingMerge(local,remote){
+ const l=readShape(local),r=readShape(remote);
+ const by={};
+ const dates=new Set([...Object.keys(l.by),...Object.keys(r.by)]);
+ dates.forEach(d=>{
+  const devs={};const a=l.by[d]||{},b=r.by[d]||{};
+  new Set([...Object.keys(a),...Object.keys(b)]).forEach(k=>{devs[k]=Math.max(a[k]||0,b[k]||0)});
+  by[d]=devs;
+ });
+ const legacy={};
+ new Set([...Object.keys(l.legacy),...Object.keys(r.legacy)]).forEach(d=>{legacy[d]=Math.max(l.legacy[d]||0,r.legacy[d]||0)});
+ const log={};
+ const days=new Set([...Object.keys(legacy),...Object.keys(by)]);
+ days.forEach(d=>{let t=legacy[d]||0;Object.keys(by[d]||{}).forEach(k=>{t+=by[d][k]});if(t>0)log[d]=t});
+ const finished={},unfinished={};
+ new Set([...Object.keys(l.finished),...Object.keys(r.finished)]).forEach(k=>{finished[k]=Math.max(l.finished[k]||0,r.finished[k]||0)});
+ new Set([...Object.keys(l.unfinished),...Object.keys(r.unfinished)]).forEach(k=>{unfinished[k]=Math.max(l.unfinished[k]||0,r.unfinished[k]||0)});
+ Object.keys(unfinished).forEach(k=>{
+  if(finished[k]>unfinished[k])delete unfinished[k];
+  else delete finished[k];
+ });
+ const gm=readGoalPick(l.s,r.s,'goalMin',readValidMin,5,'goalMinAt');
+ const gb=readGoalPick(l.s,r.s,'goalBooks',readValidYear,1,'goalBooksAt');
+ return {goalMin:gm.v,goalBooks:gb.v,goalMinAt:gm.at,goalBooksAt:gb.at,log,logByDevice:by,legacyLog:legacy,finished,unfinished};
 }
 function readingDocFromD(){
- const r=readNormalize(D);
- const finished=Object.assign({},(D&&D.read&&D.read.finished&&typeof D.read.finished==='object')?D.read.finished:{});
+ const shape=readShape(D&&D.read);
+ const finished=Object.assign({},shape.finished);
  const books=(D&&D.library&&D.library.books)||{};
  Object.keys(books).forEach(id=>{const b=books[id];if(b&&b.finished&&+b.finishedAt&&(!finished[id]||+b.finishedAt>finished[id]))finished[id]=+b.finishedAt});
- return {goalMin:r.goalMin,goalBooks:r.goalBooks,log:r.log,finished};
+ return {goalMin:shape.goalMin,goalBooks:shape.goalBooks,goalMinAt:shape.goalMinAt,goalBooksAt:shape.goalBooksAt,log:shape.log,logByDevice:shape.by,legacyLog:shape.legacy,finished,unfinished:shape.unfinished};
 }
 function roReadKey(){return 'bloom_reading_partner_'+((sbUser&&sbUser.id)||'')}
 function roIsFollower(){return !!(RO&&!ownMode&&D&&sbUser&&sbUser.id)}
@@ -5705,8 +6043,8 @@ function roAdoptReading(){
  if(!roIsFollower())return;
  if(D.__ownRead)return;
  let c=null;try{c=JSON.parse(ST.get(roReadKey())||'null')}catch(e){}
- const n=readNormalize({read:(c&&typeof c==='object')?c:{}});
- D.read={goalMin:n.goalMin,goalBooks:n.goalBooks,log:n.log,finished:(c&&c.finished&&typeof c.finished==='object')?c.finished:{}};
+ const n=readShape(c&&typeof c==='object'?c:{});
+ D.read={goalMin:n.goalMin,goalBooks:n.goalBooks,goalMinAt:n.goalMinAt,goalBooksAt:n.goalBooksAt,log:n.log,logByDevice:n.by,legacyLog:n.legacy,finished:n.finished,unfinished:n.unfinished};
  try{Object.defineProperty(D,'__ownRead',{value:true,enumerable:false,configurable:true,writable:true})}catch(e){}
 }
 function roCacheReading(){
@@ -5716,35 +6054,52 @@ function roCacheReading(){
 function applyReadingDoc(doc){
  if(!D)return;
  if(!doc||typeof doc!=='object')return;
- D.read={
-   goalMin:[1,2,5,10,15,30].includes(+doc.goalMin)?+doc.goalMin:5,
-   goalBooks:[1,3,6,12,24,50].includes(+doc.goalBooks)?+doc.goalBooks:1,
-   log:(doc.log&&typeof doc.log==='object')?doc.log:{},
-   finished:(doc.finished&&typeof doc.finished==='object')?doc.finished:{}
- };
- const finished=D.read.finished;
+ const m=readingMerge(doc,{});
+ D.read={goalMin:m.goalMin,goalBooks:m.goalBooks,goalMinAt:m.goalMinAt,goalBooksAt:m.goalBooksAt,log:m.log,logByDevice:m.logByDevice,legacyLog:m.legacyLog,finished:m.finished,unfinished:m.unfinished};
+ const finished=D.read.finished,unfinished=D.read.unfinished;
  const books=(D.library&&D.library.books)||{};
- Object.keys(books).forEach(id=>{const b=books[id];if(b&&b.finished&&finished[id]&&(!b.finishedAt||+b.finishedAt<finished[id]))b.finishedAt=finished[id]});
+ Object.keys(books).forEach(id=>{
+  const b=books[id];if(!b)return;
+  if(finished[id]){b.finished=true;if(!b.finishedAt||+b.finishedAt<finished[id])b.finishedAt=finished[id]}
+  else if(unfinished[id]){b.finished=false;delete b.finishedAt}
+ });
 }
-function readingFetch(){
+function readingRevKey(uid){return 'bloom_reading_rev_'+uid}
+function readingRevGet(uid){try{return +ST.get(readingRevKey(uid))||0}catch(e){return 0}}
+function readingRevSet(uid,rev){try{ST.set(readingRevKey(uid),String(+rev||0))}catch(e){}}
+function readingMarkDirty(uid){try{ST.set('bloom_reading_dirty_'+uid,'1')}catch(e){}}
+function readingClearDirty(uid){try{ST.del('bloom_reading_dirty_'+uid)}catch(e){}}
+function readingFetchRow(){
  if(!sb||!sbUser||!sbUser.id)return Promise.resolve(null);
- return sb.from('bloom_reading').select('doc').eq('user_id',sbUser.id).maybeSingle()
-  .then(({data,error})=>error?{error:String(error.message||error)}:(data&&data.doc?data.doc:null))
+ return sb.from('bloom_reading').select('doc,rev').eq('user_id',sbUser.id).maybeSingle()
+  .then(({data,error})=>error?{error:String(error.message||error)}:(data?{doc:data.doc,rev:+(data.rev||0)}:null))
   .catch(e=>({error:String(e&&e.message||e)}));
 }
+function readingFetch(){return readingFetchRow().then(r=>(r&&r.error)?r:(r?r.doc:null))}
 async function readingPush(doc){
  if(!sb||!sbUser||!sbUser.id)return 'failed';
  const uid=sbUser.id;
  try{
-  // never overwrite blindly: read the cloud copy first and keep the larger value per day
-  const remote=await readingFetch();
-  if(remote&&remote.error){try{ST.set('bloom_reading_dirty_'+uid,'1')}catch(e){};reportErr('reading.push.fetch',remote.error);return 'failed'}
-  const merged=remote?Object.assign({},readingMerge(doc,remote),{goalMin:doc.goalMin,goalBooks:doc.goalBooks,finished:doc.finished||{}}):doc;
-  const res=await sb.from('bloom_reading').upsert({user_id:uid,doc:merged,updated_at:new Date().toISOString()},{onConflict:'user_id'});
-  if(res&&res.error){try{ST.set('bloom_reading_dirty_'+uid,'1')}catch(e){};reportErr('reading.push',res.error);return 'failed'}
-  try{ST.del('bloom_reading_dirty_'+uid)}catch(e){}
-  return 'ok';
- }catch(e){try{ST.set('bloom_reading_dirty_'+uid,'1')}catch(e2){};reportErr('reading.push',e);return 'failed'}
+  const baseRev=readingRevGet(uid);
+  const res=await sb.rpc('bloom_push_reading',{p_doc:doc,p_base_rev:baseRev});
+  if(res&&res.error){readingMarkDirty(uid);reportErr('reading.push',res.error);return 'failed'}
+  const data=res&&res.data;
+  if(!data||typeof data.status!=='string'){readingMarkDirty(uid);reportErr('reading.push','unexpected RPC response');return 'failed'}
+  if(data.status==='ok'){readingRevSet(uid,data.rev);readingClearDirty(uid);return 'ok'}
+  if(data.status==='conflict'){
+   const merged=readingMerge(doc,data.doc||{});
+   readingRevSet(uid,data.rev);
+   const retry=await sb.rpc('bloom_push_reading',{p_doc:merged,p_base_rev:+(data.rev||0)});
+   if(retry&&retry.data&&retry.data.status==='ok'){
+    readingRevSet(uid,retry.data.rev);readingClearDirty(uid);
+    if(!RO){applyReadingDoc(merged);persistDoc()}
+    return 'ok';
+   }
+   readingMarkDirty(uid);reportErr('reading.push','conflict retry failed');return 'failed';
+  }
+  if(data.status==='forbidden'){readingMarkDirty(uid);reportErr('reading.push.forbidden',data.reason||'uid mismatch');return 'failed'}
+  readingMarkDirty(uid);reportErr('reading.push','unexpected status '+data.status);return 'failed';
+ }catch(e){readingMarkDirty(uid);reportErr('reading.push',e);return 'failed'}
 }
 let readingPushT=null;
 function saveReading(){
@@ -5756,15 +6111,24 @@ function saveReading(){
 }
 async function readingLoadOnce(){
  if(!sb||!sbUser||!sbUser.id)return;
+ const uid=sbUser.id;
  roAdoptReading();
- const remote=await readingFetch();
- if(remote&&remote.error){try{ST.set('bloom_reading_dirty_'+sbUser.id,'1')}catch(e){};reportErr('reading.fetch',remote.error);return}
- if(!remote){const l0=readingDocFromD();if(Object.keys(l0.log||{}).length||Object.keys(l0.finished||{}).length)saveReading();return}
+ const row=await readingFetchRow();
+ if(row&&row.error){readingMarkDirty(uid);reportErr('reading.fetch',row.error);return}
+ if(!row){
+  const l0=readingDocFromD();
+  if(Object.keys(l0.log||{}).length||Object.keys(l0.finished||{}).length)saveReading();
+  return;
+ }
+ const remote=row.doc||{};
  const local=readingDocFromD();
  const merged=readingMerge(local,remote);
  applyReadingDoc(merged);
- if(RO)roCacheReading();else save();
- try{ST.del('bloom_reading_dirty_'+sbUser.id)}catch(e){}
+ if(RO)roCacheReading();else if(typeof persistDoc==='function')persistDoc();
+ readingRevSet(uid,row.rev);
+ readingClearDirty(uid);
+ // push the merged (and possibly upgraded) shape back if it differs from the cloud
+ if(JSON.stringify(merged)!==JSON.stringify(remote))saveReading();
 }
 // @test-end readingSync
 // @test-begin readingGoal
@@ -5781,8 +6145,12 @@ function booksThisYear(books,year){
  return ids.size;
 }
 // @test-end readingGoal
-function libMarkFinished(id,v){const b=libBook(id);b.finished=!!v;if(v){b.pct=100;b.finishedAt=Date.now()}else{delete b.finishedAt}
- try{D.read=D.read||{};D.read.finished=D.read.finished||{};if(v)D.read.finished[id]=b.finishedAt;else delete D.read.finished[id]}catch(e){}
+function libMarkFinished(id,v){const b=libBook(id);b.finished=!!v;b.finAt=Date.now();if(v){b.pct=100;b.finishedAt=b.finAt}else{delete b.finishedAt}
+ try{
+  D.read=D.read||{};D.read.finished=D.read.finished||{};D.read.unfinished=D.read.unfinished||{};
+  if(v){D.read.finished[id]=b.finishedAt;delete D.read.unfinished[id]}
+  else{delete D.read.finished[id];D.read.unfinished[id]=b.finAt}
+ }catch(e){}
  save();saveReading()}
 function libTouchPage(id,page,total){
  const b=libBook(id);b.page=Math.max(1,+page||1);b.pct=Math.min(100,Math.max(0,Math.round(100*(b.page/Math.max(1,+total||1)))));b.lastRead=Date.now();save()}
@@ -5837,8 +6205,8 @@ function readGoalSheet(){
  <div class="rg-goalchips" role="group" aria-label="Yearly goal">${yearN.map(n=>`<button class="rg-chip${n===r.goalBooks?' on':''}" data-year="${n}">${n}</button>`).join('')}</div>
  <div class="rg-slots">${slots.join('')}</div>
  <p class="meta" style="margin:10px 0 0">Tap a finished book to open it. Empty slots show how many books are left in your goal.</p>`);
- document.querySelectorAll('[data-rg]').forEach(b=>b.onclick=()=>{D.read=Object.assign({goalMin:5,goalBooks:1,log:{}},(D.read||{}));D.read.goalMin=+b.dataset.rg;save();saveReading();sheet();readGoalSheet();library()});
- document.querySelectorAll('[data-year]').forEach(b=>b.onclick=()=>{D.read=Object.assign({goalMin:5,goalBooks:1,log:{}},(D.read||{}));D.read.goalBooks=+b.dataset.year;save();saveReading();sheet();readGoalSheet();library()});
+ document.querySelectorAll('[data-rg]').forEach(b=>b.onclick=()=>{D.read=Object.assign({goalMin:5,goalBooks:1,log:{}},(D.read||{}));D.read.goalMin=+b.dataset.rg;D.read.goalMinAt=Date.now();save();saveReading();sheet();readGoalSheet();library()});
+ document.querySelectorAll('[data-year]').forEach(b=>b.onclick=()=>{D.read=Object.assign({goalMin:5,goalBooks:1,log:{}},(D.read||{}));D.read.goalBooks=+b.dataset.year;D.read.goalBooksAt=Date.now();save();saveReading();sheet();readGoalSheet();library()});
  document.querySelectorAll('[data-rgbook]').forEach(b=>b.onclick=()=>{const id=b.dataset.rgbook;sheet();openBook(id)});
 }
 function readCardHTML(){
@@ -6241,10 +6609,19 @@ function addHighlight(color){
  const range=sel.getRangeAt(0);if(!body.contains(range.commonAncestorContainer))return;
  const pre=document.createRange();pre.selectNodeContents(body);pre.setEnd(range.startContainer,range.startOffset);
  const start=pre.toString().length,text=range.toString();const end=start+text.length;
- const list=getHighlights(pdfBookId);const id='h'+Date.now().toString(36);
- list.push({id,start,end,text,color:color||'#FFD966',page:pdfPage});setHighlights(pdfBookId,list);sel.removeAllRanges();renderBookPage(true)
+ const list=getHighlights(pdfBookId);const id='h'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+ list.push({id,start,end,text,color:color||'#FFD966',page:pdfPage,at:Date.now()});setHighlights(pdfBookId,list);sel.removeAllRanges();renderBookPage(true)
 }
-function removeHighlight(id){const list=getHighlights(pdfBookId).filter(h=>h.id!==id);setHighlights(pdfBookId,list);renderBookPage(true)}
+function removeHighlight(id){
+ const b=libEntry(pdfBookId);
+ const gone=b&&Array.isArray(b.hl)?b.hl.find(h=>h.id===id):null;
+ const list=getHighlights(pdfBookId).filter(h=>h.id!==id);setHighlights(pdfBookId,list);
+ // keep the deletion visible to other devices
+ try{
+  if(RO){const L=libEnsure();L._del=L._del||{};L._del.hl=L._del.hl||{};L._del.hl[pdfBookId]=Object.assign(L._del.hl[pdfBookId]||{},{[id]:{t:Date.now(),device:syncDeviceId()}})}
+  syncMarkDeleted(D&&!RO?D:null,'library/books/'+pdfBookId+'/hl/'+id);
+ }catch(e){}
+ renderBookPage(true)}
 function maybeOfferFinished(id,totalPages){
  try{const key='bloom_finish_'+id,seen=sessionStorage.getItem(key);if(seen)return}catch(e){}
  if(pdfPage<totalPages)return;
@@ -6502,12 +6879,21 @@ function readerOnResize(){if(pdfDoc&&pdfMode!=='canvas')layoutTextPage(true)}
 function bankReadingMs(msDelta){
  if(!(msDelta>100))return;
  if(!window.__readBank)return;
+ const sec=Math.round(msDelta/1000);if(!sec)return;
  const d=today();
+ const dev=readDeviceId();
  const D_=D||{};
- D_.read=Object.assign({goalMin:5,goalBooks:1,log:{}},(D_.read||{}));
- const log=Object.assign({},D_.read.log||{});
- log[d]=(+log[d]||0)+Math.round(msDelta/1000);
- D_.read=Object.assign({},D_.read,{log});save();saveReading();
+ const r=D_.read||{};
+ // make sure the legacy baseline has been migrated before incrementing our own counter
+ const shape=readShape(r);
+ const by=Object.assign({},shape.by);
+ const legacy=Object.assign({},shape.legacy);
+ by[d]=Object.assign({},by[d]||{});
+ by[d][dev]=(by[d][dev]||0)+sec;
+ const log={};
+ const days=new Set([...Object.keys(legacy),...Object.keys(by)]);
+ days.forEach(k=>{let t=legacy[k]||0;Object.keys(by[k]||{}).forEach(dk=>{t+=by[k][dk]});if(t>0)log[k]=t});
+ D_.read=Object.assign({},r,{log,logByDevice:by,legacyLog:legacy});save();saveReading();
 }
 function readingTick(){
  if(!window.__readBank||document.hidden)return;
@@ -6694,8 +7080,13 @@ async function doDeleteAll(){
  // before touching the phone, otherwise the data would simply come back.
  if(cl&&sbUser){
   D=blank();
-  try{const {error}=await cl.from('bloom_data').upsert({user_id:sbUser.id,doc:D});
-   if(error)return toast('Could not reach the cloud \u2014 nothing was deleted')}
+  try{
+   // compare-and-set like everything else; a fresh rev is fetched first
+   let base=0;try{const row=await sbFetchDocWithRev(sbUser.id);if(row)base=+row.rev||0}catch(e){}
+   let res=await cl.rpc('bloom_push_doc',{p_doc:D,p_base_rev:base});
+   if(res&&res.data&&res.data.status==='conflict'){res=await cl.rpc('bloom_push_doc',{p_doc:D,p_base_rev:+res.data.rev||0})}
+   if(!(res&&res.data&&res.data.status==='ok'))return toast('Could not reach the cloud \u2014 nothing was deleted')
+  }
   catch(e){return toast('Could not reach the cloud \u2014 nothing was deleted')}
    try{await cl.from('bloom_profiles').upsert({id:sbUser.id,name:'',avatar:null,goals:[]})}catch(e){reportErr('profile.delete',e)}
   }
@@ -7232,13 +7623,13 @@ function splashPlay(replay){
 }
 // called by the native layer when the app comes back to the foreground
 window.__bloomResume=(awayMs)=>{try{widgetConsume()}catch(e){}try{widgetSync()}catch(e){}if(splashPlaying||!splashShouldShow(awayMs))return;splashPlay(true)};
-window.addEventListener('online',()=>{try{ST.set('bloom_net','1')}catch(e){}sbInit().then(()=>{if(sbUser&&!RO){sbPush();sbPull();startCloudSync()}});setTimeout(()=>checkUpdate(false),800)});
+window.addEventListener('online',()=>{try{ST.set('bloom_net','1')}catch(e){}sbInit().then(()=>{if(sbUser){startCloudSync();if(RO){if(!ownMode)partnerLibRefresh()}else{sbPush();sbPull()}}});setTimeout(()=>checkUpdate(false),800)});
 window.addEventListener('offline',()=>{try{ST.set('bloom_net','0')}catch(e){}if(!document.getElementById('authForm'))return;const e=document.getElementById('err');if(e&&!e.textContent){e.textContent=OFFLINE_MSG;e.classList.add('on')}});
 window.addEventListener('online',()=>{const e=document.getElementById('err');if(document.getElementById('authForm')&&e&&e.textContent===OFFLINE_MSG){e.textContent='';e.classList.remove('on')}});
 // called by the native layer when the app goes to the background
 window.__bloomBg=()=>splashBgMark();
 // @test-end splash
-document.addEventListener('visibilitychange',()=>{if(document.hidden){splashBgMark();try{saveNav()}catch(e){}}else{try{widgetConsume()}catch(e){}try{widgetSync()}catch(e){}if(sbUser&&!RO)sbPull()}});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){splashBgMark();try{saveNav()}catch(e){}}else{try{widgetConsume()}catch(e){}try{widgetSync()}catch(e){}if(sbUser){if(RO){if(!ownMode)syncLocked(partnerLibRefresh)}else sbPull()}}});
 // Auto-refresh: re-render the open page every 60s (day flip, counts, clock). Skipped when hidden or unsafe to re-render.
 if(window.__autoRefreshTimer)clearInterval(window.__autoRefreshTimer);
 window.__autoRefreshTimer=setInterval(()=>{if(document.hidden)return;try{if(safeToRender())shell()}catch(e){}},60000);

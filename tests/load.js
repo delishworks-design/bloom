@@ -51,7 +51,7 @@ function load() {
 
   const exportsByName = {
     esc: ['E'],
-    sync: ['isPlainObject', 'mergeDocs', 'chooseLoginDoc', 'docHasContent'],
+    sync: ['isPlainObject', 'mergeDocs', 'chooseLoginDoc', 'docHasContent', 'mergeDocsThreeWay', 'syncDeviceId', 'syncMarkDeleted', 'syncClassifyResponse'],
     library: ['libEnsure', 'libBookEntry', 'libBlank', 'libVisibleIds', 'libRecentList', 'migrateLibrary'],
     classicCover: ['coverHash','coverLines','escXml','classicCoverSVG'],
     netmsg: ['errText', 'isOffline', 'OFFLINE_MSG'],

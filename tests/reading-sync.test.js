@@ -82,3 +82,72 @@ test('applyReadingDoc copies finishedAt onto library books', () => {
   ctx.applyReadingDoc({ goalMin: 5, goalBooks: 1, log: {}, finished: { b1: 999 } });
   assert.equal(ctx.D.library.books.b1.finishedAt, 999);
 });
+
+test('simultaneous reading increments on two devices are summed, not maxed', () => {
+  const { readingMerge } = load();
+  const base = { goalMin: 5, goalBooks: 1, log: { '2026-11-18': 30 } };
+  // legacy 30s already recorded. Device A records another 60s; device B records another 60s independently.
+  const devA = readingMerge(base, { legacyLog: { '2026-11-18': 30 }, logByDevice: { '2026-11-18': { devA: 60 } } });
+  const devB = readingMerge(base, { legacyLog: { '2026-11-18': 30 }, logByDevice: { '2026-11-18': { devB: 60 } } });
+  const merged = readingMerge(devA, devB);
+  assert.equal(merged.log['2026-11-18'], 150); // 30 legacy + 60 A + 60 B
+  assert.equal(merged.logByDevice['2026-11-18'].devA, 60);
+  assert.equal(merged.logByDevice['2026-11-18'].devB, 60);
+});
+
+test('retrying the same device counter does not double-count seconds', () => {
+  const { readingMerge } = load();
+  const doc = { goalMin: 5, goalBooks: 1, legacyLog: { '2026-11-18': 30 }, logByDevice: { '2026-11-18': { devA: 90 } } };
+  const once = readingMerge(doc, {});
+  const twice = readingMerge(once, doc);
+  assert.equal(twice.log['2026-11-18'], 120); // legacy 30 + this device's 90, not doubled
+  assert.equal(JSON.stringify(once), JSON.stringify(twice));
+});
+
+test('legacy log snapshots from two devices are not summed twice', () => {
+  const { readingMerge } = load();
+  const a = { goalMin: 5, goalBooks: 1, log: { '2026-11-17': 120, '2026-11-18': 60 } };
+  const b = { goalMin: 5, goalBooks: 1, log: { '2026-11-17': 120, '2026-11-18': 60 } };
+  const merged = readingMerge(a, b);
+  assert.equal(merged.log['2026-11-17'], 120);
+  assert.equal(merged.log['2026-11-18'], 60);
+});
+
+test('an older explicit unfinished stamp beats a stale finished flag', () => {
+  const { readingMerge } = load();
+  const merged = readingMerge(
+    { goalMin: 5, goalBooks: 1, finished: {}, unfinished: { b1: 500 } },
+    { goalMin: 5, goalBooks: 1, finished: { b1: 100 } }
+  );
+  assert.equal(merged.finished.b1, undefined);
+  assert.equal(merged.unfinished.b1, 500);
+  // and a stale snapshot that still says "finished" cannot resurrect it either
+  const again = readingMerge(merged, { goalMin: 5, goalBooks: 1, finished: { b1: 100 } });
+  assert.equal(again.finished.b1, undefined);
+});
+
+test('a newer finished stamp beats an older unfinished stamp', () => {
+  const { readingMerge } = load();
+  const merged = readingMerge(
+    { goalMin: 5, goalBooks: 1, finished: { b1: 700 } },
+    { goalMin: 5, goalBooks: 1, unfinished: { b1: 200 } }
+  );
+  assert.equal(merged.finished.b1, 700);
+  assert.equal(merged.unfinished.b1, undefined);
+});
+
+test('goals merge deterministically by their own timestamps', () => {
+  const { readingMerge } = load();
+  const olderRemote = readingMerge(
+    { goalMin: 10, goalBooks: 12, goalMinAt: 5000, goalBooksAt: 5000, log: {} },
+    { goalMin: 30, goalBooks: 24, goalMinAt: 100, goalBooksAt: 100, log: {} }
+  );
+  assert.equal(olderRemote.goalMin, 10);   // newer local wins
+  assert.equal(olderRemote.goalBooks, 12);
+  const newerRemote = readingMerge(
+    { goalMin: 10, goalBooks: 12, goalMinAt: 100, goalBooksAt: 100, log: {} },
+    { goalMin: 30, goalBooks: 24, goalMinAt: 5000, goalBooksAt: 5000, log: {} }
+  );
+  assert.equal(newerRemote.goalMin, 30);   // newer remote wins
+  assert.equal(newerRemote.goalBooks, 24);
+});

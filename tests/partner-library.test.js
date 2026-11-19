@@ -63,3 +63,66 @@ test('libStoreWrite dispatches cloud write only for partner mode with sbUser', (
   ctx.libStoreWrite({ books: {} });
   assert.equal(pushed, 1);
 });
+
+test('a newer unfavorite beats a stale favorite', () => {
+  const ctx = fresh();
+  const local = { books: { a: { page: 1, favorite: false, favAt: 200 } } };
+  const remote = { books: { a: { page: 1, favorite: true, favAt: 100 } } };
+  const merged = ctx.libMergeDocs(local, remote);
+  assert.equal(merged.books.a.favorite, false);
+});
+
+test('a newer mark-unfinished beats a stale finished flag', () => {
+  const ctx = fresh();
+  const local = { books: { a: { page: 80, pct: 100, finished: false, finAt: 300 } } };
+  const remote = { books: { a: { page: 80, pct: 100, finished: true, finAt: 100 } } };
+  const merged = ctx.libMergeDocs(local, remote);
+  assert.equal(merged.books.a.finished, false);
+});
+
+test('a deleted book does not reappear from a stale snapshot', () => {
+  const ctx = fresh();
+  const local = { books: {}, _del: { books: { gone: { t: 400 } } } };
+  const remote = { books: { gone: { page: 1, pct: 0, lastRead: 0, favorite: false, finished: false } } };
+  const merged = ctx.libMergeDocs(local, remote);
+  assert.equal(merged.books.gone, undefined);
+});
+
+test('a deleted book survives even when the stale copy looks newer by page', () => {
+  const ctx = fresh();
+  const local = { books: {}, _del: { books: { gone: { t: 5000 } } } };
+  const remote = { books: { gone: { page: 9, pct: 40, lastRead: 100, favorite: false, finished: false } } };
+  const merged = ctx.libMergeDocs(local, remote);
+  assert.equal(merged.books.gone, undefined);
+});
+
+test('an edit after the tombstone keeps the book', () => {
+  const ctx = fresh();
+  const local = { books: { keep: { page: 9, pct: 40, lastRead: 9000, favorite: false } }, _del: { books: { keep: { t: 5000 } } } };
+  const remote = { books: {} };
+  const merged = ctx.libMergeDocs(local, remote);
+  assert.equal(merged.books.keep.page, 9);
+});
+
+test('highlights from both devices are retained by their stable ids', () => {
+  const ctx = fresh();
+  const local = { books: { a: { page: 1, hl: [{ id: 'h1', start: 1, end: 9, text: 'x', color: '#FFD966', at: 10 }] } } };
+  const remote = { books: { a: { page: 1, hl: [{ id: 'h2', start: 20, end: 30, text: 'y', color: '#FFD966', at: 20 }] } } };
+  const merged = ctx.libMergeDocs(local, remote);
+  assert.deepEqual(Array.from(merged.books.a.hl, h => h.id).sort(), ['h1', 'h2']);
+});
+
+test('a deleted highlight does not reappear from a stale snapshot', () => {
+  const ctx = fresh();
+  const local = { books: { a: { page: 1, hl: [] } }, _del: { hl: { a: { h1: { t: 500 } } } } };
+  const remote = { books: { a: { page: 1, hl: [{ id: 'h1', start: 1, end: 9, text: 'x', at: 100 }] } } };
+  const merged = ctx.libMergeDocs(local, remote);
+  assert.equal(merged.books.a.hl.length, 0);
+});
+
+test('a downloaded-file flag from another device is not adopted', () => {
+  const ctx = fresh();
+  const remote = { books: { a: { page: 1, dl: true, lastRead: 0 } } };
+  const merged = ctx.libMergeDocs({ books: {} }, remote);
+  assert.equal(merged.books.a.dl, false);
+});
