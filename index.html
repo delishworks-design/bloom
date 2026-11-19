@@ -3435,7 +3435,7 @@ function openQuickRing(fab,onAct){
  const artSize=2*(R+72);
  const art=`<svg class="qaring-art" viewBox="${-(R+72)} ${-(R+72)} ${artSize} ${artSize}" style="width:${artSize}px;height:${artSize}px" aria-hidden="true"><defs><path id="qaringPet" d="${PET}"/></defs><g class="qaring-art-g">${items.map((it,i)=>{
   const aDeg=i*60,odd=(i%2)===1;
-  return `<g transform="rotate(${aDeg})"><use href="#qaringPet" class="petal-back${odd?' odd':''}" transform="translate(0 ${-R}) scale(1.12)"/><use href="#qaringPet" class="petal-fill${odd?' odd':''}" transform="translate(0 ${-R})"/></g>`;
+  return `<g transform="rotate(${aDeg})"><use xlink:href="#qaringPet" class="petal-back${odd?' odd':''}" transform="translate(0 ${-R}) scale(1.12)"/><use xlink:href="#qaringPet" class="petal-fill${odd?' odd':''}" transform="translate(0 ${-R})"/></g>`;
  }).join('')}</g></svg>`;
  const buttons=items.map((it,i)=>{
   const a=(-90+i*60)*Math.PI/180,rot=-90+i*60+90;

@@ -294,3 +294,11 @@ test('quick ring opens with shared SVG artwork and six transparent interaction b
   assert.equal(useCount, 12, 'six petals two layers each');
   assert.equal((html.match(/class="qaring-item"/g) || []).length, 6, 'six accessible action buttons');
 });
+
+test('shared artwork uses xlink:href for broad WebView compatibility', async () => {
+  const ctx = await openCloseHarness();
+  const fab = makeFab();
+  ctx.openQuickRing(fab, a => {});
+  const html = ctx.document.getElementById('qaring').innerHTML;
+  assert.ok(html.includes('xlink:href="#qaringPet"'), 'use elements reference PET via xlink:href');
+});
