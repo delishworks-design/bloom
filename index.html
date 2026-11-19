@@ -5805,10 +5805,63 @@ const LIB_BOOKS=[
  {id:'endocrine',title:'Endocrine Basics',author:'Bloom Health',pages:64,sizeMB:1.6,cover:'assets/library/endocrine.jpg',url:''}
 ];
 const LIB_REMOTE='https://raw.githubusercontent.com/delishworks-design/bloom/main/library.json';
-function libCached(){try{const j=JSON.parse(ST.get('bloom_library')||'null');if(j&&Array.isArray(j.books)&&j.books.length)return j.books}catch(e){}return LIB_BOOKS}
+// @test-begin perf
+// In-memory catalog cache: parsed once; the 472 KB file is never JSON.parse()d per lookup.
+let LIB_CATALOG=null;
+let LIB_SEARCH_CACHE=new Map();
+// fallbacks keep this marker self-sufficient when extracted on its own for tests
+const LIB_CATALOG_FALLBACK=(typeof LIB_BOOKS!=='undefined'&&Array.isArray(LIB_BOOKS))?LIB_BOOKS:[{id:'pcos101',title:'PCOS/PMOS 101',author:'Bloom Health',pages:88,sizeMB:2.4,cover:'assets/library/pcos101.jpg',url:''},{id:'pelvicpain',title:'Pelvic Pain',author:'Bloom Health',pages:76,sizeMB:1.9,cover:'assets/library/pelvicpain.jpg',url:''},{id:'endocrine',title:'Endocrine Basics',author:'Bloom Health',pages:64,sizeMB:1.6,cover:'assets/library/endocrine.jpg',url:''}];
+const LIB_REMOTE_EFFECTIVE=(typeof LIB_REMOTE!=='undefined')?LIB_REMOTE:'https://raw.githubusercontent.com/delishworks-design/bloom/main/library.json';
+function validCatalog(j){
+ if(!j||!Array.isArray(j.books)||!j.books.length)return false;
+ return j.books.every(b=>b&&typeof b.id==='string'&&b.id&&typeof b.title==='string');
+}
+function libCached(){
+ if(LIB_CATALOG)return LIB_CATALOG;
+ try{const j=JSON.parse(ST.get('bloom_library')||'null');if(validCatalog(j)){LIB_CATALOG=j.books;return LIB_CATALOG}}catch(e){}
+ LIB_CATALOG=LIB_CATALOG_FALLBACK;return LIB_CATALOG;
+}
+function libSearchText(b){
+ const k=String((b&&b.id)||'');let v=LIB_SEARCH_CACHE.get(k);
+ if(!v){v=[b.title,b.author,b.category||''].join(' ').toLowerCase();LIB_SEARCH_CACHE.set(k,v)}
+ return v;
+}
+// Debounce helpers take the latest call only, so a fast typist never loses the final input.
+function libDebounce(fn,ms){let t=null;return function(v){if(t)clearTimeout(t);t=setTimeout(()=>{t=null;fn(v)},ms)}}
+function maybeRefreshLibrary(){
+ try{
+  const last=+ST.get('bloom_lib_fetched_at')||0;
+  if(Date.now()-last<12*3600*1000)return;
+  ST.set('bloom_lib_fetched_at',String(Date.now()));
+  refreshLibrary().catch(()=>{});
+ }catch(e){}
+}
+async function refreshLibrary(){
+ try{
+  const etag=ST.get('bloom_lib_etag');
+  const headers=etag?{'If-None-Match':etag}:{};
+  const r=await fetch(LIB_REMOTE_EFFECTIVE,{headers});
+  if(r.status===304){try{ST.set('bloom_lib_fetched_at',String(Date.now()))}catch(e){}return}
+  if(!r.ok)return;
+  const j=await r.json();
+  if(!validCatalog(j))return; // never overwrite a valid cache with malformed data
+  const nextEtag=r.headers&&r.headers.get?r.headers.get('etag'):null;
+  try{if(nextEtag)ST.set('bloom_lib_etag',nextEtag)}catch(e){}
+  const curRaw=ST.get('bloom_library');
+  const changed=!curRaw||curRaw!==JSON.stringify(j);
+  try{ST.set('bloom_library',JSON.stringify(j))}catch(e){}
+  try{ST.set('bloom_lib_fetched_at',String(Date.now()))}catch(e){}
+  LIB_CATALOG=j.books; // replace the in-memory copy atomically
+  LIB_SEARCH_CACHE=new Map();
+  if(changed){
+   try{if(typeof BOOKCARD_CACHE!=='undefined')BOOKCARD_CACHE.clear()}catch(e){}
+   if(view==='library'&&safeToRender())library();
+  }
+ }catch(e){}
+}
+// @test-end perf
 function escCss(u){return String(u||'').replace(/["'\)\s]/g,'')}
 function escCssUrl(u){return String(u||'').replace(/["'\)\s]/g,'')}
-async function refreshLibrary(){try{const r=await fetch(LIB_REMOTE+'?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const j=await r.json();if(j&&Array.isArray(j.books)&&j.books.length){ST.set('bloom_library',JSON.stringify(j));if(view==='library')library()}}catch(e){}}
 function idbPromise(req){return new Promise((res,rej)=>{req.onsuccess=()=>res(req.result);req.onerror=()=>rej(req.error)})}
 async function idbDB(){const req=indexedDB.open('bloom',1);req.onupgradeneeded=()=>{try{if(!req.result.objectStoreNames.contains('books'))req.result.createObjectStore('books')}catch(e){}};return idbPromise(req)}
 async function idbGet(id){const db=await idbDB();const tx=db.transaction('books','readonly');const st=tx.objectStore('books');return idbPromise(st.get(id))}
@@ -6320,7 +6373,8 @@ function library(){
  if(mine){
   const rc=document.getElementById('readGoalCard');if(rc)rc.onclick=()=>readGoalSheet();
   const ls=document.getElementById('ls');
-  if(ls)ls.oninput=e=>{libSearch=e.target.value;renderBookList()};
+  if(ls){const applySearch=v=>{libSearch=v;renderBookList()};ls.oninput=e=>{const v=e.target.value;if(window.__libSearchT)clearTimeout(window.__libSearchT);window.__libSearchT=setTimeout(()=>{window.__libSearchT=null;applySearch(v)},180)}}
+  maybeRefreshLibrary();
   renderBookList();return;
  }
  renderStore()}
@@ -6338,7 +6392,7 @@ function renderBookList(){const el=document.getElementById('lb');
  if(!el)return;
  const q=String(libSearch||'').trim().toLowerCase();
  const L=libEnsure();
- const all=libCached().filter(b=>!q||[b.title,b.author,b.category||''].join(' ').toLowerCase().includes(q));
+ const all=libCached().filter(b=>!q||libSearchText(b).includes(q));
  const inLib=all.filter(b=>L.books[b.id]);
  const nAll=inLib.length,nFav=inLib.filter(b=>L.books[b.id].favorite).length,nRead=inLib.filter(b=>!L.books[b.id].finished).length,nFin=nAll-nRead;
  const head=q?'':libContinueHTML();
@@ -6368,8 +6422,17 @@ const RECO_CATS={'PCOS/PMOS':1,"Women's Health":1,'Health':1,'Endocrine':1,'Pain
 const storeCard=b=>bookcardHTML(b,libEntry(b.id),true);
 const storeRow=(id,title,seeall)=>`<div class="store-row"><div class="store-row-h"><p class="lib-sub" style="margin:0">${title}</p>${seeall?`<button type="button" class="store-seeall" data-seeall="${id}">See all</button>`:''}</div><div class="store-track" id="${id}Track"></div></div>`;
 function showStoreSheet(title,books){
- sheet(`<h2>${E(title)}</h2><p class="meta" style="margin:0">${books.length} ${books.length===1?'book':'books'}</p><div class="bookgrid" id="storeSheetGrid">${books.map(storeCard).join('')}</div>`);
+ const PAGE=60;
+ let shown=Math.min(PAGE,books.length);
+ const moreLabel=()=>'Show more ('+(books.length-shown)+' more)';
+ sheet(`<h2>${E(title)}</h2><p class="meta" style="margin:0 0 8px">${books.length} ${books.length===1?'book':'books'}</p><div class="bookgrid" id="storeSheetGrid">${books.slice(0,shown).map(storeCard).join('')}</div>${books.length>shown?'<button type="button" class="btn ghost" id="storeMore" style="width:100%;margin-top:10px">'+moreLabel()+'</button>':''}`);
  const grid=document.getElementById('storeSheetGrid');if(grid)bindStoreCards(grid);
+ const more=document.getElementById('storeMore');
+ if(more)more.onclick=()=>{
+  const prev=shown;shown=Math.min(shown+PAGE,books.length);
+  if(grid){grid.insertAdjacentHTML('beforeend',books.slice(prev,shown).map(storeCard).join(''));bindStoreCards(grid)}
+  if(shown>=books.length)more.remove();else more.textContent=moreLabel();
+ };
 }
 function renderStore(){
  const el=document.getElementById('store');if(!el)return;
@@ -6410,11 +6473,13 @@ function bindStoreCards(scope){
   b.addEventListener('contextmenu',e=>e.preventDefault());
   b.addEventListener('click',()=>{clearTimeout(timer);if(added)openBook(id);else showExploreSheet(id)})})}
 function libFilterLabel(){return libFilter==='favorites'?'Favorites':libFilter==='reading'?'Reading':libFilter==='finished'?'Finished':'My library'}
+// @test-begin libfilter
 function applyLibFilter(inLib,L){
  if(libFilter==='favorites')return inLib.filter(b=>L.books[b.id].favorite);
  if(libFilter==='reading')return inLib.filter(b=>!L.books[b.id].finished);
  if(libFilter==='finished')return inLib.filter(b=>L.books[b.id].finished);
  return inLib}
+// @test-end libfilter
 const GENRE_CLASS={'Pcos/PMOs':'PCOSPMOS','PCOS/PMOS':'PCOSPMOS',Pain:'Pain',Endocrine:'Endocrine',Classic:'Classic',Gothic:'Gothic',Horror:'Horror',Mystery:'Mystery',Adventure:'Adventure','Science Fiction':'ScienceFiction',Children:'Children',Fantasy:'Fantasy',Philosophy:'Philosophy','Short Stories':'ShortStories',Poetry:'Poetry',Psychology:'Psychology','Emotional Wellbeing':'EmotionalWellbeing','Women\u2019s Health':'WomensHealth',"Women's Health":'WomensHealth',Health:'Health',Fiction:'Fiction',Other:'Other'};
 function genrePill(cat){const c=cat||'Other';const k=GENRE_CLASS[c]||'Other';return `<span class="card-genre g-${k}" aria-hidden="true">${E(c)}</span>`}
 // @test-begin classicCover
@@ -7715,7 +7780,7 @@ window.__bloomBg=()=>splashBgMark();
 document.addEventListener('visibilitychange',()=>{if(document.hidden){splashBgMark();try{saveNav()}catch(e){}}else{try{widgetConsume()}catch(e){}try{widgetSync()}catch(e){}if(sbUser){if(RO){if(!ownMode)syncLocked(partnerLibRefresh)}else sbPull()}}});
 // Auto-refresh: re-render the open page every 60s (day flip, counts, clock). Skipped when hidden or unsafe to re-render.
 if(window.__autoRefreshTimer)clearInterval(window.__autoRefreshTimer);
-window.__autoRefreshTimer=setInterval(()=>{if(document.hidden)return;try{if(safeToRender())shell()}catch(e){}},60000);
+window.__autoRefreshTimer=setInterval(()=>{if(document.hidden)return;if(view==='library')return;try{if(safeToRender())shell()}catch(e){}},60000);
 window.addEventListener('pagehide',()=>splashBgMark());
 window.addEventListener('beforeunload',()=>splashBgMark());
 
@@ -7725,7 +7790,11 @@ function backfillMeals(){try{if(!D||!D.meals)return;let fix=0;
   arr.forEach(x=>{const m=MEALS.find(k=>k.n===x.n);if(m&&x.t!==m.t){x.t=m.t;fix++}})}
  if(fix){save()}}catch(e){}}
 async function probeNet(){
- try{const c=new AbortController();const t=setTimeout(()=>c.abort(),3500);const r=await fetch(LIB_REMOTE+'?t='+Date.now(),{cache:'no-store',signal:c.signal});clearTimeout(t);try{ST.set('bloom_net',r.ok?'1':'0')}catch(e){}return !!r;}catch(e){try{ST.set('bloom_net','0')}catch(e){}return false}
+ // cheap round-trip: any answered request proves connectivity; the body is never downloaded
+ try{const c=new AbortController();const t=setTimeout(()=>c.abort(),3500);
+  const r=await fetch(SB.url+'/auth/v1/health',{method:'HEAD',cache:'no-store',signal:c.signal});
+  clearTimeout(t);try{ST.set('bloom_net','1')}catch(e){}return true;
+ }catch(e){try{ST.set('bloom_net','0')}catch(e){}return false}
 }
 // boot without a live session (offline / failed token refresh): render the cached copy
 // @test-begin boot
@@ -7784,12 +7853,13 @@ const s=getSession();
  // update check runs for everyone, signed in or not
  setTimeout(()=>{try{checkUpdate(false)}catch(e){}},2400);
  setTimeout(()=>{try{if(!ST.get('bloom_lib_sync_v1')){migrateLibrary(D);ST.set('bloom_lib_sync_v1','1')}}catch(e){}},1200);
- setTimeout(()=>{try{refreshLibrary()}catch(e){}},1500);
+ // render the saved copy immediately, then validate connectivity in the background;
+ // a slow or missing network must never gate the cached app on the login screen
+ if(!(s&&String(s).indexOf('p:')===0)&&localSessionBoot(s))return;
  // reachability probe: navigator.onLine lies in WebViews, and a stuck token-refresh loop
  // would strand the app on the login screen. Trust nothing but a real round-trip.
  const reachable=await probeNet();
  if(!(s&&String(s).indexOf('p:')===0)&&(isOffline()||!reachable)){
-  if(localSessionBoot(s))return;
   authView('in');
   try{splashSkip()}catch(e){}
   return;

@@ -57,6 +57,9 @@ function load() {
     esc: ['E'],
     sync: ['isPlainObject', 'mergeDocs', 'chooseLoginDoc', 'docHasContent', 'mergeDocsThreeWay', 'syncDeviceId', 'syncMarkDeleted', 'syncClassifyResponse', 'syncMealIds'],
     library: ['libEnsure', 'libBookEntry', 'libBlank', 'libVisibleIds', 'libRecentList', 'migrateLibrary'],
+    libfilter: ['applyLibFilter'],
+    perf: ['libCached', 'refreshLibrary', 'libDebounce', 'libSearchText', 'validCatalog', 'maybeRefreshLibrary'],
+    boot: ['localSessionBoot'],
     classicCover: ['coverHash','coverLines','escXml','classicCoverSVG'],
     netmsg: ['errText', 'isOffline', 'OFFLINE_MSG'],
     roWho: ['roWho'],
@@ -78,7 +81,7 @@ function load() {
     libraryExplore: ['exploreGroups', 'exploreOrder', 'exploreDefaultCategory', 'exploreBooks'],
     bloomcal: ['calContinueBtn', 'calMonthsHTML', 'predictedBleedWindows'],
   };
-  for (const name of ['phases', 'esc', 'sync', 'netmsg', 'roWho', 'sxmig', 'backup', 'smart', 'auth', 'ownmode', 'widget', 'planui', 'library', 'reader', 'errorIgnore', 'partnerLibrary', 'plannerAdvance', 'readingGoal', 'readingSync', 'bloomcal', 'libraryExplore', 'focusVoice', 'classicCover']) {
+  for (const name of ['phases', 'esc', 'sync', 'netmsg', 'roWho', 'sxmig', 'backup', 'smart', 'auth', 'ownmode', 'widget', 'planui', 'library', 'reader', 'errorIgnore', 'partnerLibrary', 'plannerAdvance', 'readingGoal', 'readingSync', 'bloomcal', 'libraryExplore', 'focusVoice', 'classicCover', 'perf', 'boot', 'libfilter']) {
     let code;
     try{ code = extract(html, name); }catch(e){ if(name==='auth') continue; throw e; }
     const names = exportsByName[name];
