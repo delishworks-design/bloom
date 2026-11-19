@@ -59,6 +59,8 @@ function load() {
     library: ['libEnsure', 'libBookEntry', 'libBlank', 'libVisibleIds', 'libRecentList', 'migrateLibrary'],
     libfilter: ['applyLibFilter'],
     perf: ['libCached', 'refreshLibrary', 'refreshLibraryOnce', 'libDebounce', 'libSearchText', 'validCatalog', 'maybeRefreshLibrary', 'libRefreshTimeoutSet'],
+    settingsBack: ['hasSafetyCopy', 'restoreSafetyCopy'],
+    safetop: ['safeTop', 'safeTopBind', 'safeTopInvalidate'],
     storebinding: ['bindStoreCards'],
     boot: ['localSessionBoot'],
     classicCover: ['coverHash','coverLines','escXml','classicCoverSVG'],
@@ -67,7 +69,7 @@ function load() {
     sxmig: ['migrateCustomSymptoms'],
     backup: ['makeBackup', 'validateBackup'],
     phases: ['phaseInfo'],
-    smart: ['smartPredictionHistory', 'smartCurrentCycle', 'smartCurrentCycleFromHistory', 'smartHistoricalPhaseFor', 'smartPatternsFromLogs', 'smartInsightsHTML', 'smartPatternsHTML', 'smartPhaseInsight', 'smartProgress', 'smartInsightsExtras', 'smartComingUp', 'smartWeekCompare', 'smartActiveGoals', 'smartGoalFocus', 'smartWeekFacts', 'smartWeekTemplate', 'smartWeekValidate', 'smartWeekAllowedNumbers', 'smartWeekHTML', 'smartWeekCompareHTML', 'smartComingUpHTML', 'dashboardCycle', 'clearLegacySmartAIStorage', 'smartCTAFor', 'smartCTALabel', 'smartKnowledgeFor', 'smartWeekVariantIndex', 'smartEvidenceRegistry', 'smartWeekProse', 'smartFocusHTML', 'smartGoalProgress', 'smartStage', 'smartFocusName', 'smartKnowledgeProse', 'smartNextProse', 'smartNextStep', 'smartSymptomAdvice', 'smartEmptyPatternLine', 'smartPlainPhase'],
+    smart: ['smartPredictionHistory', 'smartCurrentCycle', 'smartCurrentCycleFromHistory', 'smartHistoricalPhaseFor', 'smartPatternsFromLogs', 'smartInsightsHTML', 'smartPatternsHTML', 'smartPhaseInsight', 'smartProgress', 'smartInsightsExtras', 'smartComingUp', 'smartWeekCompare', 'smartActiveGoals', 'smartGoalFocus', 'smartWeekFacts', 'smartWeekTemplate', 'smartWeekValidate', 'smartWeekAllowedNumbers', 'smartWeekHTML', 'smartWeekCompareHTML', 'smartComingUpHTML', 'dashboardCycle', 'clearLegacySmartAIStorage', 'smartCTAFor', 'smartCTALabel', 'smartKnowledgeFor', 'smartWeekVariantIndex', 'smartEvidenceRegistry', 'smartWeekProse', 'smartFocusHTML', 'smartGoalProgress', 'smartStage', 'smartFocusName', 'smartKnowledgeProse', 'smartNextProse', 'smartNextStep', 'smartSymptomAdvice', 'smartEmptyPatternLine', 'smartPlainPhase', 'smartFlowerSVG', 'smartFlowerSVGRaw', 'SMART_FLOWER_SPECIES', 'smartFlowerCacheSize'],
     auth: ['logout', 'wipeLocalData', 'pwIssue', 'confirmLogout', 'isDisposableEmail', 'EMAIL_RE', 'DISPOSABLE_DOMAINS'],
     ownmode: ['seedOwnDoc', 'ownTasksDedupe', 'ownClonesFilter'],
     reader: ['lineGroup', 'blocksOfItems', 'readerSerialize', 'readerBlocksAcross', 'filterReaderLines', 'lineTextJoin', 'readerIsUnfinished', 'readerContinuationStart', 'nextLeadingPrefix', 'h3GroupLength'],
@@ -82,7 +84,7 @@ function load() {
     libraryExplore: ['exploreGroups', 'exploreOrder', 'exploreDefaultCategory', 'exploreBooks'],
     bloomcal: ['calContinueBtn', 'calMonthsHTML', 'predictedBleedWindows'],
   };
-  for (const name of ['phases', 'esc', 'sync', 'netmsg', 'roWho', 'sxmig', 'backup', 'smart', 'auth', 'ownmode', 'widget', 'planui', 'library', 'reader', 'errorIgnore', 'partnerLibrary', 'plannerAdvance', 'readingGoal', 'readingSync', 'bloomcal', 'libraryExplore', 'focusVoice', 'classicCover', 'perf', 'boot', 'libfilter', 'storebinding']) {
+  for (const name of ['phases', 'esc', 'sync', 'netmsg', 'roWho', 'sxmig', 'backup', 'smart', 'auth', 'ownmode', 'widget', 'planui', 'library', 'reader', 'errorIgnore', 'partnerLibrary', 'plannerAdvance', 'readingGoal', 'readingSync', 'bloomcal', 'libraryExplore', 'focusVoice', 'classicCover', 'perf', 'boot', 'libfilter', 'storebinding', 'settingsBack', 'safetop']) {
     let code;
     try{ code = extract(html, name); }catch(e){ if(name==='auth') continue; throw e; }
     const names = exportsByName[name];

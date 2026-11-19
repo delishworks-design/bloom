@@ -373,3 +373,129 @@ test('successful and 304 attempts both clear the watchdog so immediate retries w
   const r2 = await ctx.refreshLibrary();
   assert.equal(r2, 'fresh'); // not pinned by a stale watchdog
 });
+
+test('hasSafetyCopy: non-empty backup, missing backup, empty backup, and no JSON parsing', () => {
+  const ctx = load();
+  ctx.ST.set('bloom_backup_a@b.c', '{"not valid":"json either"');
+  ctx.ST.set('bloom_backup_empty@b.c', '');
+  ctx.JSON = Object.assign(Object.create(JSON), { parse() { throw new Error('settings must not parse'); } });
+  assert.equal(ctx.hasSafetyCopy('a@b.c'), true);
+  assert.equal(ctx.hasSafetyCopy('missing@b.c'), false);
+  assert.equal(ctx.hasSafetyCopy('empty@b.c'), false);
+  assert.equal(ctx.hasSafetyCopy(''), false);
+});
+
+test('restoreSafetyCopy rejects an invalid backup', () => {
+  const ctx = load();
+  ctx.user = 'a@b.c'; ctx.sbUser = null;
+  ctx.D = { sentinel: true }; ctx.save = () => {}; ctx.shell = () => {}; ctx.blank = () => ({});
+  const toasts = []; ctx.toast = m => toasts.push(m);
+  ctx.ST.set('bloom_backup_a@b.c', '{"tasks":5}'); // not a valid Bloom backup
+  const sheetHtmls = [];
+  ctx.sheet = html => { sheetHtmls.push(html); };
+  const handlers = {};
+  ctx.$ = sel => ({ set onclick(fn) { handlers[sel] = fn; }, get onclick() { return handlers[sel]; } });
+  ctx.restoreSafetyCopy();
+  assert.equal(sheetHtmls.length, 1, 'settings offers restore for any non-empty backup');
+  handlers['#rsGo'](); // user actually attempts the restore
+  assert.deepEqual(ctx.D, { sentinel: true }); // data untouched
+  assert.ok(toasts.length >= 1, 'an error or explanation is toasted');
+  assert.match(String(toasts.join(' ')), /tasks/);
+});
+
+test('restoreSafetyCopy reports a corrupt backup without opening the restore UI', () => {
+  const ctx = load();
+  ctx.user = 'a@b.c'; ctx.sbUser = null;
+  ctx.D = { sentinel: true }; ctx.save = () => {}; ctx.shell = () => {}; ctx.blank = () => ({});
+  const toasts = []; ctx.toast = m => toasts.push(m);
+  ctx.ST.set('bloom_backup_a@b.c', '{not json at all}');
+  ctx.restoreSafetyCopy();
+  assert.deepEqual(ctx.D, { sentinel: true });
+  assert.ok(toasts.includes('No safety copy found'));
+});
+
+test('flower SVG is cached; different goals/stages generate; cache is capped; cached equals raw', () => {
+  const ctx = load();
+  const before = ctx.smartFlowerCacheSize();
+  const a1 = ctx.smartFlowerSVG('Understand my cycle', 2);
+  assert.equal(ctx.smartFlowerCacheSize(), before + 1);
+  const a2 = ctx.smartFlowerSVG('Understand my cycle', 2);
+  assert.equal(a2, a1);
+  assert.equal(ctx.smartFlowerCacheSize(), before + 1); // no growth on hit
+  assert.notEqual(ctx.smartFlowerSVG('Understand my cycle', 3), a1);
+  assert.notEqual(ctx.smartFlowerSVG('Move more', 2), a1);
+  for (let i = 0; i < 60; i++) ctx.smartFlowerSVG('Extra goal ' + i, 0);
+  assert.ok(ctx.smartFlowerCacheSize() <= 40, 'cache never exceeds 40 entries');
+  assert.equal(ctx.smartFlowerSVG('Understand my cycle', 2), ctx.smartFlowerSVGRaw('Understand my cycle', 2));
+});
+
+function safeTopFixture(initialHeight) {
+  const h = { current: initialHeight };
+  const reads = [];
+  const creates = [];
+  const listeners = {};
+  const el = { style: {}, parentNode: null, remove() { this.parentNode = null; } };
+  Object.defineProperty(el, 'offsetHeight', { get() { reads.push(h.current); return h.current; } });
+  const ctx_window = { addEventListener(type, fn) { (listeners[type] = listeners[type] || []).push(fn); }, visualViewport: { addEventListener(type, fn) { (listeners['vv:' + type] = listeners['vv:' + type] || []).push(fn); } } };
+  const doc = { createElement(tag) { creates.push(tag); return el; }, body: { appendChild(el_) { el_.parentNode = {}; } } };
+  return { h, reads, creates, listeners, el, win: ctx_window, doc };
+}
+
+test('safeTop measures once, caches, and reuses the cached height', () => {
+  const ctx = load();
+  const fx = safeTopFixture(34);
+  ctx.document = fx.doc; ctx.window = fx.win;
+  assert.equal(ctx.safeTop(), 34);
+  assert.equal(fx.reads.length, 1);
+  assert.equal(ctx.safeTop(), 34);
+  assert.equal(ctx.safeTop(), 34);
+  assert.equal(fx.reads.length, 1, 'no second layout read while cached');
+});
+
+test('safeTop falls back to 24px when the probe measures zero', () => {
+  const ctx = load();
+  const fx = safeTopFixture(0);
+  ctx.document = fx.doc; ctx.window = fx.win;
+  assert.equal(ctx.safeTop(), 24);
+});
+
+test('safeTop invalidates on resize, orientationchange and visualViewport.resize', () => {
+  const ctx = load();
+  const fx = safeTopFixture(34);
+  ctx.document = fx.doc; ctx.window = fx.win;
+  ctx.safeTop();
+  ctx.safeTopBind();
+  assert.equal(fx.reads.length, 1);
+  fx.h.current = 60;
+  fx.listeners['resize'][0]();
+  assert.equal(ctx.safeTop(), 60);
+  assert.equal(fx.reads.length, 2);
+  fx.h.current = 72;
+  fx.listeners['orientationchange'][0]();
+  assert.equal(ctx.safeTop(), 72);
+  fx.h.current = 80;
+  fx.listeners['vv:resize'][0]();
+  assert.equal(ctx.safeTop(), 80);
+});
+
+test('safeTop listeners are registered exactly once across calls', () => {
+  const ctx = load();
+  const fx = safeTopFixture(20);
+  ctx.document = fx.doc; ctx.window = fx.win;
+  ctx.safeTopBind(); ctx.safeTopBind(); ctx.safeTop(); ctx.safeTop();
+  assert.equal(fx.listeners['resize'].length, 1);
+  assert.equal(fx.listeners['orientationchange'].length, 1);
+  assert.equal(fx.listeners['vv:resize'].length, 1);
+});
+
+test('safeTop never repeats DOM creation after the first call', () => {
+  const ctx = load();
+  const fx = safeTopFixture(45);
+  ctx.document = fx.doc; ctx.window = fx.win;
+  ctx.safeTop();
+  ctx.safeTop();
+  const createsBefore = fx.creates.length;
+  ctx.safeTopInvalidate();
+  ctx.safeTop();
+  assert.equal(fx.creates.length, createsBefore, 'probe element is reused across re-measures');
+});

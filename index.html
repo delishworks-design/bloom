@@ -3313,7 +3313,28 @@ function qaAct(a){
 }
 let fabEl=null,fabCorner=(()=>{try{return localStorage.getItem('bloom_fab')||'br'}catch(e){return 'br'}})();
 const FAB_SZ=58;
-function safeTop(){try{const el=document.createElement('div');el.style.cssText='position:fixed;top:0;left:0;width:1px;height:env(safe-area-inset-top,0px);visibility:hidden;pointer-events:none';document.body.appendChild(el);const h=Math.max(0,el.offsetHeight||0);el.remove();return h||24}catch(e){return 24}}
+// @test-begin safetop
+let safeTopCache=null,safeTopProbe=null,safeTopBound=false;
+function safeTopInvalidate(){safeTopCache=null}
+function safeTopBind(){
+ if(safeTopBound)return;safeTopBound=true;
+ const inv=()=>{safeTopCache=null};
+ try{window.addEventListener('resize',inv)}catch(e){}
+ try{window.addEventListener('orientationchange',inv)}catch(e){}
+ try{if(window.visualViewport&&window.visualViewport.addEventListener)window.visualViewport.addEventListener('resize',inv)}catch(e){}
+}
+function safeTop(){
+ if(safeTopCache!==null)return safeTopCache;
+ try{
+  const el=safeTopProbe||(safeTopProbe=document.createElement('div'));
+  el.style.cssText='position:fixed;top:0;left:0;width:1px;height:env(safe-area-inset-top,0px);visibility:hidden;pointer-events:none';
+  if(!el.parentNode)document.body.appendChild(el);
+  const h=Math.max(0,el.offsetHeight||0);
+  safeTopCache=h||24;return safeTopCache;
+ }catch(e){return 24}
+}
+// @test-end safetop
+safeTopBind();
 function fabBounds(){
  const W=Math.min(430,innerWidth),l0=(innerWidth-W)/2,r0=l0+W;
  const navTop=innerHeight-88;
@@ -4650,6 +4671,8 @@ function smartStage(pct){
  return p<20?0:p<40?1:p<60?2:p<80?3:4;
 }
 const SMART_STAGE_NAMES=['Seed','Sprout','Bud','Blooming','In bloom'];
+const SMART_FLOWER_CACHE=new Map();
+function smartFlowerCacheSize(){return SMART_FLOWER_CACHE.size}
 const SMART_FLOWER_SPECIES={
  'Better sleep':{sp:'hydrangea',petal:'#B9C6E8',petal2:'#8E9FD2',center:'#F2F6FF',stem:'#5F8A6B',leaf:'#7BA887'},
  'Steadier energy':{sp:'sunflower',petal:'#F2C46B',petal2:'#D9A33F',center:'#43271A',stem:'#5F8A6B',leaf:'#7BA887'},
@@ -4659,7 +4682,8 @@ const SMART_FLOWER_SPECIES={
  'Understand my cycle':{sp:'rose',petal:'#E58FA6',petal2:'#BE4F74',center:'#F7D9E0',stem:'#5F8A6B',leaf:'#6E9B7C'},
  'Prepare for doctor visits':{sp:'daisy',petal:'#FCFCF4',petal2:'#D8D3BF',center:'#E4A83B',stem:'#6E8F5F',leaf:'#7BA887'}
 };
-function smartFlowerSVG(goal,stage){
+function smartFlowerSVGRaw(goal,stage){
+ const s=Math.max(0,Math.min(4,stage|0));
  const base=SMART_FLOWER_SPECIES[goal]||SMART_FLOWER_SPECIES['Understand my cycle'];
  const sp=base.sp;
  const hx=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
@@ -4672,7 +4696,7 @@ function smartFlowerSVG(goal,stage){
   leafHi:mix(base.leaf,'#ffffff',.26),leafLo:mix(base.leaf,'#000000',.26),
   stemHi:mix(base.stem,'#ffffff',.38),soilHi:'#8A7364',soilLo:'#55453A',seedLo:mix(base.petal2,'#000000',.3),outline:mix(base.petal2,'#000000',.42)
  });
- const s=Math.max(0,Math.min(4,stage|0)),cx=36,baseY=64;
+ const cx=36,baseY=64;
  const uid='f'+s+'_'+((goal.length*13+goal.charCodeAt(0))%89);
  const defs=`<defs>
   <radialGradient id="${uid}Soil" cx="42%" cy="38%" r="75%"><stop offset="0" stop-color="${P.soilHi}"/><stop offset=".6" stop-color="${mix(P.soilHi,P.soilLo,.45)}"/><stop offset="1" stop-color="${P.soilLo}"/></radialGradient>
@@ -4763,6 +4787,17 @@ function smartFlowerSVG(goal,stage){
  }
  const headY=stemTop+2;
  return out+`${offshoot(-1,54,19,42,true,1)}${offshoot(1,50,53,38,false,1.1)}${leaf(-1,1.4,0,52)}${leaf(1,1.2,-6,55)}${leaf(-1,.95,12,42)}${leaf(1,.75,-16,40)}<g transform="translate(${cx} ${headY-3}) scale(1.3)" filter="url(#${uid}Drop)">${spBloom(false)}${sparkles}</g></svg>`;
+}
+// Cached wrapper: goal + normalized stage identity. LRU with 40 entries max.
+function smartFlowerSVG(goal,stage){
+ const s=Math.max(0,Math.min(4,stage|0));
+ const key=String(goal||'')+'|'+s;
+ const hit=SMART_FLOWER_CACHE.get(key);
+ if(hit!==undefined){SMART_FLOWER_CACHE.delete(key);SMART_FLOWER_CACHE.set(key,hit);return hit}
+ const markup=smartFlowerSVGRaw(goal,s);
+ if(SMART_FLOWER_CACHE.size>=40){const oldest=SMART_FLOWER_CACHE.keys().next().value;SMART_FLOWER_CACHE.delete(oldest)}
+ SMART_FLOWER_CACHE.set(key,markup);
+ return markup;
 }
 function smartGoalProgress(goal,ctx){
  ctx=ctx||{};
@@ -7478,6 +7513,12 @@ function importBackup(){
  };
  $('#impText').oninput=processImportText;
 }
+// @test-begin settingsBack
+// Lightweight presence check used by Settings: no JSON.parse of the backup on render.
+function hasSafetyCopy(mail){
+ if(!mail)return false;
+ try{const s=ST.get('bloom_backup_'+mail);return typeof s==='string'&&s.length>0}catch(e){return false}
+}
 function restoreSafetyCopy(){
  const m=user||(sbUser&&sbUser.email&&sbUser.email.toLowerCase());
  if(!m)return;
@@ -7496,6 +7537,7 @@ function restoreSafetyCopy(){
   save();sheet();shell();toast('Restored');
  };
 }
+// @test-end settingsBack
 function deleteAccountSheet(){
   if(navigator.onLine===false){toast('Needs an internet connection');return}
   sheet(`<h2>Delete my account</h2><p class="meta" style="margin:0 0 12px">This permanently deletes your sign-in account AND all data. Your partner loses access. Type DELETE to continue.</p><label for="dc">Type DELETE to enable the button</label><input id="dc" autocapitalize="characters" autocomplete="off" spellcheck="false"><p class="hint" id="dcErr"></p><div class="row" style="gap:10px;margin-top:16px"><button class="btn ghost" id="dcNo" style="flex:1">Cancel</button><button class="btn pink" id="dcGo" style="flex:1" disabled>Delete everything</button></div>`);
@@ -7568,7 +7610,7 @@ function changePasswordSheet(){
  const nm=RO?(ST.get('bloom_pname')||''):((D&&D.p&&D.p.name)||'');
  const bkMail=user||(sbUser&&sbUser.email&&sbUser.email.toLowerCase());
  let bkOk=false;
- if(!RO&&bkMail){try{bkOk=isPlainObject(JSON.parse(ST.get('bloom_backup_'+bkMail)))}catch(e){bkOk=false}}
+ if(!RO&&bkMail){bkOk=hasSafetyCopy(bkMail)}
  const bkRestore=bkOk?'<button class="btn ghost" id="sRestore" style="width:100%">Restore last safety copy</button>':'';
  $('#main').innerHTML=`<button class="btn ghost" id="bk" style="margin-bottom:10px">‹ Back</button><h1>Settings</h1>
  <div class="card">
