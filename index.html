@@ -5837,13 +5837,17 @@ function maybeRefreshLibrary(){
   refreshLibrary().catch(()=>{});
  }catch(e){}
 }
+let LIB_REFRESH_TIMEOUT=10000;
 function refreshLibraryOnce(){
  if(LIB_REFRESH_INFLIGHT)return LIB_REFRESH_INFLIGHT;
+ // hard timeout: a hung request must never pin the in-flight lock for the session
+ const ctrl=(typeof AbortController!=='undefined')?new AbortController():null;
+ const timer=setTimeout(()=>{try{if(ctrl)ctrl.abort()}catch(e){}},LIB_REFRESH_TIMEOUT);
  const p=(async()=>{
   try{
    const etag=ST.get('bloom_lib_etag');
    const headers=etag?{'If-None-Match':etag}:{};
-   const r=await fetch(LIB_REMOTE_EFFECTIVE,{headers});
+   const r=await fetch(LIB_REMOTE_EFFECTIVE,ctrl?{headers,signal:ctrl.signal}:{headers});
    if(r.status===304){try{ST.set('bloom_lib_fetched_at',String(Date.now()))}catch(e){}return 'fresh'}
    if(!r.ok)return 'failed';
    const j=await r.json();
@@ -5866,6 +5870,7 @@ function refreshLibraryOnce(){
    }
    return 'ok';
   }catch(e){return 'failed'}
+  finally{clearTimeout(timer)}
  })();
  LIB_REFRESH_INFLIGHT=p;
  p.finally(()=>{LIB_REFRESH_INFLIGHT=null});

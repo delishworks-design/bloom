@@ -238,3 +238,83 @@ test('newly appended cards are fully interactive and long-press fires once', asy
   await new Promise(r => setTimeout(r, 470));
   assert.deepEqual(fired, [ ['open', 'inside'], ['explore', 'fresh'], ['menu', 'inside'] ]);
 });
+
+test('a stalled fetch is aborted, does not advance the timestamp, and clears the in-flight lock', async () => {
+  const ctx = load();
+  ctx.AbortController = AbortController;
+  ctx.LIB_REFRESH_TIMEOUT = 40;
+  const t0 = 1000;
+  ctx.ST.set('bloom_lib_fetched_at', String(t0));
+  ctx.view = 'cycle';
+  ctx.safeToRender = () => false;
+  let sawSignal = null;
+  ctx.fetch = (url, opts) => {
+    sawSignal = opts && opts.signal;
+    return new Promise((resolve, reject) => {
+      if (sawSignal) sawSignal.addEventListener('abort', () => reject(new Error('aborted')));
+      // never resolves on its own: simulates a hung network
+    });
+  };
+
+  const r1 = await ctx.refreshLibrary();
+  assert.equal(r1, 'failed');
+  assert.ok(sawSignal && sawSignal.aborted === true, 'the request was aborted after the timeout');
+  assert.equal(ctx.ST.get('bloom_lib_fetched_at'), String(t0)); // untouched
+  assert.equal(ctx.ST.get('bloom_library'), null);              // stored catalog untouched
+
+  // the in-flight lock cleared, so a later valid refresh can proceed
+  ctx.fetch = async () => ({ ok: true, status: 200, headers: { get: () => null }, json: async () => catalog('retry', 2) });
+  const r2 = await ctx.refreshLibrary();
+  assert.equal(r2, 'ok');
+  assert.ok(Number(ctx.ST.get('bloom_lib_fetched_at')) > t0);
+});
+
+test('the refresh timeout clears after a successful fetch so later calls are not pinned', async () => {
+  const ctx = load();
+  ctx.AbortController = AbortController;
+  ctx.LIB_REFRESH_TIMEOUT = 40;
+  ctx.view = 'cycle';
+  ctx.safeToRender = () => false;
+  ctx.ST.set('bloom_lib_fetched_at', '1000');
+  ctx.fetch = async () => ({ ok: true, status: 304, headers: { get: () => null } });
+  const r = await ctx.refreshLibrary();
+  assert.equal(r, 'fresh');
+  // a quick follow-up call is not blocked by a stale in-flight promise
+  const again = await ctx.refreshLibrary();
+  assert.equal(again, 'fresh');
+});
+
+test('Show more: first batch bound once, paging appends, old cards never double-bound, new cards work', () => {
+  const ctx = load();
+  const L = { books: {} };
+  ctx.libEnsure = () => L;
+  const fired = [];
+  ctx.openBook = id => fired.push(['open', id]);
+  ctx.showExploreSheet = id => fired.push(['explore', id]);
+  ctx.showBookMenu = id => fired.push(['menu', id]);
+
+  const firstBatch = [fakeCard('keep1'), fakeCard('keep2')];
+  const scopeOf = nodes => ({ querySelectorAll: sel => (sel === '.bookcard[data-bid]' ? nodes : []), cards: nodes });
+  const scope1 = scopeOf(firstBatch);
+  ctx.bindStoreCards(scope1);
+
+  const appended = [fakeCard('new1'), fakeCard('new2'), fakeCard('keep3')];
+  const all = firstBatch.concat(appended);
+  const scope2 = scopeOf(all); // Show more appends then re-scopes
+  ctx.bindStoreCards(scope2);
+
+  for (const card of all) {
+    assert.equal(card.listeners.click.length, 1, `card ${card.dataset.bid} has exactly one click listener`);
+    assert.equal(card.listeners.pointerdown.length, 1, `card ${card.dataset.bid} has exactly one pointerdown listener`);
+    assert.equal(card.listeners.contextmenu.length, 1);
+  }
+  firstBatch[0].listeners.click[0]();
+  firstBatch[1].listeners.click[0]();
+  appended[0].listeners.click[0]();
+  appended[1].listeners.click[0]();
+  appended[2].listeners.click[0]();
+  assert.deepEqual(fired, [
+    ['explore', 'keep1'], ['explore', 'keep2'],
+    ['explore', 'new1'], ['explore', 'new2'], ['explore', 'keep3'],
+  ]);
+});
