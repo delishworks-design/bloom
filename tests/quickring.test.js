@@ -258,3 +258,39 @@ test('repeated cleanup is harmless', async () => {
   assert.equal(ctx.document.getElementById('qaring'), null);
   assert.equal(fab.style.visibility, '');
 });
+
+test('first taps are honored immediately (no artificial lockout)', async () => {
+  const ctx = await openCloseHarness();
+  const actions = [];
+  const fab = makeFab();
+  ctx.openQuickRing(fab, a => actions.push(a));
+  const ring = ctx.document.getElementById('qaring');
+  const mood = ring.children.find(c => c.dataset.qa === 'mood');
+  mood.click(); // no waiting: fire right away
+  assert.deepEqual(actions, ['mood']);
+});
+
+test('outside click dismisses immediately and repeated opening works', async () => {
+  const ctx = await openCloseHarness();
+  const fab = makeFab();
+  ctx.openQuickRing(fab, a => {});
+  const first = ctx.document.getElementById('qaring');
+  first.querySelector('.qaring-scrim').pointerdown(); // no waiting
+  assert.equal(first.classList.contains('on'), false);
+  ctx.openQuickRing(makeFab(), a => {});
+  const second = ctx.document.getElementById('qaring');
+  assert.ok(second);
+  assert.notEqual(first, second);
+});
+
+test('quick ring opens with shared SVG artwork and six transparent interaction buttons', async () => {
+  const ctx = await openCloseHarness();
+  const fab = makeFab();
+  ctx.openQuickRing(fab, a => {});
+  const html = ctx.document.getElementById('qaring').innerHTML;
+  assert.ok(html.includes('qaring-art'), 'shared artwork layer present');
+  assert.ok(html.includes('id="qaringPet"'), 'single PET definition via defs/use');
+  const useCount = (html.match(/<use /g) || []).length;
+  assert.equal(useCount, 12, 'six petals two layers each');
+  assert.equal((html.match(/class="qaring-item"/g) || []).length, 6, 'six accessible action buttons');
+});

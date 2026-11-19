@@ -320,7 +320,7 @@ button{font-family:Sansita,system-ui,sans-serif;-webkit-tap-highlight-color:tran
 .qaring.bloom.on .qaring-core{transform:translate(0,0) rotate(720deg) scale(1.06)}
 .qaring:not(.bloom).on .qaring-core{transform:translate(0,0) scale(1.08)}
 .fab:focus,.fab:focus-visible,.qaring-core:focus,.qaring-core:focus-visible{outline:0}
-@media (prefers-reduced-motion: reduce){.qaring,.qaring .qaring-item,.qaring .qaring-core,.qaring-scrim{transition-duration:.01ms !important;transition-delay:0s !important}}
+@media (prefers-reduced-motion: reduce){.qaring,.qaring .qaring-item,.qaring .qaring-core,.qaring-scrim,.qaring-art,.qaring-art-g{transition-duration:.01ms !important;transition-delay:0s !important}}
 .fab svg{width:100%;height:100%;display:block;filter:drop-shadow(0 6px 12px rgba(120,70,80,.32))}
 .fabopts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .fabopt{width:56px;height:56px;border:1.5px solid var(--line);border-radius:16px;background:var(--card2);display:grid;place-items:center;cursor:pointer;padding:3px;transition:all .15s}
@@ -328,15 +328,15 @@ button{font-family:Sansita,system-ui,sans-serif;-webkit-tap-highlight-color:tran
 .fabopt[aria-pressed=true]{border-color:var(--rose);box-shadow:0 0 0 3px var(--pinkS)}
 .qaring-core img{width:100%;height:100%;object-fit:contain;display:block;filter:drop-shadow(0 8px 18px rgba(120,70,80,.38))}
 .qaring-core svg{width:100%;height:100%;display:block;filter:drop-shadow(0 8px 18px rgba(120,70,80,.38))}
-.qaring-item{position:absolute;left:50%;top:50%;width:80px;height:94px;margin:-47px 0 0 -40px;padding:0;border:0;background:none;cursor:pointer;transform-origin:50% 50%;transform:translate(0,0) rotate(calc(var(--r,0deg) + var(--spin,0deg))) scale(.15);opacity:0;transition:transform .34s cubic-bezier(.16,1.1,.3,1),opacity .16s;transition-delay:var(--d,0s);z-index:1;outline:0;-webkit-tap-highlight-color:transparent}
-.qaring:not(.on) .qaring-item{transition-delay:0s}
-.qaring.on .qaring-item{transform:translate(var(--x),var(--y)) rotate(var(--r,0deg)) scale(1);opacity:1}
-.petal-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 7px 16px rgba(184,69,107,.18))}
+.qaring-item{position:absolute;left:50%;top:50%;width:80px;height:94px;margin:-47px 0 0 -40px;padding:0;border:0;background:none;cursor:pointer;transform:translate(var(--x),var(--y));z-index:1;outline:0;-webkit-tap-highlight-color:transparent}
+.qaring-art{position:absolute;left:50%;top:50%;width:100%;height:100%;transform:translate(-50%,-50%);overflow:visible;pointer-events:none;filter:drop-shadow(0 7px 16px rgba(184,69,107,.18))}
+.qaring-art-g{transform-origin:50% 50%;transform:scale(.92);opacity:0;transition:transform .32s cubic-bezier(.16,1.1,.3,1),opacity .22s}
+.qaring.on .qaring-art-g{transform:scale(1);opacity:1}
 .petal-fill{fill:var(--pf,#F9DDE5)}
 .petal-back{fill:var(--pb,#F7D2DE);opacity:.95}
 
-.qaring-item:nth-child(odd) .petal-fill{fill:var(--pf2,#F5CFDA)}
-.qaring-item:nth-child(odd) .petal-back{fill:var(--pb2,#F2C4D1)}
+.qaring-art .odd.petal-fill{fill:var(--pf2,#F5CFDA)}
+.qaring-art .odd.petal-back{fill:var(--pb2,#F2C4D1)}
 .petal-in{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding-top:2px;transform:rotate(calc(-1 * var(--r,0deg)));color:var(--pi,#B8456B);pointer-events:none}
 .pi{display:grid;place-items:center;width:24px;height:24px}
 .pl{font-size:.58rem;font-weight:700;line-height:1;color:#8E3454;white-space:nowrap}
@@ -3429,19 +3429,24 @@ function openQuickRing(fab,onAct){
  const fabChoice=((typeof D!=='undefined'&&D&&D.fabFlower)||'bloom');
  const pt=PETALS[fabChoice]||PETALS.bloom;
  const items=[['log','Log',IC.list],['period','Period',IC.drop],['meal','Meal',IC.meal],['mood','Mood',IC.mood],['plan','Plan',IC.check],['water','Water',IC.glass]];
- const spins=[-210,190,-170,230,-200,220];
  const coreHTML=fab.innerHTML;
  const wrap=document.createElement('div');wrap.id='qaring';wrap.className='qaring'+(fabChoice==='bloom'?' bloom':'');wrap.style.setProperty('--pf',pt[0]);wrap.style.setProperty('--pb',pt[1]);wrap.style.setProperty('--pf2',pt[2]);wrap.style.setProperty('--pb2',pt[3]);wrap.style.setProperty('--pi',pt[4]);
  wrap.style.setProperty('--sx',sx+'px');wrap.style.setProperty('--sy',sy+'px');
- wrap.innerHTML=`<div class="qaring-scrim"></div><button class="qaring-core" id="qrCore" aria-label="Close quick actions">${coreHTML}</button>`+items.map((it,i)=>{
+ // single shared artwork layer: every petal drawn from one PET definition via <use>
+ const artSize=2*(R+72);
+ const art=`<svg class="qaring-art" viewBox="${-(R+72)} ${-(R+72)} ${artSize} ${artSize}" style="width:${artSize}px;height:${artSize}px" aria-hidden="true"><defs><path id="qaringPet" d="${PET}"/></defs><g class="qaring-art-g">${items.map((it,i)=>{
+  const aDeg=i*60,odd=(i%2)===1;
+  return `<g transform="rotate(${aDeg})"><use href="#qaringPet" class="petal-back${odd?' odd':''}" transform="translate(0 ${-R}) scale(1.12)"/><use href="#qaringPet" class="petal-fill${odd?' odd':''}" transform="translate(0 ${-R})"/></g>`;
+ }).join('')}</g></svg>`;
+ const buttons=items.map((it,i)=>{
   const a=(-90+i*60)*Math.PI/180,rot=-90+i*60+90;
-  return `<button class="qaring-item" data-qa="${it[0]}" style="--x:${(Math.cos(a)*R).toFixed(1)}px;--y:${(Math.sin(a)*R).toFixed(1)}px;--r:${rot}deg;--spin:${spins[i]}deg;--d:${(0.02+i*0.018).toFixed(3)}s"><svg class="petal-svg" viewBox="-60 -70 120 140" aria-hidden="true"><path class="petal-back" transform="scale(1.12)" d="${PET}"/><path class="petal-fill" d="${PET}"/></svg><span class="petal-in"><span class="pi">${it[2](18)}</span><span class="pl">${it[1]}</span></span></button>`}).join('');
+  return `<button class="qaring-item" data-qa="${it[0]}" aria-label="${it[1]}" style="--x:${(Math.cos(a)*R).toFixed(1)}px;--y:${(Math.sin(a)*R).toFixed(1)}px;--r:${rot}deg"><span class="petal-in"><span class="pi">${it[2](18)}</span><span class="pl">${it[1]}</span></span></button>`;
+ }).join('');
+ wrap.innerHTML=`${art}<div class="qaring-scrim"></div><button class="qaring-core" id="qrCore" aria-label="Close quick actions">${coreHTML}</button>${buttons}`;
  document.body.appendChild(wrap);
  fab.style.visibility='hidden';
- requestAnimationFrame(()=>requestAnimationFrame(()=>wrap.classList.add('on')));
+ requestAnimationFrame(()=>wrap.classList.add('on'));
  let closed=false;
- const openedAt=Date.now();
- const fresh=()=>qaFresh(Date.now(),openedAt);
  let finishT=null;
  // Central, idempotent cleanup for THIS ring instance: unregister listeners,
  // cancel the fallback timer, optionally detach, and only restore the FAB if
@@ -3465,9 +3470,9 @@ function openQuickRing(fab,onAct){
   wrap.addEventListener('transitionend',finishHandler);
   finishT=setTimeout(()=>cleanup(),QA_TRANS_MS);
  };
- wrap.querySelector('.qaring-scrim').addEventListener('pointerdown',()=>{if(!fresh())close()});
- wrap.querySelector('#qrCore').onclick=()=>{if(!fresh())close()};
- wrap.querySelectorAll('[data-qa]').forEach(b=>b.onclick=()=>{if(!fresh())close(b.dataset.qa)});
+ wrap.querySelector('.qaring-scrim').addEventListener('pointerdown',()=>close());
+ wrap.querySelector('#qrCore').onclick=()=>close();
+ wrap.querySelectorAll('[data-qa]').forEach(b=>b.onclick=()=>close(b.dataset.qa));
  const esc=e=>{if(e.key==='Escape'){document.removeEventListener('keydown',esc);close()}};
  document.addEventListener('keydown',esc);
  wrap.querySelector('#qrCore').focus({preventScroll:true});
