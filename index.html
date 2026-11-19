@@ -437,7 +437,8 @@ label{display:block;font-size:.86rem;color:var(--mut) !important;margin-top:16px
 .cal-cell,.mg-cell{min-width:0;overflow:hidden;box-sizing:border-box}
 .calsheet,.calsheet-scroll{min-width:0;width:100%;max-width:100%}
 .cal-cell:hover{border-color:var(--rose)}
-.cal-cell.pr{background:#FDEEF2;border:1.5px dashed #E8A0B4;color:var(--rose);font-weight:600}
+.cal-cell.pr{background:#FDEEF2;border:1.5px dashed #E8A0B4;color:var(--rose);font-weight:600;opacity:1;cursor:pointer}
+.cal-cell.pr:disabled{opacity:1;cursor:pointer}
 .cal-legend{display:flex;flex-wrap:wrap;gap:10px 16px}
 .cal-leg{display:inline-flex;align-items:center;gap:7px;font-size:.76rem;color:var(--muted);font-weight:600}
 .cal-sw{display:inline-block;width:12px;height:12px;border-radius:4px}
@@ -777,6 +778,8 @@ body.ro nav button[aria-current=page]{background:var(--roInk2) !important;color:
 body.ro nav{background:var(--roCard) !important;border-color:var(--roLine) !important}
 body.ro .cal-cell.p{background:#A8C6D4 !important;border-color:#A8C6D4 !important;color:#14323B !important}
 body.ro .cal-cell.s{background:var(--roCard2) !important}
+body.ro .cal-cell.pr{background:#DCEAF0 !important;border:1.5px dashed #5C8FA3 !important;color:#1E4D5E !important;opacity:1 !important}
+body.ro .cal-cell.pr:disabled{opacity:1 !important}
 body.ro .cal-cell.d::after{background:#6E5FA8 !important}
 body.ro .chip:hover,body.ro .pickrow:hover,body.ro .rolebtn:hover,body.ro .field-btn:hover{box-shadow:0 4px 14px rgba(47,107,126,.14) !important}
 body.ro .chip[aria-pressed=true]{box-shadow:0 4px 14px rgba(47,107,126,.2),inset 0 1px 0 rgba(255,255,255,.3) !important}
@@ -814,11 +817,15 @@ html[data-theme=dark] body.ro .fun{background:linear-gradient(180deg,var(--roCar
 html[data-theme=dark] body.ro .qa button{border-color:#3A4550 !important}
 html[data-theme=dark] body.ro .ringlbl,html[data-theme=dark] body.ro .ringcap,html[data-theme=dark] body.ro .lbl,html[data-theme=dark] body.ro .meta,html[data-theme=dark] body.ro label,html[data-theme=dark] body.ro .statlbl,html[data-theme=dark] body.ro .cal-wd,html[data-theme=dark] body.ro .goalopt,html[data-theme=dark] body.ro nav button,html[data-theme=dark] body.ro .readonlynote{color:#8B99A5 !important}
 html[data-theme=dark] body.ro nav button[aria-current=page]{color:#1B2B36 !important}
+html[data-theme=dark] .cal-cell.pr{background:#3A2430;border:1.5px dashed #B06B86;color:#F0C4D2}
+html[data-theme=dark] .cal-cell.pr:disabled{background:#3A2430;border:1.5px dashed #B06B86;color:#F0C4D2;opacity:1}
 html[data-theme=dark] body.ro .cal-cell{box-shadow:0 1px 3px rgba(0,0,0,.35) !important}
 html[data-theme=dark] body.ro .ringpill{background:var(--roCard2) !important}
 html[data-theme=dark] body.ro #app::before{background:#7FA8B7;opacity:.06}
 html[data-theme=dark] body.ro .avatar-fb{color:var(--roInk2) !important}
 html[data-theme=dark] body.ro .cal-cell.d::after{background:#8E7BD0 !important}
+html[data-theme=dark] body.ro .cal-cell.pr{background:#243641 !important;border:1.5px dashed #5B8FA3 !important;color:#B9DCEA !important;opacity:1 !important}
+html[data-theme=dark] body.ro .cal-cell.pr:disabled{opacity:1 !important}
 html[data-theme=dark] body.ro .bar i{background:#8E7BD0 !important}
 html[data-theme=dark] body.ro .watercount,html[data-theme=dark] body.ro .dr-done{color:#A692E3 !important}
 
@@ -2643,9 +2650,10 @@ function calSheet(opts){
  sheet(`<div class="calsheet"><div class="calsheet-head"><h2>${E(title)}</h2><button class="btn ghost sm" id="calDone" style="flex:0 0 auto">Done</button></div><div class="calsheet-scroll" id="calScroll"></div></div>`);
  const scroll = document.getElementById('calScroll');
  const today_ = todayStr;
- const renderYear = (y) => {
+ let predW=[];try{const ss=starts();if(ss.length>=2){const p=smartPredictionHistory(ss,today_);if(p&&p.state==='predicted'){const c=cycleStats();predW=predictedBleedWindows(ss,{avg:p.avg,plen:c.plen||5,until:shiftPlannerMonth(today_,24)})}}}catch(e){}
+ const renderYear = (y,pw) => {
    let html = '';
-   html += calMonthsHTML(y, null, 'cycle');
+   html += calMonthsHTML(y, null, 'cycle', pw||[]);
    html += calContinueBtn(y);
    scroll.insertAdjacentHTML('beforeend', html);
    if (!scroll.__calBound) {
@@ -2653,6 +2661,7 @@ function calSheet(opts){
      scroll.addEventListener('click', e => {
        const btn = e.target.closest('[data-cal-d]');
        if (btn) {
+         if (btn.disabled) return;
          if (opts.onPick) opts.onPick(btn.dataset.calD);
          sheet();
          return;
@@ -2661,21 +2670,22 @@ function calSheet(opts){
        if (next) {
          const y = +next.dataset.calNext;
          next.remove();
-         renderYear(y);
+         renderYear(y,pw);
          scroll.scrollTop = scroll.scrollHeight - next.offsetHeight - 20;
        }
      });
    }
  };
- renderYear(year);
- requestAnimationFrame(()=>{try{const ym=today().slice(0,7);const el=scroll.querySelector('[data-cal-ym="'+ym+'"]');if(el)el.scrollIntoView({block:'start'})}catch(e){}});
+ renderYear(year,predW);
+ requestAnimationFrame(()=>{try{const ym=today_.slice(0,7);const el=scroll.querySelector('[data-cal-ym="'+ym+'"]');if(el)el.scrollIntoView({block:'start'})}catch(e){}});
  // decorate cells: today outline + selected fill + highlight current if provided
  requestAnimationFrame(() => {
    scroll.querySelectorAll('[data-cal-d]').forEach(cell => {
      const d = cell.dataset.calD;
      if (d === today_) cell.classList.add('cal-today');
      if (current && d === current) cell.classList.add('cal-sel');
-     if (opts.disableFuture && d > today_) cell.disabled = true;
+     if (d > today_ && predW && predW.some(w=>d>=w.from&&d<=w.to)) cell.classList.add('pr');
+     if (opts.disableFuture && d > today_ && !cell.classList.contains('pr')) cell.disabled = true;
      if (opts.markMap && opts.markMap[d]) cell.classList.add(opts.markMap[d]);
    });
  });
@@ -3662,34 +3672,37 @@ function bindCk(d,re){document.querySelectorAll('input[data-t]').forEach(i=>i.on
 `;
  $('#bk').onclick=()=>{view='cycle';shell()};
  const scroll=document.getElementById('calScroll');
- const renderYear = (yr) => {
+ let predWindows=[];try{const ss=starts();if(ss.length>=2){const p=smartPredictionHistory(ss,today());if(p&&p.state==='predicted'){const c=cycleStats();predWindows=predictedBleedWindows(ss,{avg:p.avg,plen:c.plen||5,until:shiftPlannerMonth(today(),12)})}}}catch(e){}
+ const renderYear = (yr,pw) => {
    let html='';
-   html += calMonthsHTML(yr, null, 'cycle');
+   html += calMonthsHTML(yr, null, 'cycle', pw||[]);
    html += calContinueBtn(yr);
    scroll.insertAdjacentHTML('beforeend', html);
    if (!scroll.__bound) {
      scroll.__bound = true;
      scroll.addEventListener('click', e => {
        const btn = e.target.closest('[data-cal-d]');
-       if (btn) { if (!RO) dayLog(btn.dataset.calD); return; }
+       if (btn) { if (!RO && !btn.disabled) dayLog(btn.dataset.calD); return; }
        const next = e.target.closest('[data-cal-next]');
-       if (next) { const y2 = +next.dataset.calNext; next.remove(); renderYear(y2); }
+       if (next) { const y2 = +next.dataset.calNext; next.remove(); renderYear(y2,pw); }
      });
    }
    requestAnimationFrame(() => {
+     const td=today();
      scroll.querySelectorAll('[data-cal-d]').forEach(cell => {
        const d = cell.dataset.calD, l = L(d);
-       if (d === today()) cell.classList.add('cal-today');
-       if (d > today()) cell.disabled = true;
+       if (d === td) cell.classList.add('cal-today');
        if (bleed(d)) cell.classList.add('p');
        else if (l && l.flow === 'spotting') cell.classList.add('s');
+       else if (d > td && pw && pw.some(w=>d>=w.from&&d<=w.to)) cell.classList.add('pr');
        if (l && Object.keys(l).filter(k => k !== 'flow' && k !== 'water' && l[k] !== undefined).length) cell.classList.add('d');
+       if (d > td && !cell.classList.contains('pr')) cell.disabled = true;
      });
    });
    // start scrolled to the current month
    try{const ym=today().slice(0,7);const el=scroll.querySelector('[data-cal-ym="'+ym+'"]');if(el)requestAnimationFrame(()=>{try{el.scrollIntoView({block:'start'})}catch(e){}})}catch(e){}
  };
- renderYear(y);
+ renderYear(y,predWindows);
 }
 function plannerPanels(){
  if(ownMode)return{partner:true,name:ownPeerName||'Partner'};
