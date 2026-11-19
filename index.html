@@ -244,6 +244,10 @@ body.reader-open{overflow:hidden}
 .bookmenu{display:flex;flex-direction:column;gap:6px}
 .bookmenu-item{display:flex;align-items:center;gap:12px;padding:13px 12px;border:1.5px solid var(--line);border-radius:12px;background:var(--card);font:inherit;color:var(--ink);text-align:left;cursor:pointer}
 .bookmenu-item.danger{color:#B8456B;border-color:rgba(184,69,107,.35)}
+.reader[data-theme="dark"]{
+  --bg:#1B1419;--bg2:#201920;--card:#221B21;--card2:#1F191C;--ink:#EDE0E5;--ink2:#D9CED3;--deep:#C9B7BE;--mut:#8E8490;--deep2:#3D333D;--faded:#6F656F;
+  --line:#3D333D;--line2:#352C35;--chip:#2C232C;--creamDeep:#2E2530;--scrim:#1B1419
+}
 .reader[data-theme="dark"] .reader-top,.reader[data-theme="dark"] .reader-bottom,.reader[data-theme="dark"] .reader-prog,.reader[data-theme="dark"] .reader-body{background:#1F191C !important;color:#E7D9DC !important;border-color:rgba(255,255,255,.09) !important}
 .reader[data-theme="dark"] .reader-body,.reader[data-theme="dark"] .reader-article-body{background:#1F191C !important;color:#E7D9DC !important}
 .reader[data-theme="dark"] h3,.reader[data-theme="dark"] .reader-article-body h3{color:#F1E2E5 !important}
@@ -900,7 +904,7 @@ window.__bloomError=function(m){ try{window.__lastErr=String(m).slice(0,240);}ca
  var r=document.getElementById('recovery');
  if(r){ var et=document.getElementById('bloomErrTxt'); if(et&&m)et.textContent=String(m).slice(0,240); return }
  r=document.createElement('div');r.id='recovery';r.style.cssText='position:fixed;inset:0;z-index:99999;background:#FBF4EA;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;font-family:system-ui,-apple-system,sans-serif;text-align:center;gap:14px';
- r.innerHTML='<h1 style="margin:0;font-size:1.4rem;color:#3A2E33">Bloom recovery</h1><p id="bloomErrTxt" style="margin:0;color:#7C6B71;max-width:34em">This build could not start. Your logs and library are NOT deleted. Try Reload first. Reset only clears session flags.</p><button id="bloomReload" style="padding:12px 22px;border:0;border-radius:999px;background:#B8456B;color:#FBF4EA;font-size:1rem;font-weight:700">Reload</button><button id="bloomResetData" style="padding:8px 18px;border:1px solid #EADFD2;border-radius:999px;background:transparent;color:#3A2E33;font-size:.9rem">Reset app data</button>';document.body.appendChild(r);var h=document.getElementById('bloomResetData');if(h)h.onclick=function(){try{['bloom_nav','bloom_theme','bloom_reader_theme','bloom_net','bloom_s','bloom_role'].forEach(function(k){localStorage.removeItem(k)})}catch(e){}location.reload()};var rr=document.getElementById('bloomReload');if(rr)rr.onclick=function(){location.reload()};
+ r.innerHTML='<h1 style="margin:0;font-size:1.4rem;color:var(--ink)">Bloom recovery</h1><p id="bloomErrTxt" style="margin:0;color:var(--mut);max-width:34em">This build could not start. Your logs and library are NOT deleted. Try Reload first. Reset only clears session flags.</p><button id="bloomReload" style="padding:12px 22px;border:0;border-radius:999px;background:#B8456B;color:#FBF4EA;font-size:1rem;font-weight:700">Reload</button><button id="bloomResetData" style="padding:8px 18px;border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--ink);font-size:.9rem">Reset app data</button>';document.body.appendChild(r);var h=document.getElementById('bloomResetData');if(h)h.onclick=function(){try{['bloom_nav','bloom_theme','bloom_reader_theme','bloom_net','bloom_s','bloom_role'].forEach(function(k){localStorage.removeItem(k)})}catch(e){}location.reload()};var rr=document.getElementById('bloomReload');if(rr)rr.onclick=function(){location.reload()};
  }catch(_){}
 };
 // @test-begin errorIgnore
@@ -1672,7 +1676,8 @@ async function pullMainOnce(){
  try{await readingLoadOnce()}catch(e){reportErr('reading.pull',e)}
  try{
   const {data,error}=await sb.from('bloom_data').select('rev').eq('user_id',uid).maybeSingle();
-  if(error||!data)return;
+  if(error){reportErr('sync.pull','rev: '+(error.message||error));SYNC.fails++;setSyncState('error');return}
+  if(!data){reportErr('sync.pull','no row for uid');return}
   const rev=+(data.rev||0);
   if(rev<=sbRev)return;
   backupLocal();const row=await sbFetchDocWithRev(uid);if(!row)return;if(RO)return;
@@ -8010,9 +8015,18 @@ window.addEventListener('online',()=>{const e=document.getElementById('err');if(
 window.__bloomBg=()=>splashBgMark();
 // @test-end splash
 document.addEventListener('visibilitychange',()=>{if(document.hidden){splashBgMark();try{saveNav()}catch(e){}}else{try{widgetConsume()}catch(e){}try{widgetSync()}catch(e){}if(sbUser){if(RO){if(!ownMode)syncLocked(partnerLibRefresh)}else sbPull()}}});
-// Auto-refresh: re-render the open page every 60s (day flip, counts, clock). Skipped when hidden or unsafe to re-render.
+// Auto-refresh: only re-render at local midnight (day flip / new day counts). Sync pulls already re-render on real changes; every full re-render flashes scroll/inputs, so only repaint for the day flip.
 if(window.__autoRefreshTimer)clearInterval(window.__autoRefreshTimer);
-window.__autoRefreshTimer=setInterval(()=>{if(document.hidden)return;if(view==='library')return;try{if(safeToRender())shell()}catch(e){}},60000);
+let __lastAutoDay=new Date().toDateString();
+window.__autoRefreshTimer=setInterval(()=>{
+  if(document.hidden)return;
+  if(view==='library')return;
+  try{if(document.getElementById('syncLine'))updateSyncLine()}catch(e){}
+  const day=new Date().toDateString();
+  if(day===__lastAutoDay)return;
+  __lastAutoDay=day;
+  try{if(safeToRender())shell()}catch(e){}
+},60000);
 window.addEventListener('pagehide',()=>splashBgMark());
 window.addEventListener('beforeunload',()=>splashBgMark());
 
