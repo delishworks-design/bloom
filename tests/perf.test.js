@@ -122,3 +122,119 @@ test('sync flow and reading spans are untouched by this pass', () => {
   assert.match(html, /function partnerLibRefresh\(/);
   assert.match(html, /setInterval\(syncTick,12000\)/);
 });
+
+test('a failed catalog fetch does not advance the successful-refresh timestamp', async () => {
+  const ctx = load();
+  const t0 = 1000;
+  ctx.ST.set('bloom_lib_fetched_at', String(t0));
+  ctx.fetch = async () => { throw new Error('network down'); };
+  const r = await ctx.refreshLibrary();
+  assert.equal(r, 'failed');
+  assert.equal(ctx.ST.get('bloom_lib_fetched_at'), String(t0));
+});
+
+test('an invalid catalog response does not advance the successful-refresh timestamp', async () => {
+  const ctx = load();
+  const t0 = 1000;
+  ctx.ST.set('bloom_lib_fetched_at', String(t0));
+  ctx.fetch = async () => ({ ok: true, status: 200, headers: { get: () => null }, json: async () => ({ books: [{ id: 123 }] }) });
+  const r = await ctx.refreshLibrary();
+  assert.equal(r, 'invalid');
+  assert.equal(ctx.ST.get('bloom_lib_fetched_at'), String(t0));
+});
+
+test('a 304 response advances the successful-refresh timestamp', async () => {
+  const ctx = load();
+  const t0 = 1000;
+  ctx.ST.set('bloom_lib_fetched_at', String(t0));
+  ctx.ST.set('bloom_library', JSON.stringify(catalog('old', 2)));
+  ctx.fetch = async () => ({ ok: true, status: 304, headers: { get: () => null } });
+  const r = await ctx.refreshLibrary();
+  assert.equal(r, 'fresh');
+  assert.ok(Number(ctx.ST.get('bloom_lib_fetched_at')) > t0);
+});
+
+test('a valid catalog refresh advances the successful-refresh timestamp', async () => {
+  const ctx = load();
+  const t0 = 1000;
+  ctx.view = 'cycle';
+  ctx.ST.set('bloom_lib_fetched_at', String(t0));
+  ctx.fetch = async () => ({ ok: true, status: 200, headers: { get: () => null }, json: async () => catalog('new', 3) });
+  ctx.safeToRender = () => false;
+  const r = await ctx.refreshLibrary();
+  assert.equal(r, 'ok');
+  assert.ok(Number(ctx.ST.get('bloom_lib_fetched_at')) > t0);
+});
+
+test('concurrent refreshes share a single download', async () => {
+  const ctx = load();
+  const t0 = 1000;
+  let calls = 0;
+  let release;
+  ctx.fetch = () => {
+    calls += 1;
+    return new Promise(res => { release = () => res({ ok: true, status: 200, headers: { get: () => null }, json: async () => catalog('c', 3) }); });
+  };
+  ctx.view = 'cycle';
+  ctx.safeToRender = () => false;
+  ctx.ST.set('bloom_lib_fetched_at', String(t0));
+  const p1 = ctx.refreshLibrary();
+  const p2 = ctx.refreshLibrary();
+  release();
+  const [r1, r2] = await Promise.all([p1, p2]);
+  assert.equal(calls, 1);
+  assert.equal(r1, 'ok');
+  assert.equal(r2, 'ok');
+});
+
+function fakeCard(bid) {
+  const listeners = {};
+  const n = {
+    dataset: { bid, bound: undefined },
+    listeners,
+    addEventListener(type, fn) { (listeners[type] = listeners[type] || []).push(fn); },
+    setAttribute() {},
+  };
+  return n;
+}
+
+test('existing book cards are not bound twice after repeated Show more calls', () => {
+  const ctx = load();
+  const L = { books: { keep: { page: 1 } } };
+  ctx.libEnsure = () => L;
+  const scopeFactory = () => {
+    const cards = [fakeCard('keep'), fakeCard('fresh')];
+    return { cards, querySelectorAll: () => cards };
+  };
+  const scope = scopeFactory();
+  ctx.bindStoreCards(scope);
+  ctx.bindStoreCards(scope); // second Show more: same nodes, must be idempotent
+  ctx.bindStoreCards(scope);
+  for (const card of scope.cards) {
+    assert.deepEqual(Object.keys(card.listeners).sort(), ['click', 'contextmenu', 'pointercancel', 'pointerdown', 'pointermove', 'pointerup']);
+    for (const type of ['pointerdown', 'pointermove', 'pointerup', 'pointercancel', 'click', 'contextmenu']) {
+      assert.equal(card.listeners[type].length, 1);
+    }
+  }
+});
+
+test('newly appended cards are fully interactive and long-press fires once', async () => {
+  const ctx = load();
+  ctx.D = null;
+  const L = { books: { inside: { page: 1 } } }; // in library -> long-press menu allowed; outside -> no menu
+  ctx.libEnsure = () => L;
+  const fired = [];
+  ctx.openBook = id => fired.push(['open', id]);
+  ctx.showExploreSheet = id => fired.push(['explore', id]);
+  ctx.showBookMenu = id => fired.push(['menu', id]);
+  const cards = [fakeCard('inside'), fakeCard('fresh')];
+  const scope = { querySelectorAll: () => cards, cards };
+  ctx.bindStoreCards(scope);
+  cards[0].listeners.click[0]();
+  cards[1].listeners.click[0]();
+  assert.deepEqual(fired, [['open', 'inside'], ['explore', 'fresh']]);
+  // long press on an in-library book fires the menu once
+  cards[0].listeners.pointerdown[0]({ changedTouches: [{ clientX: 10, clientY: 10 }] });
+  await new Promise(r => setTimeout(r, 470));
+  assert.deepEqual(fired, [ ['open', 'inside'], ['explore', 'fresh'], ['menu', 'inside'] ]);
+});

@@ -5828,37 +5828,50 @@ function libSearchText(b){
 }
 // Debounce helpers take the latest call only, so a fast typist never loses the final input.
 function libDebounce(fn,ms){let t=null;return function(v){if(t)clearTimeout(t);t=setTimeout(()=>{t=null;fn(v)},ms)}}
+let LIB_REFRESH_INFLIGHT=null;
 function maybeRefreshLibrary(){
  try{
   const last=+ST.get('bloom_lib_fetched_at')||0;
-  if(Date.now()-last<12*3600*1000)return;
-  ST.set('bloom_lib_fetched_at',String(Date.now()));
+  if(Date.now()-last<12*3600*1000)return; // only a successful refresh starts the cooldown
+  if(LIB_REFRESH_INFLIGHT)return;
   refreshLibrary().catch(()=>{});
  }catch(e){}
 }
-async function refreshLibrary(){
- try{
-  const etag=ST.get('bloom_lib_etag');
-  const headers=etag?{'If-None-Match':etag}:{};
-  const r=await fetch(LIB_REMOTE_EFFECTIVE,{headers});
-  if(r.status===304){try{ST.set('bloom_lib_fetched_at',String(Date.now()))}catch(e){}return}
-  if(!r.ok)return;
-  const j=await r.json();
-  if(!validCatalog(j))return; // never overwrite a valid cache with malformed data
-  const nextEtag=r.headers&&r.headers.get?r.headers.get('etag'):null;
-  try{if(nextEtag)ST.set('bloom_lib_etag',nextEtag)}catch(e){}
-  const curRaw=ST.get('bloom_library');
-  const changed=!curRaw||curRaw!==JSON.stringify(j);
-  try{ST.set('bloom_library',JSON.stringify(j))}catch(e){}
-  try{ST.set('bloom_lib_fetched_at',String(Date.now()))}catch(e){}
-  LIB_CATALOG=j.books; // replace the in-memory copy atomically
-  LIB_SEARCH_CACHE=new Map();
-  if(changed){
-   try{if(typeof BOOKCARD_CACHE!=='undefined')BOOKCARD_CACHE.clear()}catch(e){}
-   if(view==='library'&&safeToRender())library();
-  }
- }catch(e){}
+function refreshLibraryOnce(){
+ if(LIB_REFRESH_INFLIGHT)return LIB_REFRESH_INFLIGHT;
+ const p=(async()=>{
+  try{
+   const etag=ST.get('bloom_lib_etag');
+   const headers=etag?{'If-None-Match':etag}:{};
+   const r=await fetch(LIB_REMOTE_EFFECTIVE,{headers});
+   if(r.status===304){try{ST.set('bloom_lib_fetched_at',String(Date.now()))}catch(e){}return 'fresh'}
+   if(!r.ok)return 'failed';
+   const j=await r.json();
+   if(!validCatalog(j))return 'invalid'; // never overwrite a valid cache with malformed data
+   const nextEtag=r.headers&&r.headers.get?r.headers.get('etag'):null;
+   const curRaw=ST.get('bloom_library');
+   let stored=null;try{stored=JSON.stringify(j)}catch(e){stored=null}
+   if(stored===null)return 'invalid';
+   if(curRaw!==stored){
+    try{ST.set('bloom_library',stored)}catch(e){return 'failed'}
+   }
+   try{if(nextEtag)ST.set('bloom_lib_etag',nextEtag)}catch(e){}
+   try{ST.set('bloom_lib_fetched_at',String(Date.now()))}catch(e){}
+   LIB_CATALOG=j.books; // replace the in-memory copy atomically
+   LIB_SEARCH_CACHE=new Map();
+   const changed=curRaw!==stored;
+   if(changed){
+    try{if(typeof BOOKCARD_CACHE!=='undefined')BOOKCARD_CACHE.clear()}catch(e){}
+    if(view==='library'&&safeToRender())library();
+   }
+   return 'ok';
+  }catch(e){return 'failed'}
+ })();
+ LIB_REFRESH_INFLIGHT=p;
+ p.finally(()=>{LIB_REFRESH_INFLIGHT=null});
+ return p;
 }
+async function refreshLibrary(){return refreshLibraryOnce()}
 // @test-end perf
 function escCss(u){return String(u||'').replace(/["'\)\s]/g,'')}
 function escCssUrl(u){return String(u||'').replace(/["'\)\s]/g,'')}
@@ -6458,8 +6471,11 @@ function renderStore(){
  el.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>openExternal(b.dataset.buy));
  bindStoreCards(el);
 }
+// @test-begin storebinding
 function bindStoreCards(scope){
  scope.querySelectorAll('.bookcard[data-bid]').forEach(b=>{
+  if(b.dataset.bound==='1')return; // already has its listeners: never double-bind
+  b.dataset.bound='1';
   const id=b.dataset.bid;const added=!!libEnsure().books[id];
   const holdMs=450,move=14;let timer=0,sx=0,sy=0;
   const down=e=>{const t=e.changedTouches?e.changedTouches[0]:e;sx=t.clientX;sy=t.clientY;
@@ -6472,6 +6488,7 @@ function bindStoreCards(scope){
   b.addEventListener('pointercancel',up);
   b.addEventListener('contextmenu',e=>e.preventDefault());
   b.addEventListener('click',()=>{clearTimeout(timer);if(added)openBook(id);else showExploreSheet(id)})})}
+// @test-end storebinding
 function libFilterLabel(){return libFilter==='favorites'?'Favorites':libFilter==='reading'?'Reading':libFilter==='finished'?'Finished':'My library'}
 // @test-begin libfilter
 function applyLibFilter(inLib,L){
