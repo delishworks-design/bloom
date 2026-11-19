@@ -58,7 +58,7 @@ function load() {
     sync: ['isPlainObject', 'mergeDocs', 'chooseLoginDoc', 'docHasContent', 'mergeDocsThreeWay', 'syncDeviceId', 'syncMarkDeleted', 'syncClassifyResponse', 'syncMealIds'],
     library: ['libEnsure', 'libBookEntry', 'libBlank', 'libVisibleIds', 'libRecentList', 'migrateLibrary'],
     libfilter: ['applyLibFilter'],
-    perf: ['libCached', 'refreshLibrary', 'refreshLibraryOnce', 'libDebounce', 'libSearchText', 'validCatalog', 'maybeRefreshLibrary'],
+    perf: ['libCached', 'refreshLibrary', 'refreshLibraryOnce', 'libDebounce', 'libSearchText', 'validCatalog', 'maybeRefreshLibrary', 'libRefreshTimeoutSet'],
     storebinding: ['bindStoreCards'],
     boot: ['localSessionBoot'],
     classicCover: ['coverHash','coverLines','escXml','classicCoverSVG'],

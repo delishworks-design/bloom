@@ -5838,42 +5838,50 @@ function maybeRefreshLibrary(){
  }catch(e){}
 }
 let LIB_REFRESH_TIMEOUT=10000;
+function libRefreshTimeoutSet(ms){LIB_REFRESH_TIMEOUT=Math.max(1,+ms||10000)}
 function refreshLibraryOnce(){
  if(LIB_REFRESH_INFLIGHT)return LIB_REFRESH_INFLIGHT;
- // hard timeout: a hung request must never pin the in-flight lock for the session
- const ctrl=(typeof AbortController!=='undefined')?new AbortController():null;
- const timer=setTimeout(()=>{try{if(ctrl)ctrl.abort()}catch(e){}},LIB_REFRESH_TIMEOUT);
  const p=(async()=>{
-  try{
-   const etag=ST.get('bloom_lib_etag');
-   const headers=etag?{'If-None-Match':etag}:{};
-   const r=await fetch(LIB_REMOTE_EFFECTIVE,ctrl?{headers,signal:ctrl.signal}:{headers});
-   if(r.status===304){try{ST.set('bloom_lib_fetched_at',String(Date.now()))}catch(e){}return 'fresh'}
-   if(!r.ok)return 'failed';
-   const j=await r.json();
-   if(!validCatalog(j))return 'invalid'; // never overwrite a valid cache with malformed data
-   const nextEtag=r.headers&&r.headers.get?r.headers.get('etag'):null;
-   const curRaw=ST.get('bloom_library');
-   let stored=null;try{stored=JSON.stringify(j)}catch(e){stored=null}
-   if(stored===null)return 'invalid';
-   if(curRaw!==stored){
-    try{ST.set('bloom_library',stored)}catch(e){return 'failed'}
-   }
-   try{if(nextEtag)ST.set('bloom_lib_etag',nextEtag)}catch(e){}
-   try{ST.set('bloom_lib_fetched_at',String(Date.now()))}catch(e){}
-   LIB_CATALOG=j.books; // replace the in-memory copy atomically
-   LIB_SEARCH_CACHE=new Map();
-   const changed=curRaw!==stored;
-   if(changed){
-    try{if(typeof BOOKCARD_CACHE!=='undefined')BOOKCARD_CACHE.clear()}catch(e){}
-    if(view==='library'&&safeToRender())library();
-   }
-   return 'ok';
-  }catch(e){return 'failed'}
-  finally{clearTimeout(timer)}
+  // one hard race for the whole attempt: fetch, json() and every side effect are bounded
+  const ctrl=(typeof AbortController!=='undefined')?new AbortController():null;
+  let timedOut=false;
+  const attempt=(async()=>{
+   try{
+    const etag=ST.get('bloom_lib_etag');
+    const headers=etag?{'If-None-Match':etag}:{};
+    const r=await fetch(LIB_REMOTE_EFFECTIVE,ctrl?{headers,signal:ctrl.signal}:{headers});
+    if(r.status===304){if(timedOut)return 'timed-out';try{ST.set('bloom_lib_fetched_at',String(Date.now()))}catch(e){}return 'fresh'}
+    if(!r.ok)return 'failed';
+    const j=await r.json();
+    if(timedOut)return 'timed-out';
+    if(!validCatalog(j))return 'invalid'; // never overwrite a valid cache with malformed data
+    const nextEtag=r.headers&&r.headers.get?r.headers.get('etag'):null;
+    const curRaw=ST.get('bloom_library');
+    let stored=null;try{stored=JSON.stringify(j)}catch(e){stored=null}
+    if(stored===null)return 'invalid';
+    if(curRaw!==stored){
+     try{ST.set('bloom_library',stored)}catch(e){return 'failed'}
+    }
+    if(timedOut)return 'timed-out'; // lost the race: do not claim success
+    try{if(nextEtag)ST.set('bloom_lib_etag',nextEtag)}catch(e){}
+    try{ST.set('bloom_lib_fetched_at',String(Date.now()))}catch(e){}
+    LIB_CATALOG=j.books; // replace the in-memory copy atomically
+    LIB_SEARCH_CACHE=new Map();
+    const changed=curRaw!==stored;
+    if(changed){
+     try{if(typeof BOOKCARD_CACHE!=='undefined')BOOKCARD_CACHE.clear()}catch(e){}
+     if(view==='library'&&safeToRender())library();
+    }
+    return 'ok';
+   }catch(e){return 'failed'}
+  })();
+  let timer=null;
+  const result=await Promise.race([attempt,new Promise(res=>{timer=setTimeout(()=>{timedOut=true;try{if(ctrl)ctrl.abort()}catch(e){}res('failed')},LIB_REFRESH_TIMEOUT)})]);
+  clearTimeout(timer); // always release the watchdog, on every outcome
+  return result;
  })();
  LIB_REFRESH_INFLIGHT=p;
- p.finally(()=>{LIB_REFRESH_INFLIGHT=null});
+ p.finally(()=>{LIB_REFRESH_INFLIGHT=null}); // always release the single-flight lock
  return p;
 }
 async function refreshLibrary(){return refreshLibraryOnce()}

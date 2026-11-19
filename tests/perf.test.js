@@ -242,7 +242,7 @@ test('newly appended cards are fully interactive and long-press fires once', asy
 test('a stalled fetch is aborted, does not advance the timestamp, and clears the in-flight lock', async () => {
   const ctx = load();
   ctx.AbortController = AbortController;
-  ctx.LIB_REFRESH_TIMEOUT = 40;
+  ctx.libRefreshTimeoutSet(40);
   const t0 = 1000;
   ctx.ST.set('bloom_lib_fetched_at', String(t0));
   ctx.view = 'cycle';
@@ -272,7 +272,7 @@ test('a stalled fetch is aborted, does not advance the timestamp, and clears the
 test('the refresh timeout clears after a successful fetch so later calls are not pinned', async () => {
   const ctx = load();
   ctx.AbortController = AbortController;
-  ctx.LIB_REFRESH_TIMEOUT = 40;
+  ctx.libRefreshTimeoutSet(40);
   ctx.view = 'cycle';
   ctx.safeToRender = () => false;
   ctx.ST.set('bloom_lib_fetched_at', '1000');
@@ -317,4 +317,59 @@ test('Show more: first batch bound once, paging appends, old cards never double-
     ['explore', 'keep1'], ['explore', 'keep2'],
     ['explore', 'new1'], ['explore', 'new2'], ['explore', 'keep3'],
   ]);
+});
+
+test('timeout without AbortController still fails, clears the lock, and retry succeeds', async () => {
+  const ctx = load();
+  ctx.AbortController = undefined; // simulate environments without AbortController
+  ctx.libRefreshTimeoutSet(40);
+  const t0 = 1000;
+  ctx.ST.set('bloom_lib_fetched_at', String(t0));
+  ctx.view = 'cycle';
+  ctx.safeToRender = () => false;
+  ctx.fetch = () => new Promise(() => {}); // never settles
+
+  const r1 = await ctx.refreshLibrary();
+  assert.equal(r1, 'failed');
+  assert.equal(ctx.ST.get('bloom_lib_fetched_at'), String(t0));
+
+  ctx.fetch = async () => ({ ok: true, status: 200, headers: { get: () => null }, json: async () => catalog('after', 2) });
+  const r2 = await ctx.refreshLibrary();
+  assert.equal(r2, 'ok');
+  assert.ok(Number(ctx.ST.get('bloom_lib_fetched_at')) > t0);
+});
+
+test('a fetch that resolves but whose response.json() hangs is also timed out', async () => {
+  const ctx = load();
+  ctx.AbortController = AbortController;
+  ctx.libRefreshTimeoutSet(40);
+  const t0 = 1000;
+  ctx.ST.set('bloom_lib_fetched_at', String(t0));
+  ctx.view = 'cycle';
+  ctx.safeToRender = () => false;
+  ctx.fetch = async () => ({ ok: true, status: 200, headers: { get: () => null }, json: () => new Promise(() => {}) });
+
+  const r1 = await ctx.refreshLibrary();
+  assert.equal(r1, 'failed');
+  assert.equal(ctx.ST.get('bloom_lib_fetched_at'), String(t0));
+  assert.equal(ctx.ST.get('bloom_library'), null);
+
+  ctx.fetch = async () => ({ ok: true, status: 200, headers: { get: () => null }, json: async () => catalog('ok', 2) });
+  const r2 = await ctx.refreshLibrary();
+  assert.equal(r2, 'ok');
+});
+
+test('successful and 304 attempts both clear the watchdog so immediate retries work', async () => {
+  const ctx = load();
+  ctx.AbortController = AbortController;
+  ctx.libRefreshTimeoutSet(40);
+  ctx.view = 'cycle';
+  ctx.safeToRender = () => false;
+  ctx.ST.set('bloom_lib_fetched_at', '1000');
+  ctx.ST.set('bloom_library', JSON.stringify(catalog('304', 2)));
+  ctx.fetch = async () => ({ ok: true, status: 304, headers: { get: () => null } });
+  const r1 = await ctx.refreshLibrary();
+  assert.equal(r1, 'fresh');
+  const r2 = await ctx.refreshLibrary();
+  assert.equal(r2, 'fresh'); // not pinned by a stale watchdog
 });
