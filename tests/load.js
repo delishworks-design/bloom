@@ -62,6 +62,9 @@ function load() {
     settingsBack: ['hasSafetyCopy', 'restoreSafetyCopy'],
     safetop: ['safeTop', 'safeTopBind', 'safeTopInvalidate'],
     fabcalc: ['fabBounds'],
+    index: ['libIndexEnsure', 'libPersonalIndex', 'libPersonalInvalidate', 'libViewPlan', 'libBatchIds', 'libViewSet', 'LIB_BATCH', 'libChipCounts'],
+    qa: ['qaPrefersReducedMotion', 'qaFresh', 'QA_FRESH_MS', 'QA_TRANS_MS'],
+    quickring: ['openQuickRing'],
     storebinding: ['bindStoreCards'],
     boot: ['localSessionBoot'],
     classicCover: ['coverHash','coverLines','escXml','classicCoverSVG'],
@@ -85,7 +88,7 @@ function load() {
     libraryExplore: ['exploreGroups', 'exploreOrder', 'exploreDefaultCategory', 'exploreBooks'],
     bloomcal: ['calContinueBtn', 'calMonthsHTML', 'predictedBleedWindows'],
   };
-  for (const name of ['phases', 'esc', 'sync', 'netmsg', 'roWho', 'sxmig', 'backup', 'smart', 'auth', 'ownmode', 'widget', 'planui', 'library', 'reader', 'errorIgnore', 'partnerLibrary', 'plannerAdvance', 'readingGoal', 'readingSync', 'bloomcal', 'libraryExplore', 'focusVoice', 'classicCover', 'perf', 'boot', 'libfilter', 'storebinding', 'settingsBack', 'safetop', 'fabcalc']) {
+  for (const name of ['phases', 'esc', 'sync', 'netmsg', 'roWho', 'sxmig', 'backup', 'smart', 'auth', 'ownmode', 'widget', 'planui', 'library', 'reader', 'errorIgnore', 'partnerLibrary', 'plannerAdvance', 'readingGoal', 'readingSync', 'bloomcal', 'libraryExplore', 'focusVoice', 'classicCover', 'perf', 'boot', 'libfilter', 'storebinding', 'settingsBack', 'safetop', 'fabcalc', 'index', 'qa', 'quickring']) {
     let code;
     try{ code = extract(html, name); }catch(e){ if(name==='auth') continue; throw e; }
     const names = exportsByName[name];

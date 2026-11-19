@@ -540,3 +540,32 @@ test('flower cache evicts the least recently used entry past 40', () => {
   assert.ok(!keys.includes('Fill goal 1|0'), 'least recently used entry was evicted');
   assert.ok(keys.includes('Fill goal 99|0'), 'new entry is cached');
 });
+
+test('quick ring timing is actually responsive', () => {
+  const ctx = load();
+  assert.ok(ctx.QA_FRESH_MS <= 150, 'freshness guard fires within 150ms');
+  assert.ok(ctx.QA_TRANS_MS <= 250, 'overlay removal fallback is short');
+  assert.equal(ctx.qaFresh(1000, 1000), true);
+  assert.equal(ctx.qaFresh(1000 + ctx.QA_FRESH_MS + 1, 1000), false);
+});
+
+test('reduced-motion users get an effectively instant ring close', () => {
+  const ctx = load();
+  ctx.window = { matchMedia: () => ({ matches: true }) };
+  assert.equal(ctx.qaPrefersReducedMotion(), true);
+  ctx.window = { matchMedia: () => ({ matches: false }) };
+  assert.equal(ctx.qaPrefersReducedMotion(), false);
+  ctx.window = undefined;
+  assert.equal(ctx.qaPrefersReducedMotion(), false);
+});
+
+test('index.html wires the quick ring to the new responsive timing constants', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const m = html.match(/const items=\[\['log','Log',IC\.list\],\['period','Period',IC\.drop\],\['meal','Meal',IC\.meal\],\['mood','Mood',IC\.mood\],\['plan','Plan',IC\.check\],\['water','Water',IC\.glass\]\]/);
+  assert.ok(m, 'all six quick actions are still wired up in order');
+  assert.ok(html.includes('openQuickRing'), 'openQuickRing still exists');
+  assert.ok(html.includes('@media (prefers-reduced-motion: reduce){.qaring,.qaring .qaring-item,.qaring .qaring-core,.qaring-scrim'), 'reduced-motion ring CSS present');
+  assert.ok(!html.includes(',520)}'), 'old 520ms close delay removed');
+});

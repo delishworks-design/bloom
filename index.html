@@ -314,12 +314,13 @@ button{font-family:Sansita,system-ui,sans-serif;-webkit-tap-highlight-color:tran
 .fab img{width:100%;height:100%;object-fit:contain;display:block;filter:drop-shadow(0 6px 12px rgba(120,70,80,.32))}
 .qaic{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--tealS);color:#2A8A87}
 .qaring{position:fixed;inset:0;z-index:8;touch-action:none}
-.qaring-scrim{position:absolute;inset:0;background:rgba(58,46,51,.30);opacity:0;transition:opacity .25s}
+.qaring-scrim{position:absolute;inset:0;background:rgba(58,46,51,.30);opacity:0;transition:opacity .18s}
 .qaring.on .qaring-scrim{opacity:1}
-.qaring-core{position:absolute;left:50%;top:50%;width:64px;height:64px;margin:-32px 0 0 -32px;box-sizing:border-box;padding:0;border:0;border-radius:50%;background:none;display:grid;place-items:center;cursor:pointer;transform:translate(var(--sx,0px),var(--sy,0px)) scale(1);transition:transform .75s cubic-bezier(.2,.9,.25,1);z-index:2}
+.qaring-core{position:absolute;left:50%;top:50%;width:64px;height:64px;margin:-32px 0 0 -32px;box-sizing:border-box;padding:0;border:0;border-radius:50%;background:none;display:grid;place-items:center;cursor:pointer;transform:translate(var(--sx,0px),var(--sy,0px)) scale(1);transition:transform .32s cubic-bezier(.2,.9,.25,1);z-index:2}
 .qaring.bloom.on .qaring-core{transform:translate(0,0) rotate(720deg) scale(1.06)}
 .qaring:not(.bloom).on .qaring-core{transform:translate(0,0) scale(1.08)}
 .fab:focus,.fab:focus-visible,.qaring-core:focus,.qaring-core:focus-visible{outline:0}
+@media (prefers-reduced-motion: reduce){.qaring,.qaring .qaring-item,.qaring .qaring-core,.qaring-scrim{transition-duration:.01ms !important;transition-delay:0s !important}}
 .fab svg{width:100%;height:100%;display:block;filter:drop-shadow(0 6px 12px rgba(120,70,80,.32))}
 .fabopts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .fabopt{width:56px;height:56px;border:1.5px solid var(--line);border-radius:16px;background:var(--card2);display:grid;place-items:center;cursor:pointer;padding:3px;transition:all .15s}
@@ -327,7 +328,7 @@ button{font-family:Sansita,system-ui,sans-serif;-webkit-tap-highlight-color:tran
 .fabopt[aria-pressed=true]{border-color:var(--rose);box-shadow:0 0 0 3px var(--pinkS)}
 .qaring-core img{width:100%;height:100%;object-fit:contain;display:block;filter:drop-shadow(0 8px 18px rgba(120,70,80,.38))}
 .qaring-core svg{width:100%;height:100%;display:block;filter:drop-shadow(0 8px 18px rgba(120,70,80,.38))}
-.qaring-item{position:absolute;left:50%;top:50%;width:80px;height:94px;margin:-47px 0 0 -40px;padding:0;border:0;background:none;cursor:pointer;transform-origin:50% 50%;transform:translate(0,0) rotate(calc(var(--r,0deg) + var(--spin,0deg))) scale(.15);opacity:0;transition:transform .74s cubic-bezier(.16,1.15,.3,1),opacity .22s;transition-delay:var(--d,0s);z-index:1;outline:0;-webkit-tap-highlight-color:transparent}
+.qaring-item{position:absolute;left:50%;top:50%;width:80px;height:94px;margin:-47px 0 0 -40px;padding:0;border:0;background:none;cursor:pointer;transform-origin:50% 50%;transform:translate(0,0) rotate(calc(var(--r,0deg) + var(--spin,0deg))) scale(.15);opacity:0;transition:transform .34s cubic-bezier(.16,1.1,.3,1),opacity .16s;transition-delay:var(--d,0s);z-index:1;outline:0;-webkit-tap-highlight-color:transparent}
 .qaring:not(.on) .qaring-item{transition-delay:0s}
 .qaring.on .qaring-item{transform:translate(var(--x),var(--y)) rotate(var(--r,0deg)) scale(1);opacity:1}
 .petal-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 7px 16px rgba(184,69,107,.18))}
@@ -1789,7 +1790,7 @@ async function sbSignUp(email,pw){await sbInit();if(!sb)return 'offline';
 // ---------- storage
 const key=u=>'bloom_d_'+u;
 const blank=()=>({p:{},logs:{},tasks:[],done:{},meals:{},journal:[],plan:{},games:{},cons:true,rem:{on:false,time:'20:00'},library:{books:{}},read:{goalMin:5,goalBooks:1,log:{}}});
-function save(){if(RO){if(!ownMode){try{const L=libEnsure();libStoreWrite(L)}catch(e){}}return}if(D&&D._uid&&sbUser&&D._uid!==sbUser.id){reportErr('save.guard','doc belongs to another account');return}D.savedAt=Date.now();try{if(user)ST.set('bloom_dirty_'+user,'1')}catch(e){};ST.set(user?key(user):'bloom_anon',JSON.stringify(D));sbPushSoon()}
+function save(){LIB_PERSONAL=null;LIB_PERSONAL_FOR=null;if(RO){if(!ownMode){try{const L=libEnsure();libStoreWrite(L)}catch(e){}}return}if(D&&D._uid&&sbUser&&D._uid!==sbUser.id){reportErr('save.guard','doc belongs to another account');return}D.savedAt=Date.now();try{if(user)ST.set('bloom_dirty_'+user,'1')}catch(e){};ST.set(user?key(user):'bloom_anon',JSON.stringify(D));sbPushSoon()}
 // session must survive an app kill -> localStorage, not sessionStorage
 const setSession=v=>{try{ST.set('bloom_s',v);sessionStorage.setItem('bloom_s',v)}catch(e){}};
 const clearSession=()=>{try{ST.del('bloom_s');sessionStorage.removeItem('bloom_s')}catch(e){}delete mem.s};
@@ -3334,6 +3335,12 @@ function safeTop(){
  }catch(e){return 24}
 }
 // @test-end safetop
+// @test-begin qa
+// Quick Action responsiveness constants; kept pure so tests can exercise them
+const QA_FRESH_MS=120,QA_TRANS_MS=180;
+function qaPrefersReducedMotion(){try{return typeof window!=='undefined'&&window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches}catch(e){return false}}
+function qaFresh(now,openedAt){return (now-openedAt)<QA_FRESH_MS}
+// @test-end qa
 safeTopBind();
 // @test-begin fabcalc
 function fabBounds(){
@@ -3406,8 +3413,14 @@ function fabSync(){
  fabEl.style.display=on?'':'none';
  if(on)fabPlace();
 }
+// @test-begin quickring
+let qaTokenCounter=0;
 function openQuickRing(fab,onAct){
- if(document.getElementById('qaring'))return;
+ const token=++qaTokenCounter;
+ // drop a stale overlay from a previous close so a reopen is never swallowed
+ const stale=document.getElementById('qaring');
+ if(stale&&typeof stale._qaringCleanup==='function')stale._qaringCleanup();
+ else if(stale)stale.remove();
  const r=fab.getBoundingClientRect(),vw=innerWidth,vh=innerHeight;
  const sx=Math.round(r.left+r.width/2-vw/2),sy=Math.round(r.top+r.height/2-vh/2);
  const R=Math.round(Math.min(vw,vh)*0.30);
@@ -3422,15 +3435,36 @@ function openQuickRing(fab,onAct){
  wrap.style.setProperty('--sx',sx+'px');wrap.style.setProperty('--sy',sy+'px');
  wrap.innerHTML=`<div class="qaring-scrim"></div><button class="qaring-core" id="qrCore" aria-label="Close quick actions">${coreHTML}</button>`+items.map((it,i)=>{
   const a=(-90+i*60)*Math.PI/180,rot=-90+i*60+90;
-  return `<button class="qaring-item" data-qa="${it[0]}" style="--x:${(Math.cos(a)*R).toFixed(1)}px;--y:${(Math.sin(a)*R).toFixed(1)}px;--r:${rot}deg;--spin:${spins[i]}deg;--d:${(0.05+i*0.035).toFixed(3)}s"><svg class="petal-svg" viewBox="-60 -70 120 140" aria-hidden="true"><path class="petal-back" transform="scale(1.12)" d="${PET}"/><path class="petal-fill" d="${PET}"/></svg><span class="petal-in"><span class="pi">${it[2](18)}</span><span class="pl">${it[1]}</span></span></button>`}).join('');
+  return `<button class="qaring-item" data-qa="${it[0]}" style="--x:${(Math.cos(a)*R).toFixed(1)}px;--y:${(Math.sin(a)*R).toFixed(1)}px;--r:${rot}deg;--spin:${spins[i]}deg;--d:${(0.02+i*0.018).toFixed(3)}s"><svg class="petal-svg" viewBox="-60 -70 120 140" aria-hidden="true"><path class="petal-back" transform="scale(1.12)" d="${PET}"/><path class="petal-fill" d="${PET}"/></svg><span class="petal-in"><span class="pi">${it[2](18)}</span><span class="pl">${it[1]}</span></span></button>`}).join('');
  document.body.appendChild(wrap);
  fab.style.visibility='hidden';
  requestAnimationFrame(()=>requestAnimationFrame(()=>wrap.classList.add('on')));
  let closed=false;
  const openedAt=Date.now();
- const fresh=()=>Date.now()-openedAt<450;
- const close=act=>{if(closed)return;closed=true;document.removeEventListener('keydown',esc);wrap.classList.remove('on');
-  setTimeout(()=>{wrap.remove();fab.style.visibility='';if(act)onAct(act)},520)};
+ const fresh=()=>qaFresh(Date.now(),openedAt);
+ let finishT=null;
+ // Central, idempotent cleanup for THIS ring instance: unregister listeners,
+ // cancel the fallback timer, optionally detach, and only restore the FAB if
+ // this ring is still the active one.
+ const cleanup=()=>{
+  if(cleanup.done)return; cleanup.done=true;
+  document.removeEventListener('keydown',esc);
+  wrap.removeEventListener('transitionend',finishHandler);
+  if(finishT){clearTimeout(finishT);finishT=null}
+  if(document.getElementById('qaring')===wrap)wrap.remove();
+  if(token===qaTokenCounter)fab.style.visibility='';
+ };
+ wrap._qaringCleanup=cleanup;
+ const finishHandler=()=>cleanup();
+ const close=act=>{
+  if(closed)return;closed=true;
+  // begin closing immediately; the action executes right away, while the ring is still fading out
+  wrap.classList.remove('on');
+  if(act)onAct(act);
+  // overlay is removed as soon as the fade ends (or a short fallback), never 520ms of waiting
+  wrap.addEventListener('transitionend',finishHandler);
+  finishT=setTimeout(()=>cleanup(),QA_TRANS_MS);
+ };
  wrap.querySelector('.qaring-scrim').addEventListener('pointerdown',()=>{if(!fresh())close()});
  wrap.querySelector('#qrCore').onclick=()=>{if(!fresh())close()};
  wrap.querySelectorAll('[data-qa]').forEach(b=>b.onclick=()=>{if(!fresh())close(b.dataset.qa)});
@@ -3438,6 +3472,7 @@ function openQuickRing(fab,onAct){
  document.addEventListener('keydown',esc);
  wrap.querySelector('#qrCore').focus({preventScroll:true});
 }
+// @test-end quickring
 function cyclePage(){const d=today(),l=L(d),ts=tasksFor(d),n=ts.filter(t=>isDone(t.id,d)).length;const h=new Date().getHours();
  const m=D.meals[d]||[];
  const c=cycleStats(),current=dashboardCycle(),len=c.avg||current.cycleLength||28,day=c.last?Math.round((new Date(today())-new Date(c.last))/864e5)+1:1,dt=current.state==='estimated'?current.cycleDay:null;
@@ -5923,6 +5958,54 @@ function refreshLibraryOnce(){
 }
 async function refreshLibrary(){return refreshLibraryOnce()}
 // @test-end perf
+// @test-begin index
+// Pure chip-count math; the filtered scope decides the counts when a search is active
+function libChipCounts(fAll, L, personal, q){
+ const nAll=fAll.length;
+ const nFav=q?fAll.filter(id=>{const b=L[id];return b&&b.favorite}).length:personal.favs.length;
+ const nRead=q?fAll.filter(id=>{const b=L[id];return b&&!b.finished}).length:personal.reading.length;
+ const nFin=q?fAll.filter(id=>{const b=L[id];return b&&b.finished}).length:personal.fin.length;
+ return {nAll,nFav,nRead,nFin};
+}
+// In-memory indexes derived from the catalog and the personal library.
+// Disposable and rebuilt lazily; never a second source of truth.
+let LIB_INDEX_SRC=null,LIB_INDEX_CACHE=null;
+function libIndexEnsure(){
+ const all=libCached();
+ if(LIB_INDEX_SRC===all)return LIB_INDEX_CACHE;
+ const byId=new Map();
+ for(let i=0;i<all.length;i++){const b=all[i];byId.set(String(b.id),b)}
+ LIB_INDEX_CACHE={all,byId};LIB_INDEX_SRC=all;
+ return LIB_INDEX_CACHE;
+}
+let LIB_PERSONAL=null,LIB_PERSONAL_FOR=null;
+function libPersonalIndex(doc){
+ const d=doc||(typeof D!=='undefined'?D:null);
+ let books={};
+ if(d&&d.library&&d.library.books)books=d.library.books;
+ else { try{books=libEnsure().books}catch(e){books={}} }
+ if(LIB_PERSONAL&&LIB_PERSONAL_FOR===books)return LIB_PERSONAL;
+ const all=[],favs=[],reading=[],fin=[];
+ for(const id of Object.keys(books)){const b=books[id];all.push(id);if(b&&b.favorite)favs.push(id);if(b&&b.finished)fin.push(id);else reading.push(id)}
+ LIB_PERSONAL={all,favs,reading,fin};
+ LIB_PERSONAL_FOR=books;
+ return LIB_PERSONAL;
+}
+function libPersonalInvalidate(){LIB_PERSONAL=null;LIB_PERSONAL_FOR=null}
+const LIB_BATCH=40;
+// render window state for the currently rendered personal list
+let LIB_VIEW={ids:[],shown:0,total:0};
+function libViewPlan(total,shown){
+ const end=Math.min(total,shown+LIB_BATCH);
+ return {start:shown,end,done:end>=total};
+}
+function libViewSet(ids){LIB_VIEW={ids:(ids||[]).slice(),shown:0,total:(ids||[]).length};return LIB_VIEW}
+function libBatchIds(start,end){
+ const total=LIB_VIEW.ids.length;
+ const s=Math.max(0,start|0), e=Math.min(total,end|0);
+ return LIB_VIEW.ids.slice(s,e);
+}
+// @test-end index
 function escCss(u){return String(u||'').replace(/["'\)\s]/g,'')}
 function escCssUrl(u){return String(u||'').replace(/["'\)\s]/g,'')}
 function idbPromise(req){return new Promise((res,rej)=>{req.onsuccess=()=>res(req.result);req.onerror=()=>rej(req.error)})}
@@ -6451,21 +6534,58 @@ function libContinueHTML(){
  if(!items.length)return '';
  return `<div class="lib-recent"><p class="lib-sub">Continue reading</p><div class="recentrow">${items.join('')}</div></div>`}
 function libFilterChip(id,label,count){return `<button class="lib-chip${libFilter===id?' on':''}" role="tab" data-lf="${id}" aria-pressed="${libFilter===id}">${label}${count!=null?' <span class="lib-chip-n">'+count+'</span>':''}</button>`}
+function libBatchAppendHTML(start,end){
+ const L=libEnsure();const idx=libIndexEnsure();const out=[];
+ const ids=libBatchIds(start,end);
+ for(let i=0;i<ids.length;i++){const id=ids[i];const b=idx.byId.get(id);if(b)out.push(bookcardHTML(b,L.books[id],false))}
+ return out.join('');
+}
+function libShowMore(){
+ const el=document.getElementById('lb');
+ if(!el)return;
+ const total=LIB_VIEW.total,start=LIB_VIEW.shown;
+ if(start>=total)return;
+ const end=Math.min(total,start+LIB_BATCH);
+ const grid=el.querySelector('#lbGrid');if(!grid){renderBookList();return}
+ grid.insertAdjacentHTML('beforeend',libBatchAppendHTML(start,end));
+ LIB_VIEW.shown=end;
+ bindStoreCards(grid);
+ const more=el.querySelector('#lbMore');
+ if(more){
+  if(LIB_VIEW.shown>=total){more.textContent='Showing all '+total+' books';more.disabled=true;more.classList.add('ghosted')}
+  else{more.textContent='Show more ('+(total-LIB_VIEW.shown)+' more)'}
+ }
+}
 function renderBookList(){const el=document.getElementById('lb');
  if(!el)return;
  const q=String(libSearch||'').trim().toLowerCase();
  const L=libEnsure();
- const all=libCached().filter(b=>!q||libSearchText(b).includes(q));
- const inLib=all.filter(b=>L.books[b.id]);
- const nAll=inLib.length,nFav=inLib.filter(b=>L.books[b.id].favorite).length,nRead=inLib.filter(b=>!L.books[b.id].finished).length,nFin=nAll-nRead;
+ const idx=libIndexEnsure();
+ const personal=libPersonalIndex();
+ const booksById=idx.byId;
+ // membership-only filtering via the personal index; search narrows via indexed text
+ const pool=personal.all.filter(id=>booksById.has(id));
+ const fAll=pool.filter(id=>!q||libSearchText(booksById.get(id)).includes(q));
+ const counts = libChipCounts(fAll, L.books, personal, q); const nAll=counts.nAll,nFav=counts.nFav,nRead=counts.nRead,nFin=counts.nFin;
  const head=q?'':libContinueHTML();
  const filters=nAll?`<div class="lib-chips">${libFilterChip('all','All')}${libFilterChip('favorites','Favorites',nFav)}${libFilterChip('reading','Reading',nRead)}${libFilterChip('finished','Finished',nFin)}</div>`:'';
- const filtered=applyLibFilter(inLib,L);
- const mineHTML=filtered.length?`<p class="lib-sub">${libFilterLabel()}</p><div class="bookgrid">${filtered.map(b=>bookcardHTML(b,L.books[b.id],false)).join('')}</div>`:q?'<p class="meta" style="text-align:center;padding:18px">Nothing found</p>':(libFilter==='all'?'<div class="libempty"><p>Your library is empty</p><p class="meta">Add a book below</p></div>':'<div class="libempty"><p>'+(libFilter==='favorites'?'No favorites yet':libFilter==='reading'?'Nothing in progress':'No finished books yet')+'</p></div>');
- const exploreHTML=all.length?exploreTeaserHTML():'';
+ let filtered=fAll;
+ if(libFilter==='favorites')filtered=fAll.filter(id=>L.books[id]&&L.books[id].favorite);
+ else if(libFilter==='reading')filtered=fAll.filter(id=>L.books[id]&&!L.books[id].finished);
+ else if(libFilter==='finished')filtered=fAll.filter(id=>L.books[id]&&L.books[id].finished);
+ // materialize ids once; render progressively in batches of LIB_BATCH
+ const ids=filtered;
+ LIB_VIEW={ids,shown:Math.min(LIB_BATCH,ids.length),total:ids.length};
+ const moreBtn=ids.length>LIB_BATCH?`<button type="button" class="btn ghost" id="lbMore" style="width:100%;margin-top:10px">Show more (${ids.length-LIB_BATCH} more)</button>`:(ids.length?'<p class="meta" style="text-align:center;margin:10px 0 0">Showing all '+ids.length+' books</p>':'');
+ const gridHTML='<div class="bookgrid" id="lbGrid"></div>' + moreBtn;
+ const mineHTML=filtered.length?`<p class="lib-sub">${libFilterLabel()} <span class="meta">(${ids.length})</span></p>${gridHTML}`:q?'<p class="meta" style="text-align:center;padding:18px">Nothing found</p>':(libFilter==='all'?'<div class="libempty"><p>Your library is empty</p><p class="meta">Add a book below</p></div>':'<div class="libempty"><p>'+(libFilter==='favorites'?'No favorites yet':libFilter==='reading'?'Nothing in progress':'No finished books yet')+'</p></div>');
+ const exploreHTML=idx.all.length?exploreTeaserHTML():'';
  el.innerHTML=head+filters+mineHTML+exploreHTML;
- el.querySelectorAll('.lib-chip').forEach(b=>b.onclick=()=>{libFilter=b.dataset.lf;library()});
+ const grid=el.querySelector('#lbGrid');
+ if(grid){grid.innerHTML=libBatchAppendHTML(0,LIB_VIEW.shown)}
+ el.querySelectorAll('.lib-chip').forEach(b=>b.onclick=()=>{libFilter=b.dataset.lf;LIB_VIEW.shown=LIB_BATCH;library()});
  el.querySelectorAll('.recentcard[data-bid]').forEach(b=>b.addEventListener('click',()=>{const id=b.dataset.bid;const e=libEntry(id);if(e)openBook(id);else{showExploreSheet(id);library()}}));
+ const lbMore=el.querySelector('#lbMore');if(lbMore)lbMore.onclick=()=>{libShowMore()};
  const esb=el.querySelector('#exploreSeeAll');if(esb)esb.onclick=()=>{libView='store';library()};
  bindStoreCards(el)}
 const HEALHER_EBOOKS=[
