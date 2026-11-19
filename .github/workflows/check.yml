@@ -12,14 +12,22 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Check inline script
+      - name: Check inline scripts
         run: |
           python3 - <<'PY'
           import re
           s=open('index.html').read()
-          m=re.findall(r'<script>(.*?)</script>',s,re.S)
-          open('/tmp/app.js','w').write(m[-1])
+          # every plain inline script, not just the last one (the boot guard is last and tiny)
+          pat=re.compile(r'<script(?![^>]*\btype=)(?![^>]*\bsrc=)[^>]*>(.*?)</script>',re.S)
+          n=0
+          for i,m in enumerate(pat.finditer(s)):
+              body=m.group(1)
+              if not body.strip(): continue
+              open('/tmp/app%d.js' % i,'w').write(body)
+              print('checked script %d: %d bytes' % (i,len(body)))
+              n+=1
+          if not n: raise SystemExit('no inline scripts found')
           PY
-          node --check /tmp/app.js
+          for f in /tmp/app*.js; do node --check "$f" || exit 1; done
       - name: Run tests
         run: node --test tests/*.test.js

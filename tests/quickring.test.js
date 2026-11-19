@@ -302,3 +302,4 @@ test('shared artwork uses xlink:href for broad WebView compatibility', async () 
   const html = ctx.document.getElementById('qaring').innerHTML;
   assert.ok(html.includes('xlink:href="#qaringPet"'), 'use elements reference PET via xlink:href');
 });
+

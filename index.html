@@ -85,7 +85,7 @@ p{margin:0;line-height:1.5}
 .bookgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px 12px}
 .bookcard{position:relative;display:flex;flex-direction:column;text-align:left;background:var(--card);border:1.5px solid var(--line);border-radius:18px;padding:0;overflow:hidden;min-height:0;box-shadow:0 2px 10px rgba(120,70,80,.05);transition:transform .15s ease,box-shadow .2s ease;cursor:pointer}
 .bookcard:active{transform:scale(.98)}
-.bookcard-cover{display:block;width:100%;aspect-ratio:2/2.6;position:relative}
+.bookcard-cover{display:block;width:100%;aspect-ratio:2/2.6;position:relative;contain:layout paint}
 .bookcard-meta{display:flex;flex-direction:column;gap:2px;padding:10px 12px 12px}
  .bookcard-title{font-size:.92rem;font-weight:700;color:var(--ink);line-height:1.3;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;min-height:3.9em}
  .bookcard-author{font-size:.68rem;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;font-weight:700;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
@@ -197,11 +197,10 @@ body.reader-open{overflow:hidden}
 .reader-prog i{display:block;height:100%;background:var(--rose);width:0%;transition:width .25s ease}
 .spinner{width:26px;height:26px;border-radius:50%;border:2.5px solid rgba(184,69,107,.25);border-top-color:var(--rose);animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.bookcard-cover{position:relative;overflow:hidden;background:linear-gradient(115deg,#1F181B 30%,#2B2226 44%,#1F181B 52%);background-size:240% 100%;animation:coverShimmer 1.3s linear infinite}
-.bookcard-cover.done{animation:none;background:#151011}
+.bookcard-cover{position:relative;overflow:hidden;background:#151011}
+.bookcard-cover.done{background:#151011}
 .bookcard-cover::before{content:'';position:absolute;inset:0;background:linear-gradient(152deg,rgba(247,226,216,.34) 0%,rgba(247,226,216,.06) 26%,rgba(84,44,50,.14) 58%,rgba(24,12,16,.42) 100%);z-index:1;pointer-events:none}
 .bookcard-cover::after{content:'';position:absolute;left:0;right:0;bottom:0;height:62px;background:linear-gradient(180deg,rgba(22,17,19,0) 0%,rgba(22,17,19,.63) 100%);pointer-events:none;z-index:2}
-@keyframes coverShimmer{0%{background-position:0% 0}100%{background-position:200% 0}}
 .cover-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .65s ease;z-index:0}
 .cover-img.done{opacity:1}
 .bookcard-cover.broken .cover-img{display:none}
@@ -216,16 +215,16 @@ body.reader-open{overflow:hidden}
 .cover-chip.prog i{display:block;position:absolute;left:0;bottom:0;height:2px;background:#F8E7A4;border-radius:999px}
 .cover-art{position:absolute;inset:0;width:100%;height:100%;z-index:0}
 .cover-art{display:block;position:absolute;inset:0;width:100%;height:100%;z-index:0}
-.cover-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .5s ease}
+.cover-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:1}
 .cover-bg.done{opacity:1}
-.cover-overlay{position:absolute;inset:0;width:100%;height:100%}
+.cover-overlay{position:absolute;inset:0;width:100%;height:100%;background:radial-gradient(74% 74% at 50% 40%,rgba(20,14,17,0) 52%,rgba(12,9,11,.55) 100%)}
 .bookcard-cover.art::before,.bookcard-cover.art::after{display:none}
 .recentcard-cover.art::before,.recentcard-cover.art::after{display:none}
 .bookcard-star{position:absolute;top:6px;right:6px;z-index:3;color:#F8E7A4;width:22px;height:22px;display:grid;place-items:center;border-radius:50%;background:rgba(22,17,19,.55)}
 .bookcard-progress{display:block;height:3px;background:rgba(0,0,0,.07);overflow:hidden;position:relative}
 .bookcard-progress i{display:block;height:100%;background:var(--rose);width:0%}
 .bookcard-add{margin-left:auto;color:var(--teal);font-weight:800;letter-spacing:.04em}
-.card-genre{position:absolute;top:8px;left:8px;z-index:3;font-size:.5rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;padding:3px 9px;border-radius:999px;color:#3A2A28;background:#F4E3CB;box-shadow:0 1px 3px rgba(30,20,20,.2)}
+.card-genre{position:absolute;top:8px;left:8px;z-index:3;transform:translateZ(0);backface-visibility:hidden;font-size:.5rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;padding:3px 9px;border-radius:999px;color:#3A2A28;background:#F4E3CB;box-shadow:0 1px 3px rgba(30,20,20,.2)}
 .g-PCOSPMOS{background:#F6D1C7}.g-Pain{background:#E6D6F0}.g-Endocrine{background:#D8E4D0}.g-Classic{background:#F4E3CB}.g-Gothic{background:#DDD3E0}.g-Horror{background:#E2D2CC}.g-Mystery{background:#D4E2E0}.g-Adventure{background:#F4DFC7}.g-ScienceFiction{background:#D3DEE8}.g-Children{background:#FBE4D0}.g-Fantasy{background:#E4D9EC}.g-Philosophy{background:#E1E6D2}.g-ShortStories{background:#EBDCDF}.g-Poetry{background:#EFE2C8}.g-Psychology{background:#D9E0E6}.g-EmotionalWellbeing{background:#F3D3D3}.g-WomensHealth{background:#F6C8D2}.g-Health{background:#D5E7D8}.g-Fiction{background:#F6E2CB}.g-Other{background:#E8E2DC}
 .ex-detail{display:flex;gap:14px;align-items:flex-start}
 .ex-cover{flex:0 0 96px;width:96px;aspect-ratio:2/2.6;border-radius:12px;overflow:hidden;position:relative;background:#151011;box-shadow:0 8px 22px rgba(42,26,28,.38)}
@@ -307,31 +306,36 @@ button{font-family:Sansita,system-ui,sans-serif;-webkit-tap-highlight-color:tran
 .qa{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .qa button{background:var(--tealS) !important;border:1.5px solid #C8E2E0 !important;border-radius:16px !important;padding:12px 6px !important;min-height:68px !important;display:flex !important;flex-direction:column !important;align-items:center !important;justify-content:center !important;text-align:center !important;gap:5px !important;font-size:.82rem !important;line-height:1.25 !important;color:var(--ink) !important}
 /* floating quick actions */
-.fab{position:fixed;left:0;top:0;width:58px;height:58px;box-sizing:border-box;border-radius:50%;display:grid;place-items:center;padding:0;border:0;background:none;box-shadow:none;z-index:6;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:none;transition:left .22s cubic-bezier(.2,.9,.25,1),top .22s cubic-bezier(.2,.9,.25,1),transform .16s}
+.fab{position:fixed;left:0;top:0;width:58px;height:58px;box-sizing:border-box;border-radius:50%;display:grid;place-items:center;padding:0;border:0;background:none;box-shadow:none;z-index:6;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:none;transition:left .22s cubic-bezier(.2,.9,.25,1),top .22s cubic-bezier(.2,.9,.25,1),transform .16s}}
+/* soft shadow painted as a gradient: a drop-shadow filter on a fixed element re-rasterises on every repaint */
+.fab::before{content:'';position:absolute;left:4px;right:4px;bottom:-2px;height:70%;border-radius:50%;background:radial-gradient(closest-side,rgba(120,70,80,.34),rgba(120,70,80,.16) 62%,rgba(120,70,80,0));pointer-events:none;z-index:-1}
 .fab.drag{transition:none}
 .fab:active{transform:scale(.96)}
 .fab:focus-visible{outline:2px solid #B8456B;outline-offset:3px}
-.fab img{width:100%;height:100%;object-fit:contain;display:block;filter:drop-shadow(0 6px 12px rgba(120,70,80,.32))}
+.fab img{width:100%;height:100%;object-fit:contain;display:block}
 .qaic{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--tealS);color:#2A8A87}
-.qaring{position:fixed;inset:0;z-index:8;touch-action:none}
-.qaring-scrim{position:absolute;inset:0;background:rgba(58,46,51,.30);opacity:0;transition:opacity .18s}
+.qaring{position:fixed;inset:0;z-index:8;touch-action:none;contain:layout paint style}
+.qaring-scrim{position:absolute;inset:0;background:rgba(58,46,51,.30);opacity:0;will-change:opacity;transition:opacity .18s}
 .qaring.on .qaring-scrim{opacity:1}
+/* the entrance frame is decorative: never a tap target, so a stray activation cannot close it */
+.qaring:not(.on) .qaring-core,.qaring:not(.on) .qaring-scrim,.qaring:not(.on) .qaring-item{pointer-events:none}
 .qaring-core{position:absolute;left:50%;top:50%;width:64px;height:64px;margin:-32px 0 0 -32px;box-sizing:border-box;padding:0;border:0;border-radius:50%;background:none;display:grid;place-items:center;cursor:pointer;transform:translate(var(--sx,0px),var(--sy,0px)) scale(1);transition:transform .32s cubic-bezier(.2,.9,.25,1);z-index:2}
 .qaring.bloom.on .qaring-core{transform:translate(0,0) rotate(720deg) scale(1.06)}
 .qaring:not(.bloom).on .qaring-core{transform:translate(0,0) scale(1.08)}
 .fab:focus,.fab:focus-visible,.qaring-core:focus,.qaring-core:focus-visible{outline:0}
 @media (prefers-reduced-motion: reduce){.qaring,.qaring .qaring-item,.qaring .qaring-core,.qaring-scrim,.qaring-art,.qaring-art-g{transition-duration:.01ms !important;transition-delay:0s !important}}
-.fab svg{width:100%;height:100%;display:block;filter:drop-shadow(0 6px 12px rgba(120,70,80,.32))}
-.fabopts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.fab svg{width:100%;height:100%;display:block}
+.fabopts{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:12px}
 .fabopt{width:56px;height:56px;border:1.5px solid var(--line);border-radius:16px;background:var(--card2);display:grid;place-items:center;cursor:pointer;padding:3px;transition:all .15s}
 .fabopt img,.fabopt svg{width:100%;height:100%;object-fit:contain;display:block}
 .fabopt[aria-pressed=true]{border-color:var(--rose);box-shadow:0 0 0 3px var(--pinkS)}
 .qaring-core img{width:100%;height:100%;object-fit:contain;display:block;filter:drop-shadow(0 8px 18px rgba(120,70,80,.38))}
 .qaring-core svg{width:100%;height:100%;display:block;filter:drop-shadow(0 8px 18px rgba(120,70,80,.38))}
-.qaring-item{position:absolute;left:50%;top:50%;width:80px;height:94px;margin:-47px 0 0 -40px;padding:0;border:0;background:none;cursor:pointer;transform:translate(var(--x),var(--y));z-index:1;outline:0;-webkit-tap-highlight-color:transparent}
+.qaring-item{position:absolute;left:50%;top:50%;width:80px;height:94px;margin:-47px 0 0 -40px;padding:0;border:0;background:none;cursor:pointer;transform:translate(var(--x),var(--y)) scale(.9);opacity:0;z-index:1;outline:0;-webkit-tap-highlight-color:transparent;transition:opacity .18s ease,transform .32s cubic-bezier(.16,1.1,.3,1)}
 .qaring-art{position:absolute;left:50%;top:50%;width:100%;height:100%;transform:translate(-50%,-50%);overflow:visible;pointer-events:none}
 .qaring-art-g{transform-origin:50% 50%;transform:scale(.92);opacity:0;transition:transform .32s cubic-bezier(.16,1.1,.3,1),opacity .22s}
 .qaring.on .qaring-art-g{transform:scale(1);opacity:1}
+.qaring.on .qaring-item{transform:translate(var(--x),var(--y)) scale(1);opacity:1}
 .petal-fill{fill:var(--pf,#F9DDE5)}
 .petal-back{fill:var(--pb,#F7D2DE);opacity:.95}
 
@@ -3338,6 +3342,8 @@ function safeTop(){
 // @test-begin qa
 // Quick Action responsiveness constants; kept pure so tests can exercise them
 const QA_TRANS_MS=180;
+// label counter-rotation, kept in (-90,90] so text never reads upside down
+function qaLabelRot(deg){let r=-deg;r=((r%360)+540)%360-180;if(r>90)r-=180;if(r<=-90)r+=180;return r}
 function qaPrefersReducedMotion(){try{return typeof window!=='undefined'&&window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches}catch(e){return false}}
 // @test-end qa
 safeTopBind();
@@ -3360,9 +3366,10 @@ function fabIconHTML(choice){
  if(!choice||choice==='bloom')return '<img src="'+LOGO+'" alt="">';
  const goal=FAB_SPICES[choice];
  if(!goal)return '<img src="'+LOGO+'" alt="">';
- return smartFlowerSVG(goal,4);
+ return '<img src="assets/fab/'+choice+'.png" alt="">';
 }
 function fabRefresh(){if(fabEl)fabEl.innerHTML=fabIconHTML((D&&D.fabFlower)||'bloom')}
+let fabOptsHTML=null;
 function fabMount(){
  if(fabEl)return;
  fabEl=document.createElement('button');
@@ -3371,14 +3378,14 @@ function fabMount(){
  fabEl.innerHTML=fabIconHTML((D&&D.fabFlower)||'bloom');
  document.body.appendChild(fabEl);
  let drag=null;
+ let lastMoved=false;
  const move=e=>{
   if(!drag||e.pointerId!==drag.id)return;
   const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
   if(!drag.moved&&Math.abs(dx)+Math.abs(dy)<7)return;
-  drag.moved=true;
-  const nx=Math.max(0,Math.min(innerWidth-FAB_SZ,drag.ox+dx));
-  const ny=Math.max(0,Math.min(innerHeight-FAB_SZ,drag.oy+dy));
-  fabEl.style.left=nx+'px';fabEl.style.top=ny+'px';
+  drag.moved=true;drag.dx=dx;drag.dy=dy;
+  // transform-only drag: no layout/paint of the fixed layer on every pointermove
+  fabEl.style.transform='translate3d('+dx+'px,'+dy+'px,0)';
   if(e.cancelable)e.preventDefault();
  };
  const up=e=>{
@@ -3386,24 +3393,36 @@ function fabMount(){
   window.removeEventListener('pointermove',move);
   window.removeEventListener('pointerup',up);
   window.removeEventListener('pointercancel',up);
-  const moved=drag.moved;drag=null;fabEl.classList.remove('drag');
-  if(!moved){openQuickRing(fabEl,qaAct);return}
-  const b=fabBounds(),r=fabEl.getBoundingClientRect();
-  const cx=r.left+r.width/2,cy=r.top+r.height/2;
+  const moved=drag.moved,dx=drag.dx||0,dy=drag.dy||0,ox=drag.ox,oy=drag.oy;drag=null;lastMoved=moved;
+  // .drag keeps transitions off, so committing left/top here cannot animate twice
+  fabEl.style.transform='';
+  if(!moved){fabEl.classList.remove('drag');openQuickRing(fabEl,qaAct);return}
+  const nx=Math.max(0,Math.min(innerWidth-FAB_SZ,ox+dx)),ny=Math.max(0,Math.min(innerHeight-FAB_SZ,oy+dy));
+  fabEl.style.left=nx+'px';fabEl.style.top=ny+'px';
+  fabEl.classList.remove('drag');
+  const b=fabBounds(),cx=nx+FAB_SZ/2,cy=ny+FAB_SZ/2;
   fabCorner=(cy<(b.t+b.b)/2?'t':'b')+(cx<(b.l+b.r)/2?'l':'r');
   try{localStorage.setItem('bloom_fab',fabCorner)}catch(err){}
   fabPlace();
  };
  fabEl.addEventListener('pointerdown',e=>{
   if(e.button&&e.button!==0)return;
+  // suppresses the compatibility mouse/click events for this tap, which would
+  // otherwise land on the quick-ring core that opens under the finger
+  if(e.cancelable)e.preventDefault();
   const r=fabEl.getBoundingClientRect();
-  drag={id:e.pointerId,x:e.clientX,y:e.clientY,ox:r.left,oy:r.top,moved:false};
+  lastMoved=false;drag={id:e.pointerId,x:e.clientX,y:e.clientY,ox:r.left,oy:r.top,moved:false};
   fabEl.classList.add('drag');
   try{fabEl.setPointerCapture(e.pointerId)}catch(err){}
   window.addEventListener('pointermove',move,{passive:false});
   window.addEventListener('pointerup',up);
   window.addEventListener('pointercancel',up);
  });
+ // A tap becomes mousedown/mouseup/click right after pointerup. Cancelling pointerdown does
+ // not stop the click (it is activation, not a compatibility mouse event), and by then the
+ // ring core sits under the finger, so the same tap would close the ring it just opened.
+ // Cancelling touchend stops the synthetic click at the source.
+ fabEl.addEventListener('touchend',e=>{if(!lastMoved&&e.cancelable)e.preventDefault()},{passive:false});
  fabEl.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openQuickRing(fabEl,qaAct)}});
 }
 function fabSync(){
@@ -3438,7 +3457,7 @@ function openQuickRing(fab,onAct){
   return `<g transform="rotate(${aDeg})"><use xlink:href="#qaringPet" class="petal-back${odd?' odd':''}" transform="translate(0 ${-R}) scale(1.12)"/><use xlink:href="#qaringPet" class="petal-fill${odd?' odd':''}" transform="translate(0 ${-R})"/></g>`;
  }).join('')}</g></svg>`;
  const buttons=items.map((it,i)=>{
-  const a=(-90+i*60)*Math.PI/180,rot=-90+i*60+90;
+  const deg=i*60,a=(deg-90)*Math.PI/180,rot=qaLabelRot(deg);
   return `<button class="qaring-item" data-qa="${it[0]}" aria-label="${it[1]}" style="--x:${(Math.cos(a)*R).toFixed(1)}px;--y:${(Math.sin(a)*R).toFixed(1)}px;--r:${rot}deg"><span class="petal-in"><span class="pi">${it[2](18)}</span><span class="pl">${it[1]}</span></span></button>`;
  }).join('');
  wrap.innerHTML=`${art}<div class="qaring-scrim"></div><button class="qaring-core" id="qrCore" aria-label="Close quick actions">${coreHTML}</button>${buttons}`;
@@ -4723,7 +4742,11 @@ const SMART_FLOWER_SPECIES={
  'Understand my cycle':{sp:'rose',petal:'#E58FA6',petal2:'#BE4F74',center:'#F7D9E0',stem:'#5F8A6B',leaf:'#6E9B7C'},
  'Prepare for doctor visits':{sp:'daisy',petal:'#FCFCF4',petal2:'#D8D3BF',center:'#E4A83B',stem:'#6E8F5F',leaf:'#7BA887'}
 };
-function smartFlowerSVGRaw(goal,stage){
+function smartFlowerSVGRaw(goal,stage,live,light){
+ const raw=smartFlowerSVGRawFull(goal,stage,live);
+ return light?qaLightFlower(raw,goal):raw
+}
+function smartFlowerSVGRawFull(goal,stage,live){
  const s=Math.max(0,Math.min(4,stage|0));
  const base=SMART_FLOWER_SPECIES[goal]||SMART_FLOWER_SPECIES['Understand my cycle'];
  const sp=base.sp;
@@ -4821,7 +4844,7 @@ function smartFlowerSVGRaw(goal,stage){
   <path d="M${cx-1.3} ${headY-2} C ${cx-2.6} ${headY-6.4} ${cx-2.2} ${headY-10.8} ${cx-.6} ${headY-13.4}" stroke="${P.petalHi}" stroke-width=".55" fill="none" opacity=".8"/>
   </g></svg>`;
  }
- const sparkles=`<circle cx="-13" cy="-1" r=".34" fill="${P.petalHi}"><animate attributeName="opacity" values="0;.85;0" keyTimes="0;.5;1" calcMode="spline" keySplines=".4 0 .2 1|.4 0 .2 1" dur="3.6s" begin="0s" repeatCount="indefinite"/><animate attributeName="cy" values="1;-8" calcMode="spline" keySplines=".4 0 .55 1" dur="3.6s" begin="0s" repeatCount="indefinite"/></circle><circle cx="12.5" cy="-7" r=".3" fill="#ffffff"><animate attributeName="opacity" values="0;.9;0" keyTimes="0;.5;1" calcMode="spline" keySplines=".4 0 .2 1|.4 0 .2 1" dur="4.4s" begin="1.1s" repeatCount="indefinite"/><animate attributeName="cy" values="-4;-13" calcMode="spline" keySplines=".4 0 .55 1" dur="4.4s" begin="1.1s" repeatCount="indefinite"/></circle><circle cx="2" cy="10" r=".28" fill="${P.centerHi}"><animate attributeName="opacity" values="0;.8;0" keyTimes="0;.5;1" calcMode="spline" keySplines=".4 0 .2 1|.4 0 .2 1" dur="3.1s" begin="1.9s" repeatCount="indefinite"/><animate attributeName="cy" values="13;4" calcMode="spline" keySplines=".4 0 .55 1" dur="3.1s" begin="1.9s" repeatCount="indefinite"/></circle>`;
+ const sparkles=live===false?'':`<circle cx="-13" cy="-1" r=".34" fill="${P.petalHi}"><animate attributeName="opacity" values="0;.85;0" keyTimes="0;.5;1" calcMode="spline" keySplines=".4 0 .2 1|.4 0 .2 1" dur="3.6s" begin="0s" repeatCount="indefinite"/><animate attributeName="cy" values="1;-8" calcMode="spline" keySplines=".4 0 .55 1" dur="3.6s" begin="0s" repeatCount="indefinite"/></circle><circle cx="12.5" cy="-7" r=".3" fill="#ffffff"><animate attributeName="opacity" values="0;.9;0" keyTimes="0;.5;1" calcMode="spline" keySplines=".4 0 .2 1|.4 0 .2 1" dur="4.4s" begin="1.1s" repeatCount="indefinite"/><animate attributeName="cy" values="-4;-13" calcMode="spline" keySplines=".4 0 .55 1" dur="4.4s" begin="1.1s" repeatCount="indefinite"/></circle><circle cx="2" cy="10" r=".28" fill="${P.centerHi}"><animate attributeName="opacity" values="0;.8;0" keyTimes="0;.5;1" calcMode="spline" keySplines=".4 0 .2 1|.4 0 .2 1" dur="3.1s" begin="1.9s" repeatCount="indefinite"/><animate attributeName="cy" values="13;4" calcMode="spline" keySplines=".4 0 .55 1" dur="3.1s" begin="1.9s" repeatCount="indefinite"/></circle>`;
  if(s===3){
   const headY=stemTop+1;
   return out+`${offshoot(-1,56,22,44,true,.85)}${leaf(-1,1.25,0,50)}${leaf(1,.9,8,55)}<g transform="translate(${cx} ${headY-2}) scale(1.18)" filter="url(#${uid}Drop)">${spBloom(true)}${sparkles}</g></svg>`;
@@ -4829,13 +4852,27 @@ function smartFlowerSVGRaw(goal,stage){
  const headY=stemTop+2;
  return out+`${offshoot(-1,54,19,42,true,1)}${offshoot(1,50,53,38,false,1.1)}${leaf(-1,1.4,0,52)}${leaf(1,1.2,-6,55)}${leaf(-1,.95,12,42)}${leaf(1,.75,-16,40)}<g transform="translate(${cx} ${headY-3}) scale(1.3)" filter="url(#${uid}Drop)">${spBloom(false)}${sparkles}</g></svg>`;
 }
+// Small icons (the 58px FAB, the 56px picker previews) never show the gradients or the
+// drop-shadow filter, but WebView still compiles and rasterises each one. Flatten them.
+function qaLightFlower(svg,goal){
+ const b=SMART_FLOWER_SPECIES[goal]||SMART_FLOWER_SPECIES['Understand my cycle'];
+ return svg.replace(/<defs>[\s\S]*?<\/defs>/,'')
+  .replace(/ filter="url\(#[^)]*Drop\)"/g,'')
+  .replace(/url\(#[^)]*SFCore\)/g,'#5A3A22')
+  .replace(/url\(#[^)]*Petal2\)/g,b.petal2)
+  .replace(/url\(#[^)]*Petal\)/g,b.petal)
+  .replace(/url\(#[^)]*Leaf\)/g,b.leaf)
+  .replace(/url\(#[^)]*Stem\)/g,b.stem)
+  .replace(/url\(#[^)]*Disk\)/g,b.center)
+  .replace(/url\(#[^)]*Soil\)/g,'#8A7364')
+}
 // Cached wrapper: goal + normalized stage identity. LRU with 40 entries max.
-function smartFlowerSVG(goal,stage){
+function smartFlowerSVG(goal,stage,live,light){
  const s=Math.max(0,Math.min(4,stage|0));
- const key=String(goal||'')+'|'+s;
+ const key=String(goal||'')+'|'+s+(live===false?'|still':'')+(light?'|light':'');
  const hit=SMART_FLOWER_CACHE.get(key);
  if(hit!==undefined){SMART_FLOWER_CACHE.delete(key);SMART_FLOWER_CACHE.set(key,hit);return hit}
- const markup=smartFlowerSVGRaw(goal,s);
+ const markup=smartFlowerSVGRaw(goal,s,live,light);
  if(SMART_FLOWER_CACHE.size>=40){const oldest=SMART_FLOWER_CACHE.keys().next().value;SMART_FLOWER_CACHE.delete(oldest)}
  SMART_FLOWER_CACHE.set(key,markup);
  return markup;
@@ -6716,12 +6753,8 @@ function classicCoverSVG(b){
  const halo='paint-order:stroke fill;stroke:#FFFDF6;stroke-width:3;stroke-linejoin:round';
  const tspan=lines.map((l,i)=>`<tspan x="150" dy="${i===0?0:titleDy}">${escXml(l)}</tspan>`).join('');
  const aspan=authorLines.map((l,i)=>`<tspan x="150" dy="${i===0?0:13}">${escXml(l)}</tspan>`).join('');
- const covOut = `<img class="cover-bg" src="assets/library/${painting}" alt="${escXml(title)}" onload="this.classList.add('done')" onerror="this.onerror=null;this.classList.add('done')">
+ const covOut = `<img class="cover-bg" src="assets/library/thumbs/${painting.replace(/\.jpg$/,'.webp')}" alt="${escXml(title)}" loading="lazy" decoding="async" onload="this.classList.add('done')" onerror="this.onerror=null;this.classList.add('done')">
 <svg class="cover-overlay" viewBox="0 0 300 450" preserveAspectRatio="none" aria-hidden="true">
-<defs>
- <radialGradient id="cvvig${h}" cx="50%" cy="40%" r="74%"><stop offset="52%" stop-color="rgba(20,14,17,0)"/><stop offset="100%" stop-color="rgba(12,9,11,.55)"/></radialGradient>
-</defs>
-<rect width="300" height="450" fill="url(#cvvig${h})"/>
 <rect x="10" y="10" width="280" height="430" fill="none" stroke="#C9A961" stroke-width="2.5"/>
 <rect x="14" y="14" width="272" height="422" fill="none" stroke="#F5E7BE" stroke-width=".9" opacity=".85"/>
 <text x="150" y="42" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9.5" font-weight="700" letter-spacing="4" fill="#3A1B26" style="${halo}">BLOOM PRESS</text>
@@ -7817,7 +7850,8 @@ function changePasswordSheet(){
   if(fabOpts&&!RO&&!ownMode){
    const choices=[['bloom','Bloom'],['hydrangea','Hydrangea'],['sunflower','Sunflower'],['daisy','Daisy'],['zinnia','Zinnia'],['rose','Rose'],['chrysanthemum','Mums'],['bougainvillea','Bougainvillea']];
    const cur=(D.fabFlower)||'bloom';
-   fabOpts.innerHTML=choices.map(([id,label])=>`<button type="button" class="fabopt" data-fc="${id}" aria-pressed="${cur===id}" aria-label="${label}">${id==='bloom'?`<img src="${LOGO}" alt="">`:smartFlowerSVG(FAB_SPICES[id],4)}</button>`).join('');
+   fabOpts.innerHTML=fabOptsHTML||(fabOptsHTML=choices.map(([id,label])=>`<button type="button" class="fabopt" data-fc="${id}" aria-label="${label}">${id==='bloom'?`<img src="${LOGO}" alt="">`:`<img src="assets/fab/${id}.png" alt="">`}</button>`).join(''));
+   fabOpts.querySelectorAll('.fabopt').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.fc===cur)));
    fabOpts.querySelectorAll('.fabopt').forEach(b=>b.onclick=()=>{D.fabFlower=b.dataset.fc;save();fabRefresh();fabOpts.querySelectorAll('.fabopt').forEach(x=>x.setAttribute('aria-pressed',String(x===b)))});
   }
   ['wPinTasks','wPinWater'].forEach(id=>{
