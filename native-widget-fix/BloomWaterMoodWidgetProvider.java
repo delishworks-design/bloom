@@ -111,12 +111,12 @@ public class BloomWaterMoodWidgetProvider extends AppWidgetProvider {
                 i9++;
             }
             int i10 = i7;
-            remoteViews2.setImageViewBitmap(R.id.waterKicker, BloomWidgetPaint.kicker(context2, "WATER", 16.0f, -7570816));
-            remoteViews2.setImageViewBitmap(R.id.waterCount, BloomWidgetPaint.count(context2, iMax + " of " + iGoal, 15.0f, -7570816));
+            remoteViews2.setImageViewBitmap(R.id.waterKicker, BloomWidgetPaint.kicker(context2, "WATER", 18.0f, -7570816));
+            remoteViews2.setImageViewBitmap(R.id.waterCount, BloomWidgetPaint.count(context2, iMax + " of " + iGoal, 17.0f, -7570816));
             remoteViews2.setImageViewBitmap(R.id.addGlass, BloomWidgetPaint.pill(context2, "+1 glass"));
             int i11 = length;
             remoteViews2.setOnClickPendingIntent(R.id.addGlass, BloomWidgetStore.broadcast(context2, BloomWaterMoodWidgetProvider.class, ACTION_WATER, 5400, null));
-            remoteViews2.setImageViewBitmap(R.id.moodKicker, BloomWidgetPaint.kicker(context2, "MOOD", 16.0f, -7570816));
+            remoteViews2.setImageViewBitmap(R.id.moodKicker, BloomWidgetPaint.kicker(context2, "MOOD", 18.0f, -7570816));
             int i12 = 0;
             while (i12 < 5) {
                 int[] iArr3 = MOOD;
@@ -128,7 +128,7 @@ public class BloomWaterMoodWidgetProvider extends AppWidgetProvider {
                 i12 = i13;
             }
             if (!zOptBoolean) {
-                remoteViews2.setImageViewBitmap(R.id.waterCount, BloomWidgetPaint.meta(context2, "No log today", 16.0f, -7570816));
+                remoteViews2.setImageViewBitmap(R.id.waterCount, BloomWidgetPaint.meta(context2, "No log today", 17.0f, -7570816));
             }
             try {
                 JSONObject jSONObjectOptJSONObject = jSONObjectSnapshot.optJSONObject("cycle");
