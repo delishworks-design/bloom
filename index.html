@@ -1824,7 +1824,11 @@ function bloomRtStart(){
   bloomRt=ch;
  }catch(e){reportErr('realtime.start',e)}
 }
-async function sbAfterLoginOnce(u){ownMode=false;ownStash=null;ownLoaded=false;ownLoading=false;sbUser=u;planPanel='mine';peekDoc=null;peekAt=0;pairInfo=null;ownPeerName='';
+async function sbAfterLoginOnce(u){
+ // An owner signing in must not inherit a previous device session's partner role:
+ // that made user-account library writes land in the partner's bucket.
+ RO=false;ROcloud=false;ROowner=null;roHash='';ownMode=false;ownStash=null;ownLoaded=false;ownLoading=false;sbUser=u;planPanel='mine';peekDoc=null;peekAt=0;pairInfo=null;ownPeerName='';
+ libStoreReset();
  const mail=(u.email||'').toLowerCase();
  let cached=J(key(mail),null);
  if(cached&&cached._uid&&cached._uid!==u.id){try{ST.del(key(mail))}catch(e){};cached=null}
@@ -6282,10 +6286,10 @@ function libIndexEnsure(){
 }
 let LIB_PERSONAL=null,LIB_PERSONAL_FOR=null;
 function libPersonalIndex(doc){
- const d=doc||(typeof D!=='undefined'?D:null);
  let books={};
- if(d&&d.library&&d.library.books)books=d.library.books;
- else { try{books=libEnsure().books}catch(e){books={}} }
+ const partner=typeof RO!=='undefined'&&RO&&!(typeof ownMode!=='undefined'&&ownMode);
+ if(!partner){const d=doc||(typeof D!=='undefined'?D:null);if(d&&d.library&&d.library.books)books=d.library.books}
+ if(!Object.keys(books).length){try{books=libEnsure().books}catch(e){books={}}}
  if(LIB_PERSONAL&&LIB_PERSONAL_FOR===books)return LIB_PERSONAL;
  const all=[],favs=[],reading=[],fin=[];
  for(const id of Object.keys(books)){const b=books[id];all.push(id);if(b&&b.favorite)favs.push(id);if(b&&b.finished)fin.push(id);else reading.push(id)}
