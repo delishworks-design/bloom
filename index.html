@@ -3253,7 +3253,28 @@ const P_MORE2=[
 ['Plan around the low days',"Put the big social plans in their good week. Move what can move instead of pushing through."],
 ['Know the urgent signs',"Severe pain, soaking a pad an hour, or fainting means a clinic now, not later."]
 ];
-const S_MORE2=[
+const P_MORE3=[
+['Bring the things, not the plan',"Pad, heat pack, water, snacks. Putting them within reach helps more than asking what to do."],
+['Morning is not a deadline',"If the day starts slow, do not frame it as failure. Let the first hour be gentle."],
+['Half a portion still counts',"A small meal eaten beats a perfect meal skipped. Serve something easy."],
+['Do not turn rest into a project',"Rest is not an activity to optimise. Sitting quietly with them is enough."],
+['Ask about pain, not about mood',"\"How is the pain\" is answerable. \"Are you okay\" invites a polite yes."],
+['Take the evening shift',"Dishes, bath time, the last errand. Handing over the evening is real care."],
+['Keep snacks where they sit',"A drawer at their desk or bag gets used. A cupboard across the house does not."],
+['Do not narrate the cycle',"They already track it. Counting days out loud feels like surveillance."],
+['Offer a ride, not advice',"Drive them to the appointment. Sit in the waiting room. That is the help."],
+['Lower the decision count',"Pick two easy options instead of asking what they want. Fewer choices, less load."],
+['A quiet room is a gift',"Dim the lights, silence the notifications, move the loud chores elsewhere."],
+['Never use the word dramatic',"It closes the conversation. Say nothing, stay nearby, and listen."],
+['Help before the hard day',"Cook on the good day so the low day has food. That is what planning looks like."],
+['Accept no as the answer',"If they want space, give it without checking again in ten minutes."],
+['Hydrate without nagging',"Leave a full glass next to them. One reminder is enough."],
+['Keep the Wi-Fi working',"Nothing tests patience like a bad connection. Handle the small annoyances."],
+['Do not compare cycles',"Their body is not a spreadsheet and other people's timelines are irrelevant."],
+['Say thank you for the trust',"When they tell you how they feel, acknowledge it. It is not a complaint."],
+['Celebrate the small wins',"Getting out of bed, eating, logging a symptom. Those count on hard days."],
+['Know when to call for help',"Fainting, severe pain, heavy bleeding, or low mood that will not lift. Help book the appointment."]
+];const S_MORE2=[
 ['Warmth over willpower',"A hot pack on the lower belly relaxes cramps. Ten minutes is enough to notice."],
 ['Keep water where you sit',"A bottle within reach gets drunk. One across the room does not."],
 ['Say no once, kindly',"One clear no this week costs less than three resentful yeses."],
@@ -3263,7 +3284,28 @@ const S_MORE2=[
 ['Ask for the exact thing',"\"Can you take the bins tonight\" is answerable. \"I need help\" is not."],
 ['Sleep before midnight',"The hours before midnight do more for your cycle than the ones after."]
 ];
-const TRIVIA2=[
+const S_MORE3=[
+['Eat something before the hard task',"Food first, decisions second. Even crackers and milk change the day."],
+['Keep a easy meal in the freezer',"One portion you can reheat without thinking is worth more than a cookbook."],
+['The first hour sets the tone',"Water, light, a small movement. A gentle start is not a slow start."],
+['Write tomorrow\'s one task',"One line tonight beats a long list you dread in the morning."],
+['A text is enough',"You do not need a long explanation. One honest message to one person helps."],
+['Do not scroll in bed',"The blue light and the comparison both cost sleep. Put the phone down."],
+['Warm food, warm drink',"Soup, tea, oatmeal. Warmth is easier on a tired body than cold salads."],
+['Log the symptom, then stop',"Write it once. Re-reading the numbers all day turns information into worry."],
+['Movement can be tiny',"Stand up, stretch, walk to the corner. Two minutes still counts."],
+['Ask for one specific thing',"\"Take the bins out\" gets a yes. \"Help me\" is too big to answer."],
+['Protein beside the craving',"Eat the thing you want, add eggs or yoghurt. No guilt attached."],
+['Protect the late afternoon',"That is usually the dip. Schedule the easy work there, not the hard meeting."],
+['Rest before you crash',"Stop at the first sign, not the last. Recovery is shorter when it is early."],
+['Heat early, not at the peak',"A hot pack before the pain builds works better than one at the worst moment."],
+['Say no to one thing this week',"One clear boundary is kinder to everyone than a resentful yes."],
+['A clinician is not a failure',"Three months of something off is enough reason to book a visit."],
+['Comparisons steal the day',"Someone else's cycle, body, or energy is not your benchmark."],
+['Keep water within reach',"A bottle on the desk gets finished. One on the shelf does not."],
+['Lower the lights at night',"Dim screens and a quiet room tell the body it is safe to rest."],
+['Your worth is not a symptom count',"A bad day is data, not a verdict. It passes."]
+];const TRIVIA2=[
 'PMOS is diagnosed by two of three signs: irregular cycles, high androgens, or polycystic ovaries on ultrasound.',
 'An ultrasound is not required for diagnosis when the other two signs are already clear.',
 'Irregular cycles in PMOS usually mean cycles longer than 35 days, or fewer than eight a year.',
@@ -3340,19 +3382,20 @@ function guidePick(out,key){
  if(guideCache[key])return guideCache[key];
  const seen={},uniq=[];
  out.forEach(x=>{if(seen[x.t])return;seen[x.t]=1;uniq.push(x)});
- while(uniq.length<12)uniq.push({t:'Small help, often',b:'One small thing done beats a perfect plan that never starts.'});
- const list=uniq.slice(0,12);guideCache[key]=list;return list}
+ const FILLER=[['One thing at a time',"Pick the single next step and ignore the rest of the list."],['Small help counts',"A glass of water, a quiet room, one task taken over. It adds up."],['Ask, do not assume',"A calm question beats a guess, even when you think you know the answer."],['Rest is allowed',"Stopping before you crash is planning, not giving up."],['Keep it simple',"The boring basics usually help more than the clever fix."],['Say it plainly',"Clear words land better than hints, on both sides."],['Notice the pattern',"Write down what repeats. A pattern is easier to plan around."],['Give it time',"Most hard days pass. You do not have to solve them all at once."],['Take the tiny win',"Getting through the day is enough. Celebrate it quietly."],['Stay kind to yourself',"You are doing a hard thing with incomplete information. That is enough."]];
+ let fi=0;while(uniq.length<20){const f=FILLER[fi++%FILLER.length];uniq.push({t:f[0]+' '+(fi>FILLER.length?'('+Math.ceil(fi/FILLER.length)+')':''),b:f[1]})}
+ const list=uniq.slice(0,20);guideCache[key]=list;return list}
 function partnerGuideData(){
  const cycle=dashboardCycle(),ph=cycle.state==='estimated'?phaseInfo(cycle.cycleDay,cycle.cycleLength):null,l=L(today());
  const sym=Object.keys(P_SYMPTOM).filter(t=>(l.tags||[]).includes(t));
  const M=a=>a.map(x=>({t:x[0],b:x[1]}));
- const out=[...shuffle(M(sym.map(t=>[t,P_SYMPTOM[t]]))),...shuffle(M(P_GUIDE[ph?ph.k:'General']||P_GUIDE.General)),...shuffle(M(P_GUIDE.General)),...shuffle(M(P_MORE.concat(P_MORE2)))];
+ const out=[...shuffle(M(sym.map(t=>[t,P_SYMPTOM[t]]))),...shuffle(M(P_GUIDE[ph?ph.k:'General']||P_GUIDE.General)),...shuffle(M(P_GUIDE.General)),...shuffle(M(P_MORE.concat(P_MORE2,P_MORE3)))];
  return guidePick(out,'p:'+(ph?ph.k:'General'))}
 function selfGuideData(){
  const cycle=dashboardCycle(),ph=cycle.state==='estimated'?phaseInfo(cycle.cycleDay,cycle.cycleLength):null,l=L(today());
  const sym=Object.keys(S_SYMPTOM).filter(t=>(l.tags||[]).includes(t));
  const M=a=>a.map(x=>({t:x[0],b:x[1]}));
- const out=[...shuffle(M(sym.map(t=>[t,S_SYMPTOM[t]]))),...shuffle(M(S_GUIDE[ph?ph.k:'General']||S_GUIDE.General)),...shuffle(M(S_GUIDE.General)),...shuffle(M(S_MORE.concat(S_MORE2)))];
+ const out=[...shuffle(M(sym.map(t=>[t,S_SYMPTOM[t]]))),...shuffle(M(S_GUIDE[ph?ph.k:'General']||S_GUIDE.General)),...shuffle(M(S_GUIDE.General)),...shuffle(M(S_MORE.concat(S_MORE2,S_MORE3)))];
  return guidePick(out,'s:'+(ph?ph.k:'General'))}
 let pgIdx=0,pgSettle=null;
 function guideCarouselHTML(title,items){
@@ -8001,7 +8044,8 @@ function changePasswordSheet(){
    sheet();toast(others?'Password updated. Other devices signed out.':'Password updated');
   }catch(e){er.textContent=errText(e&&e.message||e)}finally{bt.disabled=false;bt.textContent=hasEmail?'Save':'Set password'}
  };
-}function settingsPage(){
+}const remAllOn=!!((D&&D.rem&&(D.rem.on||D.rem.water||D.rem.readOn||D.rem.sidesOn===true)));
+function settingsPage(){
  const cur=currentAccountType();
  const nm=RO?pnGet():((D&&D.p&&D.p.name)||'');
  const bkMail=user||(sbUser&&sbUser.email&&sbUser.email.toLowerCase());
@@ -8021,13 +8065,10 @@ function changePasswordSheet(){
   <button class="rolebtn" data-tm="dark" aria-pressed="${themeMode()==='dark'}"><b>Dark</b><span>Evening calm</span></button>
  </div></div>
  <div class="card">
-  <div class="card-h"><h3>Reminders</h3><span class="meta" id="remNote"></span></div>
+  <div class="card-h"><h3>Reminders</h3></div>
   <input id="rt" type="hidden" value="${D.rem.time}">
   <input id="rrt" type="hidden" value="${D.rem.readTime||'20:00'}">
-  <div class="row" style="justify-content:space-between;gap:10px;padding:2px 0"><label class="row" style="color:var(--ink);gap:10px;flex:1;padding:7px 0"><input type="checkbox" id="rm" style="width:20px;height:20px;margin:0" ${D.rem.on?'checked':''}> Logging</label><button type="button" class="btn ghost sm" id="rtBtn">${fmtTime12(D.rem.time)}</button></div>
-  <div class="row" style="justify-content:space-between;gap:10px;padding:2px 0;border-top:1px solid var(--line2)"><label class="row" style="color:var(--ink);gap:10px;flex:1;padding:7px 0"><input type="checkbox" id="wm" style="width:20px;height:20px;margin:0" ${D.rem.water?'checked':''}> Water, hourly</label><span class="meta">8–22h</span></div>
-  <div class="row" style="justify-content:space-between;gap:10px;padding:2px 0;border-top:1px solid var(--line2)"><label class="row" style="color:var(--ink);gap:10px;flex:1;padding:7px 0"><input type="checkbox" id="rd" style="width:20px;height:20px;margin:0" ${D.rem.readOn?'checked':''}> Reading</label><button type="button" class="btn ghost sm" id="rrtBtn">${fmtTime12(D.rem.readTime||'20:00')}</button></div>
-  <div class="row" style="gap:10px;padding:2px 0;border-top:1px solid var(--line2)"><label class="row" style="color:var(--ink);gap:10px;flex:1;padding:7px 0"><input type="checkbox" id="sidesOn" style="width:20px;height:20px;margin:0" ${D.rem.sidesOn!==false?'checked':''}> Bloomies nudges</label></div>
+  <div class="row" style="padding:2px 0"><label class="row" style="color:var(--ink);gap:10px;flex:1;padding:7px 0"><input type="checkbox" id="rm" style="width:20px;height:20px;margin:0" ${remAllOn?'checked':''}> Reminders</label></div>
  </div>
  <div class="card">
   <div class="card-h"><h3>Password</h3></div>
@@ -8044,7 +8085,7 @@ function changePasswordSheet(){
    </div>
    <div class="card"><div class="card-h"><h3>Sync</h3></div><p class="meta" id="syncLine" style="margin:0 0 10px">${E(syncLineText())}</p><div class="row" style="gap:10px"><button class="btn ghost" id="syncNow" style="flex:1">Sync now</button><button class="btn ghost" id="syncCopy" style="flex:1">Copy diagnostics</button></div></div>
     ${RO?'<div class="card"><div class="card-h"><h3>Your data</h3></div><button class="btn pink" id="sDelAcct" style="width:100%">Delete my account</button></div>':'<div class="card"><div class="card-h"><h3>Your data</h3></div><button class="btn pink" id="sDel" style="width:100%">Delete all my data</button><button class="btn ghost" id="sDelAcct" style="width:100%">Delete my account</button><button class="btn ghost" id="sExp" style="width:100%">Export backup</button><button class="btn ghost" id="sImp" style="width:100%">Import backup</button>'+bkRestore+'</div>'}
-   <div class="card"><div class="card-h"><h3>Quick-actions button</h3></div><p class="meta" style="margin:0 0 10px">Draggable flower for one-tap logging.</p><label class="row" style="color:var(--ink)"><input type="checkbox" id="fabTgl" style="width:22px;margin:0" ${!RO&&!ownMode&&D&&D.fabOn===true?'checked':''}> Show the button</label><div class="lbl" style="margin-top:12px">Which flower</div><div class="fabopts" id="fabOpts"></div></div>
+   ${RO?'':'<div class="card"><div class="card-h"><h3>Quick-actions button</h3></div><p class="meta" style="margin:0 0 10px">Draggable flower for one-tap logging.</p><label class="row" style="color:var(--ink)"><input type="checkbox" id="fabTgl" style="width:22px;margin:0" '+(D&&D.fabOn===true?'checked':'')+'> Show the button</label><div class="lbl" style="margin-top:12px">Which flower</div><div class="fabopts" id="fabOpts"></div></div>'}
    ${widgetSupported()?`<div class="card"><div class="card-h"><h3>Home-screen widgets</h3></div><p class="meta" style="margin:0 0 12px">Tasks widget for your own planner.</p><button class="btn ghost" id="wPinTasks" style="width:100%">Add Tasks widget</button><p class="meta" id="wNote" style="margin:10px 0 0"></p></div>`:''}
    <div class="card"><div class="card-h"><h3>App</h3><span class="meta" id="appVer">\u2014</span></div><button class="btn ghost" id="chkUp" style="width:100%">Check for updates</button></div>`;
  $('#bk').onclick=()=>{view='me';shell()};
@@ -8062,16 +8103,9 @@ function changePasswordSheet(){
   toast('Name updated');shell();
  });
     document.querySelectorAll('#themePick [data-tm]').forEach(b=>b.onclick=()=>{const m=b.dataset.tm;try{ST.set('bloom_theme',m)}catch(e){}applyTheme();const n=document.getElementById('themeHint');if(n)n.textContent=m==='system'?'Follow device':(m[0].toUpperCase()+m.slice(1));document.querySelectorAll('#themePick [data-tm]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)))});
- const saveRem=async()=>{D.rem={on:$('#rm').checked,time:$('#rt').value||'20:00',water:$('#wm').checked,readOn:$('#rd').checked,readTime:$('#rrt').value||'20:00',sidesOn:$('#sidesOn').checked};save();try{waterReminderSync(true)}catch(e){}try{readReminderSync(true)}catch(e){}try{sidesSync(true)}catch(e){}
-  const r=await reminderSync(),note=document.getElementById('remNote');
-  if(!r.native){toast('Saved');return}
-  if(r.blocked){if(note)note.textContent='Notifications blocked — allow them in Android Settings › Apps › Bloom › Notifications.'}
-  else if(r.off){if(note)note.textContent='Turn on to get one reminder a day.'}
-  else if(r.error){if(note)note.textContent='Could not schedule. Try again.'}
-  else if(note)note.textContent='One reminder a day at '+D.rem.time};
- ['rm','wm','rd','sidesOn'].forEach(id=>{const el=document.getElementById(id);if(el)el.onchange=saveRem});
- const rtBtn2=document.getElementById('rtBtn');if(rtBtn2)rtBtn2.onclick=()=>wheelTimeSheet($('#rt').value||'20:00',v=>{$('#rt').value=v||'20:00';rtBtn2.textContent=fmtTime12(v||'20:00');saveRem()},{title:'Logging reminder'});
- const rrtBtn2=document.getElementById('rrtBtn');if(rrtBtn2)rrtBtn2.onclick=()=>wheelTimeSheet($('#rrt').value||'20:00',v=>{$('#rrt').value=v||'20:00';rrtBtn2.textContent=fmtTime12(v||'20:00');saveRem()},{title:'Reading reminder'});
+ const saveRem=async()=>{const on=$('#rm').checked;D.rem=Object.assign({},D.rem,{on,water:on,readOn:on,sidesOn:on});save();try{waterReminderSync(true)}catch(e){}try{readReminderSync(true)}catch(e){}try{sidesSync(true)}catch(e){}
+  const r=await reminderSync();if(!r.native||r.blocked||r.error)toast('Saved');else toast('Reminders '+(on?'on':'off'))};
+ const rmEl=document.getElementById('rm');if(rmEl)rmEl.onchange=saveRem;
  $('#sPw').onclick=changePasswordSheet;
    if(document.getElementById('sDel'))$('#sDel').onclick=deleteAllData;
    if(document.getElementById('sDelAcct'))$('#sDelAcct').onclick=deleteAccountSheet;
