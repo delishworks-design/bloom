@@ -1714,6 +1714,26 @@ function syncTick(){
 function safeToRender(){const sheetEl=document.getElementById('sheet');if(sheetEl&&sheetEl.innerHTML.trim())return false;const a=document.activeElement;return !(a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA'||a.tagName==='SELECT'))}
 function startCloudSync(){if(cloudTimer)clearInterval(cloudTimer);cloudTimer=setInterval(syncTick,12000);if(sbPullTimer){clearInterval(sbPullTimer);sbPullTimer=null}if(pendRenderTimer)clearInterval(pendRenderTimer);pendRenderTimer=setInterval(()=>{if(sbPendingRender&&safeToRender()){sbPendingRender=false;shell()}},5000);bloomRtStart()}
 // ---- Supabase Realtime: instant cross-device updates (polling stays as a fallback) ----
+// The event already carries the new doc — apply it immediately instead of doing
+// another rev-fetch + doc-fetch round trip (that cost 1-2s on slow links).
+function bloomRtApplyDoc(payload){
+ if(!sbUser||RO||document.hidden)return;
+ const row=payload&&payload.new;
+ if(!row||typeof row.doc!=='object'||!row.doc)return;
+ const rev=+(row.rev||0);
+ if(rev<=sbRev)return;
+ try{readingLoadOnce().catch(()=>{})}catch(e){}
+ try{
+  const uid=sbUser.id,base=loadAckBase(uid);
+  const merged=base?mergeDocsThreeWay(base.doc,D,row.doc):mergeDocs(D,row.doc);
+  merged._uid=uid;
+  D=merged;sbRev=rev;saveRev();saveAckBase(uid,row.doc,rev);
+  persistDoc();setDirtyFlag(1);
+  if(JSON.stringify(D)!==JSON.stringify(row.doc)){sbPushSoon();setSyncState('pending')}
+  else{sbLastPush=JSON.stringify(D);setSyncState('synced')}
+  if(safeToRender())shell();else sbPendingRender=true;
+ }catch(e){reportErr('realtime.apply',e)}
+}
 let bloomRt=null,bloomRtKey='',bloomRtT=null,bloomRtRetry=null;
 function bloomRtStop(){
  if(bloomRtRetry){clearTimeout(bloomRtRetry);bloomRtRetry=null}
@@ -1729,7 +1749,7 @@ function bloomRtStart(){
  const key=uid+'|'+(partner?'p:'+ROowner:'o');
  if(bloomRt&&bloomRtKey===key)return;
  bloomRtStop();bloomRtKey=key;
- const sched=fn=>{if(bloomRtT)clearTimeout(bloomRtT);bloomRtT=setTimeout(()=>{bloomRtT=null;try{fn()}catch(e){reportErr('realtime.cb',e)}},350)};
+ const sched=fn=>{if(bloomRtT)clearTimeout(bloomRtT);bloomRtT=setTimeout(()=>{bloomRtT=null;try{fn()}catch(e){reportErr('realtime.cb',e)}},60)};
  try{
   const ch=sb.channel('bloom-rt-'+uid.slice(0,8));
   if(partner){
@@ -1737,7 +1757,7 @@ function bloomRtStart(){
    ch.on('postgres_changes',{event:'*',schema:'public',table:'bloom_library',filter:'user_id=eq.'+ROowner},()=>sched(()=>syncLocked(partnerLibRefresh)));
   }else{
    // own row changed on ANOTHER device: pull and merge immediately (no push echo)
-   ch.on('postgres_changes',{event:'*',schema:'public',table:'bloom_data',filter:'user_id=eq.'+uid},()=>sched(()=>{if(!document.hidden)sbPull()}));
+   ch.on('postgres_changes',{event:'*',schema:'public',table:'bloom_data',filter:'user_id=eq.'+uid},p=>sched(()=>bloomRtApplyDoc(p)));
    ch.on('postgres_changes',{event:'*',schema:'public',table:'bloom_reading',filter:'user_id=eq.'+uid},()=>sched(()=>{if(!document.hidden)readingLoadOnce().catch(()=>{})}));
   }
   ch.subscribe(st=>{if((st==='CHANNEL_ERROR'||st==='TIMED_OUT')&&bloomRt===ch){
