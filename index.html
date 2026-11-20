@@ -1667,16 +1667,16 @@ function whenSupabase(){
  if(window.supabase)return Promise.resolve();
  if(!sbReady)sbReady=new Promise(res=>{
   let done=false;const go=()=>{if(done)return;done=true;res()};
-  if(document.readyState==='complete'){go();return}
+  if(document.readyState==='complete'||document.readyState==='interactive'){go();return}
   window.addEventListener('DOMContentLoaded',go,{once:true});
   const iv=setInterval(()=>{if(window.supabase||done){clearInterval(iv);go()}},30);
-  setTimeout(()=>{clearInterval(iv);go()},8000);
+  setTimeout(()=>{clearInterval(iv);go()},15000);
  });
  return sbReady}
 const isNative=()=>{try{return !!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform())}catch(e){return false}};
 const authRedirectUrl=()=>isNative()?'https://delishworks-design.github.io/bloom/':location.origin+(location.pathname||'/');
 async function sbInit(){if(sb)return sb;
- if(isOffline()&&navigator.onLine===false)return null;
+ if(navigator.onLine===false)return null;
  await whenSupabase();
  try{const m=window.supabase;
   if(!m)return null;
