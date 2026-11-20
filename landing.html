@@ -85,11 +85,29 @@ footer{border-top:1px solid var(--rule);padding:26px 0 44px}
 .foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font:.76rem/1.5 var(--mono);color:var(--muted)}
 .foot a{color:var(--rose);text-decoration:none}
 
-@media(max-width:760px){
+@media(min-width:1280px){.wrap{width:min(1180px,90vw)}.hero{padding-top:clamp(80px,9vw,120px)}}
+@media(max-width:960px){
  .hero,.cols{grid-template-columns:1fr}
- .index{grid-template-columns:1fr}
+ .hero{gap:34px}
+ .receipt{max-width:480px}
+ .index{grid-template-columns:1fr 1fr}
+}
+@media(max-width:760px){
  .nav nav{display:none}
- .receipt{max-width:380px}
+ .receipt{max-width:430px}
+}
+@media(max-width:600px){
+ .wrap{width:92vw}
+ .hero-index{gap:14px}
+ .big-num{font-size:clamp(88px,26vw,120px)}
+ .stamp{font-size:.55rem;padding:6px 7px;max-width:92px}
+ .actions{flex-direction:column;align-items:stretch}
+ .actions .btn{width:100%}
+ .index{grid-template-columns:1fr}
+ .steps li{grid-template-columns:1fr;gap:6px}
+ .steps li:before{font-size:1.4rem}
+ .foot{flex-direction:column}
+ .receipt{padding:18px 16px}
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.stamp,.r-next{transform:none}}
 
