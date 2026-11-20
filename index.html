@@ -707,6 +707,16 @@ html[data-theme=dark] .fun{border-color:rgba(217,107,140,.45) !important}
 .smart-focus-hint i{font-style:normal;font-size:.7rem;line-height:1}
 .smart-focus-reason{font-size:.82rem;line-height:1.45;color:var(--ink);margin:0;padding-top:10px;border-top:1px dashed var(--line)}
 .smart-focus-motivator{font-size:.8rem;line-height:1.45;color:var(--mut);margin:8px 0 0}
+.fs-ladder{margin-top:8px}
+.fs-step{display:flex;gap:10px;align-items:flex-start;font-size:.78rem;line-height:1.4;color:var(--mut);padding:7px 10px;border-radius:10px;border:1px solid transparent}
+.fs-step.done{color:var(--ink)}
+.fs-step.on{background:var(--pinkS);border-color:rgba(184,69,107,.3);color:var(--ink);font-weight:700}
+.fs-num{flex:0 0 18px;height:18px;border-radius:999px;display:grid;place-items:center;background:var(--line2);font-size:.66rem;font-weight:800;color:var(--mut)}
+.fs-step.on .fs-num{background:var(--rose);color:#fff}
+.fs-next{font-size:.8rem;line-height:1.45;color:var(--ink);margin:12px 0 0;padding:10px 12px;border-radius:12px;background:var(--chip)}
+.fs-note{font-size:.72rem;line-height:1.45;color:var(--mut);margin:10px 0 0}
+html[data-theme=dark] .fs-step.on{background:#3A2430;border-color:rgba(217,107,140,.35)}
+
 .smart-focus-sheetflower{width:110px;height:110px;margin:2px auto}
 .smart-focus-sheetflower svg{width:100%;height:100%}
 @media (prefers-reduced-motion:reduce){.smart-card *,.smart-focus-card *{animation:none !important;transition:none !important}}
@@ -4853,6 +4863,44 @@ function smartStage(pct){
  return p<20?0:p<40?1:p<60?2:p<80?3:4;
 }
 const SMART_STAGE_NAMES=['Seed','Sprout','Bud','Blooming','In bloom'];
+const FOCUS_DETAIL={
+ 'Understand my cycle':{
+  what:'Bloom Garden grows as you log period starts. Three starts give an average cycle length; every new start after that makes the estimate steadier.',
+  stages:['Nothing logged yet — the seed is waiting.','One start down. A first date is better than a guess.','Two starts give a rough spacing to look at.','Three starts are enough to trust the pattern.','Four or more starts keep the prediction sharp.'],
+  next:'Log the first day of your next period.'
+ },
+ 'Steadier energy':{
+  what:'This garden follows the energy rating you log each day. It looks for days at 4 or 5, not for a perfect streak.',
+  stages:['No energy check-ins yet.','A few check-ins — the picture is still fuzzy.','Regular check-ins are starting to show a rhythm.','Nine good-energy days in the last two weeks.','Energy logging has become a habit.'],
+  next:'Rate your energy once a day, even on ordinary days.'
+ },
+ 'Better sleep':{
+  what:'Seven hours or more is the mark here. Sleep length and sleep quality are logged separately, so a long night is not automatically a good one.',
+  stages:['No nights logged yet.','A couple of nights recorded.','A week of records is taking shape.','Seven nights at 7h+ in the last week.','A steady wind-down time is in place.'],
+  next:'Log your sleep length when you wake up.'
+ },
+ 'Move more':{
+  what:'An active day means 20 minutes or more of recorded movement. Rest days and missing records are not counted as activity.',
+  stages:['No movement logged yet.','One active day logged.','Two active days — momentum is starting.','Three active days in a week.','Movement is part of the week now.'],
+  next:'Take a short walk and log it.'
+ },
+ 'Eat regularly':{
+  what:'This tracks your meal plan for breakfast, lunch and dinner. A full day means all three are planned — it is a plan, not proof of eating.',
+  stages:['No meals planned yet.','A few meals in the plan.','Half a week of full days.','Five full days planned.','Planning meals ahead feels normal.'],
+  next:'Plan tomorrow’s three meals tonight.'
+ },
+ 'Manage stress':{
+  what:'Stress runs from 1 (calm) to 5 (high). This garden counts days rated 1 or 2. Patterns here show association, not cause.',
+  stages:['No stress check-ins yet.','A few calm days logged.','A pattern is beginning to show.','Five calm days in a week.','A steady routine is holding.'],
+  next:'Rate your stress at the end of the day.'
+ },
+ 'Prepare for doctor visits':{
+  what:'Thirty days of symptom notes give your appointment something concrete. This organizes your own records; it does not diagnose anything.',
+  stages:['Nothing tracked yet.','A few days of notes.','Two weeks of symptoms recorded.','Thirty days ready to share.','Your visit notes stay current.'],
+  next:'Write down one symptom to bring up at your next visit.'
+ }
+};
+
 const SMART_FLOWER_CACHE=new Map();
 function smartFlowerCacheSize(){return SMART_FLOWER_CACHE.size}
 const SMART_FLOWER_SPECIES={
@@ -5062,7 +5110,7 @@ function smartFocusHTML(goal,goals,noGoals,cards){
   return `<div class="smart-focus-wrap" id="smart-focus" aria-labelledby="smart-focus-title">${kicker}<p class="smart-copy" style="margin:0 2px">Pick your goals in Profile to personalize this.</p></div>`;
  }
  const list=Array.isArray(cards)&&cards.length?cards:(goals||[goal]).map(g=>({goal:g,name:smartFocusName(g),ctx:{}}));
- const items=list.map(c=>{const prog=smartGoalProgress(c.goal,c.ctx||{});return {goal:c.goal,name:prog.name||c.name||c.goal,stageName:prog.stageName,caption:prog.caption,reason:prog.reason,motivator:prog.motivator,stage:prog.stage};});
+ const items=list.map(c=>{const prog=smartGoalProgress(c.goal,c.ctx||{});return {goal:c.goal,name:prog.name||c.name||c.goal,stageName:prog.stageName,caption:prog.caption,reason:prog.reason,motivator:prog.motivator,stage:prog.stage,pct:prog.pct};});
  try{window.__focusItems=items}catch(e){}
  const html=items.map((it,i)=>`<article class="smart-focus-card" data-goal="${E(it.goal)}" data-focus="${i}" role="listitem">
    <button class="smart-focus-tap" type="button" onclick="focusSheet(${i})" aria-label="${E(it.name)} - details">
@@ -5081,10 +5129,19 @@ function smartFocusHTML(goal,goals,noGoals,cards){
 }
 function focusSheet(i){
  const items=(typeof window!=='undefined'&&window.__focusItems)||[];const it=items[i];if(!it)return;
- sheet(`<h2>${E(it.name)}</h2><p class="meta" style="margin:-8px 0 0">${E(it.stageName)}</p><div class="smart-focus-sheetflower">${smartFlowerSVG(it.goal,it.stage)}</div><p class="smart-focus-reason">${E(it.reason)}</p><p class="smart-focus-motivator">${E(it.motivator)}</p>`);
+ const d=(typeof FOCUS_DETAIL!=='undefined'&&FOCUS_DETAIL[it.goal])||{what:it.reason,stages:[],next:it.motivator};
+ const pct=Math.max(0,Math.min(100,+(it.pct||0)));
+ const ladder=(d.stages||[]).map((t,j)=>`<div class="fs-step${j===it.stage?' on':''}${j<it.stage?' done':''}"><span class="fs-num">${j+1}</span><span>${E(t)}</span></div>`).join('');
+ const know=(typeof smartKnowledgeFor==='function')?smartKnowledgeFor(it.goal):'';
+ sheet(`<h2>${E(it.name)}</h2><p class="meta" style="margin:-8px 0 0">${E(it.stageName)} · ${pct}% of the way</p><div class="smart-focus-sheetflower">${smartFlowerSVG(it.goal,it.stage)}</div>
+  <p class="smart-focus-reason">${E(d.what)}</p>
+  ${ladder?`<div class="fs-ladder"><div class="lbl" style="margin-top:12px">How this garden grows</div>${ladder}</div>`:''}
+  <p class="smart-focus-motivator">${E(it.motivator)}</p>
+  <p class="fs-next"><b>Next:</b> ${E(d.next)}</p>
+  ${know?`<p class="fs-note">${E(know)}</p>`:''}`);
 }
 function smartFocusName(goal){
- const names={'Understand my cycle':'Understanding your cycle','Steadier energy':'Steadier energy','Better sleep':'Better sleep','Move more':'Moving more','Eat regularly':'Eating regularly','Manage stress':'Keeping stress steady'};
+ const names={'Understand my cycle':'Understanding your cycle','Steadier energy':'Steadier energy','Better sleep':'Better sleep','Move more':'Moving more','Eat regularly':'Eating regularly','Manage stress':'Keeping stress steady','Prepare for doctor visits':'Doctor visits'};
  return names[goal]||'This';
 }
 function smartKnowledgeFor(goal){
