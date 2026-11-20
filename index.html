@@ -1618,7 +1618,9 @@ async function sbFetchDocWithRev(uid){if(!sb)return null;const {data,error}=awai
 let sbLastPush='';
 // One shared lock serializes push and pull so they cannot race one another.
 let syncLock=Promise.resolve();
-function syncLocked(fn){const run=()=>Promise.resolve().then(fn);const p=syncLock.then(run,run);syncLock=p.catch(()=>{});return p}
+// Watchdog: a hung fetch must never freeze the whole sync chain (that forced a
+// logout/login on the second device). The chain self-heals after 20s.
+function syncLocked(fn){const run=()=>Promise.resolve().then(fn);const p=syncLock.then(run,run);const g=withTimeout(p,20000).catch(e=>{reportErr('sync.watchdog',e);return undefined});syncLock=g.then(()=>{});return g}
 function persistDoc(){try{ST.set(user?key(user):'bloom_anon',JSON.stringify(D))}catch(e){}}
 function sbScheduleRetry(){if(sbRetryTimer||!sbUser)return;const delays=[15000,30000,60000,120000,300000];const ms=delays[Math.min(Math.max(SYNC.fails-1,0),4)];sbRetryTimer=setTimeout(()=>{sbRetryTimer=null;sbPush()},ms)}
 function sbNoteFailure(e,ctx){reportErr(ctx||'sync.push',e);SYNC.fails++;if(SYNC.fails===3)toast('Cloud sync is having trouble. Your data is safe on this phone.');setSyncState(/fetch|network|ENOTFOUND|ETIMEDOUT|timeout|Failed to fetch/i.test(String(e&&e.message||e))?'offline':'error');sbScheduleRetry()}
@@ -1710,7 +1712,41 @@ function syncTick(){
  return syncLocked(async()=>{await pullMainOnce();await pushMainOnce()})
 }
 function safeToRender(){const sheetEl=document.getElementById('sheet');if(sheetEl&&sheetEl.innerHTML.trim())return false;const a=document.activeElement;return !(a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA'||a.tagName==='SELECT'))}
-function startCloudSync(){if(cloudTimer)clearInterval(cloudTimer);cloudTimer=setInterval(syncTick,12000);if(sbPullTimer){clearInterval(sbPullTimer);sbPullTimer=null}if(pendRenderTimer)clearInterval(pendRenderTimer);pendRenderTimer=setInterval(()=>{if(sbPendingRender&&safeToRender()){sbPendingRender=false;shell()}},5000)}
+function startCloudSync(){if(cloudTimer)clearInterval(cloudTimer);cloudTimer=setInterval(syncTick,12000);if(sbPullTimer){clearInterval(sbPullTimer);sbPullTimer=null}if(pendRenderTimer)clearInterval(pendRenderTimer);pendRenderTimer=setInterval(()=>{if(sbPendingRender&&safeToRender()){sbPendingRender=false;shell()}},5000);bloomRtStart()}
+// ---- Supabase Realtime: instant cross-device updates (polling stays as a fallback) ----
+let bloomRt=null,bloomRtKey='',bloomRtT=null,bloomRtRetry=null;
+function bloomRtStop(){
+ if(bloomRtRetry){clearTimeout(bloomRtRetry);bloomRtRetry=null}
+ if(bloomRtT){clearTimeout(bloomRtT);bloomRtT=null}
+ if(bloomRt){try{bloomRt.unsubscribe()}catch(e){}bloomRt=null}
+ bloomRtKey='';
+}
+function bloomRtStart(){
+ if(!sb||!sbUser||typeof sb.channel!=='function')return;
+ if(isOffline())return;
+ const uid=String(sbUser.id||'');
+ const partner=!!(RO&&!ownMode&&ROowner);
+ const key=uid+'|'+(partner?'p:'+ROowner:'o');
+ if(bloomRt&&bloomRtKey===key)return;
+ bloomRtStop();bloomRtKey=key;
+ const sched=fn=>{if(bloomRtT)clearTimeout(bloomRtT);bloomRtT=setTimeout(()=>{bloomRtT=null;try{fn()}catch(e){reportErr('realtime.cb',e)}},350)};
+ try{
+  const ch=sb.channel('bloom-rt-'+uid.slice(0,8));
+  if(partner){
+   ch.on('postgres_changes',{event:'*',schema:'public',table:'bloom_shared',filter:'user_id=eq.'+ROowner},()=>sched(()=>roReload()));
+   ch.on('postgres_changes',{event:'*',schema:'public',table:'bloom_library',filter:'user_id=eq.'+ROowner},()=>sched(()=>syncLocked(partnerLibRefresh)));
+  }else{
+   // own row changed on ANOTHER device: pull and merge immediately (no push echo)
+   ch.on('postgres_changes',{event:'*',schema:'public',table:'bloom_data',filter:'user_id=eq.'+uid},()=>sched(()=>{if(!document.hidden)sbPull()}));
+   ch.on('postgres_changes',{event:'*',schema:'public',table:'bloom_reading',filter:'user_id=eq.'+uid},()=>sched(()=>{if(!document.hidden)readingLoadOnce().catch(()=>{})}));
+  }
+  ch.subscribe(st=>{if((st==='CHANNEL_ERROR'||st==='TIMED_OUT')&&bloomRt===ch){
+   reportErr('realtime.channel',st);bloomRt=null;bloomRtKey='';
+   bloomRtRetry=setTimeout(bloomRtStart,6000);
+  }});
+  bloomRt=ch;
+ }catch(e){reportErr('realtime.start',e)}
+}
 async function sbAfterLoginOnce(u){ownMode=false;ownStash=null;ownLoaded=false;ownLoading=false;sbUser=u;planPanel='mine';peekDoc=null;peekAt=0;pairInfo=null;ownPeerName='';
  const mail=(u.email||'').toLowerCase();
  let cached=J(key(mail),null);
@@ -1867,6 +1903,7 @@ async function enterPartnerMode(owner,code,quiet){
  return true}
 async function partnerDropped(){try{libStoreReset()}catch(e){}
  const old=ROowner;
+ try{bloomRtStop()}catch(e){}
  RO=false;ROcloud=false;ROowner=null;roHash='';ownMode=false;ownStash=null;D=null;planPanel='mine';peekDoc=null;peekAt=0;pairInfo=null;
  setRoleFlag('');unlockPartner();setUnpaired(true);clearSession();
   try{ST.del('bloom_lastcode');ST.del('bloom_powner');if(old)ST.del(key(old))}catch(e){}
@@ -2372,7 +2409,7 @@ const DISPOSABLE_DOMAINS=new Set([
 const isDisposableEmail=e=>{const s=String(e||'').trim().toLowerCase();const at=s.lastIndexOf('@');if(at<0)return false;const d=s.slice(at+1).replace(/\.+$/,'');return DISPOSABLE_DOMAINS.has(d)};
 const EMAIL_RE=/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/;function logout(){try{libStoreReset()}catch(e){}try{ST.del('bloom_pmail')}catch(e){}try{widgetReset()}catch(e){}RO=false;ROcloud=false;ROowner=null;roHash='';ownMode=false;ownStash=null;user=null;D=null;clearSession();planPanel='mine';peekDoc=null;peekAt=0;pairInfo=null;setRoleFlag('');sbLastPush='';sbRev=0;
  view='cycle';tab='';onbStep=0;calM=today().slice(0,7);try{window.__navReady=false}catch(e){}try{ST.del('bloom_nav')}catch(e){}
- try{ST.del('bloom_own')}catch(e){}try{clearLegacySmartAIStorage()}catch(e){}try{reminderCancel()}catch(e){}if(sb){sb.auth.signOut().catch(()=>{});sbUser=null}if(cloudTimer){clearInterval(cloudTimer);cloudTimer=null}hideUpdateBanner();authView('in')}
+ try{ST.del('bloom_own')}catch(e){}try{clearLegacySmartAIStorage()}catch(e){}try{reminderCancel()}catch(e){}if(sb){sb.auth.signOut().catch(()=>{});sbUser=null}if(cloudTimer){clearInterval(cloudTimer);cloudTimer=null}try{bloomRtStop()}catch(e){}hideUpdateBanner();authView('in')}
 let pwReauthing=false;
 function pwIssue(pw,email){
  const v=String(pw==null?'':pw);
@@ -6397,7 +6434,7 @@ function readingMarkDirty(uid){try{ST.set('bloom_reading_dirty_'+uid,'1')}catch(
 function readingClearDirty(uid){try{ST.del('bloom_reading_dirty_'+uid)}catch(e){}}
 function readingFetchRow(){
  if(!sb||!sbUser||!sbUser.id)return Promise.resolve(null);
- return sb.from('bloom_reading').select('doc,rev').eq('user_id',sbUser.id).maybeSingle()
+ return withTimeout(sb.from('bloom_reading').select('doc,rev').eq('user_id',sbUser.id).maybeSingle(),5000)
   .then(({data,error})=>error?{error:String(error.message||error)}:(data?{doc:data.doc,rev:+(data.rev||0)}:null))
   .catch(e=>({error:String(e&&e.message||e)}));
 }
@@ -6413,7 +6450,7 @@ async function readingPushAsync(){
  const snapStr=JSON.stringify(snap);
  const baseRev=readingRevGet(uid);
  let res;
- try{res=await sb.rpc('bloom_push_reading',{p_doc:snap,p_base_rev:baseRev})}
+ try{res=await withTimeout(sb.rpc('bloom_push_reading',{p_doc:snap,p_base_rev:baseRev}),6000)}
  catch(e){readingMarkDirty(uid);reportErr('reading.push',e);return 'failed'}
  if(res&&res.error){readingMarkDirty(uid);reportErr('reading.push',res.error);return 'failed'}
  const data=res&&res.data;
@@ -6431,7 +6468,7 @@ async function readingPushAsync(){
   const merged=readingMerge(cur,data.doc||{});
   readingRevSet(uid,data.rev);
   let retry;
-  try{retry=await sb.rpc('bloom_push_reading',{p_doc:merged,p_base_rev:+(data.rev||0)})}
+  try{retry=await withTimeout(sb.rpc('bloom_push_reading',{p_doc:merged,p_base_rev:+(data.rev||0)}),6000)}
   catch(e){readingMarkDirty(uid);reportErr('reading.push','conflict retry failed');return 'failed'}
   if(retry&&retry.data&&retry.data.status==='ok'){
    readingRevSet(uid,retry.data.rev);
@@ -8178,14 +8215,14 @@ function splashPlay(replay){
  stage.onclick=()=>{if(splashDone)return;splashPlay(false)};
 }
 // called by the native layer when the app comes back to the foreground
-window.__bloomResume=(awayMs)=>{try{widgetConsume()}catch(e){}try{widgetSync()}catch(e){}if(splashPlaying||!splashShouldShow(awayMs))return;splashPlay(true)};
+window.__bloomResume=(awayMs)=>{try{widgetConsume()}catch(e){}try{widgetSync()}catch(e){}if(typeof sbUser!=='undefined'&&sbUser){try{syncTick()}catch(e){}}if(splashPlaying||!splashShouldShow(awayMs))return;splashPlay(true)};
 window.addEventListener('online',()=>{try{ST.set('bloom_net','1')}catch(e){}sbInit().then(()=>{if(sbUser){startCloudSync();if(RO){if(!ownMode)partnerLibRefresh()}else{sbPush();sbPull()}}});setTimeout(()=>checkUpdate(false),800)});
 window.addEventListener('offline',()=>{try{ST.set('bloom_net','0')}catch(e){}if(!document.getElementById('authForm'))return;const e=document.getElementById('err');if(e&&!e.textContent){e.textContent=OFFLINE_MSG;e.classList.add('on')}});
 window.addEventListener('online',()=>{const e=document.getElementById('err');if(document.getElementById('authForm')&&e&&e.textContent===OFFLINE_MSG){e.textContent='';e.classList.remove('on')}});
 // called by the native layer when the app goes to the background
 window.__bloomBg=()=>splashBgMark();
 // @test-end splash
-document.addEventListener('visibilitychange',()=>{if(document.hidden){splashBgMark();try{saveNav()}catch(e){}}else{try{widgetConsume()}catch(e){}try{widgetSync()}catch(e){}if(sbUser){if(RO){if(!ownMode)syncLocked(partnerLibRefresh)}else sbPull()}}});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){splashBgMark();try{saveNav()}catch(e){}}else{try{widgetConsume()}catch(e){}try{widgetSync()}catch(e){}if(sbUser){if(RO){if(!ownMode)syncLocked(partnerLibRefresh)}else{syncTick();bloomRtStart()}}}});
 // Auto-refresh: only re-render at local midnight (day flip / new day counts). Sync pulls already re-render on real changes; every full re-render flashes scroll/inputs, so only repaint for the day flip.
 if(window.__autoRefreshTimer)clearInterval(window.__autoRefreshTimer);
 let __lastAutoDay=new Date().toDateString();
