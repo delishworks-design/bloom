@@ -1704,7 +1704,7 @@ async function pullMainOnce(opts){
  }catch(e){reportErr('sync.pull',e);SYNC.fails++;setSyncState('error')}
 }
 function sbPush(){return syncLocked(pushMainOnce)}
-function sbPushSoon(){if(!sbUser)return;if(JSON.stringify(D)!==sbLastPush)setSyncState('pending');clearTimeout(sbPushT);sbPushT=setTimeout(()=>sbPush(),1200)}
+function sbPushSoon(){if(!sbUser)return;if(JSON.stringify(D)!==sbLastPush)setSyncState('pending');clearTimeout(sbPushT);sbPushT=setTimeout(()=>sbPush(),250)}
 function sbPull(){return syncLocked(pullMainOnce)}
 function sbPullFast(){return syncLocked(()=>pullMainOnce({skipReading:true,force:true}))}
 function syncTick(){
@@ -1713,7 +1713,7 @@ function syncTick(){
  return syncLocked(async()=>{await pullMainOnce();await pushMainOnce()})
 }
 function safeToRender(){const sheetEl=document.getElementById('sheet');if(sheetEl&&sheetEl.innerHTML.trim())return false;const a=document.activeElement;return !(a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA'||a.tagName==='SELECT'))}
-function startCloudSync(){if(cloudTimer)clearInterval(cloudTimer);cloudTimer=setInterval(syncTick,12000);if(sbPullTimer){clearInterval(sbPullTimer);sbPullTimer=null}if(pendRenderTimer)clearInterval(pendRenderTimer);pendRenderTimer=setInterval(()=>{if(sbPendingRender&&safeToRender()){sbPendingRender=false;shell()}},5000);bloomRtStart()}
+function startCloudSync(){if(cloudTimer)clearInterval(cloudTimer);cloudTimer=setInterval(syncTick,12000);if(sbPullTimer){clearInterval(sbPullTimer);sbPullTimer=null}if(pendRenderTimer)clearInterval(pendRenderTimer);pendRenderTimer=setInterval(()=>{if(sbPendingRender&&safeToRender()){sbPendingRender=false;shell()}},1000);bloomRtStart()}
 // ---- Supabase Realtime: instant cross-device updates (polling stays as a fallback) ----
 let bloomRt=null,bloomRtKey='',bloomRtT=null,bloomRtRetry=null;
 function bloomRtStop(){
