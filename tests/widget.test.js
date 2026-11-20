@@ -42,9 +42,7 @@ test('widgetSync never writes a partner snapshot while following', async () => {
   const sent = [];
   b.widgetNative = () => ({ sync: async o => { sent.push(JSON.parse(o.data)) } });
   await b.widgetSync();
-  assert.equal(sent.length, 1);
-  assert.equal(sent[0].uid, 'me');
-  assert.equal(sent[0].tasks[0].t, 'Mine');
+  assert.equal(sent.length, 0);
 });
 
 test('widgetSync skips when there is no own doc to show', async () => {

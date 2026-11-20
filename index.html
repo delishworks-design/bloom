@@ -2830,6 +2830,7 @@ function ownWidgetDoc(){
  return c;
 }
 function widgetSnapshot(src){
+ if(typeof RO!=='undefined'&&RO)return null;
  const doc=src||ownWidgetDoc();if(!doc)return null;
  const d=today(),l=(doc.logs||{})[d]||{},done=(doc.done&&doc.done[d])||{};
  let list=[];try{list=tasksFor(d,doc)}catch(e){list=doc.tasks||[]}
@@ -2845,9 +2846,14 @@ function widgetSnapshot(src){
  }catch(e){}
  return snap;
 }
-let widgetSyncQ=Promise.resolve();
+let widgetSyncQ=Promise.resolve(),widgetRoCleared=false;
 function widgetSyncQueued(){widgetSyncQ=widgetSyncQ.then(()=>widgetSync()).catch(()=>{});return widgetSyncQ}
 async function widgetSync(){const n=widgetNative();if(!n||!n.sync)return;
+ if(typeof RO!=='undefined'&&RO){
+  if(!widgetRoCleared){try{if(n.reset)await n.reset()}catch(e){}widgetRoCleared=true}
+  return;
+ }
+ widgetRoCleared=false;
  const snap=widgetSnapshot();if(!snap)return;
  try{await n.sync({data:JSON.stringify(snap)})}catch(e){}}
 // Native sync() ignores the date field, so force a full redraw when the day changes.
@@ -8031,7 +8037,7 @@ function changePasswordSheet(){
    <div class="card"><div class="card-h"><h3>Sync</h3></div><p class="meta" id="syncLine" style="margin:0 0 10px">${E(syncLineText())}</p><div class="row" style="gap:10px"><button class="btn ghost" id="syncNow" style="flex:1">Sync now</button><button class="btn ghost" id="syncCopy" style="flex:1">Copy diagnostics</button></div></div>
     ${RO?'<div class="card"><div class="card-h"><h3>Your data</h3></div><button class="btn pink" id="sDelAcct" style="width:100%">Delete my account</button></div>':'<div class="card"><div class="card-h"><h3>Your data</h3></div><button class="btn pink" id="sDel" style="width:100%">Delete all my data</button><button class="btn ghost" id="sDelAcct" style="width:100%">Delete my account</button><button class="btn ghost" id="sExp" style="width:100%">Export backup</button><button class="btn ghost" id="sImp" style="width:100%">Import backup</button>'+bkRestore+'</div>'}
    <div class="card"><div class="card-h"><h3>Quick-actions button</h3></div><p class="meta" style="margin:0 0 10px">Draggable flower for one-tap logging.</p><label class="row" style="color:var(--ink)"><input type="checkbox" id="fabTgl" style="width:22px;margin:0" ${!RO&&!ownMode&&D&&D.fabOn===true?'checked':''}> Show the button</label><div class="lbl" style="margin-top:12px">Which flower</div><div class="fabopts" id="fabOpts"></div></div>
-   ${widgetSupported()?`<div class="card"><div class="card-h"><h3>Home-screen widgets</h3></div><p class="meta" style="margin:0 0 12px">Two widgets, one tap away.</p><button class="btn ghost" id="wPinTasks" style="width:100%">Add Tasks widget</button><button class="btn ghost" id="wPinWater" style="width:100%;margin-top:8px">Add Water &amp; mood widget</button><p class="meta" id="wNote" style="margin:10px 0 0"></p></div>`:''}
+   ${widgetSupported()?`<div class="card"><div class="card-h"><h3>Home-screen widgets</h3></div><p class="meta" style="margin:0 0 12px">Tasks widget for your own planner.</p><button class="btn ghost" id="wPinTasks" style="width:100%">Add Tasks widget</button><p class="meta" id="wNote" style="margin:10px 0 0"></p></div>`:''}
    <div class="card"><div class="card-h"><h3>App</h3><span class="meta" id="appVer">\u2014</span></div><button class="btn ghost" id="chkUp" style="width:100%">Check for updates</button></div>`;
  $('#bk').onclick=()=>{view='me';shell()};
  $('#sChg').onclick=()=>changeNameSheet(nm,async v=>{
@@ -8080,6 +8086,7 @@ function changePasswordSheet(){
   ['wPinTasks','wPinWater'].forEach(id=>{
    if(!document.getElementById(id))return;
    $('#'+id).onclick=async()=>{
+    if(id==='wPinWater'&&RO)return;
     const n=widgetNative(),note=document.getElementById('wNote');
     let r={};try{r=await n.requestPin({widget:id==='wPinWater'?'water':'tasks'})}catch(e){}
     if(note)note.textContent=(r&&r.pinned)?'Added to your home screen.':'Long-press your home screen, open Widgets and pick Bloom.';
