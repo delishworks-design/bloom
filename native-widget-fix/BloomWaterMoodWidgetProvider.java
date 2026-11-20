@@ -112,7 +112,7 @@ public class BloomWaterMoodWidgetProvider extends AppWidgetProvider {
             }
             int i10 = i7;
             remoteViews2.setImageViewBitmap(R.id.waterKicker, BloomWidgetPaint.kicker(context2, "WATER", 18.0f, -7570816));
-            remoteViews2.setImageViewBitmap(R.id.waterCount, BloomWidgetPaint.count(context2, iMax + " of " + iGoal, 17.0f, -7570816));
+            remoteViews2.setImageViewBitmap(R.id.waterCount, BloomWidgetPaint.count(context2, iMax + " of " + iGoal, 22.0f, -13989241));
             remoteViews2.setImageViewBitmap(R.id.addGlass, BloomWidgetPaint.pill(context2, "+1 glass"));
             int i11 = length;
             remoteViews2.setOnClickPendingIntent(R.id.addGlass, BloomWidgetStore.broadcast(context2, BloomWaterMoodWidgetProvider.class, ACTION_WATER, 5400, null));

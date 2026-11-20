@@ -105,7 +105,7 @@ public class BloomTasksWidgetProvider extends AppWidgetProvider {
             boolean z = jSONArrayOptJSONArray != null && jSONArrayOptJSONArray.length() > 0;
             remoteViews.setViewVisibility(R.id.taskCount, z ? 0 : 8);
             if (z) {
-                remoteViews.setImageViewBitmap(R.id.taskCount, BloomWidgetPaint.count(context, countText(context), 17.0f, -7570816));
+                remoteViews.setImageViewBitmap(R.id.taskCount, BloomWidgetPaint.count(context, countText(context), 22.0f, -7570816));
             }
             remoteViews.setImageViewBitmap(android.R.id.empty, BloomWidgetPaint.meta(context, "No tasks today", 17.0f, -7570816));
             Intent intent = new Intent(context, (Class<?>) BloomTasksWidgetService.class);

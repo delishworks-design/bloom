@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Bloom widgets · app-matched preview</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Sansita:wght@400;700&display=swap');
+:root{--bg:#FBF4EA;--bg2:#FFF9F2;--card:#FFFBF5;--ink:#3A2E33;--mut:#7C6B71;--line:#EADFD2;--teal:#2A8A87;--tealS:#D6ECEA;--rose:#B8456B;--pinkS:#F9DDE5;--faded:#B8A8AE}
+*{box-sizing:border-box}
+body{margin:0;padding:24px 14px 60px;background:linear-gradient(160deg,#141827,#1b2036 55%,#141827);font-family:Sansita,system-ui,sans-serif;color:var(--ink)}
+h1{font:700 15px/1.2 Sansita,sans-serif;color:#fff;margin:0 0 4px}
+p.sub{color:#B9B4C6;font-size:12px;margin:0 0 24px}
+.card{background:var(--card);border:1.5px solid var(--line);border-radius:22px;padding:18px 16px;margin:0 auto 22px;max-width:440px;box-shadow:0 2px 10px rgba(120,70,80,.08)}
+.card-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding-bottom:2px}
+h3{font:700 17px/1.2 'Playfair Display',serif;margin:0;color:var(--ink)}
+.waterrow{display:flex;align-items:baseline;gap:6px}
+.watercount{font:700 22px/1 'Playfair Display',serif;color:var(--teal)}
+.meta{font-size:.8rem;color:var(--mut)}
+.glasses{display:flex;gap:4px;margin:14px 0 12px}
+.glassbtn{flex:1 1 32px;min-width:32px;max-width:44px;height:44px;border:1.5px solid var(--line);border-radius:12px;background:var(--card);display:grid;place-items:center;opacity:.4}
+.glassbtn.on{opacity:1;border-color:var(--teal);background:var(--tealS)}
+.glassbtn svg{width:20px;height:20px;stroke:var(--mut);fill:none;stroke-width:1.6}
+.glassbtn.on svg{stroke:var(--teal)}
+.btn{padding:13px 22px;border-radius:16px;border:0;font:700 16px/1 Sansita,sans-serif;color:#FBF4EA;background:linear-gradient(180deg,#C4567A,#B8456B);box-shadow:0 4px 14px rgba(184,69,107,.35)}
+.sep{height:1px;background:var(--line);margin:12px 0}
+.faces{display:flex;gap:8px;margin-top:4px}
+.face{flex:1;min-height:58px;border:1.5px solid var(--line);border-radius:16px;display:grid;place-items:center;background:var(--card);opacity:.55}
+.face svg{width:34px;height:34px;stroke:var(--mut);fill:none;stroke-width:1.8}
+.cycle{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:.8rem;color:var(--ink)}
+.cycle .lab{font-size:.7rem;font-weight:700;color:var(--mut);letter-spacing:.06em;text-transform:uppercase}
+.cycle .next{color:var(--rose);font-weight:700;white-space:nowrap}
+.taskrow{display:flex;align-items:center;gap:11px;min-height:38px;font-size:18px;color:var(--ink)}
+.circle{width:22px;height:22px;border:1.5px solid var(--faded);border-radius:5px;flex:none}
+.circle.done{background:var(--rose);border-color:var(--rose);position:relative}
+.circle.done:after{content:'';position:absolute;left:6px;top:2px;width:6px;height:11px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.tag{background:#2A2F45;color:#B9B4C6;font-size:11px;padding:4px 10px;border-radius:999px;margin-left:8px}
+</style>
+</head>
+<body>
+<h1>Bloom widgets <span class="tag">app-matched</span></h1>
+<p class="sub">Sansita + Playfair · 44px glass buttons · rose CTA · 22px teal count</p>
+
+<div class="card">
+ <div class="card-h"><h3>Water</h3><div class="waterrow"><span class="watercount">0</span><span class="meta">/ 8</span></div></div>
+ <div class="glasses">
+  <span class="glassbtn"><svg viewBox="0 0 24 24"><path d="M5 4h14l-2 16H7L5 4z"/></svg></span>
+  <span class="glassbtn"><svg viewBox="0 0 24 24"><path d="M5 4h14l-2 16H7L5 4z"/></svg></span>
+  <span class="glassbtn"><svg viewBox="0 0 24 24"><path d="M5 4h14l-2 16H7L5 4z"/></svg></span>
+  <span class="glassbtn"><svg viewBox="0 0 24 24"><path d="M5 4h14l-2 16H7L5 4z"/></svg></span>
+  <span class="glassbtn"><svg viewBox="0 0 24 24"><path d="M5 4h14l-2 16H7L5 4z"/></svg></span>
+  <span class="glassbtn"><svg viewBox="0 0 24 24"><path d="M5 4h14l-2 16H7L5 4z"/></svg></span>
+  <span class="glassbtn"><svg viewBox="0 0 24 24"><path d="M5 4h14l-2 16H7L5 4z"/></svg></span>
+  <span class="glassbtn"><svg viewBox="0 0 24 24"><path d="M5 4h14l-2 16H7L5 4z"/></svg></span>
+ </div>
+ <div class="row" style="display:flex;gap:10px"><button class="btn" style="flex:1">+1 glass</button></div>
+ <div class="sep"></div>
+ <div class="card-h"><h3>Mood</h3></div>
+ <div class="faces">
+  <span class="face"><svg viewBox="0 0 24 24"><path d="M7 15q5-6 10 0"/><circle cx="9" cy="10" r=".8" fill="currentColor"/><circle cx="15" cy="10" r=".8" fill="currentColor"/></svg></span>
+  <span class="face"><svg viewBox="0 0 24 24"><path d="M8 15q4-3 8 0"/><circle cx="9" cy="10" r=".8" fill="currentColor"/><circle cx="15" cy="10" r=".8" fill="currentColor"/></svg></span>
+  <span class="face"><svg viewBox="0 0 24 24"><path d="M8 14h8"/><circle cx="9" cy="10" r=".8" fill="currentColor"/><circle cx="15" cy="10" r=".8" fill="currentColor"/></svg></span>
+  <span class="face"><svg viewBox="0 0 24 24"><path d="M8 12q4 5 8 0"/><circle cx="9" cy="10" r=".8" fill="currentColor"/><circle cx="15" cy="10" r=".8" fill="currentColor"/></svg></span>
+  <span class="face"><svg viewBox="0 0 24 24"><path d="M8 12q4 5 8 0M8 9q4-4 8 0"/><circle cx="9" cy="10" r=".8" fill="currentColor"/><circle cx="15" cy="10" r=".8" fill="currentColor"/></svg></span>
+ </div>
+ <div class="sep"></div>
+ <div class="cycle"><span><span class="lab">Cycle</span> Day 21 of 35 · Luteal phase</span><span class="next">Period in 15 days</span></div>
+</div>
+
+<div class="card">
+ <div class="card-h"><h3>Today</h3><div class="waterrow"><span class="watercount" style="color:var(--rose)">0</span><span class="meta">/ 5 done</span></div></div>
+ <div style="margin-top:10px">
+  <div class="taskrow"><span class="circle"></span><span>Logbook</span></div>
+  <div class="taskrow"><span class="circle"></span><span>Backlog class</span></div>
+  <div class="taskrow"><span class="circle"></span><span>Drink water throughout the day</span></div>
+  <div class="taskrow"><span class="circle"></span><span>5 slow breaths</span></div>
+  <div class="taskrow"><span class="circle done"></span><span>Refresher Backlogs</span></div>
+ </div>
+</div>
+<p class="sub" style="text-align:center">Target look — kailangan pa ng bagong APK gamit ang <code>native-widget-fix/</code>.</p>
+</body>
+</html>

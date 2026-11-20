@@ -124,48 +124,54 @@
         <LinearLayout
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_width="0dp"
+            android:layout_weight="4"
+            android:layout_height="48dp">
             <ImageView
                 android:id="@+id/mood1"
-                android:padding="2dp"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
+                android:padding="5dp"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="48dp"
                 android:src="@drawable/face_1_off"
                 android:contentDescription="Mood 1"
-                android:layout_marginStart="4dp"/>
+                android:layout_marginStart="2dp"/>
             <ImageView
                 android:id="@+id/mood2"
-                android:padding="2dp"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
+                android:padding="5dp"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="48dp"
                 android:src="@drawable/face_2_off"
                 android:contentDescription="Mood 2"
-                android:layout_marginStart="4dp"/>
+                android:layout_marginStart="2dp"/>
             <ImageView
                 android:id="@+id/mood3"
-                android:padding="2dp"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
+                android:padding="5dp"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="48dp"
                 android:src="@drawable/face_3_off"
                 android:contentDescription="Mood 3"
-                android:layout_marginStart="4dp"/>
+                android:layout_marginStart="2dp"/>
             <ImageView
                 android:id="@+id/mood4"
-                android:padding="2dp"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
+                android:padding="5dp"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="48dp"
                 android:src="@drawable/face_4_off"
                 android:contentDescription="Mood 4"
-                android:layout_marginStart="4dp"/>
+                android:layout_marginStart="2dp"/>
             <ImageView
                 android:id="@+id/mood5"
-                android:padding="2dp"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
+                android:padding="5dp"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="48dp"
                 android:src="@drawable/face_5_off"
                 android:contentDescription="Mood 5"
-                android:layout_marginStart="4dp"/>
+                android:layout_marginStart="2dp"/>
         </LinearLayout>
     </LinearLayout>
     <ImageView

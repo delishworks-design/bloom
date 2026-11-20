@@ -95,11 +95,11 @@ final class BloomWidgetPaint {
     }
 
     static Bitmap kicker(Context context, String str, float f, int i) {
-        return textBitmap(base(sans(context, true), dp(context, f), i, 0.06f), str, dp(context, 2.0f), context);
+        return textBitmap(base(serif(context, true), dp(context, f), i, 0.03f), str, dp(context, 2.0f), context);
     }
 
     static Bitmap count(Context context, String str, float f, int i) {
-        return textBitmap(base(sans(context, true), dp(context, f), i, 0.06f), str, dp(context, 2.0f), context);
+        return textBitmap(base(serif(context, true), dp(context, f), i, 0.0f), str, dp(context, 2.0f), context);
     }
 
     static Bitmap meta(Context context, String str, float f, int i) {
@@ -210,9 +210,9 @@ final class BloomWidgetPaint {
             Paint paint2 = new Paint(1);
             paint2.setStyle(Paint.Style.FILL);
             paint2.setColor(ROSE);
-            canvas.drawCircle(f, f2, f3, paint2);
+            canvas.drawRoundRect(new RectF(f - f3, f2 - f3, f + f3, f2 + f3), dp(context, 4.0f), dp(context, 4.0f), paint2);
             paint.setColor(ROSE);
-            canvas.drawCircle(f, f2, f3, paint);
+            canvas.drawRoundRect(new RectF(f - f3, f2 - f3, f + f3, f2 + f3), dp(context, 4.0f), dp(context, 4.0f), paint);
             Path path = new Path();
             path.moveTo(f - (0.48f * f3), (0.02f * f3) + f2);
             path.lineTo(f - (0.12f * f3), (0.38f * f3) + f2);
@@ -227,7 +227,7 @@ final class BloomWidgetPaint {
             return;
         }
         paint.setColor(RING);
-        canvas.drawCircle(f, f2, f3, paint);
+        canvas.drawRoundRect(new RectF(f - f3, f2 - f3, f + f3, f2 + f3), dp(context, 4.0f), dp(context, 4.0f), paint);
     }
 
     private static List<String> wrap(Paint paint, String str, float f) {
