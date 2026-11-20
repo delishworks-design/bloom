@@ -2211,13 +2211,15 @@ function roAdjust(){let j=paGet();const src=j&&j.a;if(!src)return;
 async function redeemCode(code,onErr){
  const c=String(code||'').trim().toUpperCase();
  if(!c){onErr('Enter a pairing code.');return false}
+ if(!pnGet()){pnSet((sbUser&&sbUser.email||'').split('@')[0]||'You')}
  const client=await sbInit();
  if(!user&&!sbUser){onErr('Sign in first to follow someone.');return false}
+ if(!pnGet()){pnSet((sbUser&&sbUser.email||'').split('@')[0]||'You')}
  if(!client||!sbUser){onErr('Pairing needs an internet connection.');return false}
   const {data,error}=await client.rpc('bloom_redeem_partner_code',{p_code:c});
   if(error&&String(error.message||'').includes('too many attempts')){onErr('Too many tries. Wait 10 minutes and try again.');return false}
   if(error||!data){onErr('That pairing code is not valid. Codes expire after 24 hours.');return false}
- await enterPartnerMode(data,c,true);
+ const __epm=await enterPartnerMode(data,c,true); if(!__epm){onErr('Could not enter partner view. Try again.');return false} return true
  if(!Object.keys(D.logs||{}).length)toast('No logs shared yet');
  return true
 }
@@ -6496,10 +6498,10 @@ function libBook(id){
  return L.books[id];
 }
 function libEntry(id){try{const L=libEnsure();return (L&&L.books&&L.books[id])||null}catch(e){return null}}
-function libAddBook(id){const b=libBook(id);b.added=b.added||Date.now();save();return b}
-function libToggleFavorite(id){const b=libBook(id);b.favorite=!b.favorite;b.favAt=Date.now();save();return b.favorite}
-function libMarkDl(id,v){const b=libBook(id);b.dl=!!v;save()}
-function libDel(id){const L=libEnsure();if(!L.books[id])return false;delete L.books[id];syncMarkDeleted(D&&!RO?D:null,'library/books/'+id);try{if(RO){L._del=L._del||{};L._del.books=L._del.books||{};L._del.books[id]={t:Date.now(),device:syncDeviceId()}}}catch(e){}save();return true}
+function libAddBook(id){if(RO&&!ownMode){const L=libStoreRead();if(!L.books[id])L.books[id]={added:Date.now(),page:1,pct:0,finished:false,favorite:false,dl:false,hl:[],lastRead:0};else L.books[id].added=L.books[id].added||Date.now();libStoreWrite(L);try{if(view==='library'&&safeToRender())shell();else if(view==='library')sbPendingRender=true}catch(e){};return L.books[id]}const b=libBook(id);b.added=b.added||Date.now();save();return b}
+function libToggleFavorite(id){if(RO&&!ownMode){const L=libStoreRead();const b=L.books[id]||(L.books[id]={added:Date.now(),page:1,pct:0,finished:false,favorite:false,dl:false,hl:[],lastRead:0});b.favorite=!b.favorite;b.favAt=Date.now();libStoreWrite(L);try{if(view==='library'&&safeToRender())shell();else if(view==='library')sbPendingRender=true}catch(e){};return b.favorite}const b=libBook(id);b.favorite=!b.favorite;b.favAt=Date.now();save();return b.favorite}
+function libMarkDl(id,v){if(RO&&!ownMode){const L=libStoreRead();if(L.books[id]){L.books[id].dl=!!v;libStoreWrite(L)};return}const b=libBook(id);b.dl=!!v;save()}
+function libDel(id){if(RO&&!ownMode){const L=libStoreRead();if(!L.books[id])return false;delete L.books[id];libStoreWrite(L);try{if(view==='library'&&safeToRender())shell();else if(view==='library')sbPendingRender=true}catch(e){};return true}const L=libEnsure();if(!L.books[id])return false;delete L.books[id];syncMarkDeleted(D&&!RO?D:null,'library/books/'+id);try{if(RO){L._del=L._del||{};L._del.books=L._del.books||{};L._del.books[id]={t:Date.now(),device:syncDeviceId()}}}catch(e){}save();return true}
 const dlProg={};
 function dlChipHTML(id,entry){
  const pct=dlProg[id];
@@ -6733,7 +6735,7 @@ function booksThisYear(books,year){
  return ids.size;
 }
 // @test-end readingGoal
-function libMarkFinished(id,v){const b=libBook(id);b.finished=!!v;b.finAt=Date.now();if(v){b.pct=100;b.finishedAt=b.finAt}else{delete b.finishedAt}
+function libMarkFinished(id,v){if(RO&&!ownMode){const L=libStoreRead();const b=L.books[id]||(L.books[id]={added:Date.now(),page:1,pct:0,finished:false,favorite:false,dl:false,hl:[],lastRead:0});b.finished=!!v;b.finAt=Date.now();if(v){b.pct=100;b.finishedAt=b.finAt}else{delete b.finishedAt}libStoreWrite(L);try{if(view==='library'&&safeToRender())shell();else if(view==='library')sbPendingRender=true}catch(e){};return}const b=libBook(id);b.finished=!!v;b.finAt=Date.now();if(v){b.pct=100;b.finishedAt=b.finAt}else{delete b.finishedAt}
  try{
   D.read=D.read||{};D.read.finished=D.read.finished||{};D.read.unfinished=D.read.unfinished||{};
   if(v){D.read.finished[id]=b.finishedAt;delete D.read.unfinished[id]}
