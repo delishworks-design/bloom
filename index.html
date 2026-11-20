@@ -2834,7 +2834,7 @@ function widgetSnapshot(src){
  const d=today(),l=(doc.logs||{})[d]||{},done=(doc.done&&doc.done[d])||{};
  let list=[];try{list=tasksFor(d,doc)}catch(e){list=doc.tasks||[]}
  const tasks=list.slice(0,100).map(t=>({id:t.id,t:t.t,done:!!done[t.id]}));
- const snap={d,uid:sbUser?sbUser.id:'',hasToday:!!(doc.logs&&doc.logs[d]),water:l.water||0,mood:l.mood||null,tasks};
+ const snap={d,uid:sbUser?sbUser.id:'',goal:(doc.p&&doc.p.waterGoal)||8,hasToday:!!(doc.logs&&doc.logs[d]),water:l.water||0,mood:l.mood||null,tasks};
  try{
   const cyc=dashboardCycle(starts(),d);
   if(cyc&&cyc.state==='estimated'){
@@ -2845,9 +2845,18 @@ function widgetSnapshot(src){
  }catch(e){}
  return snap;
 }
+let widgetSyncQ=Promise.resolve();
+function widgetSyncQueued(){widgetSyncQ=widgetSyncQ.then(()=>widgetSync()).catch(()=>{});return widgetSyncQ}
 async function widgetSync(){const n=widgetNative();if(!n||!n.sync)return;
  const snap=widgetSnapshot();if(!snap)return;
  try{await n.sync({data:JSON.stringify(snap)})}catch(e){}}
+// Native sync() ignores the date field, so force a full redraw when the day changes.
+async function widgetForceRefresh(){
+ try{await widgetConsume()}catch(e){}
+ const n=widgetNative();if(!n||!n.reset)return;
+ try{await n.reset()}catch(e){}
+ try{await widgetSync()}catch(e){}
+}
 async function widgetReset(){const n=widgetNative();if(!n||!n.reset)return;try{await n.reset()}catch(e){}}
 // @test-end widget
 async function widgetConsume(){
@@ -3054,7 +3063,7 @@ function shell(){splashAppIsReady();
   ({cycle:cyclePage,month:monthView,planner,insights,library,settings:settingsPage,me:(RO?roPage:(pLocked()?mePartner:me))})[view]()
  try{fabSync()}catch(e){}
  try{widgetConsume()}catch(e){}
- try{widgetSync()}catch(e){}
+ try{widgetSyncQueued()}catch(e){}
  try{restoreNavScroll()}catch(e){}
  if(window.__navScroll==null)try{saveNav()}catch(e){}
 }
@@ -8235,6 +8244,7 @@ window.__autoRefreshTimer=setInterval(()=>{
   if(day===__lastAutoDay)return;
   __lastAutoDay=day;
   try{if(safeToRender())shell()}catch(e){}
+  try{widgetForceRefresh()}catch(e){}
 },60000);
 window.addEventListener('pagehide',()=>splashBgMark());
 window.addEventListener('beforeunload',()=>splashBgMark());
