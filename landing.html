@@ -1,0 +1,178 @@
+<!doctype html>
+<!-- Aesthetic: warm paper ledger / clinic receipt. Memorable move: an oversized rose 03 with a rubber-stamp mark beside the hero, and real cycle data printed like a receipt. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Bloom — three starts is enough</title>
+<meta name="description" content="Bloom is an offline-first PCOS and PMOS planner. Log a period start, watch the pattern form, and keep your own data on your phone.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Sansita:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+ --paper:#FBF4EA;--paper2:#FFFDF8;--ink:#3A2E33;--muted:#7C6B71;
+ --rule:rgba(58,46,51,.18);--rose:#B8456B;--rose-soft:#F9DDE5;
+ --shadow:4px 4px 0 var(--ink);--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;min-height:100%;background:var(--paper);color:var(--ink);font:400 16px/1.55 Sansita,Georgia,serif;
+ background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 31px,var(--rule) 32px);}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--rose);outline-offset:3px}
+.wrap{width:min(1060px,90vw);margin-inline:auto}
+.rule{border:0;border-top:1px solid var(--rule);margin:0}
+
+header{background:var(--paper);border-bottom:1px solid var(--ink);position:relative;z-index:5}
+.nav{display:flex;align-items:baseline;justify-content:space-between;gap:18px;padding:14px 0}
+.wordmark{font:700 27px/1 'Playfair Display',serif;letter-spacing:-.04em}
+.wordmark i{color:var(--rose);font-style:normal}
+.nav nav{display:flex;gap:20px;font:400 .85rem/1 var(--mono);text-transform:uppercase;letter-spacing:.06em}
+.nav nav a{text-decoration:none;border-bottom:1px solid transparent;padding-bottom:3px}
+.nav nav a:hover,.nav nav a:focus-visible{border-color:var(--rose);color:var(--rose)}
+.nav .enter{font-family:var(--mono);font-size:.8rem;text-transform:uppercase;letter-spacing:.04em;border:1.5px solid var(--ink);padding:9px 13px;text-decoration:none;font-weight:700}
+.nav .enter:hover{background:var(--ink);color:var(--paper)}
+
+.hero{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(260px,1fr);gap:clamp(24px,5vw,64px);align-items:start;padding:clamp(44px,8vw,92px) 0 clamp(48px,7vw,80px)}
+.hero-index{display:flex;align-items:flex-start;gap:clamp(14px,3vw,30px);margin-bottom:22px}
+.big-num{font:700 clamp(110px,19vw,210px)/.78 'Playfair Display',serif;letter-spacing:-.07em;color:var(--rose)}
+.stamp{margin-top:10px;border:2px solid var(--rose);color:var(--rose);padding:8px 10px;font:700 .64rem/1.3 var(--mono);letter-spacing:.1em;text-transform:uppercase;transform:rotate(-4deg);max-width:112px}
+h1{font:700 clamp(2.15rem,5.4vw,3.7rem)/1.06 'Playfair Display',serif;letter-spacing:-.045em;margin:0 0 18px;max-width:15ch}
+h1 em{color:var(--rose);font-style:italic}
+.lede{font-size:1.02rem;color:var(--muted);max-width:52ch;margin:0 0 30px}
+.actions{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:12px 22px;background:var(--ink);color:var(--paper);text-decoration:none;font:700 .9rem/1 var(--mono);letter-spacing:.02em;border:1.5px solid var(--ink)}
+.btn:hover{background:var(--rose);border-color:var(--rose)}
+.btn.plain{background:transparent;color:var(--ink)}
+.btn.plain:hover{background:var(--rose-soft);color:var(--rose);border-color:var(--rose)}
+.fine{font:400 .75rem/1.5 var(--mono);color:var(--muted);margin:14px 0 0}
+
+.receipt{background:var(--paper2);border:1.5px solid var(--ink);box-shadow:var(--shadow);padding:22px 20px 18px;font-family:var(--mono);position:relative}
+.receipt:before{content:'CARD 01 / CYCLE';display:block;font-size:.66rem;letter-spacing:.16em;color:var(--muted);border-bottom:1px dashed var(--ink);padding-bottom:10px;margin-bottom:16px}
+.r-day{font:700 clamp(58px,9vw,86px)/.9 'Playfair Display',serif;letter-spacing:-.06em;margin:0;color:var(--ink)}
+.r-phase{font-size:.76rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:4px 0 18px}
+.r-next{display:inline-block;border:2px solid var(--rose);color:var(--rose);font-weight:700;font-size:.8rem;letter-spacing:.04em;padding:7px 10px;transform:rotate(-2deg);margin-bottom:18px}
+.r-lines{margin:0;border-top:1px dashed var(--ink)}
+.r-lines div{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px dotted var(--rule);font-size:.74rem;text-transform:uppercase;letter-spacing:.04em}
+.r-lines div span:last-child{text-align:right;color:var(--rose);font-weight:700}
+
+section{border-top:1px solid var(--ink);padding:clamp(42px,7vw,76px) 0}
+.kicker{font:700 .68rem/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--rose);margin:0 0 14px}
+h2{font:700 clamp(1.7rem,3.6vw,2.5rem)/1.14 'Playfair Display',serif;letter-spacing:-.04em;margin:0 0 10px}
+.intro{color:var(--muted);max-width:50ch;margin:0 0 36px}
+.cols{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(240px,.85fr);gap:clamp(26px,5vw,64px);align-items:start}
+.index{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;column-gap:clamp(18px,4vw,44px)}
+.index li{display:grid;grid-template-columns:34px 1fr;gap:10px;padding:13px 0;border-bottom:1px solid var(--rule)}
+.index b{font:700 .72rem/1.6 var(--mono);color:var(--rose)}
+.index strong{display:block;font-size:.94rem;line-height:1.3}
+.index span{display:block;color:var(--muted);font-size:.8rem;line-height:1.45;margin-top:2px}
+.side-note{border-left:3px solid var(--rose);padding-left:16px}
+.side-note p{margin:0 0 14px;color:var(--muted);font-size:.88rem}
+.side-note .num{font:700 2.4rem/1 'Playfair Display',serif;color:var(--rose);display:block;letter-spacing:-.04em}
+
+.steps{list-style:none;margin:0;padding:0;counter-reset:s}
+.steps li{counter-increment:s;display:grid;grid-template-columns:72px 1fr;gap:clamp(14px,3vw,30px);padding:19px 0;border-bottom:1px solid var(--rule)}
+.steps li:before{content:'0' counter(s);font:700 2rem/1 var(--mono);color:var(--rose);letter-spacing:-.06em}
+.steps h3{font:700 1.1rem/1.3 'Playfair Display',serif;margin:0 0 4px}
+.steps p{margin:0;color:var(--muted);max-width:56ch;font-size:.9rem}
+
+.quote{padding:clamp(44px,7vw,72px) 0}
+.quote blockquote{margin:0;max-width:24ch;font:700 clamp(1.7rem,4vw,2.7rem)/1.18 'Playfair Display',serif;letter-spacing:-.04em}
+.quote blockquote mark{background:var(--rose-soft);color:var(--rose);padding:0 .12em}
+.quote figcaption{margin-top:20px;font:.76rem/1.5 var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+
+footer{border-top:1px solid var(--ink);padding:26px 0 44px}
+.foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font:.76rem/1.5 var(--mono);color:var(--muted)}
+.foot a{color:var(--rose);text-decoration:none}
+
+@media(max-width:760px){
+ .hero,.cols{grid-template-columns:1fr}
+ .index{grid-template-columns:1fr}
+ .nav nav{display:none}
+ .receipt{max-width:380px}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.stamp,.r-next{transform:none}}
+@media(prefers-color-scheme:dark){
+ :root{--paper:#1B1419;--paper2:#221B21;--ink:#EDE0E5;--muted:#B5A8B0;--rule:rgba(237,224,229,.16);--rose:#D96B8C;--rose-soft:#3A2430;--shadow:4px 4px 0 #EDE0E5}
+ header{background:var(--paper)}
+ body{background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 31px,var(--rule) 32px)}
+ .nav .enter:hover{background:var(--ink);color:var(--paper)}
+}
+</style>
+</head>
+<body>
+<header><div class="wrap nav">
+ <div class="wordmark">Bloom<i>.</i></div>
+ <nav><a href="#what">What it is</a><a href="#how">How it starts</a></nav>
+ <a class="enter" href="/bloom/">Open the app &rarr;</a>
+</div></header>
+
+<main>
+<div class="wrap hero">
+ <div>
+  <div class="hero-index"><div class="big-num">03</div><div class="stamp">period starts<br>to trust<br>the pattern</div></div>
+  <h1>A gentler way to <em>know your cycle.</em></h1>
+  <p class="lede">Bloom keeps your logs on your phone and learns your rhythm as you go. No account needed to start. No scorecard for having a body.</p>
+  <div class="actions"><a class="btn" href="/bloom/">Open Bloom</a><a class="btn plain" href="https://github.com/delishworks-design/bloom">Read the source</a></div>
+  <p class="fine">Offline-first · Your data stays yours · Optional sync between your devices</p>
+ </div>
+ <div class="receipt" aria-label="Example cycle card">
+  <p class="r-day">21</p>
+  <p class="r-phase">Day 21 of 35 &nbsp;·&nbsp; Luteal phase</p>
+  <div class="r-next">PERIOD IN 15 DAYS</div>
+  <div class="r-lines">
+   <div><span>Last logged start</span><span>31 OCT</span></div>
+   <div><span>Cycle average</span><span>35 DAYS</span></div>
+   <div><span>Water today</span><span>0 / 8</span></div>
+   <div><span>Tasks today</span><span>0 OF 5</span></div>
+  </div>
+ </div>
+</div>
+
+<section id="what"><div class="wrap">
+ <p class="kicker">What's in the app</p>
+ <h2>Small tools. One pattern.</h2>
+ <p class="intro">Everything below works without a signal. Sign in only if you want your own devices to share the same history.</p>
+ <div class="cols">
+  <ol class="index">
+   <li><b>01</b><div><strong>Cycle &amp; prediction</strong><span>Log a start. Three of them make an average you can lean on.</span></div></li>
+   <li><b>02</b><div><strong>Daily log</strong><span>Water, mood, sleep, energy, symptoms, meals. One tap each.</span></div></li>
+   <li><b>03</b><div><strong>Planner</strong><span>Tasks and notes for today, with yesterday still within reach.</span></div></li>
+   <li><b>04</b><div><strong>Bloom Garden</strong><span>Eight little gardens grow from what you actually log.</span></div></li>
+   <li><b>05</b><div><strong>Library</strong><span>Save books for offline reading and keep a minutes streak.</span></div></li>
+   <li><b>06</b><div><strong>Partner view</strong><span>An 8-character code gives someone a read-only window.</span></div></li>
+   <li><b>07</b><div><strong>Sync</strong><span>Real-time updates between your own phones, when you enable it.</span></div></li>
+   <li><b>08</b><div><strong>Widgets &amp; nudges</strong><span>Water, mood and tasks on the home screen. One reminders toggle.</span></div></li>
+  </ol>
+  <aside class="side-note">
+   <span class="num">3</span>
+   <p>That is the number of logged period starts Bloom needs before its prediction stops guessing.</p>
+   <p>Every start after that sharpens it. A missed day does not reset anything.</p>
+  </aside>
+ </div>
+</div></section>
+
+<section id="how"><div class="wrap">
+ <p class="kicker">How it starts</p>
+ <h2>No setup wizard.</h2>
+ <ol class="steps">
+  <li><div><h3>Open the app</h3><p>Start on this phone, offline, with no email and no waiting.</p></div></li>
+  <li><div><h3>Log the first day</h3><p>One date is enough to begin. Add water or a mood if today calls for it.</p></div></li>
+  <li><div><h3>Let the pattern appear</h3><p>After three starts, cycle length and insights become something you can trust.</p></div></li>
+  <li><div><h3>Invite someone, if you want</h3><p>Share a code for a read-only view, or sign in to sync your own devices.</p></div></li>
+ </ol>
+</div></section>
+
+<div class="wrap quote"><figure>
+ <blockquote>Bloom doesn't tell you what your body should do. It helps you notice <mark>what it actually does.</mark></blockquote>
+ <figcaption>Built for PCOS and PMOS days — the clear ones and the hard ones.</figcaption>
+</figure></div>
+
+</main>
+<footer><div class="wrap foot">
+ <span>Bloom · a quiet PMOS planner</span>
+ <span><a href="/bloom/">Launch the app</a> &nbsp;·&nbsp; <a href="#what">What's inside</a></span>
+</div></footer>
+</body>
+</html>
