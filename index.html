@@ -1749,7 +1749,7 @@ function bloomRtStart(){
  const key=uid+'|'+(partner?'p:'+ROowner:'o');
  if(bloomRt&&bloomRtKey===key)return;
  bloomRtStop();bloomRtKey=key;
- const sched=fn=>{if(bloomRtT)clearTimeout(bloomRtT);bloomRtT=setTimeout(()=>{bloomRtT=null;try{fn()}catch(e){reportErr('realtime.cb',e)}},60)};
+ const sched=fn=>{if(bloomRtT)clearTimeout(bloomRtT);bloomRtT=setTimeout(()=>{bloomRtT=null;try{fn()}catch(e){reportErr('realtime.cb',e)}},120)};
  try{
   const ch=sb.channel('bloom-rt-'+uid.slice(0,8));
   if(partner){
