@@ -176,7 +176,7 @@ body.reader-open{overflow:hidden}
 #readerText[hidden]{display:none}
 .reader-page-pill{font-size:.72rem;color:var(--mut);min-width:92px;text-align:center;font-variant-numeric:tabular-nums}
 .reader-pages{position:absolute;inset:0;overflow:hidden}
-.reader-pages #readerText{position:absolute;inset:0;padding:0}
+.reader-pages #readerText{position:absolute;inset:0;padding:0;width:100%;max-width:none}
 .bookpage{position:absolute;left:22px;top:14px;overflow:hidden;visibility:hidden}
 .bookpage.on{visibility:visible}
 .reader-pages #readerText p,.reader-pages #readerText h3{margin:0 0 1em}
@@ -7352,7 +7352,8 @@ function readerLineHeight(){
 function paginateReader(blocks){
  lastBlocks=blocks;
  const el=readerArticle(),view=readerPageView();if(!el||!view){pdfFrags=1;pdfFrag=0;return}
- const W=Math.max(150,view.clientWidth-44),H=Math.max(140,view.clientHeight-24);
+ const contentW=Math.max(150,(el.clientWidth||view.clientWidth)-44);
+ const W=Math.max(150,Math.min(view.clientWidth-44,contentW)),H=Math.max(140,view.clientHeight-44);
  el.style.fontSize=fmtFS(textSize());el.innerHTML='';
  const meas=document.createElement('div');
  meas.className='bookpage';
@@ -7482,7 +7483,16 @@ function openContents(){
  document.querySelectorAll('[data-ch]').forEach(el=>el.onclick=()=>{sheet();goChapterPage(+el.dataset.ch)});
  const on=document.querySelector('.toc-item.on');if(on&&on.scrollIntoView){try{on.scrollIntoView({block:'center'})}catch(e){}}
 }
-function readerOnResize(){if(pdfDoc&&pdfMode!=='canvas')layoutTextPage(true)}
+let readerResizeT=null;
+function readerOnResize(){
+ if(!pdfDoc)return;
+ if(readerResizeT)clearTimeout(readerResizeT);
+ readerResizeT=setTimeout(()=>{
+  if(pdfMode==='canvas'){renderBookPage(true);return}
+  try{if(lastBlocks&&lastBlocks.length)paginateReader(lastBlocks)}catch(e){reportErr('reader.reflow',e)}
+  layoutTextPage(true);
+ },150);
+}
 function bankReadingMs(msDelta){
  if(!(msDelta>100))return;
  if(!window.__readBank)return;
