@@ -1782,10 +1782,10 @@ async function sbAfterLoginOnce(u){ownMode=false;ownStash=null;ownLoaded=false;o
  setSession(user);try{ST.set('bloom_own',user)}catch(e){}
  // a partner account keeps its own nickname and photo across sign-outs (cloud is the source of truth)
  if(pLocked()){
-  try{if(!ST.get('bloom_pname')&&D.p.name)ST.set('bloom_pname',D.p.name);
-   const j=JSON.parse(ST.get('bloom_pavatar')||'null');
-   if((!j||!j.a)&&D.p.avatar)ST.set('bloom_pavatar',JSON.stringify({a:D.p.avatar,c:D.p.avatarCrop||{z:1,x:0,y:0}}))}catch(ea){}
-  try{const j2=JSON.parse(ST.get('bloom_pavatar')||'null');if(j2&&j2.a&&!D.p.avatar){D.p.avatar=j2.a;D.p.avatarCrop=j2.c||{z:1,x:0,y:0};save()}}catch(eb){}
+  try{if(!pnGet()&&D.p.name)pnSet(D.p.name);
+   const j=paGet();
+   if((!j||!j.a)&&D.p.avatar)paSet({a:D.p.avatar,c:D.p.avatarCrop||{z:1,x:0,y:0}})}catch(ea){}
+  try{const j2=paGet();if(j2&&j2.a&&!D.p.avatar){D.p.avatar=j2.a;D.p.avatarCrop=j2.c||{z:1,x:0,y:0};save()}}catch(eb){}
  }
  // the cloud link decides the role: a live follower never lands on the cycle app
  const q=await pairP;
@@ -1871,12 +1871,12 @@ async function enterPartnerMode(owner,code,quiet){
  // the follower's own name/photo live in their profile; pull them once
   if(sbUser){try{const {data:prof}=await withTimeout(sb.from('bloom_profiles').select('name,avatar').eq('id',sbUser.id).maybeSingle(),4000);
    const peer=((D.p&&D.p.name)||'');
-   const local=(ST.get('bloom_pname')||'').trim();
+   const local=(pnGet()||'').trim();
    // the stored profile is the source of truth for identity: a local name that is empty or is
    // just the followed person's name is stale and must not win over it
-   if(prof&&prof.name&&(!local||local===peer))ST.set('bloom_pname',prof.name);
-   if(prof&&prof.avatar)ST.set('bloom_pavatar',JSON.stringify({a:prof.avatar,c:{z:1,x:0,y:0}}));
-   else if(prof&&!prof.avatar){ST.del('bloom_pavatar')}
+   if(prof&&prof.name&&(!local||local===peer))pnSet(prof.name);
+   if(prof&&prof.avatar)paSet({a:prof.avatar,c:{z:1,x:0,y:0}});
+   else if(prof&&!prof.avatar){paDel()}
   }catch(e){reportErr('partner.profile',e)}}
  let doc=null;try{doc=await withTimeout(sbFetchDoc(owner),4000)}catch(e){reportErr('partner.doc',e)}
  if(ownMode||ownLoading){if(doc){try{ST.set(key(owner),JSON.stringify(doc))}catch(e){}}return true}
@@ -1929,15 +1929,15 @@ async function enterOwnMode(){
  if(ownMode||!RO||ownLoading)return;
  const uid=sbUser?sbUser.id:(ST.get('bloom_puid')||null);
  if(!sbUser&&!(user&&uid)){toast('Sign in first');return}
- const mail=(user||'').toLowerCase();
+ const mail=((typeof sbUser!=='undefined'&&sbUser&&sbUser.email)||user||'').toLowerCase();
  let cached=null;try{cached=J(key(mail),null)}catch(e){}
- if(cached&&cached._uid&&uid&&cached._uid!==uid){try{ST.del(key(mail))}catch(e){};cached=null}
+ if(cached&&uid&&cached._uid!==uid){try{ST.del(key(mail))}catch(e){};cached=null}
  if(!sbUser&&!cached){toast('Open your own planner once while online first');return}
  const seq=++ownSeq;ownLoading=true;
  if(ownStash==null)ownStash={D:D,roHash:roHash,view:view,tab:tab,peerName:(D&&D.p&&D.p.name)||''};
  if(roTimer){clearInterval(roTimer);roTimer=null}
- const pname=(()=>{try{return ST.get('bloom_pname')||''}catch(e){return ''}})();
- let pavatar=null;try{pavatar=JSON.parse(ST.get('bloom_pavatar')||'null')}catch(e){}
+ const pname=pnGet();
+ let pavatar=paGet();
  const prepare=src=>{const d=seedOwnDoc(src,cached,pname,pavatar);if(uid)d._uid=uid;return d};
  const enter=d=>{D=d;ownPeerName=((ownStash&&ownStash.peerName)||'').trim();ownMode=true;RO=false;ROcloud=false;ownLoaded=true;ownLoading=false;
   if(!RO&&!ownMode)planPanel='mine';view='planner';if(['day','meals','journal'].indexOf(tab)<0)tab='day';startCloudSync();shell()};
@@ -2084,20 +2084,28 @@ function errText(e){const m=String(e||'');
 // @test-end netmsg
 function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.display='none',2200)}
 function lockList(){try{const raw=ST.get('bloom_plocked')||'';if(!raw)return [];if(raw==='1')return ['*'];const a=JSON.parse(raw);return Array.isArray(a)?a:[]}catch(e){return []}}
+function pnKey(){const u=(typeof sbUser!=='undefined'&&sbUser&&sbUser.id)||'';return u?'bloom_pname_'+u:'bloom_pname'}
+function paKey(){const u=(typeof sbUser!=='undefined'&&sbUser&&sbUser.id)||'';return u?'bloom_pavatar_'+u:'bloom_pavatar'}
+function pnGet(){try{return ST.get(pnKey())||''}catch(e){return ''}}
+function pnSet(v){try{ST.set(pnKey(),v)}catch(e){}}
+function pnDel(){try{ST.del(pnKey())}catch(e){}}
+function paGet(){try{return JSON.parse(ST.get(paKey())||'null')}catch(e){return null}}
+function paSet(o){try{ST.set(paKey(),JSON.stringify(o))}catch(e){}}
+function paDel(){try{ST.del(paKey())}catch(e){}}
 function pLocked(){const l=lockList();if(!l.length)return false;const u=(user||'').toLowerCase();if(l.indexOf('*')>=0)return true;return !!u&&l.indexOf(u)>=0}
 function lockPartner(){try{const u=(user||'').toLowerCase(),l=lockList().filter(x=>x!=='*');if(u&&l.indexOf(u)<0)l.push(u);ST.set('bloom_plocked',JSON.stringify(l))}catch(e){}}
-function roAvatarHTML(sz){const s=sz||34;const n=((ST.get('bloom_pname')||'P')+'').trim();const ini=n.charAt(0).toUpperCase()||'P';
- let av=null,crop=null;try{const j=JSON.parse(ST.get('bloom_pavatar')||'null');if(j){av=j.a;crop=j.c||{z:1,x:0,y:0}}}catch(e){}
+function roAvatarHTML(sz){const s=sz||34;const n=((pnGet()||'P')+'').trim();const ini=n.charAt(0).toUpperCase()||'P';
+ let av=null,crop=null;try{const j=paGet();if(j){av=j.a;crop=j.c||{z:1,x:0,y:0}}}catch(e){}
  if(av)return `<span class="avatar-wrap" style="width:${s}px;height:${s}px"><img class="avatar" src="${E(av)}" alt="" style="transform:translate(${crop.x||0}%,${crop.y||0}%) scale(${crop.z||1})"></span>`;
  return `<span class="avatar-fb" style="width:${s}px;height:${s}px;font-size:${Math.round(s*0.42)}px">${E(ini)}</span>`}
-function ownName(){const n=(ST.get('bloom_pname')||'').trim();if(n)return n;const e=sbUser&&sbUser.email?sbUser.email.split('@')[0]:'';return e||'You'}
+function ownName(){const n=(pnGet()||'').trim();if(n)return n;const e=sbUser&&sbUser.email?sbUser.email.split('@')[0]:'';return e||'You'}
 function roPickAvatar(file){const r=new FileReader();r.onload=e=>{const img=new Image();img.onload=()=>{
  const mx=1024,sc=Math.min(1,mx/Math.max(img.width,img.height));
  const cv=document.createElement('canvas');cv.width=Math.max(1,Math.round(img.width*sc));cv.height=Math.max(1,Math.round(img.height*sc));
  cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
- try{ST.set('bloom_pavatar',JSON.stringify({a:cv.toDataURL('image/jpeg',0.85),c:{z:1,x:0,y:0}}))}catch(ev){}
+ paSet({a:cv.toDataURL('image/jpeg',0.85),c:{z:1,x:0,y:0}});
  roAdjust()};img.src=e.target.result};r.readAsDataURL(file)}
-function roAdjust(){let j=null;try{j=JSON.parse(ST.get('bloom_pavatar')||'null')}catch(e){}const src=j&&j.a;if(!src)return;
+function roAdjust(){let j=paGet();const src=j&&j.a;if(!src)return;
  const c=Object.assign({z:1,x:0,y:0},j.c||{});
  sheet(`<h2>Adjust photo</h2>
  <div class="adjbox" id="adjBox"><img id="adjImg" src="${E(src)}" alt=""></div>
@@ -2116,7 +2124,7 @@ function roAdjust(){let j=null;try{j=JSON.parse(ST.get('bloom_pavatar')||'null')
   c.y=Math.max(-60,Math.min(60,drag.oy+(e.clientY-drag.y)/w*100));apply()};
  box.onpointerup=()=>{drag=null};box.onpointercancel=()=>{drag=null};
  document.getElementById('adjReset').onclick=()=>{c.z=1;c.x=0;c.y=0;zs.value=100;apply()};
- document.getElementById('adjSave').onclick=async()=>{j.c={z:c.z||1,x:c.x||0,y:c.y||0};try{ST.set('bloom_pavatar',JSON.stringify(j))}catch(ev2){}
+ document.getElementById('adjSave').onclick=async()=>{j.c={z:c.z||1,x:c.x||0,y:c.y||0};paSet(j);
   try{const cl=await sbInit();if(cl&&sbUser)await cl.from('bloom_profiles').upsert({id:sbUser.id,avatar:j.a})}catch(evx){reportErr('avatar.profile',evx)}
   sheet();shell();toast('Photo saved')}}
 // ---------- auth (online accounts only)
@@ -2432,7 +2440,7 @@ function confirmLogout(){
 function wipeLocalData(){try{libStoreReset()}catch(e){}try{ST.del('bloom_pmail')}catch(e){}
   try{widgetReset()}catch(e){}
   try{clearLegacySmartAIStorage()}catch(e){}
-  try{Object.keys(localStorage).filter(k=>k.indexOf('bloom_d_')===0||k.indexOf('bloom_backup_')===0||k.indexOf('bloom_dirty_')===0||k.indexOf('bloom_rev_')===0||k==='bloom_s'||k==='bloom_own'||k==='bloom_last_bg'||k==='bloom_upd_skip'||k==='bloom_pname'||k==='bloom_pavatar'||k==='bloom_pown'||k==='bloom_puid'||k==='bloom_powner'||k==='bloom_role'||k==='bloom_unpaired'||k==='bloom_lastcode'||k==='bloom_plocked'||k==='bloom_read'||k==='bloom_errlog'||k==='bloom_nav').forEach(k=>localStorage.removeItem(k))}catch(e){}
+  try{Object.keys(localStorage).filter(k=>k.indexOf('bloom_d_')===0||k.indexOf('bloom_backup_')===0||k.indexOf('bloom_dirty_')===0||k.indexOf('bloom_rev_')===0||k==='bloom_s'||k==='bloom_own'||k==='bloom_last_bg'||k==='bloom_upd_skip'||k==='bloom_pname'||k==='bloom_pavatar'||k.indexOf('bloom_pname_')===0||k.indexOf('bloom_pavatar_')===0||k==='bloom_pown'||k==='bloom_puid'||k==='bloom_powner'||k==='bloom_role'||k==='bloom_unpaired'||k==='bloom_lastcode'||k==='bloom_plocked'||k==='bloom_read'||k==='bloom_errlog'||k==='bloom_nav').forEach(k=>localStorage.removeItem(k))}catch(e){}
 }
 // @test-end auth
 function themeMode(){try{const v=ST.get('bloom_theme');if(v==='light'||v==='dark'||v==='system')return v}catch(e){}try{const r=ST.get('bloom_reader_theme');if(r==='light'||r==='dark'){ST.set('bloom_theme',r);return r}}catch(e){}return 'light'}
@@ -3103,7 +3111,7 @@ function onboarding(){splashAppIsReady();try{fabSync()}catch(e){}const p=D.p;if(
  $('#nx').onclick=()=>{grab();nx()};$('#sk').onclick=()=>{grab();skipAll()}}
 function partnerOnboard(){
  const p=D.p;
- const savedName=(()=>{try{return (ST.get('bloom_pname')||'').trim()}catch(e){return ''}})();
+ const savedName=(pnGet()||'').trim();
  $('#app').innerHTML=`<div class="auth"><div class="card">
   <div class="auth-head"><div class="brand">Bloom</div>
    <h2>Enter the pairing code</h2>
@@ -3132,7 +3140,7 @@ function partnerOnboard(){
   setField('');
    const nm=savedName||((document.getElementById('pn')||{}).value||'').trim();
    if(!nm){const he=document.getElementById('e-pn');const fn=document.getElementById('f-pn');if(he){he.textContent='Tell us your name - it shows in read-only view.';he.style.color='var(--rose)'}if(fn)fn.classList.add('invalid');return}
-   try{ST.set('bloom_pname',nm)}catch(nmerr){}
+   pnSet(nm);
    const btn=$('#pGo');btn.disabled=true;btn.innerHTML='<span class="spinner" aria-hidden="true"></span>Opening\u2026';
   try{const ok=await redeemCode(v,m=>setErr(m));
      if(ok){lockPartner();try{const cl=await sbInit();if(cl&&sbUser)await cl.from('bloom_profiles').upsert({id:sbUser.id,name:nm})}catch(e8){reportErr('partner.profile',e8)}}}
@@ -3571,7 +3579,7 @@ function cyclePage(){const d=today(),l=L(d),ts=tasksFor(d),n=ts.filter(t=>isDone
  const centerPill=dt?ringPillText(dt,len,left,day):current.state==='overdue'?'Expected period date has passed':current.state==='due-today'?'Period expected today':current.state==='future-start'?'Recorded period date is in the future':current.state==='no-history'?'No cycle yet':'More history needed';
  const ringCap=dt?(c.n>=2?`of an average ${current.cycleLength}-day cycle`:'cycle day'):current.state==='overdue'?`${day} days since last period`:current.state==='no-history'?'Log a period to start':'More history needed';
  const ringNumber=dt??(current.state==='overdue'?day:null);
- const ph=dt?phaseInfo(dt,len):{k:'\u2014',t:current.state==='overdue'?'Expected period date passed':current.state==='due-today'?'Period expected today':current.state==='future-start'?'Recorded period date is in the future':current.state==='no-history'?'No cycle yet':'More history needed',c:'var(--muted)'},first=(RO?((ST.get('bloom_pname')||'friend')+''):(D.p.name||'friend')).split(' ')[0],goal=D.p.waterGoal||8;
+ const ph=dt?phaseInfo(dt,len):{k:'\u2014',t:current.state==='overdue'?'Expected period date passed':current.state==='due-today'?'Period expected today':current.state==='future-start'?'Recorded period date is in the future':current.state==='no-history'?'No cycle yet':'More history needed',c:'var(--muted)'},first=(RO?((pnGet()||'friend')+''):(D.p.name||'friend')).split(' ')[0],goal=D.p.waterGoal||8;
   const sx=(l.tags||[]).concat(l.customSx||[]);
 
  $('#main').innerHTML=`
@@ -4003,7 +4011,7 @@ function pickAvatar(file){const r=new FileReader();r.onload=e=>{const img=new Im
  const cv=document.createElement('canvas');cv.width=Math.max(1,Math.round(img.width*sc));cv.height=Math.max(1,Math.round(img.height*sc));
  cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
  D.p.avatar=cv.toDataURL('image/jpeg',0.85);D.p.avatarCrop={z:1,x:0,y:0};
- if(pLocked()){try{ST.set('bloom_pavatar',JSON.stringify({a:D.p.avatar,c:{z:1,x:0,y:0}}))}catch(ev9){}}
+ if(pLocked())paSet({a:D.p.avatar,c:{z:1,x:0,y:0}});
  openAvatarAdjust()};img.src=e.target.result};r.readAsDataURL(file)}
 function openAvatarAdjust(){const src=D.p.avatar;if(!src)return;
  const c=Object.assign({z:1,x:0,y:0},D.p.avatarCrop||{});
@@ -4024,7 +4032,7 @@ function openAvatarAdjust(){const src=D.p.avatar;if(!src)return;
   c.y=Math.max(-60,Math.min(60,drag.oy+(e.clientY-drag.y)/w*100));apply()};
  box.onpointerup=()=>{drag=null};box.onpointercancel=()=>{drag=null};
  document.getElementById('adjReset').onclick=()=>{c.z=1;c.x=0;c.y=0;zs.value=100;apply()};
- document.getElementById('adjSave').onclick=()=>{D.p.avatarCrop={z:c.z||1,x:c.x||0,y:c.y||0};save();if(pLocked()){try{ST.set('bloom_pavatar',JSON.stringify({a:D.p.avatar,c:D.p.avatarCrop}))}catch(evx){}}sheet();if(pLocked())mePartner();else me();toast('Photo saved')}}
+ document.getElementById('adjSave').onclick=()=>{D.p.avatarCrop={z:c.z||1,x:c.x||0,y:c.y||0};save();if(pLocked())paSet({a:D.p.avatar,c:D.p.avatarCrop});sheet();if(pLocked())mePartner();else me();toast('Photo saved')}}
 function series(k,n){return[...Array(n)].map((_,i)=>{const d=addD(today(),i-n+1);return{d,v:L(d)[k]}})}
 function line(k,n,max,col){const s=series(k,n),W=320,H=110,x=i=>20+i*(W-36)/(n-1||1),y=v=>H-14-(v/max)*(H-24);let pts='',dots='';s.forEach((p,i)=>{if(p.v!=null){pts+=(pts&&s[i-1]?.v!=null?'L':'M')+x(i)+' '+y(p.v);dots+=`<circle cx="${x(i)}" cy="${y(p.v)}" r="3" fill="${col}"/>`}});
  return s.some(p=>p.v!=null)?`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${k} over last ${n} days" style="overflow:visible"><line x1="20" x2="${W-16}" y1="${H-14}" y2="${H-14}" stroke="var(--line)"/><text x="8" y="${y(max)+3}" fill="var(--mut)" font-size="9.5">${max}</text><text x="8" y="${y(1)+3}" fill="var(--mut)" font-size="9.5">1</text><path d="${pts}" fill="none" stroke="${col}" stroke-width="2"/>${dots}<text x="20" y="${H-1}" fill="var(--mut)" font-size="9.5">${fmt(s[0].d)}</text><text x="${W-16}" y="${H-1}" text-anchor="end" fill="var(--mut)" font-size="9.5">${fmt(s[n-1].d)}</text></svg>`:'<p class="meta">No entries</p>'}
@@ -5537,7 +5545,7 @@ function focusBlock(ro){
 function insights(){const n=range,days=[...Array(n)].map((_,i)=>addD(today(),i-n+1)),c=cycleStats();const tg={};days.forEach(d=>(L(d).tags||[]).concat(L(d).customSx||[]).forEach(t=>tg[t]=(tg[t]||0)+1));const tk=Object.entries(tg).sort((a,b)=>b[1]-a[1]).slice(0,6),mx=tk[0]?.[1]||1;
  const hab=days.map(d=>{const t=tasksFor(d);return t.length?t.filter(x=>isDone(x.id,d)).length/t.length:null}).filter(x=>x!=null);const ha=hab.length?Math.round(hab.reduce((a,b)=>a+b,0)/hab.length*100):null;
  const sl=days.map(d=>L(d).sleep).filter(Boolean);
- const smartStarts=starts(),smartPred=smartPredictionHistory(smartStarts,today()),smartCurrent=smartCurrentCycle(smartPred,today()),smartPats=smartPatternsFromLogs(D.logs,smartStarts,{ro:RO});const smartExtras=smartInsightsExtras(D.logs,smartStarts,smartCurrent,smartPred,today(),D.meals,RO?null:(D.p&&D.p.goals),smartFocusGoal,RO,RO?[]:(D.journal||[]));smartFocusGoal=smartExtras.selectedGoal;const viewerName=(RO?(ST.get('bloom_pname')||'friend'):(D.p.name||'friend')).split(' ')[0];if(RO)smartExtras.subjectName=((D&&D.p&&D.p.name)||'').split(' ')[0]||'They';if(!RO){const weekFacts=smartWeekFacts({logs:D.logs,startDates:smartStarts,current:smartCurrent,pred:smartPred,todayStr:today(),meals:D.meals,goals:D.p&&D.p.goals,ro:RO});if(weekFacts){smartExtras.weekFacts=weekFacts;const _wc=smartWeekTemplate(weekFacts);smartExtras.weekCard=_wc;if(!_wc)delete smartExtras.weekFacts;else smartExtras.weekOpts={showPrompt:false,exhausted:false};}}
+ const smartStarts=starts(),smartPred=smartPredictionHistory(smartStarts,today()),smartCurrent=smartCurrentCycle(smartPred,today()),smartPats=smartPatternsFromLogs(D.logs,smartStarts,{ro:RO});const smartExtras=smartInsightsExtras(D.logs,smartStarts,smartCurrent,smartPred,today(),D.meals,RO?null:(D.p&&D.p.goals),smartFocusGoal,RO,RO?[]:(D.journal||[]));smartFocusGoal=smartExtras.selectedGoal;const viewerName=(RO?(pnGet()||'friend'):(D.p.name||'friend')).split(' ')[0];if(RO)smartExtras.subjectName=((D&&D.p&&D.p.name)||'').split(' ')[0]||'They';if(!RO){const weekFacts=smartWeekFacts({logs:D.logs,startDates:smartStarts,current:smartCurrent,pred:smartPred,todayStr:today(),meals:D.meals,goals:D.p&&D.p.goals,ro:RO});if(weekFacts){smartExtras.weekFacts=weekFacts;const _wc=smartWeekTemplate(weekFacts);smartExtras.weekCard=_wc;if(!_wc)delete smartExtras.weekFacts;else smartExtras.weekOpts={showPrompt:false,exhausted:false};}}
  $('#main').innerHTML=`<h1>Insights</h1><div class="row">${[7,14,30,90].map(v=>`<button class="chip" data-r="${v}" aria-pressed="${range==v}">${v} days</button>`).join('')}</div>
 <div class="card smart-card" id="smart-card">${smartInsightsHTML(smartPred,smartCurrent,smartPats,viewerName,null,smartExtras)}</div><div class="card"><div class="card-h"><h3>Mood</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Recorded</span></div>${line('mood',n,5,'var(--rose)')}</div><div class="card"><div class="card-h"><h3>Energy</h3><span class="chip" style="cursor:default;padding:3px 10px;font-size:.72rem">Recorded</span></div>${line('energy',n,5,'var(--teal)')}</div>
 <div class="card"><div class="card-h"><h3>Sleep</h3><span class="meta">${sl.length?(sl.reduce((a,b)=>a+b,0)/sl.length).toFixed(1)+' h avg  '+sl.length+' nights':'\u2014'}</span></div>${line('sleep',n,12,'var(--teal)')}</div>
@@ -7995,7 +8003,7 @@ function changePasswordSheet(){
  };
 }function settingsPage(){
  const cur=currentAccountType();
- const nm=RO?(ST.get('bloom_pname')||''):((D&&D.p&&D.p.name)||'');
+ const nm=RO?pnGet():((D&&D.p&&D.p.name)||'');
  const bkMail=user||(sbUser&&sbUser.email&&sbUser.email.toLowerCase());
  let bkOk=false;
  if(!RO&&bkMail){bkOk=hasSafetyCopy(bkMail)}
@@ -8042,12 +8050,12 @@ function changePasswordSheet(){
  $('#bk').onclick=()=>{view='me';shell()};
  $('#sChg').onclick=()=>changeNameSheet(nm,async v=>{
   if(RO){
-   try{ST.set('bloom_pname',v)}catch(e){}
-   try{let a=null;try{a=(JSON.parse(ST.get('bloom_pavatar')||'null')||{}).a||null}catch(ea){}
+   pnSet(v);
+   try{let a=null;try{a=(paGet()||{}).a||null}catch(ea){}
     const cl=await sbInit();if(cl&&sbUser)await cl.from('bloom_profiles').upsert({id:sbUser.id,name:v,avatar:a})}catch(ev){reportErr('profile.name',ev)}
   }else{
    D.p=D.p||{};D.p.name=v;
-   if(pLocked()){try{ST.set('bloom_pname',v)}catch(e){}}
+   if(pLocked())pnSet(v);
    save();
     try{const cl=await sbInit();if(cl&&sbUser)await cl.from('bloom_profiles').upsert({id:sbUser.id,name:v})}catch(ev){reportErr('profile.name',ev)}
   }
