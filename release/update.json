@@ -1,8 +1,8 @@
 {
-  "versionCode": 205,
-  "versionName": "2.1.4",
-  "url": "https://github.com/delishworks-design/bloom/releases/download/v2.1.4/bloom-2.1.4.apk",
-  "sha256": "8c463ed4c35ecb64fe6309e3387acee472c9aa4daf44c587cbfeeff2d1651c2b",
-  "notes": "Time picker, Bloom Garden navigation, FAB placement, goals saving, fullscreen avatars, wide-screen sign-in and 11 other UI fixes from this round.",
+  "versionCode": 206,
+  "versionName": "2.1.5",
+  "url": "https://github.com/delishworks-design/bloom/releases/download/v2.1.5/bloom-2.1.5.apk",
+  "sha256": "7fafcf1fdd070dfbd849ed13430125acaf1f41c7bf1995968ddb619decf7ac50",
+  "notes": "Smoother FAB, no more constant re-renders from background sync, garden arrows hidden on phones, and Your data moved to the bottom of Settings.",
   "force": false
 }
