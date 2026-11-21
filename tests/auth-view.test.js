@@ -11,14 +11,15 @@ test('remember me starts disabled until both credentials are entered', () => {
   assert.match(html, /remU\.addEventListener\('input',syncRem\);remP\.addEventListener\('input',syncRem\)/);
 });
 
-test('wide screens get an animated logo and tagline', () => {
+test('wide screens show only a centered tagline over watercolor circles', () => {
   assert.match(html, /@media\(min-width:1024px\)\{\s*\.auth\{display:grid/);
-  assert.match(html, /background:var\(--bloom-logo\)/);
   assert.match(html, /content:"a gentler way \\A to know your cycle\."/);
-  assert.match(html, /width:min\(23vw,190px\)/);
-  assert.match(html, /radial-gradient\(circle at 16% 30%/);
-  assert.match(html, /animation:authFloat/);
-  assert.match(html, /setProperty\("--bloom-logo"/);
+  assert.match(html, /top:50%;transform:translateY\(-50%\);width:calc\(50% - 4vw\);text-align:center/);
+  assert.match(html, /radial-gradient\(circle at 18% 30%,rgba\(126,200,194/);
+  assert.match(html, /radial-gradient\(circle at 31% 68%,rgba\(247,184,203/);
+  assert.match(html, /animation:authDrift/);
+  assert.doesNotMatch(html, /background:var\(--bloom-logo\)/);
+  assert.doesNotMatch(html, /setProperty\("--bloom-logo"/);
 });
 
 test('the auth card sits in the right grid column on wide screens', () => {
