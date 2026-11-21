@@ -691,3 +691,22 @@ test('flower stage follows progress in five steps and clamps empty data', () => 
   assert.equal(full.pct, 100);
   assert.equal(full.stageName, 'In bloom');
 });
+
+test('Bloom Garden has desktop navigation and mouse drag', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  assert.match(html, /id="sfPrev"/);
+  assert.match(html, /id="sfNext"/);
+  assert.match(html, /track\.scrollLeft=swipe\.left-dx/);
+  assert.match(html, /e\.key==='ArrowRight'/);
+});
+
+test('garden detail sheet groups header, progress and body', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  assert.match(html, /class="fs-head"/);
+  assert.match(html, /class="fs-body"/);
+  assert.match(html, /class="bar fs-bar" role="progressbar"/);
+});

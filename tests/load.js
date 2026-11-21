@@ -61,7 +61,7 @@ function load() {
     perf: ['libCached', 'refreshLibrary', 'refreshLibraryOnce', 'libDebounce', 'libSearchText', 'validCatalog', 'maybeRefreshLibrary', 'libRefreshTimeoutSet'],
     settingsBack: ['hasSafetyCopy', 'restoreSafetyCopy'],
     safetop: ['safeTop', 'safeTopBind', 'safeTopInvalidate'],
-    fabcalc: ['fabBounds'],
+    fabcalc: ['fabBounds', 'fabFreeBounds', 'fabClampXY', 'fabLoadXY'],
     index: ['libIndexEnsure', 'libPersonalIndex', 'libPersonalInvalidate', 'libViewPlan', 'libBatchIds', 'libViewSet', 'LIB_BATCH', 'libChipCounts'],
     qa: ['qaPrefersReducedMotion', 'qaLabelRot', 'QA_TRANS_MS'],
     quickring: ['openQuickRing'],
@@ -90,8 +90,9 @@ function load() {
     wtrMsgs: ['WATER_MSGS'],
     wtrSlot: ['waterMsgFor', 'waterNextAt', 'waterWindow'],
     updater: ['updateState'],
+    timewheel: ['timeWheelValue', 'timeWheelTo24', 'timeWheelFrom24'],
   };
-  for (const name of ['phases', 'esc', 'sync', 'netmsg', 'roWho', 'sxmig', 'backup', 'smart', 'auth', 'ownmode', 'widget', 'planui', 'library', 'reader', 'errorIgnore', 'partnerLibrary', 'plannerAdvance', 'readingGoal', 'readingSync', 'bloomcal', 'libraryExplore', 'focusVoice', 'classicCover', 'perf', 'boot', 'libfilter', 'storebinding', 'settingsBack', 'safetop', 'fabcalc', 'index', 'qa', 'quickring', 'wtrMsgs', 'wtrSlot', 'updater']) {
+  for (const name of ['phases', 'esc', 'sync', 'netmsg', 'roWho', 'sxmig', 'backup', 'smart', 'auth', 'ownmode', 'widget', 'planui', 'library', 'reader', 'errorIgnore', 'partnerLibrary', 'plannerAdvance', 'readingGoal', 'readingSync', 'bloomcal', 'libraryExplore', 'focusVoice', 'classicCover', 'perf', 'boot', 'libfilter', 'storebinding', 'settingsBack', 'safetop', 'fabcalc', 'index', 'qa', 'quickring', 'wtrMsgs', 'wtrSlot', 'updater', 'timewheel']) {
     let code;
     try{ code = extract(html, name); }catch(e){ if(name==='auth') continue; throw e; }
     const names = exportsByName[name];

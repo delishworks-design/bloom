@@ -100,3 +100,13 @@ test('the replica identity migration covers the realtime sync tables', () => {
     assert.match(replica, new RegExp('alter table public\\.' + table + ' replica identity full'));
   }
 });
+
+test('profile goals have a working save path', () => {
+  assert.match(indexHtml, /async function pushProfile\(\)/);
+  assert.match(indexHtml, /goals:p\.goals\|\|\[\]/);
+  assert.match(indexHtml, /save\(\);pushProfile\(\);applyTheme\(\)/);
+});
+
+test('craving types include spicy', () => {
+  assert.match(indexHtml, /qq\(\['Sweet','Salty','Carbs','Spicy'\],'craving'\)/);
+});

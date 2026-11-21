@@ -569,3 +569,22 @@ test('index.html wires the quick ring to the new responsive timing constants', (
   assert.ok(html.includes('@media (prefers-reduced-motion: reduce){.qaring,.qaring .qaring-item,.qaring .qaring-core,.qaring-scrim'), 'reduced-motion ring CSS present');
   assert.ok(!html.includes(',520)}'), 'old 520ms close delay removed');
 });
+
+test('fab position can be placed anywhere in the viewport', () => {
+  const ctx = load();
+  ctx.innerWidth = 1440; ctx.innerHeight = 900; ctx.safeTop = () => 24;
+  const p = ctx.fabClampXY(2000, 400, 58);
+  assert.equal(p.x, 1440 - 58 - 8);
+  assert.equal(p.y, 400);
+  const q = ctx.fabClampXY(-50, -50, 58);
+  assert.equal(q.x, 8);
+  assert.equal(q.y, 32);
+});
+
+test('a corrupt saved fab position is ignored', () => {
+  const ctx = load();
+  ctx.localStorage.setItem('bloom_fab_xy', 'nope,nope');
+  assert.equal(ctx.fabLoadXY(), null);
+  ctx.localStorage.setItem('bloom_fab_xy', '200,300');
+  assert.deepEqual({ x: ctx.fabLoadXY().x, y: ctx.fabLoadXY().y }, { x: 200, y: 300 });
+});
