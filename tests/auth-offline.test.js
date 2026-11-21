@@ -31,6 +31,20 @@ test('isOffline follows navigator.onLine', () => {
   assert.equal(sandbox.isOffline(), true);
 });
 
+test('a stale offline flag is cleared by a successful probe', async () => {
+  const sandbox = load();
+  sandbox.ST.set('bloom_net', '0');
+  assert.equal(sandbox.isOffline(), true);
+  assert.equal(await sandbox.netReady(async () => true), true);
+  assert.equal(sandbox.isOffline(), false);
+});
+
+test('netReady reports a failed probe as offline', async () => {
+  const sandbox = load();
+  assert.equal(await sandbox.netReady(async () => false), false);
+  assert.equal(sandbox.isOffline(), true);
+});
+
 test('password policy rejects weak choices and accepts a solid one', () => {
   const { pwIssue } = load();
   assert.match(pwIssue('short1'), /at least 8/);

@@ -1897,8 +1897,8 @@ function sbAfterLogin(u){
  return p;
 }
 async function nativeGoogleSignIn(client){
-  const formErr=msg=>{const e=document.getElementById('err');if(e){e.textContent=msg||'';e.classList.toggle('on',!!msg)}};
-  if(isOffline()){ formErr(OFFLINE_MSG); return; }
+   const formErr=msg=>{const e=document.getElementById('err');if(e){e.textContent=msg||'';e.classList.toggle('on',!!msg)}};
+   if(!(await netReady())){ formErr(OFFLINE_MSG); return; }
   const SL = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SocialLogin;
   if(!SL){ formErr('Google sign-in is not available in this app version. Please use email and password.'); return; }
   try{
@@ -2090,6 +2090,7 @@ function exitOwnMode(keepView){
 let RO=false,ROowner=null,ROcloud=false,ownMode=false,ownStash=null;
 let planPanel='mine',peekDoc=null,peekAt=0,pairInfo=null,ownPeerName='';
 async function genPartnerCode(){
+ if(!(await netReady())){toast('Pairing needs an internet connection');return null}
  const client=await sbInit();
  if(!client||!sbUser){toast('Pairing needs an internet connection');return null}
  let c='';
@@ -2170,6 +2171,7 @@ async function setFollowerShareFlag(key,val){
 const OFFLINE_MSG='You\u2019re offline. Reconnect, then try again.';
 function netFlag(){try{return ST.get('bloom_net')==='0'}catch(e){return false}}
 function isOffline(){try{if(navigator.onLine===false)return true}catch(e){}return netFlag()}
+async function netReady(prober){try{const ok=await (prober||probeNet)();if(ok){try{ST.set('bloom_net','1')}catch(e){}return true}}catch(e){}try{ST.set('bloom_net','0')}catch(e){}return false}
 function withTimeout(p,ms){return new Promise(function(res,rej){var done=false;var t=setTimeout(function(){if(done)return;done=true;rej(new Error('timeout'))},ms==null?4000:ms);Promise.resolve(p).then(function(v){if(done)return;done=true;clearTimeout(t);res(v)},function(e){if(done)return;done=true;clearTimeout(t);rej(e)})})}
 function errText(e){const m=String(e||'');
  if(/^offline$/i.test(m)||/ERR_INTERNET_DISCONNECTED|ERR_NETWORK_CHANGED|net::ERR/i.test(m))return OFFLINE_MSG;
@@ -2284,7 +2286,7 @@ function authView(mode){try{splashSkip()}catch(e){}mode=mode||'in';try{fabSync()
  if(up&&authPrefill)g('u').value=authPrefill;else if(authPrefill)g('u').value=authPrefill;
  const setFieldErr=(id,msg)=>{const w=g('f-'+id),h=g('e-'+id);if(!w)return;w.classList.toggle('invalid',!!msg);h.textContent=msg||''};
  const formErr=msg=>{const e=g('err');e.textContent=msg||'';e.classList.toggle('on',!!msg)};
- const gg=g('ggo');if(gg)gg.onclick=async()=>{if(busy)return;formErr('');if(isOffline()){formErr(OFFLINE_MSG);return}const btn=g('go');busy=true;btn.disabled=true;gg.disabled=true;gg.innerHTML='<span class="spinner" aria-hidden="true"></span><span>Continuing\u2026</span>';busyOn();try{const client=await sbInit();if(!client){formErr(!window.supabase?'Still starting up \u2014 try again in a moment.':'Could not start the cloud service. Restart the app.');return}if(isNative()){ await nativeGoogleSignIn(client); return; }const r=await withTimeout(client.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+(location.pathname||'/')}}),8000).catch(()=>({error:new Error('offline')}));if(r&&r.error)formErr(errText(r.error.message||r.error))}catch(err){formErr(errText(err&&err.message||err))}finally{busy=false;btn.disabled=false;busyOff();btn.textContent=up?'Continue':'Log in';gg.disabled=false;gg.innerHTML='<svg viewBox="0 0 18 18" aria-hidden="true"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.71-1.57 2.68-3.88 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.83.86-3.04.86-2.34 0-4.33-1.58-5.04-3.71H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.96 10.71A5.41 5.41 0 0 1 3.68 9c0-.59.1-1.17.28-1.71V4.96H.96A9 9 0 0 0 0 9c0 1.45.35 2.82.96 4.04l3-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58A8.99 8.99 0 0 0 9 0 9 9 0 0 0 .96 4.96l3 2.33C4.67 5.16 6.66 3.58 9 3.58z"/></svg><span>Continue with Google</span>'}};
+ const gg=g('ggo');if(gg)gg.onclick=async()=>{if(busy)return;formErr('');if(!(await netReady())){formErr(OFFLINE_MSG);return}const btn=g('go');busy=true;btn.disabled=true;gg.disabled=true;gg.innerHTML='<span class="spinner" aria-hidden="true"></span><span>Continuing\u2026</span>';busyOn();try{const client=await sbInit();if(!client){formErr(!window.supabase?'Still starting up \u2014 try again in a moment.':'Could not start the cloud service. Restart the app.');return}if(isNative()){ await nativeGoogleSignIn(client); return; }const r=await withTimeout(client.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+(location.pathname||'/')}}),8000).catch(()=>({error:new Error('offline')}));if(r&&r.error)formErr(errText(r.error.message||r.error))}catch(err){formErr(errText(err&&err.message||err))}finally{busy=false;btn.disabled=false;busyOff();btn.textContent=up?'Continue':'Log in';gg.disabled=false;gg.innerHTML='<svg viewBox="0 0 18 18" aria-hidden="true"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.71-1.57 2.68-3.88 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.83.86-3.04.86-2.34 0-4.33-1.58-5.04-3.71H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.96 10.71A5.41 5.41 0 0 1 3.68 9c0-.59.1-1.17.28-1.71V4.96H.96A9 9 0 0 0 0 9c0 1.45.35 2.82.96 4.04l3-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58A8.99 8.99 0 0 0 9 0 9 9 0 0 0 .96 4.96l3 2.33C4.67 5.16 6.66 3.58 9 3.58z"/></svg><span>Continue with Google</span>'}};
  document.querySelectorAll('.reveal').forEach(b=>{
   b.onclick=()=>{const inp=g(b.dataset.for),show=inp.type==='password';inp.type=show?'text':'password';b.textContent=show?'Hide':'Show';b.setAttribute('aria-label',show?'Hide password':'Show password');inp.focus()};
  });
@@ -2313,8 +2315,8 @@ function authView(mode){try{splashSkip()}catch(e){}mode=mode||'in';try{fabSync()
   if(!EMAIL_RE.test(u)){setFieldErr('u','Enter a valid email address.');bad=true}
   const pwBad=pwIssue(pw,u);if(pwBad){setFieldErr('pw',pwBad);bad=true}
   if(bad){const first=document.querySelector('.auth .field.invalid input');if(first)first.focus();return}
-  if(isOffline()){formErr(OFFLINE_MSG);return}
-  const btn=g('go');busy=true;btn.disabled=true;busyOn();
+   if(!(await netReady())){formErr(OFFLINE_MSG);return}
+   const btn=g('go');busy=true;btn.disabled=true;busyOn();
   btn.innerHTML='<span class="spinner" aria-hidden="true"></span>'+'Logging in\u2026';
   try{
    const client=await sbInit();
@@ -2923,7 +2925,7 @@ async function fetchManifest(){const bust='?t='+Date.now();
  const r=await fetch(UPDATE_MANIFEST+bust,{cache:'no-store'});if(!r.ok)throw new Error('manifest '+r.status);
  return await r.json()}
 // Baked-in build identity. Keep in sync with android/app/build.gradle (versionCode/versionName).
-const APP_VERSION={code:202,name:'2.1.1'};
+const APP_VERSION={code:203,name:'2.1.2'};
 const UPD_SKIP_KEY='bloom_upd_skip';
 const updater=()=>{const C=window.Capacitor;if(!C)return null;
  const P=C.Plugins&&C.Plugins.BloomUpdater;

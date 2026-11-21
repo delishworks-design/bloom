@@ -68,7 +68,7 @@ function load() {
     storebinding: ['bindStoreCards'],
     boot: ['localSessionBoot'],
     classicCover: ['coverHash','coverLines','escXml','classicCoverSVG'],
-    netmsg: ['errText', 'isOffline', 'OFFLINE_MSG'],
+    netmsg: ['errText', 'isOffline', 'netReady', 'OFFLINE_MSG'],
     roWho: ['roWho'],
     sxmig: ['migrateCustomSymptoms'],
     backup: ['makeBackup', 'validateBackup'],

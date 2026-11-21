@@ -1,7 +1,7 @@
 {
-  "versionCode": 202,
-  "versionName": "2.1.1",
-  "url": "https://github.com/delishworks-design/bloom/releases/download/v2.1.1/bloom-2.1.1.apk",
-  "notes": "Quick actions: petals now render on all WebViews; lighter, faster ring with shorter close fallback. Reminder nudges vary and water nudges every 5 min after 1h. Dark-mode reader and recovery fixes.",
+  "versionCode": 203,
+  "versionName": "2.1.2",
+  "url": "https://github.com/delishworks-design/bloom/releases/download/v2.1.2/bloom-2.1.2.apk",
+  "notes": "Fix: login and pairing-code creation no longer show 'You're offline' when a stale connection flag lingers. Also includes pairing sign-in fixes, a responsive layout and landing page, and richer Bloom Garden details.",
   "force": false
 }
