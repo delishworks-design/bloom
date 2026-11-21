@@ -598,13 +598,16 @@ test('fab placement is idempotent and does not animate from the origin', () => {
   assert.match(html, /if\(fabEl\.style\.display!==display\)fabEl\.style\.display=display/);
 });
 
-test('fab snaps only near edges, giving sides and corners instead of floating mid-screen', () => {
+test('fab always pins to an edge, never floats in the middle', () => {
   const ctx = load();
   ctx.innerWidth = 1440; ctx.innerHeight = 900; ctx.safeTop = () => 24;
   assert.equal(ctx.fabClampXY(20, 400, 58).x, 8);
   assert.equal(ctx.fabClampXY(20, 400, 58).y, 400);
   assert.equal(ctx.fabClampXY(700, 42, 58).y, 32);
-  const mid = ctx.fabClampXY(700, 400, 58);
-  assert.equal(mid.x, 700);
-  assert.equal(mid.y, 400);
+  const bottom = ctx.fabClampXY(700, 400, 58);
+  assert.equal(bottom.y, 900 - 88 - 58 - 8);
+  assert.equal(bottom.x, 700);
+  const right = ctx.fabClampXY(1350, 400, 58);
+  assert.equal(right.x, 1440 - 58 - 8);
+  assert.equal(right.y, 400);
 });

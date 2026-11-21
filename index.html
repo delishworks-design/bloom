@@ -159,6 +159,7 @@ p{margin:0;line-height:1.5}
 #reader{position:fixed;inset:0;z-index:200;background:var(--card2);display:flex;flex-direction:column}
 #reader[hidden]{display:none}
 body.reader-open{overflow:hidden}
+html.reader-open,html.reader-open body,html.reader-open #app{overflow:hidden !important;overscroll-behavior:none;touch-action:none}
 .reader-top{display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px;border-bottom:1px solid var(--line2);flex:0 0 auto;background:var(--card2)}
 .rt-back,.rt-share,.rt-bm{background:none;border:0;padding:8px;margin:0;color:#8C7A80;cursor:pointer;line-height:0;touch-action:manipulation;min-width:38px;min-height:38px}
 .rt-title{flex:1;min-width:0;text-align:center;font-size:.84rem;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -359,8 +360,9 @@ button{font-family:Sansita,system-ui,sans-serif;-webkit-tap-highlight-color:tran
 
 /* Avatar */
 .avatar{border-radius:50%;object-fit:cover;display:block;flex:0 0 auto;border:2px solid var(--card);box-shadow:0 2px 8px rgba(0,0,0,.08)}
-.avatar-full{position:fixed;inset:0;z-index:80;background:rgba(24,12,18,.96);display:grid;place-items:center;padding:24px}
-.avatar-full img{max-width:100%;max-height:100%;object-fit:contain;border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.4)}
+.avatar-full{position:fixed;inset:0;z-index:280;background:rgba(24,12,18,.96);display:flex;align-items:center;justify-content:center;padding:24px;overflow:hidden}
+.avatar-full img{max-width:min(100%,92vw);max-height:min(100%,86vh);width:auto;height:auto;object-fit:contain;border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.4);margin:auto}
+html.avatar-open,html.avatar-open body{overflow:hidden !important;overscroll-behavior:none}
 .avatar-full .avatar-full-close{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:16px;width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.12);color:#fff;font-size:24px;line-height:1;cursor:pointer}
 .avatar-wrap[data-avatar-full]{cursor:zoom-in}
 .avatar-wrap{display:block;flex:0 0 auto;position:relative;overflow:hidden;border-radius:50%;border:2px solid var(--card);box-shadow:0 2px 8px rgba(0,0,0,.08);background:var(--card2)}
@@ -2254,9 +2256,10 @@ function roAvatarHTML(sz,noFull){const s=sz||34;const n=((pnGet()||'P')+'').trim
 function openAvatarFull(src){
  if(!src)return;
  let el=document.getElementById('avatarFull');
- if(!el){el=document.createElement('div');el.id='avatarFull';el.className='avatar-full';document.body.appendChild(el)}
- el.innerHTML='<button class="avatar-full-close" type="button" aria-label="Close photo">\u00d7</button><img src="'+E(src)+'" alt="Profile photo">';
- const close=()=>{if(el.parentNode)el.remove();document.removeEventListener('keydown',onKey)};
+  if(!el){el=document.createElement('div');el.id='avatarFull';el.className='avatar-full';document.body.appendChild(el)}
+  document.documentElement.classList.add('avatar-open');
+  el.innerHTML='<button class="avatar-full-close" type="button" aria-label="Close photo">\u00d7</button><img src="'+E(src)+'" alt="Profile photo">';
+  const close=()=>{if(el.parentNode)el.remove();document.documentElement.classList.remove('avatar-open');document.removeEventListener('keydown',onKey)};
  const onKey=e=>{if(e.key==='Escape')close()};
  el.onclick=e=>{if(e.target===el||e.target.classList.contains('avatar-full-close'))close()};
  document.addEventListener('keydown',onKey);
@@ -3640,7 +3643,7 @@ function fabFreeBounds(sz){
  const top=safeTop()+pad,bottom=nav-sz-pad;
  return {l:pad,r:Math.max(pad,innerWidth-sz-pad),t:top,b:Math.max(top,bottom)};
 }
-function fabClampXY(x,y,sz){const b=fabFreeBounds(sz),snap=28;let px=Math.max(b.l,Math.min(b.r,x)),py=Math.max(b.t,Math.min(b.b,y));const dl=px-b.l,dr=b.r-px,dt=py-b.t,db=b.b-py;if(Math.min(dl,dr)<=snap)px=dl<=dr?b.l:b.r;if(Math.min(dt,db)<=snap)py=dt<=db?b.t:b.b;return{x:px,y:py}}
+function fabClampXY(x,y,sz){const b=fabFreeBounds(sz),snap=28;let px=Math.max(b.l,Math.min(b.r,x)),py=Math.max(b.t,Math.min(b.b,y));const dx=Math.min(px-b.l,b.r-px),dy=Math.min(py-b.t,b.b-py);if(dx/Math.max(1,b.r-b.l)<=dy/Math.max(1,b.b-b.t))px=(px-b.l<=b.r-px)?b.l:b.r;else py=(py-b.t<=b.b-py)?b.t:b.b;if(py-b.t<=snap)py=b.t;else if(b.b-py<=snap)py=b.b;if(px-b.l<=snap)px=b.l;else if(b.r-px<=snap)px=b.r;return{x:px,y:py}}
 function fabLoadXY(){try{const raw=localStorage.getItem('bloom_fab_xy');if(!raw)return null;const parts=raw.split(',').map(Number);if(parts.length!==2||!isFinite(parts[0])||!isFinite(parts[1]))return null;return{x:parts[0],y:parts[1]}}catch(e){return null}}
 // @test-end fabcalc
 function fabPlace(){
@@ -3676,13 +3679,18 @@ function fabMount(){
  document.body.appendChild(fabEl);
  let drag=null;
  let lastMoved=false;
+ let raf=0,pending=null;
+ const paint=()=>{
+  raf=0;if(!drag||!pending)return;
+  const p=fabClampXY(pending.x,pending.y,FAB_SZ);drag.at=p;
+  fabEl.style.transform='translate3d('+(p.x-drag.ox)+'px,'+(p.y-drag.oy)+'px,0)';
+ };
  const move=e=>{
   if(!drag||e.pointerId!==drag.id)return;
   const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
   if(!drag.moved&&Math.abs(dx)+Math.abs(dy)<7)return;
-  drag.moved=true;drag.dx=dx;drag.dy=dy;
-  // transform-only drag: no layout/paint of the fixed layer on every pointermove
-  fabEl.style.transform='translate3d('+dx+'px,'+dy+'px,0)';
+  drag.moved=true;pending={x:drag.ox+dx,y:drag.oy+dy};
+  if(!raf)raf=requestAnimationFrame(paint);
   if(e.cancelable)e.preventDefault();
  };
  const up=e=>{
@@ -3690,17 +3698,17 @@ function fabMount(){
   window.removeEventListener('pointermove',move);
   window.removeEventListener('pointerup',up);
   window.removeEventListener('pointercancel',up);
-  const moved=drag.moved,dx=drag.dx||0,dy=drag.dy||0,ox=drag.ox,oy=drag.oy;drag=null;lastMoved=moved;
+  const moved=drag.moved,ox=drag.ox,oy=drag.oy,finalPos=pending||drag.at||{x:ox,y:oy};drag=null;pending=null;lastMoved=moved;
+  if(raf){cancelAnimationFrame(raf);raf=0}
   // .drag keeps transitions off, so committing left/top here cannot animate twice
   fabEl.style.transform='';
   if(!moved){fabEl.classList.remove('drag');openQuickRing(fabEl,qaAct);return}
-  const pos=fabClampXY(ox+dx,oy+dy,FAB_SZ),nx=pos.x,ny=pos.y;
+  const pos=fabClampXY(finalPos.x,finalPos.y,FAB_SZ),nx=pos.x,ny=pos.y;
   fabEl.style.left=nx+'px';fabEl.style.top=ny+'px';
   fabEl.classList.remove('drag');
   const b=fabBounds(),cx=nx+FAB_SZ/2,cy=ny+FAB_SZ/2;
   fabCorner=(cy<(b.t+b.b)/2?'t':'b')+(cx<(b.l+b.r)/2?'l':'r');
   try{localStorage.setItem('bloom_fab',fabCorner);localStorage.setItem('bloom_fab_xy',nx+','+ny)}catch(err){}
-  fabPlace();
  };
  fabEl.addEventListener('pointerdown',e=>{
   if(e.button&&e.button!==0)return;
@@ -7680,7 +7688,7 @@ function readingTick(){
 }
 function showReader(html){
  $('#reader').setAttribute('data-theme',readerTheme());
- const r=document.getElementById('reader');r.innerHTML=html;r.hidden=false;document.body.classList.add('reader-open');
+ const r=document.getElementById('reader');r.innerHTML=html;r.hidden=false;document.body.classList.add('reader-open');document.documentElement.classList.add('reader-open');
  const body=r.querySelector('.reader-body');let x0=0,y0=0;
  body.addEventListener('touchstart',e=>{const t=e.changedTouches[0];x0=t.clientX;y0=t.clientY},{passive:true});
  body.addEventListener('touchend',e=>{if(!pdfDoc)return;const t=e.changedTouches[0];const dx=t.clientX-x0,dy=t.clientY-y0;
@@ -7694,7 +7702,7 @@ function showReader(html){
 function closeReader(){
  if(window.__readBank){bankReadingMs(Date.now()-window.__readBank.last)}
  if(window.__readTimer){clearInterval(window.__readTimer);window.__readTimer=null}
- window.__readBank=null;const r=document.getElementById('reader');r.hidden=true;r.innerHTML='';document.body.classList.remove('reader-open');pdfDoc=null;pdfPage=1;pdfPages=0;pdfBookId=null;pdfFrag=0;pdfFrags=1;pdfLastFrag=false;clearPageBlocksCache();window.removeEventListener('resize',readerOnResize);try{if(view==='library')library()}catch(e){}}
+ window.__readBank=null;const r=document.getElementById('reader');r.hidden=true;r.innerHTML='';document.body.classList.remove('reader-open');document.documentElement.classList.remove('reader-open');pdfDoc=null;pdfPage=1;pdfPages=0;pdfBookId=null;pdfFrag=0;pdfFrags=1;pdfLastFrag=false;clearPageBlocksCache();window.removeEventListener('resize',readerOnResize);try{if(view==='library')library()}catch(e){}}
 async function openBook(id){
  const b=libCached().find(x=>x.id===id);if(!b)return;
  if(!libEntry(id)){libAddBook(id)}

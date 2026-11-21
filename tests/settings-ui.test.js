@@ -36,3 +36,11 @@ test('only profile-page avatars are fullscreen, not header avatars', () => {
   assert.match(html, /avatarHTML\(192\)/);
   assert.ok(html.includes('noFull?\'\''));
 });
+
+test('fullscreen avatar is centered and locks background scroll', () => {
+  assert.match(html, /\.avatar-full\{position:fixed;inset:0;z-index:280;/);
+  assert.match(html, /display:flex;align-items:center;justify-content:center;padding:24px;overflow:hidden/);
+  assert.match(html, /max-width:min\(100%,92vw\);max-height:min\(100%,86vh\)/);
+  assert.match(html, /html\.avatar-open,html\.avatar-open body\{overflow:hidden/);
+  assert.match(html, /classList\.add\('avatar-open'\)/);
+});
