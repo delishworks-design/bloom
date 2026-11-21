@@ -569,3 +569,13 @@ test('index.html wires the quick ring to the new responsive timing constants', (
   assert.ok(html.includes('@media (prefers-reduced-motion: reduce){.qaring,.qaring .qaring-item,.qaring .qaring-core,.qaring-scrim'), 'reduced-motion ring CSS present');
   assert.ok(!html.includes(',520)}'), 'old 520ms close delay removed');
 });
+
+test('fab drag writes the transform once per frame without transitions', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  assert.match(html, /will-change:transform;contain:layout style/);
+  assert.match(html, /if\(!raf\)raf=requestAnimationFrame\(paint\)/);
+  assert.match(html, /fabEl\.style\.transition='none'/);
+  assert.match(html, /requestAnimationFrame\(\(\)=>\{fabEl\.style\.transition=''\}\)/);
+});

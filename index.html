@@ -317,7 +317,7 @@ button{font-family:Sansita,system-ui,sans-serif;-webkit-tap-highlight-color:tran
 .qa{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .qa button{background:var(--tealS) !important;border:1.5px solid #C8E2E0 !important;border-radius:16px !important;padding:12px 6px !important;min-height:68px !important;display:flex !important;flex-direction:column !important;align-items:center !important;justify-content:center !important;text-align:center !important;gap:5px !important;font-size:.82rem !important;line-height:1.25 !important;color:var(--ink) !important}
 /* floating quick actions */
-.fab{position:fixed;left:0;top:0;width:58px;height:58px;box-sizing:border-box;border-radius:50%;display:grid;place-items:center;padding:0;border:0;background:none;box-shadow:none;z-index:6;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:none;transition:left .22s cubic-bezier(.2,.9,.25,1),top .22s cubic-bezier(.2,.9,.25,1),transform .16s}}
+.fab{position:fixed;left:0;top:0;width:58px;height:58px;box-sizing:border-box;border-radius:50%;display:grid;place-items:center;padding:0;border:0;background:none;box-shadow:none;z-index:6;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:none;will-change:transform;contain:layout style;transition:left .22s cubic-bezier(.2,.9,.25,1),top .22s cubic-bezier(.2,.9,.25,1),transform .16s}}
 /* soft shadow painted as a gradient: a drop-shadow filter on a fixed element re-rasterises on every repaint */
 .fab::before{content:'';position:absolute;left:4px;right:4px;bottom:-2px;height:70%;border-radius:50%;background:radial-gradient(closest-side,rgba(120,70,80,.34),rgba(120,70,80,.16) 62%,rgba(120,70,80,0));pointer-events:none;z-index:-1}
 .fab.drag{transition:none}
@@ -3662,33 +3662,37 @@ function fabMount(){
  fabEl.setAttribute('aria-label','Quick actions');
  fabEl.innerHTML=fabIconHTML((D&&D.fabFlower)||'bloom');
  document.body.appendChild(fabEl);
- let drag=null;
+ let drag=null,raf=0,pending=null;
  let lastMoved=false;
+ const paint=()=>{
+  raf=0;if(!drag||!pending)return;
+  fabEl.style.transform='translate3d('+Math.round(pending.x)+'px,'+Math.round(pending.y)+'px,0)';
+ };
  const move=e=>{
   if(!drag||e.pointerId!==drag.id)return;
   const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
   if(!drag.moved&&Math.abs(dx)+Math.abs(dy)<7)return;
-  drag.moved=true;drag.dx=dx;drag.dy=dy;
-  // transform-only drag: no layout/paint of the fixed layer on every pointermove
-  fabEl.style.transform='translate3d('+dx+'px,'+dy+'px,0)';
-  if(e.cancelable)e.preventDefault();
+  drag.moved=true;drag.dx=dx;drag.dy=dy;pending={x:dx,y:dy};
+  if(!raf)raf=requestAnimationFrame(paint);
  };
  const up=e=>{
   if(!drag||e.pointerId!==drag.id)return;
   window.removeEventListener('pointermove',move);
   window.removeEventListener('pointerup',up);
   window.removeEventListener('pointercancel',up);
-  const moved=drag.moved,dx=drag.dx||0,dy=drag.dy||0,ox=drag.ox,oy=drag.oy;drag=null;lastMoved=moved;
-  // .drag keeps transitions off, so committing left/top here cannot animate twice
+  const moved=drag.moved,dx=drag.dx||0,dy=drag.dy||0,ox=drag.ox,oy=drag.oy;drag=null;pending=null;lastMoved=moved;
+  if(raf){cancelAnimationFrame(raf);raf=0}
+  // commit while the inline transition is off so the drop never animates twice
   fabEl.style.transform='';
-  if(!moved){fabEl.classList.remove('drag');openQuickRing(fabEl,qaAct);return}
+  if(!moved){fabEl.classList.remove('drag');fabEl.style.transition='';openQuickRing(fabEl,qaAct);return}
   const nx=Math.max(0,Math.min(innerWidth-FAB_SZ,ox+dx)),ny=Math.max(0,Math.min(innerHeight-FAB_SZ,oy+dy));
   fabEl.style.left=nx+'px';fabEl.style.top=ny+'px';
   fabEl.classList.remove('drag');
   const b=fabBounds(),cx=nx+FAB_SZ/2,cy=ny+FAB_SZ/2;
   fabCorner=(cy<(b.t+b.b)/2?'t':'b')+(cx<(b.l+b.r)/2?'l':'r');
   try{localStorage.setItem('bloom_fab',fabCorner)}catch(err){}
-  fabPlace();
+  requestAnimationFrame(()=>{fabEl.style.transition=''});
+  return;
  };
  fabEl.addEventListener('pointerdown',e=>{
   if(e.button&&e.button!==0)return;
@@ -3698,6 +3702,7 @@ function fabMount(){
   const r=fabEl.getBoundingClientRect();
   lastMoved=false;drag={id:e.pointerId,x:e.clientX,y:e.clientY,ox:r.left,oy:r.top,moved:false};
   fabEl.classList.add('drag');
+  fabEl.style.transition='none';
   try{fabEl.setPointerCapture(e.pointerId)}catch(err){}
   window.addEventListener('pointermove',move,{passive:false});
   window.addEventListener('pointerup',up);
