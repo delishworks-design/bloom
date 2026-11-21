@@ -29,6 +29,15 @@ test('waterNextAt lets a fresh water log reset to one hour later', () => {
   assert.equal(waterNextAt(at('2026-11-21T11:06:00'), at('2026-11-21T10:05:00'), now), at('2026-11-21T11:10:00'));
 });
 
+test('waterWindow arms a short rolling set of one-shot slots and stops at the cutoff', () => {
+  const { waterWindow } = load();
+  const start = at('2026-11-21T10:00:00');
+  const slots = waterWindow(start, at('2026-11-21T10:25:00'), 6);
+  assert.equal(slots.length, 6);
+  for (let k = 0; k < 6; k++) assert.equal(Number(slots[k]), start + k * 5 * MIN);
+  assert.equal(waterWindow(start, at('2026-11-21T10:10:00'), 6).length, 3);
+});
+
 test('waterMsgFor rotates by slot and stays inside the message list', () => {
   const { waterMsgFor, WATER_MSGS } = load();
   const first = waterMsgFor(at('2026-11-21T08:00:00'));

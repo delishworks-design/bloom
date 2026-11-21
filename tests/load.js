@@ -88,7 +88,7 @@ function load() {
     libraryExplore: ['exploreGroups', 'exploreOrder', 'exploreDefaultCategory', 'exploreBooks'],
     bloomcal: ['calContinueBtn', 'calMonthsHTML', 'predictedBleedWindows'],
     wtrMsgs: ['WATER_MSGS'],
-    wtrSlot: ['waterMsgFor', 'waterNextAt'],
+    wtrSlot: ['waterMsgFor', 'waterNextAt', 'waterWindow'],
   };
   for (const name of ['phases', 'esc', 'sync', 'netmsg', 'roWho', 'sxmig', 'backup', 'smart', 'auth', 'ownmode', 'widget', 'planui', 'library', 'reader', 'errorIgnore', 'partnerLibrary', 'plannerAdvance', 'readingGoal', 'readingSync', 'bloomcal', 'libraryExplore', 'focusVoice', 'classicCover', 'perf', 'boot', 'libfilter', 'storebinding', 'settingsBack', 'safetop', 'fabcalc', 'index', 'qa', 'quickring', 'wtrMsgs', 'wtrSlot']) {
     let code;
