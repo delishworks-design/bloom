@@ -3042,94 +3042,88 @@ async function widgetConsume(){
  }
  D=doc;save();try{waterReminderSync(true)}catch(e){}try{readReminderSync(true)}catch(e){}try{sidesSync(true)}catch(e){}shell();
 }
-let lastUpdV=null;
-function updateQuietOk(){
- try{if(typeof navigator==='undefined')return true;const c=navigator.connection;if(!c)return true;const t=c.type||c.effectiveType||'';return t!=='cellular'&&t!=='none'}catch(e){return true}
+let lastUpd=null;
+// @test-begin updater
+function updateState(m,v,skip,pending){
+ if(!m||!m.versionCode||!v||m.versionCode<=v.versionCode)return 'none';
+ if(m.versionCode<=(+skip||0))return 'skipped';
+ if(pending&&pending.available&&pending.url===m.url)return 'ready';
+ return 'available';
 }
-function updateReadyText(m){return 'Bloom '+(m.versionName||'')+' ready to install'}
+// @test-end updater
 async function checkUpdate(manual){
  const up=updater();if(!up){if(manual)toast('Updates are only available in the app');return}
  try{
-  const v=await up.getVersion();lastUpdV=v;
+  const v=await up.getVersion();
   const m=await fetchManifest();
-  if(!m||!m.versionCode||m.versionCode<=v.versionCode){hideUpdateBanner();if(manual)toast('You are on the latest version');return}
-  // Older app version without the download methods — fall back to old banner
-  if(typeof up.downloadUpdate!=='function'||typeof up.getPendingUpdate!=='function'){
-    if(!manual&&m.versionCode<=(Number(ST.get(UPD_SKIP_KEY))||0))return;
-    showUpdateBanner(m);
-    if(manual)showUpdateSheet(m,v,null);
-    return
-  }
-  // Respect "Later" silently, but keep downloading in the background
-  // Already-downloaded file? Then show banner and stop.
-  let pendingSize=null;
-  try{
-   const pending=await up.getPendingUpdate();
-   if(pending&&pending.available&&pending.url===m.url){
-    pendingSize=pending.size||null;
-    if(!manual&&m.versionCode<=(Number(ST.get(UPD_SKIP_KEY))||0))return;
-    showUpdateBanner(m);
-    if(manual)showUpdateSheet(m,v,pendingSize);
-    return
-   }
-  }catch(e){}
-  // Silent autodownload — but only on good networks; otherwise fall back to old banner
-  if(!updateQuietOk()&&!manual){
-   showUpdateSheet(m,v);
-   return
-  }
-  try{
-   const args={url:m.url};
-   if(m.sha256)args.sha256=m.sha256;
-   const r=await up.downloadUpdate(args);
-   if(r&&r.status==='downloaded'){
-    if(!manual&&m.versionCode<=(Number(ST.get(UPD_SKIP_KEY))||0))return;
-    showUpdateBanner(m);
-    if(manual)showUpdateSheet(m,v)
-   }
-  }catch(e){
-   if(manual)toast('Could not download the update')
-  }
+  let pending=null;
+  try{if(typeof up.getPendingUpdate==='function')pending=await up.getPendingUpdate()}catch(e){}
+  const state=updateState(m,v,ST.get(UPD_SKIP_KEY),pending);
+  if(state==='none'){lastUpd=null;hideUpdateBanner();if(manual)toast('You are on the latest version');return}
+  lastUpd={m,v,pending};
+  if(state==='skipped'){hideUpdateBanner();if(manual)showUpdateSheet(m,v,pending);return}
+  showUpdateBanner(m);
+  if(manual)showUpdateSheet(m,v,pending);
  }catch(e){if(manual)toast('Could not check for updates')}
 }
-// Persistent in-app notification, visible on any screen until dismissed or installed.
+function updDismiss(m){try{ST.set(UPD_SKIP_KEY,String(m.versionCode))}catch(e){}hideUpdateBanner()}
 function showUpdateBanner(m){
  let el=document.getElementById('updBanner');
  if(!el){el=document.createElement('div');el.id='updBanner';el.setAttribute('role','status');
   el.style.cssText='position:fixed;left:50%;transform:translateX(-50%);top:calc(8px + env(safe-area-inset-top,0px));z-index:60;width:min(408px,calc(100% - 20px));background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shb);padding:12px 14px;display:flex;gap:10px;align-items:center;font:14px/1.35 system-ui,-apple-system,sans-serif;color:var(--ink)';
   document.body.appendChild(el)}
- el.className='dark';
- el.innerHTML=`<div style="flex:1;min-width:0"><strong style="display:block;font-size:14px">Update available</strong><span style="opacity:.72">Bloom ${E(m.versionName||'')} is ready</span></div>
+ el.innerHTML=`<div style="flex:1;min-width:0"><strong style="display:block;font-size:14px">Update available</strong><span style="opacity:.72">Bloom ${E(m.versionName||'')} \u00b7 tap to download</span></div>
  <button id="updBannerGo" class="btn sm" style="padding:8px 14px;white-space:nowrap">Update</button>
  <button id="updBannerX" aria-label="Dismiss update" style="background:none;border:0;font-size:22px;line-height:1;color:#8a7f77;padding:0 2px;cursor:pointer">\u00d7</button>`;
- document.getElementById('updBannerX').onclick=()=>{try{ST.set(UPD_SKIP_KEY,String(m.versionCode))}catch(e){}hideUpdateBanner()};
- document.getElementById('updBannerGo').onclick=()=>{hideUpdateBanner();showUpdateSheet(m,lastUpdV||{versionCode:APP_VERSION.code,versionName:APP_VERSION.name})};
+ document.getElementById('updBannerX').onclick=()=>updDismiss(m);
+ document.getElementById('updBannerGo').onclick=()=>{hideUpdateBanner();const v=(lastUpd&&lastUpd.v)||{versionCode:APP_VERSION.code,versionName:APP_VERSION.name};showUpdateSheet(m,v,(lastUpd&&lastUpd.pending)||null)};
 }
 function hideUpdateBanner(){const el=document.getElementById('updBanner');if(el)el.remove()}
 function fmtBytes(n){n=+n||0;if(n<1024)return n+' B';if(n<1048576)return (n/1024).toFixed(0)+' KB';return (n/1048576).toFixed(1)+' MB'}
-async function showUpdateSheet(m,v,pendingSize){
- const bytes=pendingSize?' · '+fmtBytes(pendingSize):'';
- sheet(`<h2>Update ready</h2><p class="meta" style="margin:0 0 4px">Bloom ${E(m.versionName||'')} downloaded${bytes} · you're on ${E(v.versionName||'')}</p>${m.notes?`<p class="meta" style="margin:0 0 12px">${E(m.notes)}</p>`:''}
- <div class="upbar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" aria-label="Download progress"><i style="width:100%"></i></div>
- <p class="meta" style="margin:6px 0 0">Tap Install to open the installer. Android will ask permission to install it.</p>
- <div class="row" style="gap:10px;margin-top:16px"><button class="btn ghost" id="upLater" style="flex:1">Later</button><button class="btn" id="upNow" style="flex:1">Install</button></div>`);
- const upNow=document.getElementById('upNow'),upLater=document.getElementById('upLater');
- upLater.onclick=()=>sheet();
- upNow.onclick=async()=>{
-  const up=updater();upNow.disabled=true;upNow.textContent='Opening installer\u2026';
+async function showUpdateSheet(m,v,pending){
+ const up=updater();
+ const native=!!(up&&typeof up.downloadUpdate==='function'&&typeof up.installDownloadedUpdate==='function');
+ const ready=!!(pending&&pending.available&&pending.url===m.url);
+ const notes=m.notes?`<p class="meta" style="margin:0 0 12px">${E(m.notes)}</p>`:'';
+ const head=`<h2>Update available</h2><p class="meta" style="margin:0 0 8px">Bloom ${E(m.versionName||'')} \u00b7 you're on ${E(v.versionName||'')}</p>${notes}`;
+ const later=()=>{updDismiss(m);sheet()};
+ const laterBtn='<button class="btn ghost" id="upLater" style="flex:1">Later</button>';
+ const row=html=>`<div class="row" style="gap:10px;margin-top:14px">${html}</div>`;
+ const wireLater=()=>{const b=document.getElementById('upLater');if(b)b.onclick=later};
+ if(!native){
+  sheet(head+`<p class="meta" style="margin:0">This build opens the update in your browser.</p>`+row(laterBtn+'<button class="btn" id="upOpen" style="flex:1">Open in browser</button>'));
+  wireLater();
+  const open=document.getElementById('upOpen');if(open)open.onclick=async()=>{try{if(typeof up.installUpdate==='function')await up.installUpdate({url:m.url});else window.open(m.url,'_system');sheet()}catch(e){toast('Could not open the browser')}};
+  return;
+ }
+ const installStep=async()=>{
+  const b=document.getElementById('upInstall');if(b){b.disabled=true;b.textContent='Opening installer\u2026'}
   try{
-   if(typeof up.installDownloadedUpdate==='function'){
-    const r=await up.installDownloadedUpdate();
-    if(r&&r.status==='needsPermission'){upNow.textContent='Allow installs from Bloom, then tap Install';upNow.disabled=false;return}
-    upNow.textContent='Opening\u2026';toast('Installer opened');sheet();return
+   const r=await up.installDownloadedUpdate();
+   if(r&&r.status==='needsPermission'){
+    sheet(head+`<p class="meta" style="margin:0">Allow Bloom to install unknown apps in Android settings, then tap Install again.</p>`+row(laterBtn+'<button class="btn" id="upInstall" style="flex:1">Try again</button>'));
+    wireLater();const again=document.getElementById('upInstall');if(again)again.onclick=installStep;return
    }
-   // Legacy fallback — re-download and open
-   const r=await up.installUpdate({url:m.url});
-   if(r&&r.status==='needsPermission'){upNow.textContent='Allow installs from Bloom, then tap Install';upNow.disabled=false;return}
-   upNow.textContent='Opening\u2026';toast('Installer opened');sheet()
-  }catch(e){
-   upNow.disabled=false;upNow.textContent='Retry';toast('Could not open the installer\u2014try again')
-  }
+   sheet();hideUpdateBanner();toast('Installer opened')
+  }catch(e){if(b){b.disabled=false;b.textContent='Retry Install'}toast('Could not open the installer')}
+ };
+ if(ready){
+  const size=pending&&pending.size?` \u00b7 ${fmtBytes(pending.size)}`:'';
+  sheet(head+`<p class="meta" style="margin:0">Downloaded${size}. Tap Install to open the installer.</p>`+row(laterBtn+'<button class="btn" id="upInstall" style="flex:1">Install</button>'));
+  wireLater();
+  const b=document.getElementById('upInstall');if(b)b.onclick=installStep;
+  return;
+ }
+ sheet(head+`<p class="meta" style="margin:0">Nothing is downloaded yet. Tap Download when you're ready.</p>`+row(laterBtn+'<button class="btn" id="upDownload" style="flex:1">Download</button>'));
+ wireLater();
+ const d=document.getElementById('upDownload');if(d)d.onclick=async()=>{
+  d.disabled=true;d.textContent='Downloading\u2026';
+  try{
+   const args={url:m.url};if(m.sha256)args.sha256=m.sha256;
+   const r=await up.downloadUpdate(args);
+   if(r&&r.status==='downloaded'){toast('Update downloaded');showUpdateSheet(m,v,{available:true,url:m.url,size:r.size});return}
+   d.disabled=false;d.textContent='Retry Download';toast('Could not download the update')
+  }catch(e){d.disabled=false;d.textContent='Retry Download';toast('Could not download the update')}
  };
 }
 function dateSheet(title,cb){let m=today().slice(0,7);

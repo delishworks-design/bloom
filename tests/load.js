@@ -89,8 +89,9 @@ function load() {
     bloomcal: ['calContinueBtn', 'calMonthsHTML', 'predictedBleedWindows'],
     wtrMsgs: ['WATER_MSGS'],
     wtrSlot: ['waterMsgFor', 'waterNextAt', 'waterWindow'],
+    updater: ['updateState'],
   };
-  for (const name of ['phases', 'esc', 'sync', 'netmsg', 'roWho', 'sxmig', 'backup', 'smart', 'auth', 'ownmode', 'widget', 'planui', 'library', 'reader', 'errorIgnore', 'partnerLibrary', 'plannerAdvance', 'readingGoal', 'readingSync', 'bloomcal', 'libraryExplore', 'focusVoice', 'classicCover', 'perf', 'boot', 'libfilter', 'storebinding', 'settingsBack', 'safetop', 'fabcalc', 'index', 'qa', 'quickring', 'wtrMsgs', 'wtrSlot']) {
+  for (const name of ['phases', 'esc', 'sync', 'netmsg', 'roWho', 'sxmig', 'backup', 'smart', 'auth', 'ownmode', 'widget', 'planui', 'library', 'reader', 'errorIgnore', 'partnerLibrary', 'plannerAdvance', 'readingGoal', 'readingSync', 'bloomcal', 'libraryExplore', 'focusVoice', 'classicCover', 'perf', 'boot', 'libfilter', 'storebinding', 'settingsBack', 'safetop', 'fabcalc', 'index', 'qa', 'quickring', 'wtrMsgs', 'wtrSlot', 'updater']) {
     let code;
     try{ code = extract(html, name); }catch(e){ if(name==='auth') continue; throw e; }
     const names = exportsByName[name];
