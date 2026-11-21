@@ -7841,6 +7841,7 @@ async function sidesSync(quiet){
   await LN.schedule({notifications:want});return 'ok'}catch(e){reportErr('reminder.sides',e);if(!quiet)toast('Could not set the cheeky reminders');return 'error'}
 }
 const WATER_BASE=1200;
+// @test-begin wtrMsgs
 const WATER_MSGS=[
  'Sprinkles: Not a drop all day? Big glass. Right now.',
  'Sprinkles: One hour, zero water. Go sip.',
@@ -7862,34 +7863,52 @@ const WATER_MSGS=[
  'Sprinkles: Don\'t forget to drink water today.',
  'Sprinkles: Five-second task: take a drink of water.',
  'Sprinkles: Keep it flowing — time for water.',
- 'Sprinkles: Friendly nudge: have some water.'
+  'Sprinkles: Friendly nudge: have some water.'
 ];
+// @test-end wtrMsgs
 const WATER_IDS=(()=>{const a=[];for(let h=8;h<=21;h++)for(let m=0;m<60;m+=5)a.push(WATER_BASE+h*12+(m/5));return a})();
+const WATER_LEGACY_IDS=[...Array(14)].map((_,i)=>WATER_BASE+8+i);
+const WATER_CANCEL_IDS=[WATER_BASE,...WATER_IDS,...WATER_LEGACY_IDS];
+const WATER_NUDGE_KEY='bloom_water_nudge_at';
+// @test-begin wtrSlot
+const WATER_SLOT_MS=300000;
+function waterMsgFor(ts){const d=new Date(ts);return WATER_MSGS[(d.getHours()*12+Math.floor(d.getMinutes()/5))%WATER_MSGS.length]}
+function waterNextAt(base,prior,now){
+ let from=base||0;
+ if(prior)from=Math.max(from,prior<=now?prior+WATER_SLOT_MS:prior);
+ from=Math.max(from,now+30000);
+ return Math.ceil(from/WATER_SLOT_MS)*WATER_SLOT_MS;
+}
+// @test-end wtrSlot
+let waterNotifyWired=false;
+function wireWaterNudge(){
+ if(waterNotifyWired)return;
+ const LN=notifPlugin();if(!LN||!LN.addListener)return;
+ waterNotifyWired=true;
+ try{LN.addListener('notificationReceived',n=>{try{if(n&&n.id===WATER_BASE)setTimeout(()=>{try{waterReminderSync(true)}catch(e){}},500)}catch(e){}})}catch(e){}
+ try{document.addEventListener('visibilitychange',()=>{if(!document.hidden)setTimeout(()=>{try{waterReminderSync(true)}catch(e){}},400)})}catch(e){}
+}
 async function waterReminderSync(quiet){
  const LN=notifPlugin();if(!LN)return;
  const on=!!(D&&D.rem&&D.rem.water&&!RO);
- try{await LN.cancel({notifications:WATER_IDS.map(id=>({id}))})}catch(e){}
- if(!on)return;
+ try{await LN.cancel({notifications:WATER_CANCEL_IDS.map(id=>({id}))})}catch(e){}
+ if(!on){try{ST.del(WATER_NUDGE_KEY)}catch(e){}return}
  try{
   let p=await LN.checkPermissions();
   if(p.display!=='granted'){if(quiet)return;p=await LN.requestPermissions()}
   if(p.display!=='granted'){if(!quiet)toast('Allow notifications for Bloom in Android settings');return}
   try{await LN.createChannel({id:'bloom_reminders',name:'Bloom reminders',description:'Logging reminders',sound:'beep.wav',importance:4})}catch(e){}
-  const d=today(),now=new Date(),log=(D.logs||{})[d]||{};
-  const last=log.waterLast||((log.water||0)>0?Date.now():0);
-  const startMs=last?last+60*60*1000:new Date(now.getFullYear(),now.getMonth(),now.getDate(),8,0,0,0).getTime();
-  const from=Math.max(startMs,Date.now()+30*1000);
-  const end=new Date(now.getFullYear(),now.getMonth(),now.getDate(),21,55,0,0);
-  const items=[];let i=0;
-  for(let t=new Date(Math.ceil(from/300000)*300000);t<=end;t=new Date(t.getTime()+300000)){
-   const h=t.getHours(),m=t.getMinutes();
-   if(h<8||h>21)continue;
-   const id=WATER_BASE+h*12+(m/5);
-   items.push({id,title:'Bloom',body:WATER_MSGS[i%WATER_MSGS.length],channelId:'bloom_reminders',sound:'beep.wav',schedule:{on:{hour:h,minute:m},allowWhileIdle:true},smallIcon:'ic_stat_bloom',iconColor:'#2A8A87'});
-   i++;
-  }
-  if(items.length){await LN.schedule({notifications:items});if(!quiet)toast('Water reminders on for today')}
-  else if(!quiet)toast('Water reminders start tomorrow morning');
+  wireWaterNudge();
+  const d=today(),now=Date.now(),log=(D.logs||{})[d]||{};
+  const last=log.waterLast||((log.water||0)>0?now:0);
+  const base=last?last+60*60*1000:new Date(new Date(now).getFullYear(),new Date(now).getMonth(),new Date(now).getDate(),8,0,0,0).getTime();
+  const end=new Date(new Date(now).getFullYear(),new Date(now).getMonth(),new Date(now).getDate(),21,55,0,0).getTime();
+  let prior=0;try{prior=Number(ST.get(WATER_NUDGE_KEY))||0}catch(e){}
+  const at=waterNextAt(base,prior,now);
+  if(at>end){try{ST.del(WATER_NUDGE_KEY)}catch(e){}if(!quiet)toast('Water reminders start tomorrow morning');return}
+  await LN.schedule({notifications:[{id:WATER_BASE,title:'Bloom',body:waterMsgFor(at),channelId:'bloom_reminders',sound:'beep.wav',schedule:{at:new Date(at).toISOString(),allowWhileIdle:true},smallIcon:'ic_stat_bloom',iconColor:'#2A8A87'}]});
+  try{ST.set(WATER_NUDGE_KEY,String(at))}catch(e){}
+  if(!quiet)toast('Water reminder on for today');
  }catch(e){reportErr('reminder.water',e);if(!quiet)toast('Could not set water reminders')}
 }
 
