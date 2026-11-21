@@ -28,6 +28,11 @@ test('the auth card sits in the right grid column on wide screens', () => {
 });
 
 test('the login pastel background also covers the app', () => {
-  assert.match(html, /#app::before\{content:'';position:fixed;inset:-8%;z-index:-1;pointer-events:none;opacity:\.45/);
+  assert.match(html, /#app::before\{content:'';position:fixed;inset:-8%;z-index:-1;pointer-events:none;opacity:\.6/);
   assert.match(html, /#app::before[\s\S]{0,400}radial-gradient\(circle at 18% 30%/);
+});
+
+test('the app background is not hidden by an opaque wrap', () => {
+  assert.match(html, /\.wrap\{position:relative;z-index:1;max-width:430px[^}]*background:transparent;/);
+  assert.match(html, /opacity:\.6;filter:blur\(18px\)/);
 });

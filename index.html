@@ -54,7 +54,7 @@ p{margin:0;line-height:1.5}
 @keyframes ringIn{from{opacity:0;transform:scale(.92) rotate(-3deg)}to{opacity:1;transform:scale(1) rotate(0)}}
 
 /* Layout hierarchy */
-.wrap{position:relative;z-index:1;max-width:430px;margin:0 auto;padding:calc(env(safe-area-inset-top,0px) + 74px) 20px 130px;min-height:100dvh;background:var(--scrim);display:flex;flex-direction:column;gap:18px}
+.wrap{position:relative;z-index:1;max-width:430px;margin:0 auto;padding:calc(env(safe-area-inset-top,0px) + 74px) 20px 130px;min-height:100dvh;background:transparent;display:flex;flex-direction:column;gap:18px}
 .wrap>*{flex:0 0 auto}
 #main{display:flex;flex-direction:column;gap:20px}
 #pb{display:flex;flex-direction:column;gap:14px}
@@ -868,7 +868,7 @@ html[data-theme=dark] body.ro .watercount,html[data-theme=dark] body.ro .dr-done
 .phaserow .nowtag{font-size:.58rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
 .phaserow .range{margin-left:auto;font-size:.73rem;color:var(--mut);white-space:nowrap}
 #app{isolation:isolate}
-#app::before{content:'';position:fixed;inset:-8%;z-index:-1;pointer-events:none;opacity:.45;filter:blur(18px);background:radial-gradient(circle at 18% 30%,rgba(126,200,194,.55) 0 7%,rgba(126,200,194,.22) 13%,transparent 25%),radial-gradient(circle at 31% 68%,rgba(247,184,203,.58) 0 8%,rgba(247,184,203,.2) 15%,transparent 27%),radial-gradient(circle at 70% 20%,rgba(168,218,212,.42) 0 6%,transparent 21%),radial-gradient(circle at 88% 80%,rgba(250,196,214,.46) 0 7%,transparent 23%)}
+#app::before{content:'';position:fixed;inset:-8%;z-index:-1;pointer-events:none;opacity:.6;filter:blur(18px);background:radial-gradient(circle at 18% 30%,rgba(126,200,194,.55) 0 7%,rgba(126,200,194,.22) 13%,transparent 25%),radial-gradient(circle at 31% 68%,rgba(247,184,203,.58) 0 8%,rgba(247,184,203,.2) 15%,transparent 27%),radial-gradient(circle at 70% 20%,rgba(168,218,212,.42) 0 6%,transparent 21%),radial-gradient(circle at 88% 80%,rgba(250,196,214,.46) 0 7%,transparent 23%)}
 body.ro #app::before{background:#14323B;opacity:.055}
 #app::after{content:'';position:fixed;left:0;right:0;bottom:0;height:46vh;background:linear-gradient(to bottom,transparent 0%,var(--bg) 82%);z-index:-1;pointer-events:none}
 #updBanner.dark{background:#2E2226 !important;border-color:rgba(255,255,255,.14) !important;color:#FBF4EA !important}
