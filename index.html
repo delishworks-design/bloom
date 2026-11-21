@@ -871,7 +871,7 @@ html[data-theme=dark] body.ro .watercount,html[data-theme=dark] body.ro .dr-done
 .phaserow .nowtag{font-size:.58rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
 .phaserow .range{margin-left:auto;font-size:.73rem;color:var(--mut);white-space:nowrap}
 #app{isolation:isolate}
-#app::before{content:'';position:fixed;left:50%;bottom:-24vh;transform:translateX(-50%);width:min(175vw,880px);height:min(175vw,880px);background:#2B1E1E;opacity:.045;z-index:-1;pointer-events:none;-webkit-mask-position:center;-webkit-mask-size:contain;-webkit-mask-repeat:no-repeat;mask-position:center;mask-size:contain;mask-repeat:no-repeat}
+#app::before{content:'';position:fixed;inset:-8%;z-index:-1;pointer-events:none;opacity:.11;filter:blur(16px);background:linear-gradient(125deg,rgba(126,200,194,.8),rgba(247,184,203,.85));-webkit-mask-image:var(--bloom-mark),var(--bloom-mark),var(--bloom-mark),var(--bloom-mark);mask-image:var(--bloom-mark),var(--bloom-mark),var(--bloom-mark),var(--bloom-mark);-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:10% 22%,28% 76%,72% 16%,88% 72%;mask-position:10% 22%,28% 76%,72% 16%,88% 72%;-webkit-mask-size:min(30vw,240px),min(23vw,180px),min(25vw,200px),min(32vw,260px);mask-size:min(30vw,240px),min(23vw,180px),min(25vw,200px),min(32vw,260px)}
 body.ro #app::before{background:#14323B;opacity:.055}
 #app::after{content:'';position:fixed;left:0;right:0;bottom:0;height:46vh;background:linear-gradient(to bottom,transparent 0%,var(--bg) 82%);z-index:-1;pointer-events:none}
 #updBanner.dark{background:#2E2226 !important;border-color:rgba(255,255,255,.14) !important;color:#FBF4EA !important}
@@ -966,7 +966,7 @@ body.splashPlay #splashWash{animation:splashWash 3.4s linear forwards}
 }
 @media(min-width:1024px){
  .auth{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,460px);gap:6vw;align-items:center;justify-content:center;padding:48px 6vw;position:relative;overflow:hidden;background:var(--scrim) !important}
- .auth::before{content:"";position:absolute;inset:-12%;z-index:0;pointer-events:none;filter:blur(14px);opacity:.92;background:radial-gradient(circle at 18% 30%,rgba(126,200,194,.55) 0 7%,rgba(126,200,194,.22) 13%,transparent 25%),radial-gradient(circle at 31% 68%,rgba(247,184,203,.58) 0 8%,rgba(247,184,203,.2) 15%,transparent 27%),radial-gradient(circle at 70% 20%,rgba(168,218,212,.42) 0 6%,transparent 21%),radial-gradient(circle at 88% 80%,rgba(250,196,214,.46) 0 7%,transparent 23%);animation:authDrift 16s ease-in-out infinite}
+ .auth::before{content:"";position:absolute;inset:-8%;z-index:0;pointer-events:none;filter:blur(10px);opacity:.72;background:linear-gradient(125deg,rgba(126,200,194,.85),rgba(247,184,203,.9));-webkit-mask-image:var(--bloom-mark),var(--bloom-mark),var(--bloom-mark),var(--bloom-mark);mask-image:var(--bloom-mark),var(--bloom-mark),var(--bloom-mark),var(--bloom-mark);-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:12% 24%,31% 72%,66% 18%,85% 78%;mask-position:12% 24%,31% 72%,66% 18%,85% 78%;-webkit-mask-size:min(24vw,190px),min(19vw,150px),min(21vw,170px),min(27vw,210px);mask-size:min(24vw,190px),min(19vw,150px),min(21vw,170px),min(27vw,210px);animation:authDrift 16s ease-in-out infinite}
  .auth::after{content:"a gentler way \A to know your cycle.";white-space:pre-line;position:absolute;left:4vw;top:50%;transform:translateY(-50%);width:calc(50% - 4vw);text-align:center;font:600 1.05rem/1.6 'Playfair Display',serif;color:var(--rose);letter-spacing:.08em;z-index:1}
  .auth .card{grid-column:2;position:relative;z-index:1;width:100%;max-width:460px;margin:0;animation:authCardIn .5s ease both}
 }
@@ -8662,7 +8662,7 @@ function startReconnectWatch(){
 // ---------- start
 // big faded logo silhouette behind everything (theme tinted)
 (function(){try{const st=document.createElement('style');
- st.textContent='#app::before{-webkit-mask-image:url("'+LOGO+'");mask-image:url("'+LOGO+'")}';
+ st.textContent=':root{--bloom-mark:url("'+LOGO+'")}';
  document.head.appendChild(st)}catch(e){}})();
 if(isPartnerDevice())document.body.classList.add('roSplash');
 if(splashShouldShow())splashPlay();else splashSkip();  // only after 3 minutes away

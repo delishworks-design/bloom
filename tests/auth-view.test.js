@@ -15,11 +15,13 @@ test('wide screens show only a centered tagline over watercolor circles', () => 
   assert.match(html, /@media\(min-width:1024px\)\{\s*\.auth\{display:grid/);
   assert.match(html, /content:"a gentler way \\A to know your cycle\."/);
   assert.match(html, /top:50%;transform:translateY\(-50%\);width:calc\(50% - 4vw\);text-align:center/);
-  assert.match(html, /radial-gradient\(circle at 18% 30%,rgba\(126,200,194/);
-  assert.match(html, /radial-gradient\(circle at 31% 68%,rgba\(247,184,203/);
+  assert.match(html, /-webkit-mask-image:var\(--bloom-mark\)/);
+  assert.match(html, /background:linear-gradient\(125deg,rgba\(126,200,194/);
   assert.match(html, /animation:authDrift/);
   assert.doesNotMatch(html, /background:var\(--bloom-logo\)/);
   assert.doesNotMatch(html, /setProperty\("--bloom-logo"/);
+  assert.match(html, /:root\{--bloom-mark:url\("/);
+  assert.match(html, /#app::before\{content:'';position:fixed;inset:-8%[\s\S]{0,400}-webkit-mask-image:var\(--bloom-mark\)/);
 });
 
 test('the auth card sits in the right grid column on wide screens', () => {
