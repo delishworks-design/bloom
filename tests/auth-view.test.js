@@ -16,7 +16,11 @@ test('wide screens show only a centered tagline over watercolor circles', () => 
   assert.match(html, /content:"a gentler way \\A to know your cycle\."/);
   assert.match(html, /top:50%;transform:translateY\(-50%\);width:calc\(50% - 4vw\);text-align:center/);
   assert.match(html, /-webkit-mask-image:var\(--bloom-mark\)/);
-  assert.match(html, /background:linear-gradient\(125deg,rgba\(126,200,194/);
+  assert.match(html, /background:linear-gradient\(125deg,rgba\(150,215,210/);
+  assert.match(html, /min\(38vw,330px\)/);
+  assert.match(html, /min\(52vw,440px\)/);
+  assert.match(html, /const LOGO_SOFT="data:image\/png;base64,/);
+  assert.ok(html.includes("--bloom-mark:url(\"'") && html.includes("LOGO_SOFT"));
   assert.match(html, /animation:authDrift/);
   assert.doesNotMatch(html, /background:var\(--bloom-logo\)/);
   assert.doesNotMatch(html, /setProperty\("--bloom-logo"/);
