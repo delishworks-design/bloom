@@ -36,3 +36,13 @@ test('migrateCustomSymptoms does nothing in RO', () => {
   assert.equal(ctx.D.sxMigrated, 0);
   assert.deepEqual(ctx.D.logs.d1.tags, ['Cramps', 'Joint pain']);
 });
+
+test('the add-task field is primary and notes are secondary', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  assert.match(html, /<label class="lbl" for="nt"/);
+  assert.match(html, /id="nt" class="task-primary"/);
+  assert.match(html, /id="ptn" class="task-note"/);
+  assert.match(html, /\.task-primary\{font-weight:700/);
+});

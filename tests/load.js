@@ -50,7 +50,7 @@ function load() {
   sandbox.ownMode=false; sandbox.key=function(u){return 'bloom_d_'+u}; sandbox.J=function(k,f){try{const v=sandbox.ST.get(k);return v==null?f:JSON.parse(v)}catch(e){return f}};
   sandbox.tasksFor=function(d,doc){return ((doc||sandbox.D).tasks||[]).filter(t=>!t.once||t.once===d)};
   sandbox.widgetNative=function(){return null};
-  sandbox.clearSession=function(){}; sandbox.setRoleFlag=function(){}; sandbox.today=function(){return '2026-01-20'}; sandbox.reminderCancel=function(){}; sandbox.sb=null; sandbox.sbUser=null; sandbox.cloudTimer=null; sandbox.hideUpdateBanner=function(){}; sandbox.authView=function(){};
+  sandbox.clearSession=function(){}; sandbox.setRoleFlag=function(){}; sandbox.pairInvalidate=function(){}; sandbox.today=function(){return '2026-01-20'}; sandbox.reminderCancel=function(){}; sandbox.sb=null; sandbox.sbUser=null; sandbox.cloudTimer=null; sandbox.hideUpdateBanner=function(){}; sandbox.authView=function(){};
   sandbox.navigator={onLine:true};
 
   const exportsByName = {

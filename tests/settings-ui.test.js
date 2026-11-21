@@ -29,3 +29,10 @@ test('Your data is the last card and Delete my account is its last action', () =
   assert.ok(data.indexOf('id="sDelAcct"') > data.indexOf('id="sImp"'));
   assert.ok(data.indexOf('id="sDelAcct"') > data.indexOf('id="sDel"'));
 });
+
+test('only profile-page avatars are fullscreen, not header avatars', () => {
+  assert.match(html, /roAvatarHTML\(44,true\)/);
+  assert.match(html, /avatarHTML\(44,true\)/);
+  assert.match(html, /avatarHTML\(192\)/);
+  assert.ok(html.includes('noFull?\'\''));
+});

@@ -24,7 +24,8 @@ test('12-hour selection converts to a correct 24-hour value', () => {
 
 test('time picker uses a scrollable AM/PM column and renders its title', () => {
   const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
-  assert.match(html, /col\('wtAp',aps\)/);
+  assert.match(html, /col\('wtAp',aps,1\)/);
+  assert.doesNotMatch(html, /col\('wtAp',aps,3\)/);
   assert.match(html, /<h2>\$\{E\(title\)\}<\/h2>/);
   assert.doesNotMatch(html, /wt-ampm-btn/);
 });
