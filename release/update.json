@@ -1,8 +1,8 @@
 {
-  "versionCode": 206,
-  "versionName": "2.1.5",
-  "url": "https://github.com/delishworks-design/bloom/releases/download/v2.1.5/bloom-2.1.5.apk",
-  "sha256": "7fafcf1fdd070dfbd849ed13430125acaf1f41c7bf1995968ddb619decf7ac50",
-  "notes": "Smoother FAB, no more constant re-renders from background sync, garden arrows hidden on phones, and Your data moved to the bottom of Settings.",
+  "versionCode": 207,
+  "versionName": "2.1.6",
+  "url": "https://github.com/delishworks-design/bloom/releases/download/v2.1.6/bloom-2.1.6.apk",
+  "sha256": "83065e4dbe96496016e4cc9eaa9e27034e1911a44732d1d54ea24f84897a846e",
+  "notes": "Real email-already-exists check, signup cleanup, steadier FAB, pastel app background, default-unchecked Remember me, and the latest UI fixes.",
   "force": false
 }
