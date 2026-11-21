@@ -1857,7 +1857,8 @@ async function sbAfterLoginOnce(u){
  if(!D.p.name)D.p.name=(u.email||'Bloom').split('@')[0];
  user=mail||user;sbLastPush='';sbRev=row?row.rev:0;saveRev();onbStep=0;
  // a different account on this phone must not inherit the last follower's name/photo
- try{const pu=ST.get('bloom_puid');if(pu&&u.id&&pu!==u.id){ST.del('bloom_pname');ST.del('bloom_pavatar')}if(u.id)ST.set('bloom_puid',u.id)}catch(epu){}
+ let prevPuid='';
+ try{prevPuid=ST.get('bloom_puid')||'';const pu=prevPuid;if(pu&&u.id&&pu!==u.id){ST.del('bloom_pname');ST.del('bloom_pavatar')}if(u.id)ST.set('bloom_puid',u.id)}catch(epu){}
  try{if(ST.get('bloom_plocked')==='1'&&user)ST.set('bloom_plocked',JSON.stringify([user.toLowerCase()]))}catch(em){}
  setSession(user);try{ST.set('bloom_own',user)}catch(e){}
  // a partner account keeps its own nickname and photo across sign-outs (cloud is the source of truth)
@@ -1870,7 +1871,12 @@ async function sbAfterLoginOnce(u){
  // the cloud link decides the role: a live follower never lands on the cycle app
  const q=await pairP;
  if(q.ok&&q.pair)return enterPartnerMode(q.pair.owner,q.pair.code,true);
- if(!q.ok){const po=ST.get('bloom_powner');if(po){try{await enterPartnerMode(po,ST.get('bloom_lastcode')||'',true)}catch(e){reportErr('partner.offline',e)}return}}
+ if(!q.ok){
+  // Offline fallback only for the SAME account that actually paired. Otherwise a
+  // new owner on this phone can land in the previous follower's read-only view.
+  const po=ST.get('bloom_powner');
+  if(po&&u.id&&prevPuid===u.id){try{await enterPartnerMode(po,ST.get('bloom_lastcode')||'',true)}catch(e){reportErr('partner.offline',e)}return}
+ }
  if(q.ok&&pLocked())unlockPartner();
  if(q.ok)setRoleFlag('');
  // the owner stopped sharing since the last run: choose a role again
@@ -1910,16 +1916,27 @@ async function nativeGoogleSignIn(client){
   }
 }
 async function sbSignIn(email,pw){await sbInit();if(!sb)return 'offline';
- const resR=await withTimeout(sb.auth.signInWithPassword({email:email.trim(),password:pw}),4500).catch(e=>({error:new Error('offline')}));
- const {error}=resR||{};
- if(error)return String(error.message||error)==='offline'?OFFLINE_MSG:errText(resR.error.message||resR.error);
- const {data}=await sb.auth.getSession();if(data.session)await sbAfterLogin(data.session.user);return null}
+ const resR=await withTimeout(sb.auth.signInWithPassword({email:email.trim(),password:pw}),8000).catch(e=>({error:new Error('offline')}));
+ const {data,error}=resR||{};
+ if(error)return String(error.message||error)==='offline'?OFFLINE_MSG:errText(error.message||error);
+ const sess=data&&data.session;
+ // Use the session returned by this sign-in only. getSession() can still expose the
+ // previous account if the request succeeded but the client has not swapped yet.
+ if(!sess||!sess.user)return 'Could not start a session. Try again.';
+ sbUser=sess.user;
+ await sbAfterLogin(sess.user);return null}
 async function sbSignUp(email,pw){await sbInit();if(!sb)return 'offline';
- const resR=await withTimeout(sb.auth.signUp({email:email.trim(),password:pw,options:{emailRedirectTo:authRedirectUrl()}}),4500).catch(e=>({error:new Error('offline')}));
- const {error}=resR||{};
- if(error)return String(error.message||error)==='offline'?OFFLINE_MSG:errText(resR.error.message||resR.error);
- const {data}=await sb.auth.getSession();
- if(data.session)await sbAfterLogin(data.session.user);else return 'confirm_pending';return null}
+ // Creating an account must never inherit whoever was signed in before. Supabase
+ // keeps the old session when signUp only creates an unconfirmed user, and that
+ // made the app continue as the previous account.
+ try{await sb.auth.signOut({scope:'local'})}catch(e){}
+ sbUser=null
+ const resR=await withTimeout(sb.auth.signUp({email:email.trim(),password:pw,options:{emailRedirectTo:authRedirectUrl()}}),8000).catch(e=>({error:new Error('offline')}));
+ const {data,error}=resR||{};
+ if(error)return String(error.message||error)==='offline'?OFFLINE_MSG:errText(error.message||error);
+ const sess=data&&data.session;
+ if(sess&&sess.user){sbUser=sess.user;await sbAfterLogin(sess.user);return null}
+ return 'confirm_pending'}
 // ---------- storage
 const key=u=>'bloom_d_'+u;
 const blank=()=>({p:{},logs:{},tasks:[],done:{},meals:{},journal:[],plan:{},games:{},cons:true,rem:{on:false,time:'20:00'},library:{books:{}},read:{goalMin:5,goalBooks:1,log:{}}});
@@ -2211,17 +2228,25 @@ function roAdjust(){let j=paGet();const src=j&&j.a;if(!src)return;
 async function redeemCode(code,onErr){
  const c=String(code||'').trim().toUpperCase();
  if(!c){onErr('Enter a pairing code.');return false}
- if(!pnGet()){pnSet((sbUser&&sbUser.email||'').split('@')[0]||'You')}
  const client=await sbInit();
  if(!client){onErr('Pairing needs an internet connection.');return false}
- if(!user&&!sbUser){onErr('Sign in first to follow someone.');return false}
- if(!pnGet()){pnSet((sbUser&&sbUser.email||'').split('@')[0]||'You')}
+ // A restored login can exist in storage before sbUser is hydrated. Ask the
+ // client for its live session instead of telling a signed-in user to sign in.
+ if(!sbUser){try{const r=await client.auth.getSession();if(r&&r.data&&r.data.session&&r.data.session.user)sbUser=r.data.session.user}catch(e){}}
  if(!sbUser){onErr('Sign in first to follow someone.');return false}
-  const {data,error}=await client.rpc('bloom_redeem_partner_code',{p_code:c});
-  if(error&&String(error.message||'').includes('too many attempts')){onErr('Too many tries. Wait 10 minutes and try again.');return false}
-  if(error||!data){onErr('That pairing code is not valid. Codes expire after 24 hours.');return false}
- const __epm=await enterPartnerMode(data,c,true); if(!__epm){onErr('Could not enter partner view. Try again.');return false} return true
- if(!Object.keys(D.logs||{}).length)toast('No logs shared yet');
+ if(!pnGet()){pnSet((sbUser.email||'').split('@')[0]||'You')}
+ let res=null;
+ try{res=await withTimeout(client.rpc('bloom_redeem_partner_code',{p_code:c}),8000)}
+ catch(e){onErr('Could not reach the server. Check your connection and try again.');return false}
+ const {data,error}=res||{};
+ if(error&&String(error.message||'').includes('too many attempts')){onErr('Too many tries. Wait 10 minutes and try again.');return false}
+ if(error){
+  const m=String(error.message||error);
+  onErr(/fetch|network|timeout|timed out|ENOTFOUND|ETIMEDOUT|Failed to fetch/i.test(m)?'Could not reach the server. Check your connection and try again.':'That pairing code is not valid. Codes expire after 24 hours.');
+  return false}
+ if(!data){onErr('That pairing code is not valid. Codes expire after 24 hours.');return false}
+ try{const entered=await enterPartnerMode(data,c,true);if(!entered){onErr('Could not enter partner view. Try again.');return false}}
+ catch(e){reportErr('partner.enter',e);onErr('Could not enter partner view. Try again.');return false}
  return true
 }
 let authPrefill='';
