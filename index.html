@@ -2341,7 +2341,7 @@ function authView(mode){try{splashSkip()}catch(e){}mode=mode||'in';try{fabSync()
     <input id="u" type="email" inputmode="email" autocomplete="email" maxlength="80" autocapitalize="none" spellcheck="false" aria-describedby="e-u">
     <p class="hint" id="e-u" role="status"></p></div>
    ${up?'':pwBlock('pw','Password','current-password')}
-    ${up?'':`<label class="remember" for="rememb"><input id="rememb" type="checkbox" disabled ${ST.get('bloom_remember')!=='0'?'checked':''}><span>Remember me</span></label>`}
+    ${up?'':`<label class="remember" for="rememb"><input id="rememb" type="checkbox" disabled ${ST.get('bloom_remember')==='1'?'checked':''}><span>Remember me</span></label>`}
    <div class="err" id="err" role="alert"></div>
    <button class="btn" type="submit" id="go">${up?'Continue':'Log in'}</button>
    <div class="or">or</div>
@@ -2354,7 +2354,7 @@ function authView(mode){try{splashSkip()}catch(e){}mode=mode||'in';try{fabSync()
    </div></div></div>`;
   $('#sw').onclick=()=>{window.__signupStep=1;authView(up?'in':'up')};
   const rem=document.getElementById('rememb'),remU=document.getElementById('u'),remP=document.getElementById('pw');
-  if(rem&&remU&&remP){const syncRem=()=>{const ok=!!remU.value.trim()&&!!remP.value;rem.disabled=!ok;rem.parentElement.classList.toggle('off',!ok)};remU.addEventListener('input',syncRem);remP.addEventListener('input',syncRem);syncRem()}
+  if(rem&&remU&&remP){const syncRem=()=>{const ok=!!remU.value.trim()&&!!remP.value;rem.disabled=!ok;rem.parentElement.classList.toggle('off',!ok)};remU.addEventListener('input',syncRem);remP.addEventListener('input',syncRem);rem.addEventListener('change',()=>{try{ST.set('bloom_remember',rem.checked?'1':'0')}catch(e){}});syncRem()}
   
  const fg=document.getElementById('fg');if(fg)fg.onclick=forgotPasswordSheet;
  const g=id=>document.getElementById(id);

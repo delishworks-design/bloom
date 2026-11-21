@@ -6,7 +6,8 @@ const path = require('path');
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 
 test('remember me starts disabled until both credentials are entered', () => {
-  assert.match(html, /id="rememb" type="checkbox" disabled/);
+  assert.match(html, /id="rememb" type="checkbox" disabled \$\{ST\.get\('bloom_remember'\)==='1'\?'checked':''\}/);
+  assert.match(html, /rem\.addEventListener\('change',\(\)=>\{try\{ST\.set\('bloom_remember',rem\.checked\?'1':'0'\)/);
   assert.match(html, /const ok=!!remU\.value\.trim\(\)&&!!remP\.value;rem\.disabled=!ok/);
   assert.match(html, /remU\.addEventListener\('input',syncRem\);remP\.addEventListener\('input',syncRem\)/);
 });
