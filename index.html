@@ -1489,6 +1489,7 @@ function saveAckBase(uid,doc,rev){
  try{ST.set(ackBaseKey(uid),JSON.stringify({rev:+rev||0,doc}))}catch(e){}
 }
 function clearAckBase(uid){try{ST.del(ackBaseKey(uid))}catch(e){}}
+function shouldAdoptCloud(dirty,lastPush,local){return String(dirty)==='0'&&!!lastPush&&JSON.stringify(local)===lastPush}
 // @test-end sync
 // @test-begin library
 // Account-bound library state lives in D.library so it syncs with the rest of the user doc.
@@ -1767,8 +1768,18 @@ async function pullMainOnce(opts){
   if(!(opts&&opts.force)&&rev<=sbRev)return;
   backupLocal();const row=await sbFetchDocWithRev(uid);if(!row)return;if(RO)return;
   if(row.doc&&row.doc._uid&&row.doc._uid!==uid){reportErr('sync.pull.guard','row belongs to another account');setSyncState('error');return}
-  if(!docHasContent(row.doc)&&docHasContent(D)){reportErr('sync.pull.guard','ignoring an empty cloud copy');return}
-  const base=loadAckBase(uid);
+   if(!docHasContent(row.doc)&&docHasContent(D)){reportErr('sync.pull.guard','ignoring an empty cloud copy');return}
+   let dirty='1';try{dirty=String(ST.get('bloom_dirty_'+(user||''))||'1')}catch(e){}
+   if(shouldAdoptCloud(dirty,sbLastPush,D)){
+    const remote=Object.assign(blank(),row.doc||{});
+    const rl=(D.read&&D.read.log)||null;
+    if(rl&&Object.keys(rl).length&&!(remote.read&&Object.keys(remote.read.log||{}).length)){remote.read=remote.read||{};remote.read.log=rl}
+    remote._uid=uid;D=remote;sbRev=row.rev;saveRev();saveAckBase(uid,row.doc||{},row.rev);persistDoc();
+    setDirtyFlag(0);sbLastPush=JSON.stringify(D);setSyncState('synced');
+    if(safeToRender())shell();else sbPendingRender=true;
+    return;
+   }
+   const base=loadAckBase(uid);
   const merged=mergeDocsThreeWay(base?base.doc:null,D,row.doc||{});
   merged._uid=uid;
   D=merged;sbRev=row.rev;saveRev();
@@ -1798,9 +1809,9 @@ function bloomRtStop(){
  if(bloomRt){try{bloomRt.unsubscribe()}catch(e){}bloomRt=null}
  bloomRtKey='';
 }
-function bloomRtStart(){
- if(!sb||!sbUser||typeof sb.channel!=='function')return;
- if(isOffline())return;
+ function bloomRtStart(){
+  if(!sb||!sbUser||typeof sb.channel!=='function')return;
+  if(navigator.onLine===false)return;
  const uid=String(sbUser.id||'');
  const partner=!!(RO&&!ownMode&&ROowner);
  const key=uid+'|'+(partner?'p:'+ROowner:'o');
@@ -1817,10 +1828,10 @@ function bloomRtStart(){
    ch.on('postgres_changes',{event:'*',schema:'public',table:'bloom_data',filter:'user_id=eq.'+uid},()=>sched(()=>{if(!document.hidden)sbPullFast()}));
    ch.on('postgres_changes',{event:'*',schema:'public',table:'bloom_reading',filter:'user_id=eq.'+uid},()=>sched(()=>{if(!document.hidden)readingLoadOnce().catch(()=>{})}));
   }
-  ch.subscribe(st=>{if((st==='CHANNEL_ERROR'||st==='TIMED_OUT')&&bloomRt===ch){
-   reportErr('realtime.channel',st);bloomRt=null;bloomRtKey='';
-   bloomRtRetry=setTimeout(bloomRtStart,6000);
-  }});
+   ch.subscribe(st=>{if((st==='CHANNEL_ERROR'||st==='TIMED_OUT'||st==='CLOSED')&&bloomRt===ch){
+    reportErr('realtime.channel',st);bloomRt=null;bloomRtKey='';
+    bloomRtRetry=setTimeout(bloomRtStart,6000);
+   }});
   bloomRt=ch;
  }catch(e){reportErr('realtime.start',e)}
 }
@@ -8485,7 +8496,7 @@ window.addEventListener('online',()=>{const e=document.getElementById('err');if(
 // called by the native layer when the app goes to the background
 window.__bloomBg=()=>splashBgMark();
 // @test-end splash
-document.addEventListener('visibilitychange',()=>{if(document.hidden){splashBgMark();try{saveNav()}catch(e){}}else{try{widgetConsume()}catch(e){}try{widgetSync()}catch(e){}if(sbUser){if(RO){if(!ownMode)syncLocked(partnerLibRefresh)}else{syncTick();bloomRtStart()}}}});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){splashBgMark();try{saveNav()}catch(e){}}else{try{widgetConsume()}catch(e){}try{widgetSync()}catch(e){}if(sbUser){if(RO){if(!ownMode)syncLocked(partnerLibRefresh)}else{sbPullFast().then(()=>syncTick()).catch(()=>{});bloomRtStart()}}}});
 // Auto-refresh: only re-render at local midnight (day flip / new day counts). Sync pulls already re-render on real changes; every full re-render flashes scroll/inputs, so only repaint for the day flip.
 if(window.__autoRefreshTimer)clearInterval(window.__autoRefreshTimer);
 let __lastAutoDay=new Date().toDateString();

@@ -55,7 +55,7 @@ function load() {
 
   const exportsByName = {
     esc: ['E'],
-    sync: ['isPlainObject', 'mergeDocs', 'chooseLoginDoc', 'docHasContent', 'mergeDocsThreeWay', 'syncDeviceId', 'syncMarkDeleted', 'syncClassifyResponse', 'syncMealIds'],
+    sync: ['isPlainObject', 'mergeDocs', 'chooseLoginDoc', 'docHasContent', 'mergeDocsThreeWay', 'syncDeviceId', 'syncMarkDeleted', 'syncClassifyResponse', 'syncMealIds', 'shouldAdoptCloud'],
     library: ['libEnsure', 'libBookEntry', 'libBlank', 'libVisibleIds', 'libRecentList', 'migrateLibrary'],
     libfilter: ['applyLibFilter'],
     perf: ['libCached', 'refreshLibrary', 'refreshLibraryOnce', 'libDebounce', 'libSearchText', 'validCatalog', 'maybeRefreshLibrary', 'libRefreshTimeoutSet'],

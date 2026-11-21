@@ -2,6 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
+const { load } = require('./load');
 
 const indexHtml = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 const migration = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20261119000000_sync_revisions.sql'), 'utf8');
@@ -72,4 +73,30 @@ test('migration adds revisions and compare-and-set RPCs without destructive DDL'
 test('the partner library has a periodic refresh path, not just a one-shot fetch', () => {
   assert.match(indexHtml, /function partnerLibRefresh\(/);
   assert.match(indexHtml, /syncLocked\(partnerLibRefresh\)/);
+});
+
+test('a clean local doc adopts the cloud copy on pull without re-login', () => {
+  const { shouldAdoptCloud } = load();
+  const local = { logs: { a: 1 }, tasks: [] };
+  assert.equal(shouldAdoptCloud('0', JSON.stringify(local), local), true);
+});
+
+test('a dirty or unacknowledged local doc keeps the three-way merge path', () => {
+  const { shouldAdoptCloud } = load();
+  const local = { logs: { a: 1 }, tasks: [] };
+  assert.equal(shouldAdoptCloud('1', JSON.stringify(local), local), false);
+  assert.equal(shouldAdoptCloud('0', '', local), false);
+  assert.equal(shouldAdoptCloud('0', '{"logs":{}}', local), false);
+});
+
+test('realtime is not gated by the stale offline flag and retries closed channels', () => {
+  assert.match(indexHtml, /function bloomRtStart\(\)\{[\s\S]{0,200}if\(navigator\.onLine===false\)return;/);
+  assert.match(indexHtml, /st==='CHANNEL_ERROR'\|\|st==='TIMED_OUT'\|\|st==='CLOSED'/);
+});
+
+test('the replica identity migration covers the realtime sync tables', () => {
+  const replica = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'migrations', '20261121000000_realtime_replica.sql'), 'utf8');
+  for (const table of ['bloom_data', 'bloom_shared', 'bloom_reading', 'bloom_library']) {
+    assert.match(replica, new RegExp('alter table public\\.' + table + ' replica identity full'));
+  }
 });
