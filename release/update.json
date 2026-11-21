@@ -1,7 +1,7 @@
 {
-  "versionCode": 204,
-  "versionName": "2.1.3",
-  "url": "https://github.com/delishworks-design/bloom/releases/download/v2.1.3/bloom-2.1.3.apk",
-  "notes": "Fix: overdue tasks now clear when marked done while viewing another day, and a one-off carried task completed earlier no longer stays red in the Overdue list or calendar.",
+  "versionCode": 203,
+  "versionName": "2.1.2",
+  "url": "https://github.com/delishworks-design/bloom/releases/download/v2.1.2/bloom-2.1.2.apk",
+  "notes": "Fix: login and pairing-code creation no longer show 'You're offline' when a stale connection flag lingers. Also includes pairing sign-in fixes, a responsive layout and landing page, and richer Bloom Garden details.",
   "force": false
 }
