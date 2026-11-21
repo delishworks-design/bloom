@@ -21,3 +21,11 @@ test('profile and follower avatars open a fullscreen viewer', () => {
   assert.match(html, /data-avatar-full="\$\{E\(av\)\}" style="width:56px/);
   assert.match(html, /\.avatar-full\{position:fixed;inset:0/);
 });
+
+test('Your data is the last card and Delete my account is its last action', () => {
+  assert.ok(html.indexOf('id="dataCard"') > html.indexOf('id="chkUp"'));
+  const data = html.slice(html.indexOf('Manage or remove your data'));
+  assert.ok(data.indexOf('id="sDelAcct"') > data.indexOf('id="sExp"'));
+  assert.ok(data.indexOf('id="sDelAcct"') > data.indexOf('id="sImp"'));
+  assert.ok(data.indexOf('id="sDelAcct"') > data.indexOf('id="sDel"'));
+});

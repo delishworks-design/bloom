@@ -710,3 +710,11 @@ test('garden detail sheet groups header, progress and body', () => {
   assert.match(html, /class="fs-body"/);
   assert.match(html, /class="bar fs-bar" role="progressbar"/);
 });
+
+test('garden arrows are hidden on phones', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  assert.match(html, /\.sf-nav\{display:none/);
+  assert.match(html, /@media\(min-width:768px\)\{\.sf-nav\{display:flex\}\}/);
+});

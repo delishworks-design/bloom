@@ -588,3 +588,12 @@ test('a corrupt saved fab position is ignored', () => {
   ctx.localStorage.setItem('bloom_fab_xy', '200,300');
   assert.deepEqual({ x: ctx.fabLoadXY().x, y: ctx.fabLoadXY().y }, { x: 200, y: 300 });
 });
+
+test('fab placement is idempotent and does not animate from the origin', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  assert.match(html, /if\(fabEl\.style\.left===left&&fabEl\.style\.top===top\)return;/);
+  assert.match(html, /fabEl\.style\.transition='none'/);
+  assert.match(html, /if\(fabEl\.style\.display!==display\)fabEl\.style\.display=display/);
+});

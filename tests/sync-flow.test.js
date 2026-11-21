@@ -110,3 +110,9 @@ test('profile goals have a working save path', () => {
 test('craving types include spicy', () => {
   assert.match(indexHtml, /qq\(\['Sweet','Salty','Carbs','Spicy'\],'craving'\)/);
 });
+
+test('pulls do not re-render when the cloud copy is unchanged', () => {
+  assert.match(indexHtml, /if\(remoteKey===localKey\)return;/);
+  assert.match(indexHtml, /if\(after!==before\)\{if\(safeToRender\(\)\)shell\(\)/);
+  assert.doesNotMatch(indexHtml, /sbPullFast\(\)\.then\(\(\)=>syncTick\(\)\)/);
+});
