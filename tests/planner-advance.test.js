@@ -48,6 +48,34 @@ test('overdueList excludes tasks that are done today', () => {
   assert.equal(out.length, 0);
 });
 
+test('overdueList excludes a once-carry task completed on an earlier day', () => {
+  const { overdueList } = load();
+  const doc = {
+    tasks: [{ id: 'a', t: 'a', from: '2026-01-12', repeat: 'none', carry: true }],
+    done: { '2026-01-14': { a: true } }
+  };
+  assert.equal(overdueList(doc, '2026-01-20').length, 0);
+});
+
+test('overdueList keeps a once-carry task when the latest completion was undone', () => {
+  const { overdueList } = load();
+  const doc = {
+    tasks: [{ id: 'a', t: 'a', from: '2026-01-12', repeat: 'none', carry: true }],
+    done: { '2026-01-14': { a: true }, '2026-01-20': { a: false } }
+  };
+  assert.equal(overdueList(doc, '2026-01-20').length, 1);
+});
+
+test('carryResolved ignores repeating tasks that are not done today', () => {
+  const { carryResolved, overdueList } = load();
+  const doc = {
+    tasks: [{ id: 'a', t: 'a', from: '2026-01-01', repeat: 'daily', carry: true }],
+    done: { '2026-01-14': { a: true } }
+  };
+  assert.equal(carryResolved(doc.tasks[0], '2026-01-20', doc, '2026-01-20'), false);
+  assert.equal(overdueList(doc, '2026-01-20').length, 1);
+});
+
 test('overdueList excludes tasks without carry', () => {
   const { overdueList } = load();
   const doc = {

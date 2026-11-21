@@ -82,7 +82,7 @@ function load() {
     widget: ['ownWidgetDoc', 'widgetSnapshot', 'widgetSync', 'widgetReset'],
     planui: ['shareFlags', 'plannerTabSet', 'ringPillBare', 'peerLabel'],
     focusVoice: ['focusVoiceFor', 'SMART_FOCUS_VOICE'],
-    plannerAdvance: ['normalizeTask', 'taskOn', 'tasksFor', 'overdueList'],
+    plannerAdvance: ['normalizeTask', 'taskOn', 'tasksFor', 'overdueList', 'carryResolved'],
     readingGoal: ['readNormalize', 'readGoalPct', 'formatMS', 'computeStreak', 'weekDots', 'booksThisYear'],
     readingSync: ['readingMerge', 'applyReadingDoc', 'readingPush', 'readingLoadOnce'],
     libraryExplore: ['exploreGroups', 'exploreOrder', 'exploreDefaultCategory', 'exploreBooks'],

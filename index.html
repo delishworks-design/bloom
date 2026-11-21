@@ -2679,8 +2679,22 @@ function overdueList(doc, ref){
     if (o.from && o.from >= d) return false;
     if (o.until && o.until < d) return false;
     const done = ((doc || D).done || {})[d] || {};
-    return !done[o.id];
+    if (done[o.id]) return false;
+    return !carryResolved(o, d, doc);
   });
+}
+function carryResolved(t, at, doc, cap){
+  if (!t || !t.carry) return false;
+  const o = normalizeTask(t);
+  if (o.repeat !== 'none' && !o.until) return false;
+  const from = o.from || '', end = cap || at, done = (doc || D).done || {};
+  let last = null;
+  for (const day in done) {
+    if (day >= from && day <= end && done[day] && Object.prototype.hasOwnProperty.call(done[day], o.id)) {
+      if (last == null || day > last) last = day;
+    }
+  }
+  return last != null && !!done[last][o.id];
 }
 // @test-end plannerAdvance
 
@@ -2788,7 +2802,7 @@ function calMonthsHTML(y,doc,mode,pred){
   for(let i=0;i<off;i++)cells+='<span class="cal-cell cal-empty mg-cell-empty"></span>';
   for(let d=1;d<=dim;d++){
    const dstr=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
-   const ts=tasksFor(dstr,doc);const n=ts.filter(t=>isDone(t.id,dstr,doc)).length;
+   const ts=tasksFor(dstr,doc);const n=ts.filter(t=>isDone(t.id,dstr,doc)||carryResolved(t,dstr,doc,today())).length;
    const over=ts.length>n&&dstr<today();const done=ts.length>0&&n===ts.length;
    cells+='<button type="button" class="cal-cell mg-cell" data-d="'+dstr+'" aria-label="'+dstr+': '+n+'/'+ts.length+' tasks"><div class="mg-day'+(over?' overdue':done?' done':'')+'">'+d+'</div>'+(ts.length?'<div class="mg-n">'+n+'/'+ts.length+'</div>':'')+'</button>';
   }
@@ -2925,7 +2939,7 @@ async function fetchManifest(){const bust='?t='+Date.now();
  const r=await fetch(UPDATE_MANIFEST+bust,{cache:'no-store'});if(!r.ok)throw new Error('manifest '+r.status);
  return await r.json()}
 // Baked-in build identity. Keep in sync with android/app/build.gradle (versionCode/versionName).
-const APP_VERSION={code:203,name:'2.1.2'};
+const APP_VERSION={code:204,name:'2.1.3'};
 const UPD_SKIP_KEY='bloom_upd_skip';
 const updater=()=>{const C=window.Capacitor;if(!C)return null;
  const P=C.Plugins&&C.Plugins.BloomUpdater;
@@ -3989,7 +4003,7 @@ function pCalCardHTML(doc,d,todayStr){
  for(let i=0;i<off;i++)cells+='<span class="cal-cell cal-empty"></span>';
  for(let day=1;day<=dim;day++){
   const dstr=y+'-'+String(m+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');
-  const ts=tasksFor(dstr,doc),n=ts.filter(t=>isDone(t.id,dstr,doc)).length;
+  const ts=tasksFor(dstr,doc),n=ts.filter(t=>isDone(t.id,dstr,doc)||carryResolved(t,dstr,doc,todayStr)).length;
   const over=ts.length>n&&dstr<todayStr,done=ts.length>0&&n===ts.length;
   const cls='cal-cell mg-cell'+(dstr===todayStr?' cal-today':'')+(dstr===d?' cal-sel':'');
   cells+='<button type="button" class="'+cls+'" data-cal-day="'+dstr+'" aria-label="'+dstr+': '+n+' of '+ts.length+' done"><span class="mg-day'+(over?' overdue':done?' done':'')+'">'+day+'</span>'+(ts.length?'<span class="mg-n">'+n+'/'+ts.length+'</span>':'')+'</button>';
@@ -4025,13 +4039,13 @@ ${pCalCardHTML(doc,d,todayStr)}`;
  if(whenTimeBtn)whenTimeBtn.onclick=()=>wheelTimeSheet(state.time,v=>{state.time=v;const h=document.getElementById('whenTime');if(h)h.value=v||'';whenTimeBtn.querySelector('.pf-val').textContent=v?fmtTime12(v):'Any time'},{title:'Time',clearable:true});
  const afForm=document.getElementById('af');if(afForm)afForm.onsubmit=e=>{e.preventDefault();const t=$('#nt').value.trim();if(!t)return $('#er').textContent='Please type a task.';const when=state.when||today();const time=$('#whenTime').value||undefined;const carry=!!$('#carry').checked;const note=$('#ptn').value.trim()||undefined;const repeat=$('#rp').value;D.tasks.push({id:uid(),t,from:when,repeat,time,carry:carry||undefined,note:note||undefined});save();planner()};
  document.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{D.tasks=D.tasks.filter(t=>t.id!=b.dataset.del);save();planner()});
- document.querySelectorAll('[data-cmp]').forEach(b=>b.onclick=()=>{toggle(b.dataset.cmp,d);planner()})}
+  document.querySelectorAll('[data-cmp]').forEach(b=>b.onclick=()=>{toggle(b.dataset.cmp,todayStr);planner()})}
 function dayTasksSheet(d, doc, only){
  const src = doc || D;
  const ts = tasksFor(d, src);
- const n = ts.filter(t => isDone(t.id, d, src)).length;
+ const n = ts.filter(t => isDone(t.id, d, src) || carryResolved(t, d, src, today())).length;
  const rows = ts.length ? ts.map(t => {
-   const done = isDone(t.id, d, src);
+   const done = isDone(t.id, d, src) || carryResolved(t, d, src, today());
    const tflag = t.time ? ' <span class="time-badge">'+E(t.time)+'</span>' : '';
    const note = t.note ? ' <button type="button" class="note-chip note-btn" data-note="'+E(t.id)+'" aria-label="View note">note</button>' : '';
    if (only) return '<div class="taskrow"><span class="ckt" style="'+(done?'opacity:.55':'')+'">'+(done?'&#10003; ':'')+E(t.t)+tflag+note+'</span></div>';
