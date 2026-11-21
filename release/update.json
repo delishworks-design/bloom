@@ -1,7 +1,7 @@
 {
-  "versionCode": 203,
-  "versionName": "2.1.2",
-  "url": "https://github.com/delishworks-design/bloom/releases/download/v2.1.2/bloom-2.1.2.apk",
-  "notes": "Fix: login and pairing-code creation no longer show 'You're offline' when a stale connection flag lingers. Also includes pairing sign-in fixes, a responsive layout and landing page, and richer Bloom Garden details.",
+  "versionCode": 204,
+  "versionName": "2.1.3",
+  "url": "https://github.com/delishworks-design/bloom/releases/download/v2.1.3/bloom-2.1.3.apk",
+  "notes": "Water nudges are now one-shot and staggered, with a short rolling window so they keep working when the app is in the background. Fixed overdue carry tasks staying red after completion, and the false 'You're offline' message on login and pairing.",
   "force": false
 }
