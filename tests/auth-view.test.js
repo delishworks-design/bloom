@@ -26,3 +26,8 @@ test('wide screens show only a centered tagline over watercolor circles', () => 
 test('the auth card sits in the right grid column on wide screens', () => {
   assert.match(html, /\.auth \.card\{grid-column:2;/);
 });
+
+test('the login pastel background also covers the app', () => {
+  assert.match(html, /#app::before\{content:'';position:fixed;inset:-8%;z-index:-1;pointer-events:none;opacity:\.45/);
+  assert.match(html, /#app::before[\s\S]{0,400}radial-gradient\(circle at 18% 30%/);
+});

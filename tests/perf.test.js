@@ -576,3 +576,16 @@ test('fab drag writes the transform once per frame without transitions', () => {
   assert.match(html, /fabEl\.style\.transition='none'/);
   assert.match(html, /requestAnimationFrame\(\(\)=>\{fabEl\.style\.transition=''\}\)/);
 });
+
+test('fab keeps its exact dropped position across page renders', () => {
+  const ctx = load();
+  ctx.localStorage.setItem('bloom_fab_xy', '1230,420');
+  const xy = ctx.fabLoadXY();
+  assert.equal(xy.x, 1230);
+  assert.equal(xy.y, 420);
+  ctx.localStorage.setItem('bloom_fab_xy', 'bad,bad');
+  assert.equal(ctx.fabLoadXY(), null);
+  const html = require('fs').readFileSync(require('path').join(__dirname, '..', 'index.html'), 'utf8');
+  assert.match(html, /localStorage\.setItem\('bloom_fab_xy',nx\+','\+ny\)/);
+  assert.match(html, /if\(fabEl\.style\.left===left&&fabEl\.style\.top===top\)return;/);
+});
