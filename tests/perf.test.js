@@ -518,12 +518,9 @@ test('fabBounds keeps its original calculations', () => {
   ctx.FAB_SZ = 58;
   ctx.safeTop = () => 24;
   const b = ctx.fabBounds();
-  const W = Math.min(430, 600);
-  const l0 = (600 - W) / 2;
-  const r0 = l0 + W;
-  assert.equal(b.l, l0 + 8);
-  assert.equal(b.r, r0 - 58 - 8);
-  assert.equal(b.t, 24 + 70);
+  assert.equal(b.l, 8);
+  assert.equal(b.r, 600 - 58 - 8);
+  assert.equal(b.t, 24 + 8);
   assert.equal(b.b, 900 - 88 - 58);
 });
 

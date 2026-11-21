@@ -564,9 +564,6 @@ html.sheet-open,html.sheet-open body{overflow:hidden !important;overscroll-behav
 .auth .card #go[disabled]{opacity:.75;cursor:default;transform:none}
 .auth .spinner{display:inline-block;width:15px;height:15px;margin-right:9px;border-radius:50%;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;animation:authspin .7s linear infinite;vertical-align:-2px}
 @keyframes authspin{to{transform:rotate(360deg)}}
-.step-dots{display:flex;justify-content:center;gap:8px;margin:12px 0 4px}
-.step-dots span{width:8px;height:8px;border-radius:50%;background:var(--line2);transition:background .2s}
-.step-dots span.on{background:var(--rose)}
 .auth-foot{margin-top:22px;padding-top:18px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:12px;align-items:center;text-align:center}
 .auth .status{display:inline-flex;align-items:center;gap:8px;margin:0;font-size:.8rem;line-height:1.3;color:var(--mut)}
 .auth .status .dot{width:7px;height:7px;border-radius:50%;background:var(--line);flex:0 0 auto;transition:background .2s}
@@ -1979,6 +1976,14 @@ async function sbSignIn(email,pw){await sbInit();if(!sb)return 'offline';
  if(!sess||!sess.user)return 'Could not start a session. Try again.';
  sbUser=sess.user;
  await sbAfterLogin(sess.user);return null}
+async function emailExists(email){
+ try{
+  const cl=await sbInit();if(!cl)return null;
+  const r=await withTimeout(cl.rpc('bloom_email_exists',{p_email:String(email).trim().toLowerCase()}),4000).catch(()=>({error:new Error('offline')}));
+  if(r&&r.error)return null;
+  return !!(r&&r.data);
+ }catch(e){return null}
+}
 async function sbSignUp(email,pw){await sbInit();if(!sb)return 'offline';
  // Creating an account must never inherit whoever was signed in before. Supabase
  // keeps the old session when signUp only creates an unconfirmed user, and that
@@ -2373,6 +2378,10 @@ function authView(mode){try{splashSkip()}catch(e){}mode=mode||'in';try{fabSync()
    const u=g('u').value.trim().toLowerCase();
    if(!EMAIL_RE.test(u)){setFieldErr('u','Enter a valid email address.');const first=document.querySelector('.auth .field.invalid input');if(first)first.focus();return}
    if(isDisposableEmail(u)){setFieldErr('u','Use a real, non-disposable email address.');const first=document.querySelector('.auth .field.invalid input');if(first)first.focus();return}
+   busy=true;
+   const taken=await emailExists(u);
+   busy=false;
+   if(taken===true){setFieldErr('u','That email already has an account. Log in instead.');const first=document.querySelector('.auth .field.invalid input');if(first)first.focus();return}
    authPrefill=u;
    window.__signupStep=2;
    authView('up');
@@ -2419,10 +2428,9 @@ function signupStep2(){
    ${pwBlock('pw2','Confirm password','new-password')}
    <p class="rule" id="pwRule">At least 8 characters, with a letter and a number</p>
    <label class="cons"><input id="cons" type="checkbox"><span>I agree to store my health notes on this account.</span></label>
-   <div class="step-dots" aria-hidden="true"><span class="on"></span><span class="on"></span></div>
    <div class="err" id="err" role="alert"></div>
    <button class="btn" type="submit" id="go">Create account</button>
-   <button class="btn ghost" type="button" id="back" style="margin-top:8px">Back</button>
+   <button class="btn ghost" type="button" id="back" style="margin-top:8px;width:100%">Back</button>
   </form></div></div>`;
  const g=id=>document.getElementById(id);
  $('#back').onclick=()=>{window.__signupStep=1;authView('up')};
@@ -3633,9 +3641,9 @@ function qaPrefersReducedMotion(){try{return typeof window!=='undefined'&&window
 safeTopBind();
 // @test-begin fabcalc
 function fabBounds(){
- const W=Math.min(430,innerWidth),l0=(innerWidth-W)/2,r0=l0+W;
- const navTop=innerHeight-88;
- return {l:l0+8,r:r0-FAB_SZ-8,t:safeTop()+70,b:navTop-FAB_SZ};
+ const pad=8,navTop=innerHeight-88;
+ const top=safeTop()+pad,bottom=navTop-FAB_SZ;
+ return {l:pad,r:Math.max(pad,innerWidth-FAB_SZ-pad),t:top,b:Math.max(top,bottom)};
 }
 // @test-end fabcalc
 function fabPlace(){
