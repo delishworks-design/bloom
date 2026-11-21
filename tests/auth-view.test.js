@@ -18,3 +18,7 @@ test('wide screens get an animated logo and tagline', () => {
   assert.match(html, /animation:authFloat/);
   assert.match(html, /setProperty\("--bloom-logo"/);
 });
+
+test('the auth card sits in the right grid column on wide screens', () => {
+  assert.match(html, /\.auth \.card\{grid-column:2;/);
+});
