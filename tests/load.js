@@ -61,7 +61,7 @@ function load() {
     perf: ['libCached', 'refreshLibrary', 'refreshLibraryOnce', 'libDebounce', 'libSearchText', 'validCatalog', 'maybeRefreshLibrary', 'libRefreshTimeoutSet'],
     settingsBack: ['hasSafetyCopy', 'restoreSafetyCopy'],
     safetop: ['safeTop', 'safeTopBind', 'safeTopInvalidate'],
-    fabcalc: ['fabBounds', 'fabFreeBounds', 'fabClampXY', 'fabLoadXY'],
+    fabcalc: ['fabBounds'],
     index: ['libIndexEnsure', 'libPersonalIndex', 'libPersonalInvalidate', 'libViewPlan', 'libBatchIds', 'libViewSet', 'LIB_BATCH', 'libChipCounts'],
     qa: ['qaPrefersReducedMotion', 'qaLabelRot', 'QA_TRANS_MS'],
     quickring: ['openQuickRing'],

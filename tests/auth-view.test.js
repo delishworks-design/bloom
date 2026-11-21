@@ -14,7 +14,9 @@ test('remember me starts disabled until both credentials are entered', () => {
 test('wide screens get an animated logo and tagline', () => {
   assert.match(html, /@media\(min-width:1024px\)\{\s*\.auth\{display:grid/);
   assert.match(html, /background:var\(--bloom-logo\)/);
-  assert.match(html, /content:"A gentler way to know your cycle\."/);
+  assert.match(html, /content:"a gentler way \\A to know your cycle\."/);
+  assert.match(html, /width:min\(23vw,190px\)/);
+  assert.match(html, /radial-gradient\(circle at 16% 30%/);
   assert.match(html, /animation:authFloat/);
   assert.match(html, /setProperty\("--bloom-logo"/);
 });
